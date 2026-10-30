@@ -5,13 +5,14 @@ import type {
 } from "@mirra/contracts";
 import { and, eq } from "drizzle-orm";
 
-import { heuristicPlanGenerator } from "../adapters/heuristic-plan-generator";
 import type { AppDB } from "../db";
 import { planJobs, preferences, profiles } from "../db/schema";
+import type { MirraEnv } from "../env";
 import { mondayOf, todayUtc } from "../lib/dates";
 import { badRequest, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseJson } from "../lib/json";
+import { getPlanGenerator } from "../lib/plan-generator";
 import type { PlanGenerateResult } from "../ports/plan-generator";
 import { loadCurrentPlan } from "./plan-loaders";
 import { persistGeneratedPlan } from "./persist-plan";
@@ -122,6 +123,7 @@ const rebuildTrainDays = (trainDays: number[], reason: string): number[] => {
 
 export const previewRebuild = async (
   db: AppDB,
+  env: MirraEnv,
   userId: string,
   reason: string,
   checkInId?: string,
@@ -144,7 +146,8 @@ export const previewRebuild = async (
     JSON.parse(prefs.trainDaysJson) as number[],
     reason,
   );
-  const generated = await heuristicPlanGenerator.generate({
+  const generator = getPlanGenerator(env, { db, userId });
+  const generated = await generator.generate({
     userId,
     timezone: profile.timezone,
     weekStart,

@@ -41,6 +41,8 @@ export type GeneratedSummary = {
   carbsG: number;
   fatG: number;
   outcomeLine: string;
+  /** Which PlanGenerator produced this plan (for smoke / meta). */
+  generator?: "openai" | "heuristic";
 };
 
 export type PlanGenerateResult = {

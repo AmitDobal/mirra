@@ -57,6 +57,8 @@ export const PlanSummarySchema = z.object({
   carbsG: z.number(),
   fatG: z.number(),
   outcomeLine: z.string(),
+  /** Which PlanGenerator produced this plan. */
+  generator: z.enum(["openai", "heuristic"]).optional(),
 });
 
 export const CurrentPlanResponseSchema = z.object({

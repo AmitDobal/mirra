@@ -30,6 +30,7 @@ planRoutes.post("/v1/plans/generate", requireAuth, async (c) => {
   const db = createDb(c.env.DB);
   const { jobId } = await runPlanGenerateJob({
     db,
+    env: c.env,
     userId: c.get("userId"),
     weekStart: body.weekStart,
   });
@@ -63,7 +64,7 @@ planRoutes.post("/v1/plans/rebuild/preview", requireAuth, async (c) => {
   const body = parseBody(PlanRebuildPreviewBodySchema, await c.req.json());
   const db = createDb(c.env.DB);
   return c.json(
-    await previewRebuild(db, c.get("userId"), body.reason, body.checkInId),
+    await previewRebuild(db, c.env, c.get("userId"), body.reason, body.checkInId),
   );
 });
 

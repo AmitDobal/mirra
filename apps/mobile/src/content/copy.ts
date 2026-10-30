@@ -22,4 +22,22 @@ export const copy = {
     you: "You",
     comingSoon: "Coming soon.",
   },
+  coach: {
+    title: "Daily Check In",
+    brand: "Mirra Coach",
+    loading: "Coach is thinking…",
+    fallbackMessage:
+      "Tell Mirra what changed so the microcycle stays honest.",
+    fallbackRest: "We'll shift volume and keep your streak intact.",
+    checkInReady: "Check-in ready",
+    submit: "Submit check-in",
+    submitting: "Submitting…",
+    keep: "Keep original schedule anyway",
+    vectorsLabel: "Select Recalibration Vector",
+    push: "Ready to Push",
+    rest: "Body Needs Rest",
+    calibration: "Daily Calibration",
+    titlePush: "Ready to adapt",
+    titleRest: "Recovery preferred",
+  },
 } as const;

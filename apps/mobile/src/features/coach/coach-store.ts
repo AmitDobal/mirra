@@ -1,14 +1,38 @@
 import { create } from "zustand";
 
+import { copy } from "@/content/copy";
 import { listCheckIns, submitCheckIn } from "@/db";
 import {
   applyRebuild,
   createCheckIn,
+  postCoachAdvise,
   previewRebuild,
   type CheckInStatus,
+  type CoachVector,
   type CurrentPlan,
 } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
+
+export const FALLBACK_VECTORS: readonly CoachVector[] = [
+  {
+    id: "missed",
+    title: "Missed Session Recalibration",
+    recommended: true,
+    detail: "Redistribute missed volume across remaining microcycle days.",
+  },
+  {
+    id: "deload",
+    title: "Deload / Low Readiness",
+    recommended: false,
+    detail: "Drop load and swap high-strain compounds for active flow.",
+  },
+  {
+    id: "express",
+    title: "20-Min Express Compression",
+    recommended: false,
+    detail: "High-density supersets preserving top compound mechanics.",
+  },
+];
 
 type CoachState = {
   readonly readiness: "push" | "rest";
@@ -18,9 +42,13 @@ type CoachState = {
   readonly previewAfter: CurrentPlan | null;
   readonly weekLogged: number;
   readonly notice: string | null;
+  readonly adviseMessage: string;
+  readonly vectors: readonly CoachVector[];
+  readonly adviseLoading: boolean;
   readonly setReadiness: (readiness: "push" | "rest") => void;
   readonly setVectorId: (vectorId: string) => void;
   readonly hydrate: () => Promise<void>;
+  readonly fetchAdvise: () => Promise<void>;
   readonly submitCheckIn: () => Promise<"rebuild" | "done">;
   readonly apply: () => Promise<void>;
   readonly keep: () => Promise<void>;
@@ -28,6 +56,9 @@ type CoachState = {
 };
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
+
+const fallbackFor = (readiness: "push" | "rest") =>
+  readiness === "rest" ? copy.coach.fallbackRest : copy.coach.fallbackMessage;
 
 export const useCoachStore = create<CoachState>((set, get) => ({
   readiness: "push",
@@ -37,6 +68,9 @@ export const useCoachStore = create<CoachState>((set, get) => ({
   previewAfter: null,
   weekLogged: 0,
   notice: null,
+  adviseMessage: copy.coach.fallbackMessage,
+  vectors: FALLBACK_VECTORS,
+  adviseLoading: false,
 
   setReadiness: (readiness) => set({ readiness }),
   setVectorId: (vectorId) => set({ vectorId }),
@@ -54,8 +88,38 @@ export const useCoachStore = create<CoachState>((set, get) => ({
     }
   },
 
-  submitCheckIn: async () => {
+  fetchAdvise: async () => {
     const { readiness, vectorId } = get();
+    set({ adviseLoading: true });
+    try {
+      const res = await postCoachAdvise({
+        readiness,
+        vectorId,
+        localDate: todayIso(),
+      });
+      const message = res.coachMessage ?? res.message;
+      const vectors =
+        res.vectors && res.vectors.length > 0 ? res.vectors : FALLBACK_VECTORS;
+      const nextId = vectors.some((v) => v.id === vectorId)
+        ? vectorId
+        : (vectors.find((v) => v.recommended)?.id ?? vectors[0]?.id ?? vectorId);
+      set({
+        adviseMessage: message || fallbackFor(readiness),
+        vectors,
+        vectorId: nextId,
+        adviseLoading: false,
+      });
+    } catch {
+      set({
+        adviseMessage: fallbackFor(readiness),
+        vectors: FALLBACK_VECTORS,
+        adviseLoading: false,
+      });
+    }
+  },
+
+  submitCheckIn: async () => {
+    const { readiness, vectorId, fetchAdvise } = get();
     const status: CheckInStatus =
       readiness === "rest" ? "skipped" : vectorId === "missed" ? "on_track" : "modified";
     const localDate = todayIso();
@@ -85,6 +149,7 @@ export const useCoachStore = create<CoachState>((set, get) => ({
     }
 
     set({ lastCheckInId: checkInId, notice: `Check-in saved (${status})` });
+    await fetchAdvise();
     if (status !== "skipped") return "done";
 
     try {

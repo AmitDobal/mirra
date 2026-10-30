@@ -1,22 +1,25 @@
 import { eq } from "drizzle-orm";
 
-import { heuristicPlanGenerator } from "../adapters/heuristic-plan-generator";
 import type { AppDB } from "../db";
 import { planJobs, preferences, profiles } from "../db/schema";
+import type { MirraEnv } from "../env";
 import { mondayOf, todayUtc } from "../lib/dates";
 import { badRequest } from "../lib/errors";
 import { newId } from "../lib/id";
+import { getPlanGenerator } from "../lib/plan-generator";
 import { persistGeneratedPlan } from "./persist-plan";
 
 type RunOpts = {
   db: AppDB;
+  env: MirraEnv;
   userId: string;
   weekStart?: string;
 };
 
-/** Create plan_job + heuristic fill of plans/days/workouts (sync local stub). */
+/** Create plan_job + PlanGenerator fill of plans/days/workouts. */
 export const runPlanGenerateJob = async ({
   db,
+  env,
   userId,
   weekStart: weekStartOpt,
 }: RunOpts): Promise<{ jobId: string }> => {
@@ -44,7 +47,8 @@ export const runPlanGenerateJob = async ({
   });
 
   try {
-    const generated = await heuristicPlanGenerator.generate({
+    const generator = getPlanGenerator(env, { db, userId });
+    const generated = await generator.generate({
       userId,
       timezone: profile.timezone,
       weekStart,

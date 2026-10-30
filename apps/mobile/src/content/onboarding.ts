@@ -117,7 +117,7 @@ export const onboardingCopy = {
     privacy: "Encrypted & private to your device",
   },
   generating: {
-    label: "Building your week…",
+    label: "AI building your week…",
   },
   weekReveal: {
     title: "Your week is ready",

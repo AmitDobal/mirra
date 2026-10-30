@@ -6,6 +6,7 @@ import { ApiError } from "./lib/errors";
 import type { AuthVars } from "./middleware/auth";
 import { requestIdMiddleware } from "./middleware/request-id";
 import { checkInRoutes } from "./routes/check-ins";
+import { coachRoutes } from "./routes/coach";
 import { fuelRoutes } from "./routes/fuel";
 import { healthRoutes } from "./routes/health";
 import { meRoutes } from "./routes/me";
@@ -40,6 +41,7 @@ export const createApp = () => {
   app.route("/", planRoutes);
   app.route("/", todayRoutes);
   app.route("/", checkInRoutes);
+  app.route("/", coachRoutes);
   app.route("/", fuelRoutes);
   app.route("/", workoutRoutes);
 

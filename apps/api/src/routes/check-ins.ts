@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import { checkIns } from "../db/schema";
 import type { MirraEnv } from "../env";
+import { getCoachAdvisor, hasOpenAi } from "../lib/coach-advisor";
 import { msToUnix } from "../lib/dates";
 import { newId } from "../lib/id";
 import { parseBody } from "../lib/validate";
@@ -43,6 +44,20 @@ checkInRoutes.post("/v1/check-ins", requireAuth, async (c) => {
       },
     });
 
+  let coachMessage: string | undefined;
+  if (hasOpenAi(c.env)) {
+    try {
+      const advise = await getCoachAdvisor(c.env, db).advise({
+        userId,
+        status: body.status,
+        note: body.note ?? undefined,
+      });
+      coachMessage = advise.message;
+    } catch {
+      // Non-fatal — check-in already persisted.
+    }
+  }
+
   const response: CheckInResponse = {
     id,
     localDate: body.localDate,
@@ -50,6 +65,7 @@ checkInRoutes.post("/v1/check-ins", requireAuth, async (c) => {
     note: body.note ?? null,
     triggeredRebuild,
     createdAt: msToUnix(now) ?? Date.now(),
+    ...(coachMessage ? { coachMessage } : {}),
   };
   return c.json(response, 201);
 });

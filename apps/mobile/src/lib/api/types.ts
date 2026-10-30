@@ -132,3 +132,24 @@ export type FuelTodayResponse = {
   readonly caloriesLogged?: number;
   readonly meals: readonly Meal[];
 };
+
+export type CoachReadiness = "push" | "rest";
+
+export type CoachVector = {
+  readonly id: string;
+  readonly title: string;
+  readonly detail: string;
+  readonly recommended?: boolean;
+};
+
+export type CoachAdviseBody = {
+  readonly readiness: CoachReadiness;
+  readonly localDate?: string;
+  readonly vectorId?: string;
+};
+
+export type CoachAdviseResponse = {
+  readonly message: string;
+  readonly vectors?: readonly CoachVector[];
+  readonly coachMessage?: string;
+};

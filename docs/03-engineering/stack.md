@@ -42,7 +42,7 @@
 | Async jobs | **Queues** | Plan generate, rebuild, push fan-out |
 | Secrets | Wrangler secrets / CF Secrets Store | Never in git / client |
 | Auth server | **Better Auth** on Worker | Apple / Google / email |
-| AI | Provider behind interface (`PlanGenerator`) | Workers AI **or** OpenAI/Anthropic — env-swappable |
+| AI | `PlanGenerator` + `CoachAdvisor` | **OpenAI live** when `OPENAI_API_KEY` set (model via `OPENAI_MODEL`, default `gpt-4o-mini`); else heuristic fallback. Chat Completions JSON mode; usage metered to console + optional `audit_log`. |
 | Observability | CF Workers logs + optional PostHog | No PII in analytics props |
 
 ## Payments (important)

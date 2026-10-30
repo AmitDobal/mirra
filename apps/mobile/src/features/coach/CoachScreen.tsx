@@ -1,8 +1,9 @@
 import { router } from "expo-router";
 import { Bed, Check, Zap } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
+import { copy } from "@/content/copy";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -12,37 +13,21 @@ import { usePlanStore } from "@/stores/plan-store";
 
 import { useCoachStore } from "./coach-store";
 
-const VECTORS = [
-  {
-    id: "missed",
-    title: "Missed Session Recalibration",
-    recommended: true,
-    detail: "Redistribute missed volume across remaining microcycle days.",
-  },
-  {
-    id: "deload",
-    title: "Deload / Low Readiness",
-    recommended: false,
-    detail: "Drop load and swap high-strain compounds for active flow.",
-  },
-  {
-    id: "express",
-    title: "20-Min Express Compression",
-    recommended: false,
-    detail: "High-density supersets preserving top compound mechanics.",
-  },
-] as const;
-
-/** S20 Daily check-in — SQLite + rebuild on skip. */
+/** S20 Daily check-in — AI advise + SQLite rebuild on skip. */
 export const CoachScreen = () => {
+  const c = copy.coach;
   const readiness = useCoachStore((s) => s.readiness);
   const vectorId = useCoachStore((s) => s.vectorId);
   const notice = useCoachStore((s) => s.notice);
   const weekLogged = useCoachStore((s) => s.weekLogged);
+  const adviseMessage = useCoachStore((s) => s.adviseMessage);
+  const vectors = useCoachStore((s) => s.vectors);
+  const adviseLoading = useCoachStore((s) => s.adviseLoading);
   const setReadiness = useCoachStore((s) => s.setReadiness);
   const setVectorId = useCoachStore((s) => s.setVectorId);
   const submitCheckIn = useCoachStore((s) => s.submitCheckIn);
   const hydrate = useCoachStore((s) => s.hydrate);
+  const fetchAdvise = useCoachStore((s) => s.fetchAdvise);
   const keep = useCoachStore((s) => s.keep);
   const [busy, setBusy] = useState(false);
   const meals = useFuelStore((s) => s.meals);
@@ -55,19 +40,17 @@ export const CoachScreen = () => {
     void hydrateFuel();
   }, [hydrate, hydrateFuel]);
 
+  useEffect(() => {
+    void fetchAdvise();
+  }, [fetchAdvise, readiness]);
+
   const dateLabel = new Date().toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
-  const liftDays =
-    plan?.days.filter((d) => d.workout != null).length ?? 0;
-  const title =
-    readiness === "rest" ? "Recovery preferred" : "Ready to adapt";
-  const body =
-    readiness === "rest"
-      ? "We'll shift volume and keep your streak intact."
-      : "Tell Mirra what changed so the microcycle stays honest.";
+  const liftDays = plan?.days.filter((d) => d.workout != null).length ?? 0;
+  const title = readiness === "rest" ? c.titleRest : c.titlePush;
 
   const handleSubmit = async () => {
     if (busy) return;
@@ -86,8 +69,8 @@ export const CoachScreen = () => {
     <ScreenScroll>
       <View className="mb-space-md flex-row items-center justify-between">
         <View>
-          <CapsLabel tone="lime">Mirra Coach</CapsLabel>
-          <Text className="font-headline text-headline-lg text-on-surface">Daily Check In</Text>
+          <CapsLabel tone="lime">{c.brand}</CapsLabel>
+          <Text className="font-headline text-headline-lg text-on-surface">{c.title}</Text>
         </View>
         <View className="h-11 w-11 items-center justify-center rounded-full bg-primary-fixed">
           <Zap size={20} color={color.onPrimaryFixed} />
@@ -96,25 +79,34 @@ export const CoachScreen = () => {
 
       <CapsLabel>{dateLabel}</CapsLabel>
       <Text className="mb-space-md font-body text-body-sm text-on-surface-variant">
-        {notice ?? "Check-in ready"}
+        {notice ?? c.checkInReady}
       </Text>
 
       <View className="mb-space-md rounded-lg bg-primary-fixed p-space-lg">
-        <CapsLabel tone="dark">Daily Calibration</CapsLabel>
+        <CapsLabel tone="dark">{c.calibration}</CapsLabel>
         <Text className="mt-space-sm font-headline text-headline-lg text-on-primary-fixed">
           {title}
         </Text>
-        <Text className="mt-space-sm font-body-medium text-body-md text-on-primary-fixed/85">
-          {body}
-        </Text>
+        {adviseLoading ? (
+          <View className="mt-space-sm flex-row items-center gap-2">
+            <ActivityIndicator color={color.onPrimaryFixed} />
+            <Text className="font-body-medium text-body-md text-on-primary-fixed/85">
+              {c.loading}
+            </Text>
+          </View>
+        ) : (
+          <Text className="mt-space-sm font-body-medium text-body-md text-on-primary-fixed/85">
+            {adviseMessage}
+          </Text>
+        )}
         <View className="mt-space-md flex-row gap-space-sm">
           <Chip
-            label="Ready to Push"
+            label={c.push}
             active={readiness === "push"}
             onPress={() => setReadiness("push")}
           />
           <Chip
-            label="Body Needs Rest"
+            label={c.rest}
             Icon={Bed}
             active={readiness === "rest"}
             onPress={() => setReadiness("rest")}
@@ -142,8 +134,8 @@ export const CoachScreen = () => {
         </View>
       </View>
 
-      <CapsLabel className="mb-space-sm">Select Recalibration Vector</CapsLabel>
-      {VECTORS.map((v) => {
+      <CapsLabel className="mb-space-sm">{c.vectorsLabel}</CapsLabel>
+      {vectors.map((v) => {
         const selected = vectorId === v.id;
         return (
           <Pressable
@@ -177,18 +169,16 @@ export const CoachScreen = () => {
       })}
 
       <LimeCta
-        label={busy ? "Submitting…" : "Submit check-in"}
+        label={busy ? c.submitting : c.submit}
         onPress={() => void handleSubmit()}
       />
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Keep original schedule"
+        accessibilityLabel={c.keep}
         onPress={() => void handleKeep()}
         className="mt-space-md items-center py-space-sm"
       >
-        <Text className="font-label text-label-md text-on-surface-variant">
-          Keep original schedule anyway
-        </Text>
+        <Text className="font-label text-label-md text-on-surface-variant">{c.keep}</Text>
       </Pressable>
     </ScreenScroll>
   );

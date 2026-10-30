@@ -5,5 +5,6 @@ export * from "./onboarding";
 export * from "./plans";
 export * from "./today";
 export * from "./check-ins";
+export * from "./coach";
 export * from "./fuel";
 export * from "./workouts";

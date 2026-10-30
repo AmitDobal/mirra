@@ -13,4 +13,6 @@ export type MirraEnv = {
   /** Optional AI / auth secrets — set via wrangler secrets later. */
   BETTER_AUTH_SECRET?: string;
   OPENAI_API_KEY?: string;
+  /** Chat model id; defaults to gpt-4o-mini when unset. */
+  OPENAI_MODEL?: string;
 };

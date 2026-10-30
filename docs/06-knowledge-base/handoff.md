@@ -24,6 +24,18 @@
 
 **Gaps:** plan job status is `done` (not `ready`/`completed`); Expo Go sim load not visually QA’d beyond openurl; mock chrome on Coach/You/Progress/Complete/LogMeal.
 
+## 2026-10-31 — OpenAI co-coach live
+
+**Done**
+- [OpenAI PlanGenerator + Coach API](7e3b1ae8-66d8-4079-9d2f-6fc30c660007) — `generator: openai`, `/v1/coach/advise`, check-in `coachMessage`
+- [Mobile AI Coach UI wire](13d84708-9c92-45d3-a3aa-9c651a12c453)
+
+**Ops:** restart wrangler (picks `.dev.vars`); Expo reload Coach tab.
+
+## 2026-10-31 — G3 AI Coach UI landed
+
+**Done:** Coach UI wired (see above).
+
 ## 2026-10-31 — G2-HOME tabs wired
 
 **Done:** [Wire all tab screen actions](2c52e764-3cbb-4e78-8e82-1948ff263181) — Today/Fuel/Workout/Coach/Progress/You live actions.
@@ -52,18 +64,22 @@
 
 **Decision:** Mobile **expo-sqlite local-first** + CF D1 API write-through.
 
-## 2026-10-31 — GOAL kickoff (running app)
+## 2026-10-31 — Build wave 1 complete → integrate
 
-**Objective:** Stitch-faithful Mirra, Expo + Hono API, RevenueCat port, core flows, tested & running.
-
-**Parallel builders (path-locked):**
-- [Download Stitch AIDA assets](7751f527-186e-4af4-9b2b-0f1635e9afd5)
+**Landed**
+- [Download Stitch AIDA assets](7751f527-186e-4af4-9b2b-0f1635e9afd5) 28/28
 - [Onboarding screens S01-S14](c153c727-e160-44d0-b7bb-4580e887c26c)
 - [Tab screens S15-S24 shells](9e144154-c923-4e01-936e-ebbad8b7763b)
 - [API core flow routes](ad1aaff0-c756-4c15-a67f-6d1ed7b9ac20)
 - [RevenueCat port + API client](d367ffea-8f7e-4684-a6ff-186aff84f15e)
 
-**PM:** orchestrate only; next wave = integrate + tester after returns.
+**Next (wave 2 agents)**
+- Integrate API/purchases/assets into screens
+- Fix typecheck; tester smoke until app runs
+
+## 2026-10-31 — GOAL kickoff (running app)
+
+**Objective:** Stitch-faithful Mirra running + tested.
 
 ## 2026-10-31 — W1-3/W1-4 API + contracts landed
 

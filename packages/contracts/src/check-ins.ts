@@ -22,6 +22,8 @@ export const CheckInResponseSchema = z.object({
   note: z.string().nullable(),
   triggeredRebuild: z.boolean(),
   createdAt: z.number().int(),
+  /** Present when OpenAI coach advise runs after check-in. */
+  coachMessage: z.string().optional(),
 });
 
 export type CheckInBody = z.infer<typeof CheckInBodySchema>;

@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { MotiView } from "moti";
+import { MotiView, type MotiTransition } from "moti";
 import { useEffect, useRef } from "react";
 import { Image, Text, View } from "react-native";
 
@@ -83,12 +83,14 @@ const GeneratingScreen = () => {
               key={i}
               from={{ opacity: 0.35 }}
               animate={{ opacity: 0.9 }}
-              transition={{
-                type: "timing",
-                duration: 900,
-                loop: true,
-                delay: i * 120,
-              }}
+              transition={
+                {
+                  type: "timing",
+                  duration: 900,
+                  loop: true,
+                  delay: i * 120,
+                } as MotiTransition
+              }
               className="h-3 rounded-full bg-surface-container-high"
               style={{ width: `${w * 100}%` }}
             >
@@ -102,7 +104,7 @@ const GeneratingScreen = () => {
         <MotiView
           from={{ width: "20%" }}
           animate={{ width: "88%" }}
-          transition={{ type: "timing", duration: MIN_MS }}
+          transition={{ type: "timing", duration: MIN_MS } as MotiTransition}
           className="h-1 self-stretch rounded-full bg-primary-fixed"
         />
       </View>

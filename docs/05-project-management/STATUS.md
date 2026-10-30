@@ -7,7 +7,8 @@
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
 | API | https://mirra-api.amit-dobalwork.workers.dev |
-| Mobile day-test | Expo Go → [update](https://expo.dev/accounts/amitdobal141/projects/mirra/updates/4d10a299-539e-4f9e-bd33-32c6fdc70546) (`day-test` channel) |
+| Mobile | Expo SDK **58** (Expo Go 58) |
+| Mobile day-test | Expo Go → [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test` channel) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

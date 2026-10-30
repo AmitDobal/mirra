@@ -1,5 +1,11 @@
 # Handoff
 
+## 2026-10-31 — Upgraded to Expo SDK 58
+
+**Done:** Mobile `expo@~58` + aligned deps (RN 0.88); Moti transition casts; EAS Update republished for `exposdk:58.0.0` on `day-test`.
+
+**Open on phone:** https://expo.dev/accounts/amitdobal141/projects/mirra/updates → newest day-test → Open in Expo Go 58.
+
 ## 2026-10-31 — iOS day-test (laptop off)
 
 **Done:** Cloudflare `mirra-api` deployed; D1 migrate + OpenAI secrets; R2 `mirra-media`; EAS project + Update on branch/channel `day-test`.
@@ -7,7 +13,7 @@
 | | |
 | --- | --- |
 | API | https://mirra-api.amit-dobalwork.workers.dev |
-| Open on phone | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/4d10a299-539e-4f9e-bd33-32c6fdc70546 → Open in Expo Go |
+| Open on phone | https://expo.dev/accounts/amitdobal141/projects/mirra/updates → Open in Expo Go |
 | Runbook | `docs/09-runbooks/ios-day-test.md` |
 
 **Next:** Use Expo Go for ~1 day; note bugs. Republish with `eas update --branch day-test` after JS fixes. Turn off `ALLOW_DEV_USER_HEADER` before real prod.

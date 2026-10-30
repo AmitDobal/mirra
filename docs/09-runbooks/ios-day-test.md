@@ -14,18 +14,18 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/4d10a299-539e-4f9e-bd33-32c6fdc70546 |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a18e95-5968-7048-a662-b00a59a9c9cf |
+| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/666b8927-281d-4113-99cc-766842ddb5b1 |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a18e9c-e34d-75dc-b0df-d36546645a8c |
 | Branch / channel | `day-test` |
-| Runtime | `exposdk:57.0.0` (Expo Go SDK 57) |
+| Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
 
 ### Open on phone (laptop can be off)
 
-1. Install **Expo Go** from the App Store (SDK 57 compatible).
+1. Install **Expo Go** from the App Store (SDK 58).
 2. Sign into Expo Go as **amitdobal141** (same account that owns the project).
-3. Open the update page on the phone Safari, or paste the iOS manifest URL into Expo Go:
-   - Update dashboard: https://expo.dev/accounts/amitdobal141/projects/mirra/updates/4d10a299-539e-4f9e-bd33-32c6fdc70546  
-   - Tap **Open in Expo Go**
+3. Open the latest update on the phone (link refreshed after each `eas update`):
+   - Project updates: https://expo.dev/accounts/amitdobal141/projects/mirra/updates  
+   - Tap the newest **day-test** update → **Open in Expo Go**
 4. Phone needs **internet** for AI coach / plan generate (OpenAI via Worker). Local SQLite still works offline for logged data.
 
 ### Redeploy API after code changes

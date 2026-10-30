@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { MotiView } from "moti";
+import { MotiView, type MotiTransition } from "moti";
 import { useEffect } from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,7 +35,7 @@ const SplashScreen = () => {
       <MotiView
         from={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "timing", duration: 700 }}
+        transition={{ type: "timing", duration: 700 } as MotiTransition}
         className="items-center"
       >
         <Text

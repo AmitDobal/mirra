@@ -5,12 +5,13 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "start:go": "expo start --go",
+    "start:go": "expo start --go --clear",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "update:day-test": "EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 eas-cli update --branch day-test --environment preview --non-interactive"
   },
   "dependencies": {
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",

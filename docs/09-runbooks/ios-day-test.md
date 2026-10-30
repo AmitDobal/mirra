@@ -14,8 +14,8 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/666b8927-281d-4113-99cc-766842ddb5b1 |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a18e9c-e34d-75dc-b0df-d36546645a8c |
+| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/a0b08188-9f2d-4b6e-a983-db975f215aa9 |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a18ea4-4bc1-75cf-9308-f9e404ee3b5c |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
 

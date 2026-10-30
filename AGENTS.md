@@ -27,6 +27,7 @@ Mirror backend patterns from:
 - **PM** → `PROMPT-PM.md` — STATUS, handoff, dispatch. No feature code.
 - **Builders** → one ticket, path index, ≤400 word return.
 - Files ≤ **300** lines (prefer 250). Theme tokens; no hex in UI. Zod contracts.
+- **Integrations = ports + adapters.** Never call OpenAI / RevenueCat / R2 / etc. from UI or routes directly. Factories pick the provider (`AI_PROVIDER`, purchases stub vs RC). See `docs/03-engineering/integrations.md`. New vendor = new adapter + factory case, same port.
 
 ## Skills
 

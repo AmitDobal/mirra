@@ -13,6 +13,25 @@ export const coachRoutes = new Hono<{
   Variables: AuthVars;
 }>();
 
+const readinessToScore = (
+  readiness: number | "push" | "rest" | undefined,
+): number | undefined => {
+  if (typeof readiness === "number") return readiness;
+  if (readiness === "push") return 8;
+  if (readiness === "rest") return 3;
+  return undefined;
+};
+
+const statusFromBody = (
+  status: string | undefined,
+  readiness: number | "push" | "rest" | undefined,
+): string => {
+  if (status) return status;
+  if (readiness === "rest") return "skipped";
+  if (readiness === "push") return "partial";
+  return "partial";
+};
+
 coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
   const body = parseBody(CoachAdviseBodySchema, await c.req.json());
   const userId = c.get("userId");
@@ -20,16 +39,17 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
   const advisor = getCoachAdvisor(c.env, db);
   const result = await advisor.advise({
     userId,
-    readiness: body.readiness,
-    status: body.status,
+    readiness: readinessToScore(body.readiness),
+    status: statusFromBody(body.status, body.readiness),
     note: body.note,
     vectorId: body.vectorId,
-    context: body.context,
+    context: body.context ?? body.localDate,
   });
   const response: CoachAdviseResponse = {
     message: result.message,
     vectors: result.vectors,
     rebuildSuggested: result.rebuildSuggested,
+    coachMessage: result.message,
   };
   return c.json(response);
 });

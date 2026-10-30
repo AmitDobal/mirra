@@ -23,6 +23,7 @@
 | Forms / schemas | **Zod** | same |
 | Server state | **TanStack Query** | hitdm-app / tearead |
 | Secure storage | **expo-secure-store** | hitdm-app |
+| Local DB | **expo-sqlite** (local-first; sync to D1) | lowline |
 | Media | expo-image, image-picker, image-manipulator, camera | tearead |
 | Haptics / push | expo-haptics, expo-notifications | lowline |
 | Payments | **RevenueCat** (StoreKit / Play Billing) | AppForge adapters |

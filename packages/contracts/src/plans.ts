@@ -75,6 +75,28 @@ export const CurrentPlanResponseSchema = z.object({
   workouts: z.array(PlanWorkoutSchema),
 });
 
+export const PlanRebuildPreviewBodySchema = z.object({
+  checkInId: z.string().min(1).optional(),
+  reason: z.string().min(1).max(500),
+});
+
+export const PlanDiffSchema = z.object({
+  field: z.string(),
+  before: z.unknown(),
+  after: z.unknown(),
+});
+
+export const PlanRebuildPreviewResponseSchema = z.object({
+  before: CurrentPlanResponseSchema,
+  after: CurrentPlanResponseSchema,
+  diffs: z.array(PlanDiffSchema),
+  previewToken: z.string(),
+});
+
+export const PlanRebuildApplyBodySchema = z.object({
+  previewToken: z.string().min(1),
+});
+
 export type PlanGenerateBody = z.infer<typeof PlanGenerateBodySchema>;
 export type PlanGenerateResponse = z.infer<typeof PlanGenerateResponseSchema>;
 export type PlanJobResponse = z.infer<typeof PlanJobResponseSchema>;
@@ -82,3 +104,7 @@ export type PlanJobStatus = z.infer<typeof PlanJobStatusSchema>;
 export type PlanStatus = z.infer<typeof PlanStatusSchema>;
 export type CurrentPlanResponse = z.infer<typeof CurrentPlanResponseSchema>;
 export type PlanSummary = z.infer<typeof PlanSummarySchema>;
+export type PlanRebuildPreviewBody = z.infer<typeof PlanRebuildPreviewBodySchema>;
+export type PlanDiff = z.infer<typeof PlanDiffSchema>;
+export type PlanRebuildPreviewResponse = z.infer<typeof PlanRebuildPreviewResponseSchema>;
+export type PlanRebuildApplyBody = z.infer<typeof PlanRebuildApplyBodySchema>;

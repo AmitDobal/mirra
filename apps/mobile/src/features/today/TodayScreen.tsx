@@ -1,18 +1,63 @@
 import { router } from "expo-router";
 import { Bell, ChevronLeft, ChevronRight, Footprints, Play, Plus, Zap } from "lucide-react-native";
+import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
+import { selectLoggedKcal, useFuelStore } from "@/features/fuel/fuel-store";
+import { useWorkoutStore } from "@/features/workout/workout-store";
 
-import { todayMock as m } from "./mock";
+import { useTodayStore } from "./today-store";
 
-/** S15 Today home — lime focus banner, stats, start workout. */
+/** S15 Today home — SQLite plan + fuel. */
 export const TodayScreen = () => {
-  const handleStart = () => router.push("/workout/live");
-  const handleFuel = () => router.push("/(tabs)/fuel");
+  const workout = useTodayStore((s) => s.workout);
+  const weekDays = useTodayStore((s) => s.weekDays);
+  const dayIndex = useTodayStore((s) => s.dayIndex);
+  const checkInDue = useTodayStore((s) => s.checkInDue);
+  const notice = useTodayStore((s) => s.notice);
+  const kcalTarget = useTodayStore((s) => s.kcalTarget);
+  const hydrate = useTodayStore((s) => s.hydrate);
+  const swapDay = useTodayStore((s) => s.swapDay);
+  const shiftWeek = useTodayStore((s) => s.shiftWeek);
+  const setNotice = useTodayStore((s) => s.setNotice);
+  const meals = useFuelStore((s) => s.meals);
+  const target = useFuelStore((s) => s.target);
+  const hydrateFuel = useFuelStore((s) => s.hydrate);
+  const startWorkout = useWorkoutStore((s) => s.start);
+
+  useEffect(() => {
+    void hydrate();
+    void hydrateFuel();
+  }, [hydrate, hydrateFuel]);
+
+  const logged = selectLoggedKcal(meals);
+  const fuelTarget = target || kcalTarget || 0;
+  const remaining = Math.max(0, fuelTarget - logged);
+  const title = workout?.title ?? "Rest / recovery";
+  const duration = workout?.durationMin ?? 0;
+  const moves = workout?.exercises.length ?? 0;
+  const detail =
+    workout?.exercises.map((e) => e.name).slice(0, 4).join(", ") ||
+    "No lifts scheduled for this day";
+  const activeDay = weekDays[dayIndex];
+  const strip =
+    weekDays.length > 0
+      ? weekDays.slice(0, 7).map((d, i) => ({
+          d: Number(d.date.slice(-2)) || i + 1,
+          active: i === dayIndex % 7,
+        }))
+      : Array.from({ length: 7 }, (_, i) => ({
+          d: new Date().getDate() - 3 + i,
+          active: i === 3,
+        }));
+
+  const handleStart = () => {
+    void startWorkout(workout).then(() => router.push("/workout/live"));
+  };
 
   return (
     <ScreenScroll>
@@ -24,28 +69,60 @@ export const TodayScreen = () => {
           </Text>
         </View>
         <View className="flex-row gap-space-sm">
-          <IconBtn label="Notifications" Icon={Bell} />
-          <View className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high">
+          <IconBtn
+            label="Notifications"
+            Icon={Bell}
+            onPress={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open profile"
+            onPress={() => router.push("/(tabs)/you")}
+            className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high"
+          >
             <Text className="font-label-bold text-label-md text-primary-fixed">A</Text>
-          </View>
+          </Pressable>
         </View>
       </View>
+
+      {notice ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => useTodayStore.getState().clearNotice()}
+          className="mb-space-sm rounded-full bg-primary-fixed/20 px-3 py-1.5"
+        >
+          <CapsLabel tone="lime">{notice}</CapsLabel>
+        </Pressable>
+      ) : null}
+
+      {checkInDue ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open check-in"
+          onPress={() => router.push("/(tabs)/coach")}
+          className="mb-space-md self-start rounded-full bg-primary-fixed px-3 py-1.5"
+        >
+          <CapsLabel tone="dark">Check-in</CapsLabel>
+        </Pressable>
+      ) : null}
 
       <View className="mb-space-md rounded-lg bg-surface-container-low p-space-md">
         <View className="mb-space-sm flex-row items-center justify-between">
           <View>
-            <CapsLabel>{m.phase}</CapsLabel>
-            <Text className="font-headline-sm text-headline-sm text-on-surface">{m.month}</Text>
+            <CapsLabel>{activeDay?.label ?? activeDay?.kind ?? "This week"}</CapsLabel>
+            <Text className="font-headline-sm text-headline-sm text-on-surface">
+              {activeDay?.date ?? new Date().toISOString().slice(0, 10)}
+            </Text>
           </View>
           <View className="flex-row gap-1 rounded-full bg-surface-container-high p-1">
-            <IconBtn label="Previous week" Icon={ChevronLeft} small />
-            <IconBtn label="Next week" Icon={ChevronRight} small />
+            <IconBtn label="Previous week" Icon={ChevronLeft} small onPress={() => shiftWeek(-1)} />
+            <IconBtn label="Next week" Icon={ChevronRight} small onPress={() => shiftWeek(1)} />
           </View>
         </View>
         <View className="flex-row justify-between">
-          {m.days.map((day) => (
+          {strip.map((day) => (
             <View
-              key={day.d}
+              key={`${day.d}-${day.active}`}
               className={`h-9 w-9 items-center justify-center rounded-full ${
                 day.active ? "bg-primary-fixed" : ""
               }`}
@@ -69,10 +146,10 @@ export const TodayScreen = () => {
             <CapsLabel tone="dark">Today&apos;s Focus</CapsLabel>
           </View>
           <Text className="font-headline text-headline-lg leading-tight text-on-primary-fixed">
-            {m.focus.title}
+            {title}
           </Text>
           <Text className="mt-1 font-body-medium text-body-sm text-on-primary-fixed/85">
-            {m.focus.subtitle}
+            {workout?.focus ?? "Recovery focus"}
           </Text>
         </View>
         <View className="h-28 w-28 items-end justify-end overflow-hidden rounded-full bg-on-primary-fixed/10">
@@ -82,30 +159,24 @@ export const TodayScreen = () => {
 
       <View className="mb-space-md flex-row gap-space-sm">
         <View className="min-h-[148px] flex-1 justify-between rounded-lg bg-secondary p-space-md">
-          <CapsLabel tone="dark">Daily Motion</CapsLabel>
+          <CapsLabel tone="dark">Fuel target</CapsLabel>
           <View>
             <Text className="font-display text-display-metric text-on-secondary-fixed">
-              {m.steps.value}
+              {fuelTarget || "—"}
             </Text>
-            <Text className="font-body text-body-sm text-on-secondary-fixed">Steps taken</Text>
-            <Text className="mt-1 font-label-bold text-label-md text-on-secondary-fixed">
-              {m.steps.delta}
-            </Text>
+            <Text className="font-body text-body-sm text-on-secondary-fixed">kcal / day</Text>
           </View>
         </View>
         <View className="min-h-[148px] flex-1 justify-between rounded-lg bg-surface-container-high p-space-md">
-          <CapsLabel>Target Pace</CapsLabel>
-          <View>
-            <Text className="font-headline text-headline-md text-on-surface">{m.pace.label}</Text>
-            <Text className="font-display text-display-metric text-primary-fixed">{m.pace.pct}</Text>
-          </View>
-          <View>
-            <Text className="font-display text-headline-md text-on-surface">{m.kcal.value}</Text>
-            <Text className="font-body text-body-sm text-on-surface-variant">Active kcal</Text>
-            <View className="mt-1 self-start rounded-full bg-surface-container-highest px-2 py-0.5">
-              <CapsLabel tone="lime">{m.kcal.tag}</CapsLabel>
-            </View>
-          </View>
+          <CapsLabel>Logged</CapsLabel>
+          <Text className="font-headline text-headline-md text-on-surface">
+            {moves} moves
+          </Text>
+          <Text className="font-display text-display-metric text-primary-fixed">
+            {fuelTarget ? Math.min(100, Math.round((logged / fuelTarget) * 100)) : 0}%
+          </Text>
+          <Text className="font-display text-headline-md text-on-surface">{logged}</Text>
+          <Text className="font-body text-body-sm text-on-surface-variant">Logged kcal</Text>
         </View>
       </View>
 
@@ -113,17 +184,12 @@ export const TodayScreen = () => {
         <View className="p-space-md">
           <View className="mb-space-sm flex-row items-center justify-between">
             <CapsLabel>Today&apos;s Routine</CapsLabel>
-            <Text className="font-body text-body-sm text-on-surface-variant">{m.routine.meta}</Text>
+            <Text className="font-body text-body-sm text-on-surface-variant">
+              {duration} mins · {moves} movements
+            </Text>
           </View>
-          <Text className="font-headline-sm text-headline-sm text-on-surface">{m.routine.title}</Text>
-          <Text className="mt-1 font-body text-body-md text-on-surface-variant">{m.routine.detail}</Text>
-          <View className="mt-space-sm flex-row flex-wrap gap-space-xs">
-            {m.routine.tags.map((t) => (
-              <View key={t} className="rounded-full bg-surface-dim px-3 py-1">
-                <CapsLabel tone="lime">{t}</CapsLabel>
-              </View>
-            ))}
-          </View>
+          <Text className="font-headline-sm text-headline-sm text-on-surface">{title}</Text>
+          <Text className="mt-1 font-body text-body-md text-on-surface-variant">{detail}</Text>
         </View>
         <View className="flex-row gap-space-sm px-space-md pb-space-md">
           <LimeCta
@@ -132,22 +198,22 @@ export const TodayScreen = () => {
             className="flex-1"
             icon={<Play size={18} color={color.onPrimaryFixed} fill={color.onPrimaryFixed} />}
           />
-          <LimeCta label="Swap" onPress={() => undefined} variant="dark" className="px-space-md" />
+          <LimeCta label="Swap" onPress={swapDay} variant="dark" className="px-space-md" />
         </View>
       </View>
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Open fuel"
-        onPress={handleFuel}
+        accessibilityLabel="Log meal"
+        onPress={() => router.push("/(tabs)/log-meal")}
         className="flex-row items-center justify-between rounded-lg bg-surface-container-low p-space-md"
       >
         <View>
           <Text className="font-headline-sm text-headline-sm text-on-surface">
-            {m.fuel.logged} / {m.fuel.target}
+            {logged} / {fuelTarget || "—"}
           </Text>
           <Text className="font-body text-body-sm text-on-surface-variant">
-            Calories logged · {m.fuel.remaining} kcal remaining
+            Calories logged · {remaining} kcal remaining
           </Text>
         </View>
         <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-container-high">
@@ -162,14 +228,17 @@ const IconBtn = ({
   label,
   Icon,
   small,
+  onPress,
 }: {
   label: string;
   Icon: typeof Bell;
   small?: boolean;
+  onPress?: () => void;
 }) => (
   <Pressable
     accessibilityRole="button"
     accessibilityLabel={label}
+    onPress={onPress}
     className={`items-center justify-center rounded-full ${small ? "h-8 w-8" : "h-11 w-11"}`}
   >
     <Icon size={small ? 18 : 22} color={color.onSurface} />

@@ -14,14 +14,16 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { ensureMirraDb } from "@/lib/local";
 import { color } from "@/theme/tokens";
 
 void SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
+  const [dbSettled, setDbSettled] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
@@ -32,12 +34,25 @@ const RootLayout = () => {
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    void ensureMirraDb()
+      .catch((error: unknown) => {
+        console.warn("[mirra] ensureMirraDb failed", error);
+      })
+      .finally(() => {
+        setDbSettled(true);
+      });
+  }, []);
+
+  const fontsReady = fontsLoaded || Boolean(fontError);
+  const appReady = fontsReady && dbSettled;
+
+  useEffect(() => {
+    if (appReady) {
       void SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [appReady]);
 
-  if (!fontsLoaded && !fontError) {
+  if (!appReady) {
     return null;
   }
 

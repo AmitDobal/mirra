@@ -34,7 +34,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiBaseUrl": "http://localhost:8787"
+      "apiBaseUrl": "http://localhost:8787",
+      "mirraUserId": "dev-user-1"
     }
   }
 }

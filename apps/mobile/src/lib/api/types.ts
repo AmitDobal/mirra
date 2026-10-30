@@ -36,7 +36,12 @@ export type OnboardingPutBody = {
 
 export type PlanGenerateResponse = { readonly jobId: string };
 
-export type PlanJobStatus = "queued" | "running" | "succeeded" | "failed";
+export type PlanJobStatus =
+  | "queued"
+  | "running"
+  | "done"
+  | "succeeded"
+  | "failed";
 
 export type PlanJobResponse = {
   readonly status: PlanJobStatus;

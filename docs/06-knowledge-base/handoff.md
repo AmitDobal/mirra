@@ -1,5 +1,57 @@
 # Handoff
 
+## G2-TEST results
+
+**Verdict:** typecheck + curl **green** — do not mark product Done yet (mock-heavy tabs remain).
+
+| Check | Result |
+| --- | --- |
+| `@mirra/contracts` typecheck | PASS |
+| `@mirra/api` typecheck | PASS |
+| `@mirra/mobile` typecheck | PASS (fixed `kind` → `HeuristicDay["kind"]` in `plan-persist.ts`) |
+| Curl `:8787` health | PASS 200 |
+| Curl onboarding PUT | PASS 200 |
+| Curl plans/generate → job | PASS 201 (`status=done`) |
+| Curl `/v1/today` | PASS 200 |
+| Curl workout session POST | PASS 201 |
+| Metro `:8081` | PASS (running); opened `exp://192.168.1.3:8081` on iPhone 16 Pro `A4780736-…` |
+
+**Mock still primary UI (features):**
+- Full/mostly mock: `YouScreen`, `CoachScreen`, `CompleteScreen`, `LogMealScreen`
+- Heavy mock + some live: `ProgressScreen`, `CompareScreen`, `RebuildScreen`
+- Live + mock fallbacks: `TodayScreen`, `FuelScreen`
+- Re-exports only: `*/index.ts` → `./mock`
+
+**Gaps:** plan job status is `done` (not `ready`/`completed`); Expo Go sim load not visually QA’d beyond openurl; mock chrome on Coach/You/Progress/Complete/LogMeal.
+
+## 2026-10-31 — G2-HOME tabs wired
+
+**Done:** [Wire all tab screen actions](2c52e764-3cbb-4e78-8e82-1948ff263181) — Today/Fuel/Workout/Coach/Progress/You live actions.
+
+**Done also:** [Onboarding memory→SQLite swap](4c263125-7401-471c-a04d-8ecc9a46af00) — plan/profile in `mirra.db`
+
+**G2-TEST:** [Mirra G2 tester smoke](26273549-2830-430a-8ee2-ae419dc3fe2c) — typecheck+curl+Expo open **PASS**; product not Done (mocks remain).
+
+**Done:** [Unmock remaining Mirra screens](b8da6f46-7b36-413e-a17f-7ea71d76b2d1) — screens off `./mock`, typecheck pass.
+
+**Done:** [listProgressPhotos + delete mocks](13406ecf-ff94-4e07-a832-538ed7b0464a)
+
+**G2 wave:** SQLite local-first + API workouts/rebuild + screens unmocked + typecheck/curl green. Push to `AmitDobal/mirra`.
+
+**Next:** typecheck + curl + Expo reload; push if green.
+
+## 2026-10-31 — G2-API + G2-ONB landed
+
+**Done:** API curl-green · onboarding generate wired · ensureMirraDb boot
+
+## 2026-10-31 — G2-SQL landed
+
+**Done:** [Mobile expo-sqlite local DB](b61bc6df-9113-4ed3-ab12-9ead0189f314)
+
+## 2026-10-31 — G2 working product (SQLite + wire all buttons)
+
+**Decision:** Mobile **expo-sqlite local-first** + CF D1 API write-through.
+
 ## 2026-10-31 — GOAL kickoff (running app)
 
 **Objective:** Stitch-faithful Mirra, Expo + Hono API, RevenueCat port, core flows, tested & running.

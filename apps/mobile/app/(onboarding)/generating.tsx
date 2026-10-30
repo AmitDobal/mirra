@@ -1,23 +1,41 @@
 import { router } from "expo-router";
 import { MotiView } from "moti";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
-import { OnboardingShell } from "@/features/onboarding";
+import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
+import { runOnboardingGenerate } from "@/features/onboarding/services/run-generate";
 
-const GEN_MS = 2200;
+const MIN_MS = 1600;
 
-/** S11 — Blocking generate beat (local stub, no API). */
+/** S11 — PUT onboarding → generate plan → week-reveal. */
 const GeneratingScreen = () => {
   const c = onboardingCopy.generating;
+  const setWeekPlan = useOnboardingStore((s) => s.setWeekPlan);
+  const started = useRef(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace("/(onboarding)/week-reveal");
-    }, GEN_MS);
-    return () => clearTimeout(timer);
-  }, []);
+    if (started.current) return;
+    started.current = true;
+
+    const startedAt = Date.now();
+    const answers = useOnboardingStore.getState();
+
+    void (async () => {
+      try {
+        const plan = await runOnboardingGenerate(answers);
+        setWeekPlan(plan);
+      } catch {
+        // runOnboardingGenerate already falls back locally; keep UX moving
+      } finally {
+        const wait = Math.max(0, MIN_MS - (Date.now() - startedAt));
+        setTimeout(() => {
+          router.replace("/(onboarding)/week-reveal");
+        }, wait);
+      }
+    })();
+  }, [setWeekPlan]);
 
   return (
     <OnboardingShell scroll={false}>
@@ -47,7 +65,7 @@ const GeneratingScreen = () => {
         <MotiView
           from={{ width: "20%" }}
           animate={{ width: "88%" }}
-          transition={{ type: "timing", duration: GEN_MS }}
+          transition={{ type: "timing", duration: MIN_MS }}
           className="h-1 self-stretch rounded-full bg-primary-fixed"
         />
       </View>

@@ -2,6 +2,8 @@ import {
   PlanGenerateBodySchema,
   type PlanJobResponse,
   type PlanJobStatus,
+  PlanRebuildApplyBodySchema,
+  PlanRebuildPreviewBodySchema,
 } from "@mirra/contracts";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
@@ -14,6 +16,7 @@ import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { loadCurrentPlan } from "../services/plan-loaders";
+import { applyRebuild, previewRebuild } from "../services/rebuild-plan";
 import { runPlanGenerateJob } from "../services/run-plan-job";
 
 export const planRoutes = new Hono<{
@@ -54,4 +57,19 @@ planRoutes.get("/v1/plans/jobs/:id", requireAuth, async (c) => {
 planRoutes.get("/v1/plans/current", requireAuth, async (c) => {
   const db = createDb(c.env.DB);
   return c.json(await loadCurrentPlan(db, c.get("userId")));
+});
+
+planRoutes.post("/v1/plans/rebuild/preview", requireAuth, async (c) => {
+  const body = parseBody(PlanRebuildPreviewBodySchema, await c.req.json());
+  const db = createDb(c.env.DB);
+  return c.json(
+    await previewRebuild(db, c.get("userId"), body.reason, body.checkInId),
+  );
+});
+
+planRoutes.post("/v1/plans/rebuild/apply", requireAuth, async (c) => {
+  const body = parseBody(PlanRebuildApplyBodySchema, await c.req.json());
+  const db = createDb(c.env.DB);
+  const plan = await applyRebuild(db, c.get("userId"), body.previewToken);
+  return c.json(plan);
 });

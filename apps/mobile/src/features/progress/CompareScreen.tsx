@@ -1,19 +1,69 @@
 import { router } from "expo-router";
 import { ArrowLeft, Share2 } from "lucide-react-native";
-import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Pressable, Share, Text, View } from "react-native";
 
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 
-import { compareMock as m } from "./mock";
+import { useProgressStore } from "./progress-store";
 
-/** S23 Mirror comparison. */
+const VIEWS = ["Front View", "Side Profile", "Back Lat"] as const;
+
+/** S23 Mirror comparison — two latest photos. */
 export const CompareScreen = () => {
-  const [view, setView] = useState<(typeof m.views)[number]>("Front View");
+  const [view, setView] = useState<(typeof VIEWS)[number]>("Front View");
+  const photos = useProgressStore((s) => s.photos);
+  const hydratePhotos = useProgressStore((s) => s.hydrate);
+  const a = photos[0] ?? null;
+  const b = photos[1] ?? null;
+
+  useEffect(() => {
+    void hydratePhotos();
+  }, [hydratePhotos]);
+
+  const left = a ?? { label: "Current · add a photo", uri: null as string | null };
+  const right = b ?? { label: "Baseline · add a photo", uri: null as string | null };
+
+  const daysDelta =
+    a && b
+      ? `${Math.max(1, Math.round((a.takenAt - b.takenAt) / 86_400_000))} days apart`
+      : "Need two photos";
+
+  const metrics = [
+    {
+      label: "Pose pair",
+      detail: `${a?.pose ?? "—"} vs ${b?.pose ?? "—"}`,
+      value: photos.length >= 2 ? "Ready" : "Wait",
+      tag: view,
+    },
+    {
+      label: "Time delta",
+      detail: daysDelta,
+      value: String(photos.length),
+      tag: "Photos",
+    },
+    {
+      label: "Notes",
+      detail: a?.note ?? "No notes yet",
+      value: b ? "2+" : "0–1",
+      tag: "Compare",
+    },
+  ];
+
   const handleBack = () => router.back();
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Mirra compare · ${left.label} vs ${right.label} (${view})`,
+      });
+    } catch {
+      Alert.alert("Share", "Could not open share sheet.");
+    }
+  };
 
   return (
     <ScreenScroll dockPad={false}>
@@ -30,20 +80,22 @@ export const CompareScreen = () => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Share"
-          onPress={() => undefined}
+          onPress={() => void handleShare()}
           className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high"
         >
           <Share2 size={18} color={color.onSurface} />
         </Pressable>
       </View>
 
-      <Text className="font-headline-sm text-headline-sm text-on-surface">{m.title}</Text>
+      <Text className="font-headline-sm text-headline-sm text-on-surface">
+        {photos.length >= 2 ? "Latest two check-ins" : "Add two photos to compare"}
+      </Text>
       <CapsLabel tone="lime" className="mt-1">
-        {m.days}
+        {view}
       </CapsLabel>
 
       <View className="my-space-md flex-row gap-space-xs">
-        {m.views.map((v) => (
+        {VIEWS.map((v) => (
           <Pressable
             key={v}
             accessibilityRole="button"
@@ -66,19 +118,21 @@ export const CompareScreen = () => {
 
       <View className="mb-space-md flex-row gap-space-sm">
         <View className="h-56 flex-1 items-center justify-center rounded-lg bg-surface-container-highest">
-          <CapsLabel>Current · Day 84</CapsLabel>
+          <CapsLabel>{left.label}</CapsLabel>
+          <Text className="mt-2 font-body text-body-sm text-on-surface-variant">
+            {left.uri ? "Photo attached" : "Placeholder"}
+          </Text>
         </View>
         <View className="h-56 flex-1 items-center justify-center rounded-lg bg-surface-container-high">
-          <CapsLabel>Baseline · Day 1</CapsLabel>
+          <CapsLabel>{right.label}</CapsLabel>
+          <Text className="mt-2 font-body text-body-sm text-on-surface-variant">
+            {right.uri ? "Photo attached" : "Placeholder"}
+          </Text>
         </View>
       </View>
 
-      <View className="mb-space-md self-center rounded-full bg-surface-container-low px-3 py-1">
-        <CapsLabel tone="lime">Ghost Alignment: ON · Drag to inspect</CapsLabel>
-      </View>
-
-      <CapsLabel className="mb-space-sm">Mirra Vision Engine · V2.4 Delta</CapsLabel>
-      {m.metrics.map((met) => (
+      <CapsLabel className="mb-space-sm">Compare summary</CapsLabel>
+      {metrics.map((met) => (
         <View
           key={met.label}
           className="mb-space-sm flex-row items-center justify-between rounded-lg bg-surface-container-low p-space-md"
@@ -94,20 +148,7 @@ export const CompareScreen = () => {
         </View>
       ))}
 
-      <View className="mb-space-md flex-row gap-space-sm">
-        <View className="flex-1 rounded-lg bg-surface-container-high p-space-md">
-          <CapsLabel>Active Consistency</CapsLabel>
-          <Text className="font-display text-headline-lg text-on-surface">{m.consistency}</Text>
-          <Text className="font-body text-body-sm text-on-surface-variant">42 of 48 workouts</Text>
-        </View>
-        <View className="flex-1 rounded-lg bg-surface-container-high p-space-md">
-          <CapsLabel>Postural Symmetry</CapsLabel>
-          <Text className="font-display text-headline-lg text-on-surface">{m.symmetry}</Text>
-          <Text className="font-body text-body-sm text-on-surface-variant">/100 balanced</Text>
-        </View>
-      </View>
-
-      <LimeCta label="Export Side-by-Side" onPress={() => undefined} />
+      <LimeCta label="Export Side-by-Side" onPress={() => void handleShare()} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Compare different dates"

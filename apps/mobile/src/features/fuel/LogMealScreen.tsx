@@ -1,22 +1,64 @@
 import { router } from "expo-router";
 import { Camera, CheckCircle2, Sparkles, X } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 
-import { logMealMock as m } from "./mock";
+import { useFuelStore } from "./fuel-store";
 
 const slots = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
-/** S19 Log meal modal. */
+const ADDS = [
+  { name: "Whey Shake", calories: 120, proteinG: 25, meta: "25g P" },
+  { name: "2 Large Eggs", calories: 140, proteinG: 12, meta: "12g P" },
+  { name: "Greek Yogurt", calories: 150, proteinG: 18, meta: "18g P" },
+] as const;
+
+/** S19 Log meal — SQLite + API write-through. */
 export const LogMealScreen = () => {
   const [slot, setSlot] = useState<(typeof slots)[number]>("Breakfast");
+  const [name, setName] = useState("Manual meal");
+  const [baseKcal, setBaseKcal] = useState("400");
+  const [baseProtein, setBaseProtein] = useState("30");
+  const [extras, setExtras] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const addMeal = useFuelStore((s) => s.addMeal);
+
+  const extraCals = extras.reduce(
+    (sum, n) => sum + (ADDS.find((a) => a.name === n)?.calories ?? 0),
+    0,
+  );
+  const extraP = extras.reduce(
+    (sum, n) => sum + (ADDS.find((a) => a.name === n)?.proteinG ?? 0),
+    0,
+  );
+  const kcal = (Number(baseKcal) || 0) + extraCals;
+  const protein = (Number(baseProtein) || 0) + extraP;
+  const carbs = Math.max(0, Math.round((kcal - protein * 4) * 0.55 / 4));
+  const fats = Math.max(0, Math.round((kcal - protein * 4 - carbs * 4) / 9));
+
   const handleClose = () => router.back();
-  const handleSave = () => router.back();
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    await addMeal({
+      name: extras.length ? `${name} + adds` : name,
+      calories: kcal,
+      proteinG: protein,
+      slot,
+      source: "manual",
+    });
+    setSaving(false);
+    router.back();
+  };
+
+  const toggleAdd = (n: string) => {
+    setExtras((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]));
+  };
 
   return (
     <ScreenScroll dockPad={false}>
@@ -30,8 +72,14 @@ export const LogMealScreen = () => {
           <X size={22} color={color.onSurface} />
         </Pressable>
         <Text className="font-headline-sm text-headline-sm text-on-surface">Log meal</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="Save" onPress={handleSave}>
-          <Text className="font-label-bold text-label-lg text-primary-fixed">Save</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Save"
+          onPress={() => void handleSave()}
+        >
+          <Text className="font-label-bold text-label-lg text-primary-fixed">
+            {saving ? "…" : "Save"}
+          </Text>
         </Pressable>
       </View>
 
@@ -60,56 +108,87 @@ export const LogMealScreen = () => {
       <View className="mb-space-md items-center rounded-lg bg-surface-container-low p-space-lg">
         <View className="mb-space-sm flex-row items-center gap-1 rounded-full bg-primary-fixed/20 px-3 py-1">
           <Sparkles size={14} color={color.primaryFixed} />
-          <CapsLabel tone="lime">{m.confidence}</CapsLabel>
+          <CapsLabel tone="lime">Manual entry</CapsLabel>
         </View>
         <View className="h-36 w-full items-center justify-center rounded-lg bg-surface-container-highest">
           <Camera size={40} color={color.onSurfaceVariant} />
           <Text className="mt-2 font-body text-body-sm text-on-surface-variant">
-            Vision Capture · Photo attached
+            Optional photo · snap from Fuel
           </Text>
         </View>
       </View>
 
-      <Text className="font-headline-sm text-headline-sm text-on-surface">{m.name}</Text>
+      <TextInput
+        accessibilityLabel="Meal name"
+        value={name}
+        onChangeText={setName}
+        className="mb-space-sm rounded-lg bg-surface-container-high px-space-md py-space-sm font-headline-sm text-headline-sm text-on-surface"
+        placeholderTextColor={color.onSurfaceVariant}
+        placeholder="Meal name"
+      />
+      <View className="mb-space-md flex-row gap-space-sm">
+        <TextInput
+          accessibilityLabel="Calories"
+          value={baseKcal}
+          onChangeText={setBaseKcal}
+          keyboardType="number-pad"
+          className="flex-1 rounded-lg bg-surface-container-high px-space-md py-space-sm font-display text-headline-md text-on-surface"
+          placeholder="kcal"
+          placeholderTextColor={color.onSurfaceVariant}
+        />
+        <TextInput
+          accessibilityLabel="Protein grams"
+          value={baseProtein}
+          onChangeText={setBaseProtein}
+          keyboardType="number-pad"
+          className="flex-1 rounded-lg bg-surface-container-high px-space-md py-space-sm font-display text-headline-md text-on-surface"
+          placeholder="protein g"
+          placeholderTextColor={color.onSurfaceVariant}
+        />
+      </View>
+
       <View className="mb-space-md mt-space-sm flex-row items-baseline gap-space-sm">
-        <Text className="font-display text-display-lg text-on-surface">{m.kcal}</Text>
+        <Text className="font-display text-display-lg text-on-surface">{kcal}</Text>
         <Text className="font-headline-sm text-headline-sm text-on-surface-variant">kcal</Text>
-        <View className="rounded-full bg-surface-container-high px-2 py-0.5">
-          <CapsLabel tone="lime">{m.goalPct}</CapsLabel>
-        </View>
       </View>
 
       <View className="mb-space-md flex-row gap-space-sm">
-        {m.macros.map((mac) => (
+        {[
+          { name: "Protein", g: protein },
+          { name: "Carbs", g: carbs },
+          { name: "Fats", g: fats },
+        ].map((mac) => (
           <View key={mac.name} className="flex-1 rounded-lg bg-surface-container-high p-space-md">
             <CapsLabel>{mac.name}</CapsLabel>
             <Text className="mt-1 font-headline text-headline-md text-on-surface">{mac.g}g</Text>
-            <Text className="font-body text-body-sm text-on-surface-variant">{mac.pct}</Text>
           </View>
         ))}
       </View>
 
-      <View className="mb-space-md rounded-lg bg-secondary-container p-space-md">
-        <CapsLabel>Mirra Engine v2.4 · Dynamic Sync</CapsLabel>
-        <Text className="mt-space-sm font-body text-body-md text-on-secondary-container">
-          {m.note}
-        </Text>
-      </View>
-
       <CapsLabel className="mb-space-sm">Quick Micro-Adds</CapsLabel>
-      {m.adds.map((a) => (
-        <View
-          key={a.name}
-          className="mb-space-xs flex-row items-center justify-between rounded-lg bg-surface-container-low px-space-md py-space-sm"
-        >
-          <Text className="font-body-medium text-body-md text-on-surface">{a.name}</Text>
-          <Text className="font-label text-label-md text-primary-fixed">{a.meta}</Text>
-        </View>
-      ))}
+      {ADDS.map((a) => {
+        const on = extras.includes(a.name);
+        return (
+          <Pressable
+            key={a.name}
+            accessibilityRole="button"
+            accessibilityState={{ selected: on }}
+            onPress={() => toggleAdd(a.name)}
+            className={`mb-space-xs flex-row items-center justify-between rounded-lg px-space-md py-space-sm ${
+              on ? "bg-primary-fixed/20" : "bg-surface-container-low"
+            }`}
+          >
+            <Text className="font-body-medium text-body-md text-on-surface">{a.name}</Text>
+            <Text className="font-label text-label-md text-primary-fixed">
+              {on ? "Added" : a.meta}
+            </Text>
+          </Pressable>
+        );
+      })}
 
       <LimeCta
-        label="Save meal"
-        onPress={handleSave}
+        label={saving ? "Saving…" : "Save meal"}
+        onPress={() => void handleSave()}
         className="mt-space-md"
         icon={<CheckCircle2 size={20} color={color.onPrimaryFixed} />}
       />

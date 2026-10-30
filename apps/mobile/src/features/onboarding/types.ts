@@ -37,6 +37,48 @@ export type SessionMinutes = 20 | 30 | 45 | 60;
 
 export type PaywallPlan = "annual" | "monthly";
 
+export type OnboardingPlanExercise = {
+  id: string;
+  name: string;
+  cue?: string | null;
+  targetSets: number;
+  targetReps: string;
+  restSec?: number | null;
+};
+
+export type OnboardingPlanWorkout = {
+  id: string;
+  title: string;
+  durationMin: number;
+  focus?: string | null;
+  exercises: OnboardingPlanExercise[];
+};
+
+export type OnboardingPlanDay = {
+  id: string;
+  dayIndex: number;
+  date: string;
+  kind: string;
+  label?: string | null;
+  workoutId?: string | null;
+  workout?: OnboardingPlanWorkout | null;
+};
+
+export type OnboardingWeekPlan = {
+  id: string;
+  version: number;
+  status: string;
+  weekStart: string;
+  summary?: {
+    kcalTarget?: number;
+    proteinG?: number;
+    outcomeLine?: string;
+  };
+  days: OnboardingPlanDay[];
+  workouts: OnboardingPlanWorkout[];
+  source: "api" | "local";
+};
+
 export type OnboardingAnswers = {
   goal: GoalId | null;
   experience: ExperienceId | null;
@@ -56,4 +98,5 @@ export type OnboardingAnswers = {
   mirrorSkipped: boolean;
   paywallPlan: PaywallPlan;
   completed: boolean;
+  weekPlan: OnboardingWeekPlan | null;
 };

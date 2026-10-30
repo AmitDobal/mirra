@@ -7,6 +7,7 @@ import type {
   GoalId,
   HeightUnit,
   OnboardingAnswers,
+  OnboardingWeekPlan,
   PaceId,
   PaywallPlan,
   SessionMinutes,
@@ -33,6 +34,7 @@ const defaultAnswers: OnboardingAnswers = {
   mirrorSkipped: false,
   paywallPlan: "annual",
   completed: false,
+  weekPlan: null,
 };
 
 type OnboardingStore = OnboardingAnswers & {
@@ -53,6 +55,7 @@ type OnboardingStore = OnboardingAnswers & {
   setFoodsToAvoid: (foodsToAvoid: string) => void;
   setMirrorSkipped: (mirrorSkipped: boolean) => void;
   setPaywallPlan: (paywallPlan: PaywallPlan) => void;
+  setWeekPlan: (weekPlan: OnboardingWeekPlan | null) => void;
   markCompleted: () => void;
   reset: () => void;
 };
@@ -85,6 +88,8 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   setFoodsToAvoid: (foodsToAvoid) => set({ foodsToAvoid }),
   setMirrorSkipped: (mirrorSkipped) => set({ mirrorSkipped }),
   setPaywallPlan: (paywallPlan) => set({ paywallPlan }),
+  setWeekPlan: (weekPlan) => set({ weekPlan }),
+  /** UI flag; SQLite `profiles.onboarding_completed_at` set in `saveOnboarding`. */
   markCompleted: () => set({ completed: true }),
   reset: () => set({ ...defaultAnswers }),
 }));

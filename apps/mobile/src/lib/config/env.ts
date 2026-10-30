@@ -34,8 +34,13 @@ export const env = {
     "apiBaseUrl",
     "http://127.0.0.1:8787",
   ),
-  /** Dev identity header until Better Auth lands. */
-  mirraUserId: readOptional("EXPO_PUBLIC_MIRRA_USER_ID", "mirraUserId"),
+  /** Dev identity header until Better Auth lands (`x-mirra-user-id`). */
+  mirraUserId: read(
+    "EXPO_PUBLIC_MIRRA_USER_ID",
+    "mirraUserId",
+    "dev-user-1",
+  ),
+
   revenueCatApiKey,
   /** Explicit flag + non-empty key required to leave the stub adapter. */
   revenueCatEnabled: revenueCatFlag && revenueCatApiKey.length > 0,

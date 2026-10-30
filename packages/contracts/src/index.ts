@@ -6,3 +6,4 @@ export * from "./plans";
 export * from "./today";
 export * from "./check-ins";
 export * from "./fuel";
+export * from "./workouts";

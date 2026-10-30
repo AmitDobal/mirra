@@ -1,5 +1,6 @@
 # dependencies
 node_modules/
+apps/mobile/pnpm-lock.yaml
 
 # Expo / mobile
 .expo/

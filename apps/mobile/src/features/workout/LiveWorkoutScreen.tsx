@@ -4,9 +4,11 @@ import {
   Flame,
   Heart,
   Pause,
+  Play,
   SkipForward,
   X,
 } from "lucide-react-native";
+import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { CapsLabel } from "@/ui/CapsLabel";
@@ -14,13 +16,46 @@ import { LimeCta } from "@/ui/LimeCta";
 import { ScreenFixed } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 
-import { liveMock as m } from "./mock";
+import { useWorkoutStore } from "./workout-store";
 
-/** S16 Live workout HUD. */
+/** S16 Live workout HUD — log set / pause / finish. */
 export const LiveWorkoutScreen = () => {
+  const exercises = useWorkoutStore((s) => s.exercises);
+  const exerciseIndex = useWorkoutStore((s) => s.exerciseIndex);
+  const setIndex = useWorkoutStore((s) => s.setIndex);
+  const sets = useWorkoutStore((s) => s.sets);
+  const paused = useWorkoutStore((s) => s.paused);
+  const startedAt = useWorkoutStore((s) => s.startedAt);
+  const kcal = useWorkoutStore((s) => s.kcal);
+  const finished = useWorkoutStore((s) => s.finished);
+  const workoutTitle = useWorkoutStore((s) => s.workoutTitle);
+  const logSet = useWorkoutStore((s) => s.logSet);
+  const togglePause = useWorkoutStore((s) => s.togglePause);
+  const skipExercise = useWorkoutStore((s) => s.skipExercise);
+  const swapExercise = useWorkoutStore((s) => s.swapExercise);
+
+  useEffect(() => {
+    if (finished) {
+      void useWorkoutStore.getState().finish().then(() => {
+        router.replace("/workout/complete");
+      });
+    }
+  }, [finished]);
+
+  const ex = exercises[exerciseIndex];
+  const elapsedMs = startedAt ? Date.now() - startedAt : 0;
+  const elapsed = formatClock(paused ? 0 : Math.floor(elapsedMs / 1000));
+  const rest = formatClock(ex?.restSec ?? 90);
+
   const handleClose = () => router.back();
-  const handleFinish = () => router.replace("/workout/complete");
-  const handleLog = () => router.replace("/workout/complete");
+  const handleFinish = () => {
+    void useWorkoutStore.getState().finish().then(() => {
+      router.replace("/workout/complete");
+    });
+  };
+  const handleLog = () => {
+    void logSet();
+  };
 
   return (
     <ScreenFixed>
@@ -33,38 +68,49 @@ export const LiveWorkoutScreen = () => {
         >
           <X size={22} color={color.onSurface} />
         </Pressable>
-        <CapsLabel tone="lime">Mirra Live</CapsLabel>
-        <View className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high">
-          <Pause size={20} color={color.onSurface} />
-        </View>
+        <CapsLabel tone="lime">{paused ? "Paused" : "Mirra Live"}</CapsLabel>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={paused ? "Resume" : "Pause"}
+          onPress={togglePause}
+          className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high"
+        >
+          {paused ? (
+            <Play size={20} color={color.onSurface} fill={color.onSurface} />
+          ) : (
+            <Pause size={20} color={color.onSurface} />
+          )}
+        </Pressable>
       </View>
 
       <View className="mb-space-md flex-row gap-space-sm">
-        <HudChip Icon={Flame} value={`${m.kcal} KCAL`} />
-        <HudChip Icon={Heart} value={`${m.bpm} BPM`} label="SETS" />
+        <HudChip Icon={Flame} value={`${kcal} KCAL`} />
+        <HudChip Icon={Heart} value={`${sets.filter((s) => s.done).length} DONE`} label="SETS" />
       </View>
 
       <View className="mb-space-sm flex-1 justify-center rounded-lg bg-surface-container-low p-space-lg">
-        <CapsLabel>{m.exerciseIndex}</CapsLabel>
+        <CapsLabel>
+          Exercise {exerciseIndex + 1} of {exercises.length}
+        </CapsLabel>
         <Text className="mt-1 font-body-medium text-body-md text-on-surface-variant">
-          {m.category}
+          {ex?.cue ?? workoutTitle}
         </Text>
         <Text className="mt-space-sm font-headline text-headline-lg text-on-surface">
-          {m.name}
+          {ex?.name ?? "Movement"}
         </Text>
         <View className="mt-space-lg flex-row justify-between">
-          <Stat label="Elapsed" value={m.elapsed} />
-          <Stat label="Rest Target" value={m.rest} />
-          <Stat label="Current Set" value={`${m.set}`} sub={`/ ${m.totalSets}`} />
+          <Stat label="Elapsed" value={elapsed} />
+          <Stat label="Rest Target" value={rest} />
+          <Stat label="Current Set" value={`${setIndex}`} sub={`/ ${sets.length}`} />
         </View>
         <View className="mt-space-lg rounded-lg bg-surface-container-high p-space-md">
           <CapsLabel>Target Load Track</CapsLabel>
           <Text className="mt-1 font-headline-sm text-headline-sm text-primary-fixed">
-            {m.load}
+            {ex?.targetReps ?? "—"} REPS · {sets.length} SETS
           </Text>
         </View>
         <View className="mt-space-md flex-row justify-between gap-space-xs">
-          {m.sets.map((s) => (
+          {sets.map((s) => (
             <View
               key={s.n}
               className={`flex-1 items-center rounded-sm py-space-sm ${
@@ -91,16 +137,16 @@ export const LiveWorkoutScreen = () => {
       </View>
 
       <LimeCta
-        label={`Log Set ${m.set} Complete`}
-        onPress={handleLog}
+        label={paused ? "Resume to log" : `Log Set ${setIndex} Complete`}
+        onPress={paused ? togglePause : handleLog}
         icon={<CheckCircle2 size={20} color={color.onPrimaryFixed} />}
       />
       <View className="mt-space-md flex-row items-center justify-between px-space-sm">
-        <TextLink label="Swap exercise" onPress={() => undefined} />
+        <TextLink label="Swap exercise" onPress={swapExercise} />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Skip exercise"
-          onPress={() => undefined}
+          onPress={skipExercise}
           className="flex-row items-center gap-1"
         >
           <SkipForward size={16} color={color.onSurfaceVariant} />
@@ -110,6 +156,16 @@ export const LiveWorkoutScreen = () => {
       </View>
     </ScreenFixed>
   );
+};
+
+const formatClock = (sec: number) => {
+  const m = Math.floor(sec / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = Math.floor(sec % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${m}:${s}`;
 };
 
 const HudChip = ({

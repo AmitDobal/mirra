@@ -1,6 +1,7 @@
 export { OnboardingShell } from "./components/OnboardingShell";
 export { ProgressHeader } from "./components/ProgressHeader";
 export { SelectRow } from "./components/SelectRow";
+export { toOnboardingBody } from "./map-body";
 export { useOnboardingStore } from "./store";
 export type * from "./types";
 /** Paywall / restore — screens call this; no button rewrite in app routes. */

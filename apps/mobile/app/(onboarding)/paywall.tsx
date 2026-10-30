@@ -7,11 +7,17 @@ import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { color } from "@/theme/tokens";
 import { Button, Card } from "@/ui";
 
-/** S13 — Soft paywall stub (no RevenueCat). */
+/** S13 — Soft paywall stub → tabs (mark onboarding complete). */
 const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
   const setPaywallPlan = useOnboardingStore((s) => s.setPaywallPlan);
+  const markCompleted = useOnboardingStore((s) => s.markCompleted);
+
+  const finish = () => {
+    markCompleted();
+    router.replace("/(tabs)/today");
+  };
 
   const goAuth = () => router.push("/(onboarding)/auth");
 
@@ -32,8 +38,8 @@ const PaywallScreen = () => {
       }
       footer={
         <>
-          <Button label={c.trial} onPress={goAuth} />
-          <Button label={c.restore} variant="ghost" onPress={goAuth} />
+          <Button label={c.trial} onPress={finish} />
+          <Button label={c.restore} variant="ghost" onPress={finish} />
           <Text className="text-center font-body text-body-sm text-outline">
             {c.legal}
           </Text>

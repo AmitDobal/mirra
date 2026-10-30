@@ -1,0 +1,17 @@
+{
+  "name": "mirra",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "mobile": "npm run start -w @mirra/mobile",
+    "api:dev": "npm run dev -w @mirra/api",
+    "typecheck": "npm run typecheck -w @mirra/mobile && npm run typecheck -w @mirra/api && npm run typecheck -w @mirra/contracts"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

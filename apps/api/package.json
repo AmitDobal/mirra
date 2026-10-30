@@ -1,0 +1,27 @@
+{
+  "name": "@mirra/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply mirra-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply mirra-db --remote",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@mirra/contracts": "*",
+    "drizzle-orm": "^0.44.5",
+    "hono": "^4.9.6",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250917.0",
+    "drizzle-kit": "^0.31.4",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.37.0"
+  }
+}

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_blank" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#400013", "primary-container": "#cbf150", "tertiary": "#ffffff", "on-primary-fixed": "#161e00", "on-secondary-container": "#c2b0e0", "error": "#ffb4ab", "primary-fixed-dim": "#b0d434", "on-error": "#690005", "outline-variant": "#454936", "on-secondary-fixed": "#21143a", "surface": "#131313", "surface-container-high": "#2a2a2a", "inverse-on-surface": "#313030", "secondary-fixed-dim": "#d1beef", "on-secondary": "#372950", "surface-tint": "#b0d434", "surface-container-highest": "#353534", "on-tertiary-container": "#b53354", "on-primary": "#293500", "background": "#131313", "surface-container": "#201f1f", "surface-bright": "#393939", "on-surface-variant": "#c5c9b0", "on-primary-container": "#566c00", "primary": "#ffffff", "on-tertiary-fixed-variant": "#8c1037", "inverse-primary": "#516600", "on-background": "#e5e2e1", "on-secondary-fixed-variant": "#4e4068", "on-tertiary": "#670024", "inverse-surface": "#e5e2e1", "surface-variant": "#353534", "tertiary-fixed": "#ffd9dd", "on-primary-fixed-variant": "#3c4d00", "primary-fixed": "#cbf150", "on-surface": "#e5e2e1", "surface-container-lowest": "#0e0e0e", "error-container": "#93000a", "secondary-container": "#50426b", "surface-container-low": "#1c1b1b", "on-error-container": "#ffdad6", "outline": "#8f937c", "secondary": "#d1beef", "surface-dim": "#131313", "tertiary-fixed-dim": "#ffb2bd", "secondary-fixed": "#ebdcff", "tertiary-container": "#ffd9dd" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-xl": "1.75rem", "space-sm": "0.5rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem", "space-lg": "1.25rem", "margin": "1.25rem" }, "fontFamily": { "headline-sm": ["Space Grotesk"], "body-md": ["Plus Jakarta Sans"], "label-lg": ["Space Grotesk"], "label-md": ["Space Grotesk"], "body-sm": ["Plus Jakarta Sans"], "headline-lg": ["Space Grotesk"], "headline-md": ["Space Grotesk"], "display-metric": ["Space Grotesk"], "body-lg": ["Plus Jakarta Sans"], "label-caps": ["Space Grotesk"], "display-lg": ["Space Grotesk"] }, "fontSize": { "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }], "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#131313;color:#e5e2e1;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}.pl-safe{padding-left:env(safe-area-inset-left,0px);}.pr-safe{padding-right:env(safe-area-inset-right,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col"><main class="flex-1 flex flex-col relative w-full bg-surface pt-safe pb-safe"><div class="flex flex-col w-full px-margin pb-space-xl">
+<!-- Minimal Ambient Top Header -->
+<div class="w-full flex items-center justify-between pt-space-md pb-space-lg">
+<div class="flex items-center gap-space-sm bg-surface-container-high px-space-md py-1.5 rounded-full">
+<span class="w-2 h-2 rounded-full bg-primary-fixed animate-ping"></span>
+<span class="font-label-caps text-label-caps text-primary-fixed tracking-widest uppercase">AI CALIBRATION ENGINE</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed animate-spin" style="animation-duration: 3s;">sync</span>
+<span>v2.4 SYNTH</span>
+</div>
+</div>
+<!-- Central Processing Workspace -->
+<div class="flex flex-col items-center justify-center w-full my-auto space-y-space-xl">
+<!-- Hero Athletic Visual Backdrop with Pulsing Matrix Glow -->
+<div class="relative w-full overflow-hidden rounded-lg bg-surface-container-low p-space-lg shadow-2xl">
+<!-- Ambient Gradient Beam -->
+<div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-primary-fixed/10 blur-3xl pointer-events-none"></div>
+<div class="absolute -left-16 -bottom-16 w-56 h-56 rounded-full bg-secondary/15 blur-3xl pointer-events-none"></div>
+<!-- Micro Section Header -->
+<div class="flex items-center justify-between mb-space-lg relative z-10">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-wider uppercase">Weekly Blueprint</span>
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Microcycle Ingest</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-highest px-2.5 py-1 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md text-secondary" id="cycle-percent">74%</span>
+</div>
+</div>
+<!-- 7-Day Micro Capsule Pipeline Strip -->
+<div class="relative z-10 grid grid-cols-7 gap-1.5 mb-space-lg">
+<!-- Day Mon -->
+<div class="flex flex-col items-center py-2.5 px-1 rounded-DEFAULT bg-surface-container transition-all duration-500">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">M</span>
+<div class="w-5 h-7 rounded-full bg-primary-fixed/20 flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-primary-fixed shadow-[0_0_8px_#cbf150]"></span>
+</div>
+<span class="font-label-caps text-label-caps text-primary-fixed mt-1.5 font-bold">LEG</span>
+</div>
+<!-- Day Tue -->
+<div class="flex flex-col items-center py-2.5 px-1 rounded-DEFAULT bg-surface-container transition-all duration-500">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">T</span>
+<div class="w-5 h-7 rounded-full bg-secondary/25 flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#d1beef]"></span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary mt-1.5 font-bold">REC</span>
+</div>
+<!-- Day Wed -->
+<div class="flex flex-col items-center py-2.5 px-1 rounded-DEFAULT bg-surface-container transition-all duration-500">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">W</span>
+<div class="w-5 h-7 rounded-full bg-primary-fixed/20 flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-primary-fixed shadow-[0_0_8px_#cbf150]"></span>
+</div>
+<span class="font-label-caps text-label-caps text-primary-fixed mt-1.5 font-bold">PUSH</span>
+</div>
+<!-- Day Thu (Active Synthesizing) -->
+<div class="flex flex-col items-center py-2.5 px-1 rounded-DEFAULT bg-surface-container-high scale-105 transition-all duration-500">
+<span class="font-label-caps text-label-caps text-primary mb-1">T</span>
+<div class="w-5 h-7 rounded-full bg-primary-fixed flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-[12px] text-on-primary font-bold">autorenew</span>
+</div>
+<span class="font-label-caps text-label-caps text-primary-fixed mt-1.5 font-bold">PULL</span>
+</div>
+<!-- Day Fri -->
+<div class="flex flex-col items-center py-2.5 px-1 rounded-DEFAULT bg-surface-container/60 opacity-60">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">F</span>
+<div class="w-5 h-7 rounded-full bg-surface-container-highest flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+</div>
+<span class="font-label-caps text-label-caps text-outline-variant mt-1.5">HYB</span>
+</div>
+<!-- Day Sat -->
+<div class="flex flex-col items-center py-2.5 px-1 rounded-DEFAULT bg-surface-container/50 opacity-40">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">S</span>
+<div class="w-5 h-7 rounded-full bg-surface-container-highest flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+</div>
+<span class="font-label-caps text-label-caps text-outline-variant mt-1.5">AER</span>
+</div>
+<!-- Day Sun -->
+<div class="flex flex-col items-center py-2.5 px-1 rounded-DEFAULT bg-surface-container/30 opacity-30">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">S</span>
+<div class="w-5 h-7 rounded-full bg-surface-container-highest flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+</div>
+<span class="font-label-caps text-label-caps text-outline-variant mt-1.5">OFF</span>
+</div>
+</div>
+<!-- Split Computation Stack (3 Skeletons with Shimmer & Athlete Cutouts) -->
+<div class="space-y-space-sm relative z-10">
+<!-- Skeleton Split Card 1: Electric Lime Active Unit -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-12 h-12 rounded-full overflow-hidden bg-surface-container-high shrink-0">
+<img class="w-full h-full object-cover grayscale opacity-90 contrast-125" data-alt="Athletic man in black compression top performing explosive squats in modern training facility with neon atmospheric lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDtiGv3YSwLRgli6YguYQNxL24XqfXBb53NksCJZUjyBXJhPg53OL5hPmEtXQcdAmNyY8eWNxMds3fJPEiw2XGSCZmQQZLeobtKbqiJvIRwQ3J5oH8hibf0ACU_-tV2vUUylMpU8ub2Zb9bA3E88C0__TRar3D38E46CM2KFnsC4ktIxH2I4WUNLBMjlhTtH1xt7XgZsTL-g89IouWTJzL9SKqs0AnujJqp6igj4Oq"/>
+<div class="absolute inset-0 bg-primary-fixed/20 mix-blend-color"></div>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="h-3 w-28 rounded-full bg-primary-fixed animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">42 MIN</span>
+</div>
+<div class="h-2.5 w-40 rounded-full bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full shrink-0">
+<span class="material-symbols-outlined text-[15px] text-primary-fixed">bolt</span>
+<span class="font-label-caps text-label-caps text-primary-fixed font-bold">580 KCAL</span>
+</div>
+</div>
+<!-- Skeleton Split Card 2: Lavender Recovery Cadence -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-12 h-12 rounded-full overflow-hidden bg-surface-container-high shrink-0">
+<img class="w-full h-full object-cover grayscale opacity-85 contrast-125" data-alt="Muscular male sprinter kneeling on track in deep focused stretch posture with dramatic side rim lighting in dark gym studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7TlKD2f48VobbIFwH3LVh6K7yrPR7AokzLfUyDdLdp1R9SjRw6YUx3UQUhAnqP31UK-Yd9wXP6ARdkHna2Tjai0jffl7IpCyp5VkalYievRrz6mvR6_3o9KJRwRi0FWgCIFLxvprETftaM-QjVxXby5omVRILL8wOS2-kih2brFf_DotxtSeMSM1-5AA3CStgmQ9YkVwArHUSLGSWT2ctBWu6flf397PXJ8qq9ln1"/>
+<div class="absolute inset-0 bg-secondary/30 mix-blend-color"></div>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="h-3 w-32 rounded-full bg-secondary animate-pulse" style="animation-delay: 200ms;"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">ACTIVE REC</span>
+</div>
+<div class="h-2.5 w-36 rounded-full bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full shrink-0">
+<span class="material-symbols-outlined text-[15px] text-secondary">favorite</span>
+<span class="font-label-caps text-label-caps text-secondary font-bold">118 BPM</span>
+</div>
+</div>
+<!-- Skeleton Split Card 3: Neutral Hypertrophy Track -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="relative w-12 h-12 rounded-full overflow-hidden bg-surface-container-high shrink-0">
+<img class="w-full h-full object-cover grayscale opacity-75 contrast-125" data-alt="Focused athlete gripping barbell during high intensity resistance training in minimal dark fitness studio with soft ambient fill" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZ5MzWGrsT17eENf_6I7CbZyd87HA-FWYmfhxpQg9buAL_90sPxFxD2nqDw_TLKNtJJS4stD4KRvbMQieSXNXJeGNNMD25aLJlj6NFyHjtx6ZgOwE5jXJBHDU6_1-tB701wpj5IHnAtqK84dKoUz34AGKk8O6ACinjEStC4tc_ZRzAGZoIE2sK0_XAb5QohfAgMjxlPU7DdTHBxXssLH9S_B2pYvgxoKATpNoEXCLg"/>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="h-3 w-24 rounded-full bg-surface-bright animate-pulse" style="animation-delay: 400ms;"></span>
+<span class="font-label-caps text-label-caps text-outline-variant">SYNTHESIZING</span>
+</div>
+<div class="h-2.5 w-48 rounded-full bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-high/60 px-3 py-1.5 rounded-full shrink-0">
+<span class="material-symbols-outlined text-[15px] text-outline">tune</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">SETS 4/5</span>
+</div>
+</div>
+</div>
+<!-- Real-time Volume Cadence Meter -->
+<div class="mt-space-lg pt-space-md flex flex-col gap-2 relative z-10">
+<div class="flex items-center justify-between font-label-caps text-label-caps text-on-surface-variant">
+<span class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed"></span>
+            METABOLIC LOAD ALIGNMENT
+          </span>
+<span class="text-primary font-bold tracking-wider" id="calibration-step">STEP 3 OF 4</span>
+</div>
+<!-- Progress Bar Track -->
+<div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary via-primary-fixed to-primary-container rounded-full transition-all duration-700 ease-out" id="smooth-progress-bar" style="width: 76%;"></div>
+</div>
+</div>
+</div>
+<!-- Centered Editorial Status Text -->
+<div class="flex flex-col items-center text-center max-w-xs space-y-space-xs">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Building your week…</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+        Aligning metabolic volume, recovery cadence, and equipment profiles.
+      </p>
+</div>
+<!-- Micro Dynamic Live Signal Badges -->
+<div class="flex items-center gap-2 flex-wrap justify-center">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high">
+<span class="material-symbols-outlined text-[14px] text-primary-fixed">speed</span>
+<span class="font-label-caps text-label-caps text-on-surface">VO2 RECOVERY: OPTIMAL</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high">
+<span class="material-symbols-outlined text-[14px] text-secondary">fitness_center</span>
+<span class="font-label-caps text-label-caps text-on-surface">BARBELL + DUMBBELL</span>
+</div>
+</div>
+</div>
+<!-- Dynamic Calibration Loop Simulation -->
+<script>
+    (function() {
+      const steps = [
+        "Analyzing biomechanical symmetry...",
+        "Structuring rest micro-cadence...",
+        "Aligning metabolic volume...",
+        "Calibrating target heart rates..."
+      ];
+      const stepEl = document.getElementById('calibration-step');
+      const percentEl = document.getElementById('cycle-percent');
+      const barEl = document.getElementById('smooth-progress-bar');
+      
+      let progress = 74;
+      let stepIndex = 2;
+
+      setInterval(() => {
+        if (progress < 96) {
+          progress += Math.floor(Math.random() * 4) + 1;
+          if (progress > 96) progress = 96;
+          if (percentEl) percentEl.textContent = progress + '%';
+          if (barEl) barEl.style.width = progress + '%';
+          
+          if (progress > 85 && stepIndex === 2) {
+            stepIndex = 3;
+            if (stepEl) stepEl.textContent = 'FINAL COMPILATION';
+          }
+        }
+      }, 900);
+    })();
+  </script>
+</div></main></body></html>

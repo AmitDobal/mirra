@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#131313;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary": "#293500", "surface-variant": "#353534", "surface-container": "#201f1f", "surface-container-high": "#2a2a2a", "tertiary": "#ffffff", "inverse-surface": "#e5e2e1", "surface-container-low": "#1c1b1b", "secondary-fixed": "#ebdcff", "background": "#131313", "on-error-container": "#ffdad6", "on-surface": "#e5e2e1", "on-primary-fixed-variant": "#3c4d00", "tertiary-container": "#ffd9dd", "surface-tint": "#b0d434", "error": "#ffb4ab", "primary": "#ffffff", "on-tertiary-fixed-variant": "#8c1037", "on-tertiary-container": "#b53354", "on-secondary": "#372950", "surface-container-highest": "#353534", "tertiary-fixed-dim": "#ffb2bd", "primary-fixed-dim": "#b0d434", "primary-container": "#cbf150", "on-secondary-fixed-variant": "#4e4068", "surface": "#131313", "surface-dim": "#131313", "on-secondary-container": "#c2b0e0", "primary-fixed": "#cbf150", "outline": "#8f937c", "secondary-fixed-dim": "#d1beef", "surface-bright": "#393939", "outline-variant": "#454936", "inverse-on-surface": "#313030", "on-background": "#e5e2e1", "on-secondary-fixed": "#21143a", "tertiary-fixed": "#ffd9dd", "surface-container-lowest": "#0e0e0e", "inverse-primary": "#516600", "on-error": "#690005", "secondary": "#d1beef", "on-primary-container": "#566c00", "error-container": "#93000a", "on-surface-variant": "#c5c9b0", "on-tertiary": "#670024", "on-tertiary-fixed": "#400013", "secondary-container": "#50426b", "on-primary-fixed": "#161e00" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-lg": "1.25rem", "space-xl": "1.75rem", "margin": "1.25rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem" }, "fontFamily": { "headline-md": ["Space Grotesk"], "display-metric": ["Space Grotesk"], "headline-lg": ["Space Grotesk"], "label-caps": ["Space Grotesk"], "headline-sm": ["Space Grotesk"], "display-lg": ["Space Grotesk"], "body-sm": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-md": ["Space Grotesk"], "body-lg": ["Plus Jakarta Sans"], "label-lg": ["Space Grotesk"] }, "fontSize": { "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe"><div class="h-16 px-space-lg flex items-center justify-between"><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span><span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">MIRRA ENGINE</span></div><h1 class="font-headline-sm text-headline-sm uppercase tracking-tight text-on-surface">S22 — Progress Gallery</h1></div><div class="flex items-center gap-space-sm"><button aria-label="Activity notifications" class="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[22px]">bolt</span></button><a aria-label="User Profile" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center" data-path="s24-profile-settings" href="#"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></a></div></div></header><main class="flex flex-col relative w-full px-space-lg pt-16 pb-28 bg-surface flex-1"><div class="flex flex-col w-full gap-space-lg pb-10">
+<!-- Subheader & Microcycle Status -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-primary-container">Progression Index</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Progress Gallery</h2>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface">Microcycle 12 · 8W Active</span>
+</div>
+</div>
+<!-- Segmented Filter Switcher -->
+<div class="flex items-center gap-space-xs p-1 rounded-full bg-surface-container-low overflow-x-auto no-scrollbar">
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-label-lg text-label-lg transition-transform active:scale-95 whitespace-nowrap shadow-sm">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">visibility</span>
+        Visual Mirror
+      </button>
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-transparent text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-transform active:scale-95 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">scale</span>
+        Lean Mass
+      </button>
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-transparent text-on-surface-variant hover:text-on-surface font-label-lg text-label-lg transition-transform active:scale-95 whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+        Strength Curve
+      </button>
+</div>
+</div>
+<!-- Hero Visual Delta Card -->
+<div class="relative overflow-hidden rounded-lg bg-surface-container p-space-md flex flex-col gap-space-md shadow-md">
+<!-- Top Pill & Privacy Status -->
+<div class="flex items-center justify-between gap-space-sm">
+<span class="px-2.5 py-1 rounded-full bg-primary-container text-on-primary-container font-label-caps text-label-caps uppercase tracking-wider">
+        Shape Evolution · -3.4% Est. BF
+      </span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+<span class="font-body-sm text-body-sm text-[10px] tracking-tight">On-Device Encrypted</span>
+</div>
+</div>
+<!-- Interactive Delta Comparison Slider Simulation -->
+<div class="relative w-full h-56 rounded-DEFAULT overflow-hidden bg-surface-container-lowest select-none group">
+<!-- Side by Side Preview Layout -->
+<div class="grid grid-cols-2 gap-1 w-full h-full">
+<!-- Week 1 Baseline -->
+<div class="relative h-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover object-center filter contrast-95 brightness-90" data-alt="Athletic male front physique mirror check-in portrait taken under cool studio lighting, focused on midsection and chest, muted charcoal athletic shorts, baseline training condition, high definition sports photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAredj53Jzf-3F2CWn104p-ZKq9NGD6daETIG-hSj7aR3njEnm06H6wWY5L4bMW-d2i27Zq3kW3_pg_h3HPfVCsmZVWXxgHgPb8-wcY7QduyDGjKPr2nHQuazFccYizp6Owh3qbbkYJADrdkJVs9KqYl46pXQzjqdk2VX70cPlnKV154kr-PH_IxY92V4GCZZaYPduS0odaXiLuwPDnJR-wYOlkdoWIPTZExlwsLeMp"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-2 left-2 flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Baseline</span>
+<span class="font-label-lg text-label-lg text-on-surface">Week 1 (Mar 24)</span>
+</div>
+</div>
+<!-- Week 12 Current -->
+<div class="relative h-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover object-center filter contrast-105" data-alt="Athletic male front mirror physique update in high definition gym locker room setting, defined abdominal core and expanded shoulder width, soft lavender backlight accents, energetic posture, crisp focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUFiAUfsGHv-J8jy2DenNU-4x-Ubb_E5HoMvLAGO8ISPl_21JyjmgZbw3c3UVgolqSxaKAteaYFKbblmRPpZFSji20dn4B4SQVom8Xq21gH1SUfBok7VHQ5LUNXNXKCZpafBLYhKZJJ7opwHVGMQw-GKyhEm2V9dOlFqVHr35TzSsWlHjSqhSVIL8ge2Nnet1lMF1qCqMlbQDL74ZeMDIiyZPloVx7xfYl-WY975OU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-2 left-2 flex flex-col">
+<span class="font-label-caps text-label-caps text-primary-container uppercase">Current</span>
+<span class="font-label-lg text-label-lg text-on-surface">Week 12 (Today)</span>
+</div>
+</div>
+</div>
+<!-- Center Comparison Divider Badge -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-lg pointer-events-none">
+<span class="material-symbols-outlined text-[18px]">compare_arrows</span>
+</div>
+</div>
+<!-- Tap CTA for Deep Delta Deepdive -->
+<a class="w-full flex items-center justify-between px-space-md py-3 rounded-DEFAULT bg-secondary text-on-secondary transition-transform active:scale-[0.98]" data-path="s23-delta-comparison" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-lg text-label-lg">Open Full Delta Biometric Split</span>
+</div>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</a>
+</div>
+<!-- Metric Trajectory Row (3-column Bento) -->
+<div class="grid grid-cols-3 gap-space-sm w-full">
+<!-- Stat 1: Lean Mass -->
+<div class="flex flex-col justify-between p-3.5 rounded-DEFAULT bg-surface-container-low min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase truncate">Lean Mass</span>
+<span class="material-symbols-outlined text-primary-container text-[16px]">north_east</span>
+</div>
+<div class="flex flex-col mt-2">
+<span class="font-display-metric text-[26px] leading-7 tracking-tight text-on-surface">+3.2</span>
+<span class="font-body-sm text-body-sm text-primary-container font-semibold">kg added</span>
+</div>
+</div>
+<!-- Stat 2: Waist Delta -->
+<div class="flex flex-col justify-between p-3.5 rounded-DEFAULT bg-surface-container-low min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase truncate">Waist Delta</span>
+<span class="material-symbols-outlined text-secondary text-[16px]">south_east</span>
+</div>
+<div class="flex flex-col mt-2">
+<span class="font-display-metric text-[26px] leading-7 tracking-tight text-on-surface">-1.8</span>
+<span class="font-body-sm text-body-sm text-secondary font-semibold">in tapered</span>
+</div>
+</div>
+<!-- Stat 3: Consistency -->
+<div class="flex flex-col justify-between p-3.5 rounded-DEFAULT bg-surface-container-low min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase truncate">Logging</span>
+<div class="w-4 h-4 relative flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"></path>
+<path class="text-primary-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="94, 100" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+</div>
+</div>
+<div class="flex flex-col mt-2">
+<span class="font-display-metric text-[26px] leading-7 tracking-tight text-on-surface">94%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Check-in rate</span>
+</div>
+</div>
+</div>
+<!-- Chronological Mirror Timeline -->
+<div class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">Biometric Chronology</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">4 check-ins logged</span>
+</div>
+<div class="flex flex-col gap-space-sm relative">
+<!-- Timeline Entry: Today -->
+<div class="flex items-center gap-space-md p-space-sm rounded-DEFAULT bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group active:scale-[0.99]">
+<div class="relative w-20 h-24 rounded-DEFAULT overflow-hidden flex-shrink-0 bg-surface-container-lowest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Upper body muscular front athletic profile check-in photo in studio gym locker setting with electric lime rim light, sharp muscular definition, V-taper pose" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAReZEQfGCKj26e56LNxa69gJKg9ywYE9g97XqGx4Jt3Ned16IUbhKleQhHbaazcDE9v-r7-jDuAbLso8mxAI6qDA3LkGQXy-JmeccLt1aE5NljVa5XuH7a3Xx93NBQXQAUx__JZOy6nFWyK_z4xpPHjwgEMAGPLNGe5nZttmoh_XhbKURVfAm_fqSHV9l0ele_jAiEa3SGjTHAB7APfVQXNJ6FkTnY20Appnxg9YcX"/>
+<div class="absolute top-1 left-1 px-1.5 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-caps text-[9px] uppercase tracking-wide">
+            Latest
+          </div>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">May 18 (Today)</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:text-primary-container transition-colors">chevron_right</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Upper V-Taper focus logged · Post AM session</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-[11px] font-label-caps uppercase">77.4 kg</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary-container text-[11px] font-label-caps uppercase">11.8% BF</span>
+</div>
+</div>
+</div>
+<!-- Timeline Entry: Week 8 -->
+<div class="flex items-center gap-space-md p-space-sm rounded-DEFAULT bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group active:scale-[0.99]">
+<div class="relative w-20 h-24 rounded-DEFAULT overflow-hidden flex-shrink-0 bg-surface-container-lowest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Athletic mid-phase progress selfie in gym changing room, natural daylight illumination, focused on chest and shoulder vascularity, dark performance attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOu5NGPu3ko4mvXqwzyzKENm1o_NYZekAgqlruR8A8YQOCvBj7qqANTsoHFlNTyQ6spcHaXOVBuWzb46ZY2_brEhwyuHo6l1fwQc_p7loSLI02a0-VvcfMVj7_ReMsCTJbKPzqcalwe3Bk25uSjemrHuPig-_ZI53fAm15SgndbffQpcouTShRCOmY4mbFbSpWnFfntz1hbtHA-d8DchUEeCX90SxpnsALXuxMRi5L"/>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">Apr 20 (Week 8)</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:text-primary-container transition-colors">chevron_right</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Mid-phase hypertrophy check · Peak delts</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-[11px] font-label-caps uppercase">78.1 kg</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-secondary text-[11px] font-label-caps uppercase">12.9% BF</span>
+</div>
+</div>
+</div>
+<!-- Timeline Entry: Week 4 -->
+<div class="flex items-center gap-space-md p-space-sm rounded-DEFAULT bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group active:scale-[0.99]">
+<div class="relative w-20 h-24 rounded-DEFAULT overflow-hidden flex-shrink-0 bg-surface-container-lowest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Fitness body check-in mirror reflection shot in ambient dark apartment setting with warm floor lamp, athletic posture, relaxed core outline" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZJgxMRppPd1KySMq3v2A1BdCL9qzeYS46sS3nkGtb81yHHVSowLLUGclWgtYmeF30_9Lx879XSYv2rqWNfvJXh0dkaLOFQodxD0Xaf_y8swIbFvGzn-2onchMojbcfUZFWReG0MxKow_0pnioebbAGpZCjlqpwEPOPkkgBmFadw5vjk8hMIWt_lwYM_KlMDSUoBn5qgJGweb_I4jgoeJ3yYaXjLlO131nG6_8locf"/>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">Mar 23 (Week 4)</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:text-primary-container transition-colors">chevron_right</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Foundation calibration · Post deload</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-[11px] font-label-caps uppercase">79.0 kg</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant text-[11px] font-label-caps uppercase">13.8% BF</span>
+</div>
+</div>
+</div>
+<!-- Timeline Entry: Baseline Day 1 -->
+<div class="flex items-center gap-space-md p-space-sm rounded-DEFAULT bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group active:scale-[0.99]">
+<div class="relative w-20 h-24 rounded-DEFAULT overflow-hidden flex-shrink-0 bg-surface-container-lowest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Starting fitness journey mirror check-in portrait, neutral body posture under warm interior light, clean athletic apparel, day one baseline documentation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQdH_lXIMcUZklNACrdLVzXBamw45xtjc4J8cJfSR4qWZ99h9J7OnoJQh9_iGvmM2_vWtVsNeLGVDJtcTfHLWuik9Cs0ry8MTufFlyp-R9Uwh9BecZvBzzEbGet01QnpSGEMeT9auXg6_8eqoU0rEu31NeydDHRunRVwvZnWa34RrID-_B45GYhHRwWwhxXd_hWeN4oVPZrnYuZfddYIOcOn5XzlQ4pkrrxbT04D-q"/>
+<div class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-caps text-[9px] uppercase tracking-wide">
+            Day 1
+          </div>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">Feb 24 (Week 1)</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:text-primary-container transition-colors">chevron_right</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Baseline Day 1 · Starting physical scan</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface text-[11px] font-label-caps uppercase">79.8 kg</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant text-[11px] font-label-caps uppercase">15.2% BF</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Primary Floating Action: Log Check-in -->
+<div class="sticky bottom-6 w-full z-20 pt-2">
+<button class="w-full h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center gap-2 font-label-lg text-label-lg shadow-xl hover:brightness-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">add_a_photo</span>
+      Scan Today's Shape Check-in
+    </button>
+</div>
+</div></main><div class="fixed bottom-0 inset-x-0 z-50 pointer-events-none pb-safe flex justify-center items-end pb-space-lg"><nav class="pointer-events-auto h-16 w-[320px] max-w-[92vw] rounded-full bg-primary shadow-[0_12px_32px_rgba(0,0,0,0.45)] px-space-xs flex items-center justify-between" data-active-classes="bg-primary-container text-on-primary-fixed shadow-md"><a aria-label="Today" class="w-12 h-12 rounded-full flex items-center justify-center text-surface-container-lowest transition-transform active:scale-95" data-path="s20-daily-check-in" href="#"><span class="material-symbols-outlined text-[24px]">calendar_today</span></a><a aria-label="Fuel" class="w-12 h-12 rounded-full flex items-center justify-center text-surface-container-lowest transition-transform active:scale-95" data-path="fuel" href="#"><span class="material-symbols-outlined text-[24px]">restaurant</span></a><a aria-label="Coach" class="w-12 h-12 rounded-full flex items-center justify-center text-surface-container-lowest transition-transform active:scale-95" data-path="coach" href="#"><span class="material-symbols-outlined text-[24px]">smart_toy</span></a><a aria-label="Progress" class="w-12 h-12 rounded-full flex items-center justify-center text-surface-container-lowest transition-transform active:scale-95" data-path="s22-progress-gallery" href="#"><span class="material-symbols-outlined text-[24px]">monitoring</span></a><a aria-label="You Profile" class="w-12 h-12 rounded-full flex items-center justify-center text-surface-container-lowest transition-transform active:scale-95" data-path="s24-profile-settings" href="#"><span class="material-symbols-outlined text-[24px]">person</span></a></nav></div></body></html>

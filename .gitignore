@@ -1,0 +1,45 @@
+# dependencies
+node_modules/
+
+# Expo / mobile
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# env
+.env
+.env.*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+
+# wrangler / cloudflare local
+.wrangler/
+apps/api/.wrangler/
+.dev.vars
+apps/api/.dev.vars
+
+# native signing
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*

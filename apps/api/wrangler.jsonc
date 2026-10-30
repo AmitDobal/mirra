@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mirra-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  },
+  "vars": {
+    "APP_NAME": "mirra",
+    "APP_VERSION": "0.1.0",
+    // DEV ONLY — enables x-mirra-user-id / x-user-id auth bypass. Never true in prod.
+    "ALLOW_DEV_USER_HEADER": "true"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mirra-db",
+      // Placeholder until `wrangler d1 create mirra-db` on a CF account.
+      "database_id": "00000000-0000-0000-0000-000000000001",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "mirra-media",
+      "preview_bucket_name": "mirra-media-preview"
+    }
+  ]
+}

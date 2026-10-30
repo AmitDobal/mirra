@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_blank" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-dim": "#131313", "on-secondary-container": "#c2b0e0", "surface-tint": "#b0d434", "on-error": "#690005", "on-surface-variant": "#c5c9b0", "tertiary-fixed": "#ffd9dd", "on-background": "#e5e2e1", "on-primary": "#293500", "error": "#ffb4ab", "tertiary-container": "#ffd9dd", "primary-fixed-dim": "#b0d434", "on-error-container": "#ffdad6", "on-tertiary": "#670024", "surface-bright": "#393939", "on-primary-fixed": "#161e00", "secondary-container": "#50426b", "secondary-fixed-dim": "#d1beef", "on-tertiary-fixed": "#400013", "surface-container-highest": "#353534", "surface-container": "#201f1f", "surface-variant": "#353534", "on-surface": "#e5e2e1", "primary": "#ffffff", "on-secondary": "#372950", "secondary-fixed": "#ebdcff", "inverse-on-surface": "#313030", "on-tertiary-container": "#b53354", "on-secondary-fixed": "#21143a", "tertiary": "#ffffff", "inverse-primary": "#516600", "surface-container-lowest": "#0e0e0e", "on-tertiary-fixed-variant": "#8c1037", "primary-fixed": "#cbf150", "outline-variant": "#454936", "error-container": "#93000a", "on-primary-fixed-variant": "#3c4d00", "surface-container-high": "#2a2a2a", "surface-container-low": "#1c1b1b", "secondary": "#d1beef", "tertiary-fixed-dim": "#ffb2bd", "primary-container": "#cbf150", "on-primary-container": "#566c00", "inverse-surface": "#e5e2e1", "surface": "#131313", "outline": "#8f937c", "on-secondary-fixed-variant": "#4e4068", "background": "#131313" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-md": "1rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-xl": "1.75rem", "gutter": "1rem", "space-lg": "1.25rem", "margin": "1.25rem" }, "fontFamily": { "headline-sm": ["Space Grotesk"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Space Grotesk"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Space Grotesk"], "display-metric": ["Space Grotesk"], "label-lg": ["Space Grotesk"], "body-lg": ["Plus Jakarta Sans"], "label-caps": ["Space Grotesk"], "label-md": ["Space Grotesk"], "headline-lg": ["Space Grotesk"] }, "fontSize": { "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }], "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;background-color:#131313;color:#e5e2e1;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-body-md text-on-surface flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary-container"><main class="flex-1 flex flex-col relative w-full bg-background pt-safe pb-safe"><div class="flex flex-col w-full pb-8 px-5">
+<!-- Top Navigation & Flow Progress Tracker -->
+<header class="flex flex-col gap-4 pt-2 mb-6">
+<div class="flex items-center justify-between">
+<button aria-label="Go back" class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high text-on-surface active:scale-95 transition-transform duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high">
+<span class="font-label-caps text-label-caps text-primary-fixed uppercase tracking-wider">Step</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">3 <span class="font-body-sm text-body-sm text-outline font-normal">/ 8</span></span>
+</div>
+<button class="font-label-md text-label-md text-outline hover:text-on-surface transition-colors py-2 px-1" type="button">
+        Skip
+      </button>
+</div>
+<!-- Micro-progress Segment Bar -->
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed rounded-full transition-all duration-500 ease-out" style="width: 37.5%;"></div>
+</div>
+</header>
+<!-- Screen Narrative Header -->
+<div class="flex flex-col gap-1.5 mb-6">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Quick stats</h1>
+<p class="font-body-md text-body-md text-outline">Mirra calibrates calorie burns, recovery splits, and baseline energy output to your body profile.</p>
+</div>
+<!-- Body Stats Form Stack -->
+<div class="flex flex-col gap-3.5 mb-8">
+<!-- Field 1: Biological Sex Segmented Switch -->
+<div class="flex flex-col gap-2.5 p-4 rounded-DEFAULT bg-surface-container-low">
+<span class="font-label-md text-label-md text-outline uppercase tracking-wider">Biological sex</span>
+<div aria-label="Biological sex selection" class="grid grid-cols-3 gap-1.5 p-1 rounded-full bg-surface-container-lowest" id="sex-selector" role="radiogroup">
+<button aria-checked="false" class="sex-opt py-2.5 px-2 rounded-full font-label-md text-label-md text-outline text-center transition-all duration-150" onclick="selectSex(this)" role="radio" type="button">
+          Female
+        </button>
+<button aria-checked="true" class="sex-opt py-2.5 px-2 rounded-full font-label-md text-label-md bg-primary-fixed text-on-primary-fixed font-bold text-center transition-all duration-150 shadow-sm" onclick="selectSex(this)" role="radio" type="button">
+          Male
+        </button>
+<button aria-checked="false" class="sex-opt py-2.5 px-2 rounded-full font-label-md text-label-md text-outline text-center transition-all duration-150" onclick="selectSex(this)" role="radio" type="button">
+          Prefer not
+        </button>
+</div>
+</div>
+<!-- Field 2: Age Number Wheel Card -->
+<div class="flex items-center justify-between p-4 rounded-DEFAULT bg-surface-container-low">
+<div class="flex flex-col gap-1">
+<label class="font-label-md text-label-md text-outline uppercase tracking-wider" for="age-input">Age</label>
+<span class="font-body-sm text-body-sm text-outline-variant">Years old</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface active:scale-90 transition-transform" onclick="adjustValue('age-input', -1, 14, 99)" type="button">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<input class="w-16 bg-transparent text-center font-display-metric text-display-metric text-on-surface focus:outline-none p-0 selection:bg-primary-fixed selection:text-on-primary-fixed" id="age-input" max="99" min="14" type="number" value="24"/>
+<button class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface active:scale-90 transition-transform" onclick="adjustValue('age-input', 1, 14, 99)" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+<!-- Field 3: Height Card with Integrated Unit Slider -->
+<div class="flex flex-col gap-3 p-4 rounded-DEFAULT bg-surface-container-low">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-outline uppercase tracking-wider" for="height-input">Height</label>
+<!-- Unit Toggle -->
+<div class="flex items-center p-0.5 rounded-full bg-surface-container-lowest" id="height-unit-toggle">
+<button class="py-1 px-3 rounded-full font-label-caps text-label-caps bg-primary-fixed text-on-primary-fixed font-bold transition-all" id="unit-height-cm" onclick="toggleHeightUnit('cm')" type="button">
+            CM
+          </button>
+<button class="py-1 px-3 rounded-full font-label-caps text-label-caps text-outline transition-all" id="unit-height-ft" onclick="toggleHeightUnit('ft')" type="button">
+            FT
+          </button>
+</div>
+</div>
+<div class="flex items-baseline justify-between pt-1">
+<div class="flex items-baseline gap-2">
+<input class="w-28 bg-transparent font-display-metric text-display-metric text-on-surface focus:outline-none p-0 selection:bg-primary-fixed selection:text-on-primary-fixed" id="height-input" type="number" value="178"/>
+<span class="font-headline-sm text-headline-sm text-outline" id="height-unit-label">cm</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface active:scale-90 transition-transform" onclick="adjustValue('height-input', -1, 100, 250)" type="button">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface active:scale-90 transition-transform" onclick="adjustValue('height-input', 1, 100, 250)" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Field 4: Weight Card with Integrated Unit Slider -->
+<div class="flex flex-col gap-3 p-4 rounded-DEFAULT bg-surface-container-low">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-outline uppercase tracking-wider" for="weight-input">Weight</label>
+<!-- Unit Toggle -->
+<div class="flex items-center p-0.5 rounded-full bg-surface-container-lowest" id="weight-unit-toggle">
+<button class="py-1 px-3 rounded-full font-label-caps text-label-caps bg-primary-fixed text-on-primary-fixed font-bold transition-all" id="unit-weight-kg" onclick="toggleWeightUnit('kg')" type="button">
+            KG
+          </button>
+<button class="py-1 px-3 rounded-full font-label-caps text-label-caps text-outline transition-all" id="unit-weight-lb" onclick="toggleWeightUnit('lb')" type="button">
+            LB
+          </button>
+</div>
+</div>
+<div class="flex items-baseline justify-between pt-1">
+<div class="flex items-baseline gap-2">
+<input class="w-28 bg-transparent font-display-metric text-display-metric text-on-surface focus:outline-none p-0 selection:bg-primary-fixed selection:text-on-primary-fixed" id="weight-input" type="number" value="74"/>
+<span class="font-headline-sm text-headline-sm text-outline" id="weight-unit-label">kg</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface active:scale-90 transition-transform" onclick="adjustValue('weight-input', -1, 30, 250)" type="button">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface active:scale-90 transition-transform" onclick="adjustValue('weight-input', 1, 30, 250)" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Motivational Athletic Callout Chip -->
+<div class="flex items-center gap-3 p-3.5 rounded-DEFAULT bg-surface-container-high/60 mb-6">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+      Private to your device. You can update or switch metric units anytime in Account settings.
+    </p>
+</div>
+<!-- Primary Sticky Continue Action -->
+<div class="sticky bottom-0 pt-2 pb-2 bg-gradient-to-t from-background via-background/95 to-transparent">
+<button class="w-full h-14 rounded-full bg-primary-fixed text-on-primary-fixed font-label-lg text-label-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform duration-150 shadow-lg" id="continue-btn" onclick="handleContinue(this)" type="button">
+<span>Continue</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<script>
+  function selectSex(btn) {
+    const parent = document.getElementById('sex-selector');
+    const buttons = parent.querySelectorAll('.sex-opt');
+    buttons.forEach(b => {
+      b.classList.remove('bg-primary-fixed', 'text-on-primary-fixed', 'font-bold', 'shadow-sm');
+      b.classList.add('text-outline');
+      b.setAttribute('aria-checked', 'false');
+    });
+    btn.classList.add('bg-primary-fixed', 'text-on-primary-fixed', 'font-bold', 'shadow-sm');
+    btn.classList.remove('text-outline');
+    btn.setAttribute('aria-checked', 'true');
+  }
+
+  function adjustValue(inputId, delta, min, max) {
+    const input = document.getElementById(inputId);
+    let val = parseFloat(input.value) || 0;
+    val = Math.min(Math.max(val + delta, min), max);
+    input.value = val;
+  }
+
+  function toggleHeightUnit(unit) {
+    const cmBtn = document.getElementById('unit-height-cm');
+    const ftBtn = document.getElementById('unit-height-ft');
+    const label = document.getElementById('height-unit-label');
+    const input = document.getElementById('height-input');
+    let val = parseFloat(input.value) || 178;
+
+    if (unit === 'cm') {
+      cmBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps bg-primary-fixed text-on-primary-fixed font-bold transition-all';
+      ftBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps text-outline transition-all';
+      label.textContent = 'cm';
+      if (val < 10) { input.value = Math.round(val * 30.48); }
+    } else {
+      ftBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps bg-primary-fixed text-on-primary-fixed font-bold transition-all';
+      cmBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps text-outline transition-all';
+      label.textContent = 'ft';
+      if (val > 10) { input.value = (val / 30.48).toFixed(1); }
+    }
+  }
+
+  function toggleWeightUnit(unit) {
+    const kgBtn = document.getElementById('unit-weight-kg');
+    const lbBtn = document.getElementById('unit-weight-lb');
+    const label = document.getElementById('weight-unit-label');
+    const input = document.getElementById('weight-input');
+    let val = parseFloat(input.value) || 74;
+
+    if (unit === 'kg') {
+      kgBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps bg-primary-fixed text-on-primary-fixed font-bold transition-all';
+      lbBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps text-outline transition-all';
+      label.textContent = 'kg';
+      if (val > 140) { input.value = Math.round(val / 2.205); }
+    } else {
+      lbBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps bg-primary-fixed text-on-primary-fixed font-bold transition-all';
+      kgBtn.className = 'py-1 px-3 rounded-full font-label-caps text-label-caps text-outline transition-all';
+      label.textContent = 'lb';
+      if (val < 140) { input.value = Math.round(val * 2.205); }
+    }
+  }
+
+  function handleContinue(btn) {
+    btn.classList.add('opacity-90', 'scale-[0.98]');
+    setTimeout(() => {
+      btn.classList.remove('opacity-90', 'scale-[0.98]');
+    }, 200);
+  }
+</script></main></body></html>

@@ -1,5 +1,14 @@
 import type { ReactNode } from "react";
-import { Pressable, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
+
+import { color, font, radius, space, type } from "@/theme/tokens";
 
 type Props = {
   label: string;
@@ -7,7 +16,8 @@ type Props = {
   accessibilityLabel?: string;
   icon?: ReactNode;
   variant?: "lime" | "ghost" | "dark";
-  className?: string;
+  /** @deprecated NativeWind removed */ className?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
 /** Primary kinetic CTA — primary-fixed lime pill. */
@@ -17,26 +27,53 @@ export const LimeCta = ({
   accessibilityLabel,
   icon,
   variant = "lime",
-  className = "",
+  style,
 }: Props) => {
-  const styles =
+  const bg =
     variant === "lime"
-      ? "bg-primary-fixed"
+      ? color.primaryFixed
       : variant === "dark"
-        ? "bg-surface-container-highest"
-        : "bg-transparent border border-outline-variant";
-  const text =
-    variant === "lime" ? "text-on-primary-fixed" : "text-on-surface";
+        ? color.surfaceContainerHighest
+        : "transparent";
+  const textColor =
+    variant === "lime" ? color.onPrimaryFixed : color.onSurface;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       onPress={onPress}
-      className={`h-14 flex-row items-center justify-center gap-space-sm rounded-full px-space-lg active:opacity-90 ${styles} ${className}`}
+      style={({ pressed }) => [
+        styles.base,
+        {
+          backgroundColor: bg,
+          borderWidth: variant === "ghost" ? 1 : 0,
+          borderColor: color.outlineVariant,
+          opacity: pressed ? 0.9 : 1,
+        },
+        style,
+      ]}
     >
-      <Text className={`font-label-bold text-label-lg ${text}`}>{label}</Text>
+      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
       {icon ? <View>{icon}</View> : null}
     </Pressable>
   );
 };
+
+const styles = StyleSheet.create({
+  base: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    borderRadius: radius.full,
+    paddingHorizontal: space.lg,
+  },
+  label: {
+    fontFamily: font.labelBold,
+    fontSize: type.labelLg.size,
+    lineHeight: type.labelLg.line,
+    letterSpacing: type.labelLg.tracking * type.labelLg.size,
+  },
+});

@@ -11,7 +11,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "update:day-test": "EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 eas-cli update --branch day-test --environment preview --non-interactive"
+    "update:day-test": "EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 eas-cli update --branch day-test --environment preview --non-interactive",
+    "postinstall": "node ./scripts/patch-css-interop.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",

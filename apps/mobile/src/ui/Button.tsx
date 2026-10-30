@@ -1,4 +1,11 @@
-import { Pressable, Text, type AccessibilityRole } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  type AccessibilityRole,
+} from "react-native";
+
+import { color, font, radius, space, type } from "@/theme/tokens";
 
 type ButtonVariant = "lime" | "ghost" | "outline" | "apple" | "surface";
 
@@ -11,20 +18,20 @@ type ButtonProps = {
   accessibilityRole?: AccessibilityRole;
 };
 
-const variantClass: Record<ButtonVariant, string> = {
-  lime: "bg-primary-container",
-  ghost: "bg-transparent",
-  outline: "bg-transparent border border-outline-variant",
-  apple: "bg-primary",
-  surface: "bg-surface-container-high",
+const variantBg: Record<ButtonVariant, string> = {
+  lime: color.primaryContainer,
+  ghost: "transparent",
+  outline: "transparent",
+  apple: color.primary,
+  surface: color.surfaceContainerHigh,
 };
 
-const labelClass: Record<ButtonVariant, string> = {
-  lime: "text-on-primary-fixed",
-  ghost: "text-on-surface-variant",
-  outline: "text-on-surface",
-  apple: "text-on-primary-fixed",
-  surface: "text-on-surface",
+const variantLabel: Record<ButtonVariant, string> = {
+  lime: color.onPrimaryFixed,
+  ghost: color.onSurfaceVariant,
+  outline: color.onSurface,
+  apple: color.onPrimaryFixed,
+  surface: color.onSurface,
 };
 
 /** Full-width pill CTA — Kinetic lime / ghost / outline. */
@@ -48,11 +55,36 @@ export const Button = ({
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={handlePress}
-      className={`h-touch w-full items-center justify-center rounded-full px-space-lg ${variantClass[variant]} ${disabled ? "opacity-40" : "opacity-100"}`}
+      style={[
+        styles.base,
+        {
+          backgroundColor: variantBg[variant],
+          borderWidth: variant === "outline" ? 1 : 0,
+          borderColor: color.outlineVariant,
+          opacity: disabled ? 0.4 : 1,
+        },
+      ]}
     >
-      <Text className={`font-label text-label-lg ${labelClass[variant]}`}>
+      <Text style={[styles.label, { color: variantLabel[variant] }]}>
         {label}
       </Text>
     </Pressable>
   );
 };
+
+const styles = StyleSheet.create({
+  base: {
+    height: space.touch,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.full,
+    paddingHorizontal: space.lg,
+  },
+  label: {
+    fontFamily: font.label,
+    fontSize: type.labelLg.size,
+    lineHeight: type.labelLg.line,
+    letterSpacing: type.labelLg.tracking * type.labelLg.size,
+  },
+});

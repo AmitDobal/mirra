@@ -91,10 +91,22 @@ const GeneratingScreen = () => {
                   delay: i * 120,
                 } as MotiTransition
               }
-              className="h-3 rounded-full bg-surface-container-high"
-              style={{ width: `${w * 100}%` }}
+              style={{
+                width: `${w * 100}%`,
+                height: 12,
+                borderRadius: 9999,
+                backgroundColor: "#2a2a2a",
+                overflow: "hidden",
+              }}
             >
-              <View className="h-full w-1/3 rounded-full bg-primary-fixed/40" />
+              <View
+                style={{
+                  height: "100%",
+                  width: "33%",
+                  borderRadius: 9999,
+                  backgroundColor: "rgba(203,241,80,0.4)",
+                }}
+              />
             </MotiView>
           ))}
         </View>
@@ -105,7 +117,12 @@ const GeneratingScreen = () => {
           from={{ width: "20%" }}
           animate={{ width: "88%" }}
           transition={{ type: "timing", duration: MIN_MS } as MotiTransition}
-          className="h-1 self-stretch rounded-full bg-primary-fixed"
+          style={{
+            height: 4,
+            alignSelf: "stretch",
+            borderRadius: 9999,
+            backgroundColor: "#cbf150",
+          }}
         />
       </View>
     </OnboardingShell>

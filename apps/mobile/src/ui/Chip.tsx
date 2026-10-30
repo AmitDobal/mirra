@@ -1,4 +1,6 @@
-import { Pressable, Text } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
+
+import { color, font, radius, space, type } from "@/theme/tokens";
 
 type ChipProps = {
   label: string;
@@ -19,18 +21,44 @@ export const Chip = ({
     accessibilityLabel={accessibilityLabel ?? label}
     accessibilityState={{ selected }}
     onPress={onPress}
-    className={`min-h-touch items-center justify-center rounded-full border px-space-md py-space-sm ${
+    style={[
+      styles.base,
       selected
-        ? "border-primary-container bg-primary-container"
-        : "border-outline-variant bg-surface-container-high"
-    }`}
+        ? {
+            borderColor: color.primaryContainer,
+            backgroundColor: color.primaryContainer,
+          }
+        : {
+            borderColor: color.outlineVariant,
+            backgroundColor: color.surfaceContainerHigh,
+          },
+    ]}
   >
     <Text
-      className={`font-label text-label-md ${
-        selected ? "text-on-primary-fixed" : "text-on-surface"
-      }`}
+      style={[
+        styles.label,
+        { color: selected ? color.onPrimaryFixed : color.onSurface },
+      ]}
     >
       {label}
     </Text>
   </Pressable>
 );
+
+const styles = StyleSheet.create({
+  base: {
+    minHeight: space.touch,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.full,
+    borderWidth: 1,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+  },
+  label: {
+    fontFamily: font.label,
+    fontSize: type.labelMd.size,
+    lineHeight: type.labelMd.line,
+    letterSpacing: type.labelMd.tracking * type.labelMd.size,
+  },
+});

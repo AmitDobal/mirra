@@ -1,28 +1,28 @@
 import type { ReactNode } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { space } from "@/theme/tokens";
+import { color, space } from "@/theme/tokens";
 
 type Props = {
   children: ReactNode;
   /** Extra bottom pad for floating TabDock (default true). */
   dockPad?: boolean;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
 /** Safe-area scroll shell used by tab + session screens. */
 export const ScreenScroll = ({
   children,
   dockPad = true,
-  className = "",
+  style,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const bottom = (dockPad ? space.dockClearance : space.xl) + insets.bottom;
 
   return (
     <ScrollView
-      className={`flex-1 bg-surface ${className}`}
+      style={[styles.root, style]}
       contentContainerStyle={{
         paddingTop: insets.top + space.lg,
         paddingBottom: bottom,
@@ -38,26 +38,37 @@ export const ScreenScroll = ({
 type FixedProps = {
   children: ReactNode;
   dockPad?: boolean;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
 /** Non-scrolling full-screen shell (live HUD, etc.). */
 export const ScreenFixed = ({
   children,
   dockPad = false,
-  className = "",
+  style,
 }: FixedProps) => {
   const insets = useSafeAreaInsets();
   return (
     <View
-      className={`flex-1 bg-surface ${className}`}
-      style={{
-        paddingTop: insets.top + space.md,
-        paddingBottom: (dockPad ? space.dockClearance : space.lg) + insets.bottom,
-        paddingHorizontal: space.margin,
-      }}
+      style={[
+        styles.root,
+        {
+          paddingTop: insets.top + space.md,
+          paddingBottom:
+            (dockPad ? space.dockClearance : space.lg) + insets.bottom,
+          paddingHorizontal: space.margin,
+        },
+        style,
+      ]}
     >
       {children}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: color.surface,
+  },
+});

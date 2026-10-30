@@ -1,29 +1,33 @@
 import type { ReactNode } from "react";
-import { Text } from "react-native";
+import { StyleSheet, Text, type StyleProp, type TextStyle } from "react-native";
+
+import { color, font, type } from "@/theme/tokens";
 
 type Props = {
   children: ReactNode;
   tone?: "muted" | "lime" | "dark";
-  className?: string;
+  /** @deprecated NativeWind removed */ className?: string;
+  style?: StyleProp<TextStyle>;
 };
 
-export const CapsLabel = ({
-  children,
-  tone = "muted",
-  className = "",
-}: Props) => {
-  const color =
-    tone === "lime"
-      ? "text-primary-fixed"
-      : tone === "dark"
-        ? "text-on-primary-fixed"
-        : "text-on-surface-variant";
+const toneColor = {
+  muted: color.onSurfaceVariant,
+  lime: color.primaryFixed,
+  dark: color.onPrimaryFixed,
+} as const;
 
-  return (
-    <Text
-      className={`font-label-bold text-label-caps uppercase tracking-widest ${color} ${className}`}
-    >
-      {children}
-    </Text>
-  );
-};
+export const CapsLabel = ({ children, tone = "muted", style }: Props) => (
+  <Text style={[styles.base, { color: toneColor[tone] }, style]}>
+    {children}
+  </Text>
+);
+
+const styles = StyleSheet.create({
+  base: {
+    fontFamily: font.labelBold,
+    fontSize: type.labelCaps.size,
+    lineHeight: type.labelCaps.line,
+    letterSpacing: type.labelCaps.tracking * type.labelCaps.size,
+    textTransform: "uppercase",
+  },
+});

@@ -1,6 +1,3 @@
-import "../global.css";
-import "@/lib/nativewind";
-
 import {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,

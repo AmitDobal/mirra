@@ -7,11 +7,11 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react-native";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { copy } from "@/content/copy";
-import { color, shadow, space } from "@/theme/tokens";
+import { color, radius, shadow, space } from "@/theme/tokens";
 
 type TabId = "today" | "fuel" | "coach" | "progress" | "you";
 
@@ -52,13 +52,14 @@ export const TabDock = () => {
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-x-0 bottom-0 z-50 items-center"
-      style={{ paddingBottom: Math.max(insets.bottom, space.lg) }}
+      style={[
+        styles.wrap,
+        { paddingBottom: Math.max(insets.bottom, space.lg) },
+      ]}
     >
       <View
         accessibilityRole="tablist"
-        className="h-dock flex-row items-center justify-between gap-space-xs rounded-full bg-primary px-space-xs"
-        style={[{ width: 300 }, shadow.dock]}
+        style={[styles.dock, shadow.dock]}
       >
         {tabs.map((tab) => (
           <DockTab key={tab.id} active={current === tab.id} tab={tab} />
@@ -82,8 +83,10 @@ const DockTab = ({ tab, active }: { tab: TabDef; active: boolean }) => {
       accessibilityLabel={tab.label}
       accessibilityState={{ selected: active }}
       onPress={handlePress}
-      className="h-11 w-11 items-center justify-center rounded-full"
-      style={active ? { backgroundColor: color.primaryContainer } : undefined}
+      style={[
+        styles.tab,
+        active ? { backgroundColor: color.primaryContainer } : undefined,
+      ]}
     >
       <tab.Icon
         size={22}
@@ -95,3 +98,32 @@ const DockTab = ({ tab, active }: { tab: TabDef; active: boolean }) => {
     </Pressable>
   );
 };
+
+const styles = StyleSheet.create({
+  wrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 50,
+    alignItems: "center",
+  },
+  dock: {
+    height: space.dock,
+    width: 300,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.xs,
+    borderRadius: radius.full,
+    backgroundColor: color.primary,
+    paddingHorizontal: space.xs,
+  },
+  tab: {
+    height: 44,
+    width: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.full,
+  },
+});

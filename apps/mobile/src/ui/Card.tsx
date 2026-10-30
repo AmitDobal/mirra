@@ -1,32 +1,36 @@
 import type { ReactNode } from "react";
-import { View, type ViewProps } from "react-native";
+import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+
+import { color, radius } from "@/theme/tokens";
 
 type CardTone = "elevated" | "lime" | "lavender" | "lowest";
 
-type CardProps = ViewProps & {
+type CardProps = {
   children: ReactNode;
   tone?: CardTone;
-  className?: string;
+  /** @deprecated NativeWind removed */ className?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
-const toneClass: Record<CardTone, string> = {
-  elevated: "bg-surface-container-high",
-  lime: "bg-primary-container",
-  lavender: "bg-secondary-container",
-  lowest: "bg-surface-container-lowest",
+const toneBg: Record<CardTone, string> = {
+  elevated: color.surfaceContainerHigh,
+  lime: color.primaryContainer,
+  lavender: color.secondaryContainer,
+  lowest: color.surfaceContainerLowest,
 };
 
-/** Rounded surface block — no raw hex; tokens only. */
-export const Card = ({
-  children,
-  tone = "elevated",
-  className = "",
-  ...rest
-}: CardProps) => (
+/** Rounded surface block — tokens only. */
+export const Card = ({ children, tone = "elevated", style }: CardProps) => (
   <View
-    className={`overflow-hidden rounded-md ${toneClass[tone]} ${className}`}
-    {...rest}
+    style={[styles.base, { backgroundColor: toneBg[tone] }, style]}
   >
     {children}
   </View>
 );
+
+const styles = StyleSheet.create({
+  base: {
+    overflow: "hidden",
+    borderRadius: radius.md,
+  },
+});

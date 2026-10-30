@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-10-31 — NativeWind styles broken on Expo Go OTA (fixed)
+
+**Symptom:** Expo Go day-test looked unstyled (“CSS vanished”).
+**Cause:** production CSS cache often baked as empty `injectData({})` (NativeWind virtual-module race on `eas update`).
+**Fix:** `forceWriteFileSystem: true` in `metro.config.js`; `cssInterop` for Moti/GestureHandlerRootView; root StyleSheet fallback. New update: https://expo.dev/accounts/amitdobal141/projects/mirra/updates/a0b08188-9f2d-4b6e-a983-db975f215aa9
+
+**Local:** Metro on `:8081` (`npx expo start --go --lan --clear`).
+
 ## 2026-10-31 — Upgraded to Expo SDK 58
 
 **Done:** Mobile `expo@~58` + aligned deps (RN 0.88); Moti transition casts; EAS Update republished for `exposdk:58.0.0` on `day-test`.

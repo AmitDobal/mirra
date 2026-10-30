@@ -9,8 +9,9 @@ import {
   X,
 } from "lucide-react-native";
 import { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
+import { s16LiveWorkoutHud } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenFixed } from "@/ui/ScreenScroll";
@@ -89,6 +90,12 @@ export const LiveWorkoutScreen = () => {
       </View>
 
       <View className="mb-space-sm flex-1 justify-center rounded-lg bg-surface-container-low p-space-lg">
+        <Image
+          source={s16LiveWorkoutHud.athleteDeepSquat}
+          accessibilityLabel="Live exercise"
+          style={{ alignSelf: "stretch", height: 120, borderRadius: 12, marginBottom: 12 }}
+          resizeMode="cover"
+        />
         <CapsLabel>
           Exercise {exerciseIndex + 1} of {exercises.length}
         </CapsLabel>

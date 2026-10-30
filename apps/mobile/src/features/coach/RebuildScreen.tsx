@@ -1,8 +1,9 @@
 import { router } from "expo-router";
 import { ArrowRight, X } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
+import { s21RebuildPreview } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -84,6 +85,12 @@ export const RebuildScreen = () => {
       </View>
 
       <Text className="font-headline text-headline-lg text-on-surface">Rebuild Preview</Text>
+      <Image
+        source={s21RebuildPreview.athleteStretching}
+        accessibilityLabel="Rebuild preview"
+        style={{ width: "100%", height: 140, borderRadius: 12, marginTop: 12 }}
+        resizeMode="cover"
+      />
       <View className="mt-space-sm self-start rounded-full bg-primary-fixed px-3 py-1">
         <CapsLabel tone="dark">{notice ?? "Volume-preserving shift"}</CapsLabel>
       </View>

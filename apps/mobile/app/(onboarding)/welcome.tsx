@@ -1,6 +1,7 @@
 import { router } from "expo-router";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
+import { s02WelcomeHook } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell } from "@/features/onboarding";
 import { Button, Card } from "@/ui";
@@ -26,6 +27,12 @@ const WelcomeScreen = () => {
       }
     >
       <View className="pt-space-xl">
+        <Image
+          source={s02WelcomeHook.heroRunnerSilhouette}
+          accessibilityLabel="Athlete silhouette"
+          style={{ width: "100%", height: 180, borderRadius: 16, marginBottom: 16 }}
+          resizeMode="cover"
+        />
         <View className="mb-space-md self-start rounded-full bg-primary-container px-space-sm py-1">
           <Text className="font-label-bold text-label-caps text-on-primary-fixed">
             {c.eyebrow}
@@ -40,6 +47,20 @@ const WelcomeScreen = () => {
         <Text className="mt-space-sm max-w-[320px] font-body-medium text-body-md text-on-surface-variant">
           {c.sub}
         </Text>
+        <View className="mt-space-md flex-row gap-space-sm">
+          <Image
+            source={s02WelcomeHook.portraitWomanAthlete}
+            accessibilityLabel="Athlete portrait"
+            style={{ flex: 1, height: 96, borderRadius: 12 }}
+            resizeMode="cover"
+          />
+          <Image
+            source={s02WelcomeHook.portraitMaleCrossfit}
+            accessibilityLabel="Athlete portrait"
+            style={{ flex: 1, height: 96, borderRadius: 12 }}
+            resizeMode="cover"
+          />
+        </View>
         <Card tone="lavender" className="mt-space-xl gap-space-md p-space-md">
           {c.steps.map((step) => (
             <View key={step.num} className="flex-row items-center gap-space-md">

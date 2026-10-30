@@ -1,18 +1,39 @@
 import { router } from "expo-router";
 import { MotiView } from "moti";
 import { useEffect, useRef } from "react";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
+import { s11GeneratingWeek } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { runOnboardingGenerate } from "@/features/onboarding/services/run-generate";
+import type { OnboardingWeekPlan } from "@/features/onboarding/types";
+import type { CurrentPlan } from "@/lib/api";
+import { usePlanStore } from "@/stores/plan-store";
 
 const MIN_MS = 1600;
+
+const toCurrentPlan = (plan: OnboardingWeekPlan): CurrentPlan => ({
+  id: plan.id,
+  version: plan.version,
+  status: plan.status,
+  weekStart: plan.weekStart,
+  summary: plan.summary as CurrentPlan["summary"],
+  days: plan.days.map((d) => ({
+    id: d.id,
+    dayIndex: d.dayIndex,
+    date: d.date,
+    kind: d.kind,
+    label: d.label,
+    workout: d.workout ?? null,
+  })),
+});
 
 /** S11 — PUT onboarding → generate plan → week-reveal. */
 const GeneratingScreen = () => {
   const c = onboardingCopy.generating;
   const setWeekPlan = useOnboardingStore((s) => s.setWeekPlan);
+  const setPlan = usePlanStore((s) => s.setPlan);
   const started = useRef(false);
 
   useEffect(() => {
@@ -26,6 +47,7 @@ const GeneratingScreen = () => {
       try {
         const plan = await runOnboardingGenerate(answers);
         setWeekPlan(plan);
+        setPlan(toCurrentPlan(plan));
       } catch {
         // runOnboardingGenerate already falls back locally; keep UX moving
       } finally {
@@ -35,11 +57,26 @@ const GeneratingScreen = () => {
         }, wait);
       }
     })();
-  }, [setWeekPlan]);
+  }, [setPlan, setWeekPlan]);
 
   return (
     <OnboardingShell scroll={false}>
       <View className="flex-1 items-center justify-center gap-space-lg">
+        <View className="mb-space-md flex-row gap-space-sm">
+          {[
+            s11GeneratingWeek.athleteSquat,
+            s11GeneratingWeek.sprinterKneeling,
+            s11GeneratingWeek.athleteBarbell,
+          ].map((src, i) => (
+            <Image
+              key={i}
+              source={src}
+              accessibilityLabel="Generating plan"
+              style={{ width: 72, height: 96, borderRadius: 10 }}
+              resizeMode="cover"
+            />
+          ))}
+        </View>
         <View className="w-full max-w-[280px] gap-space-sm">
           {[1, 0.72, 0.9, 0.55].map((w, i) => (
             <MotiView

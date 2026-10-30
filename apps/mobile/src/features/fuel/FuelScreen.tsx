@@ -1,14 +1,21 @@
 import { router } from "expo-router";
 import { Camera, Droplets, Flame, Plus } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
+import { s18Fuel } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 
 import { selectLoggedKcal, useFuelStore } from "./fuel-store";
+
+const MEAL_IMGS = [
+  s18Fuel.mealProteinOats,
+  s18Fuel.mealChickenQuinoa,
+  s18Fuel.mealSalmonAsparagus,
+] as const;
 
 /** S18 Fuel dashboard — SQLite meals. */
 export const FuelScreen = () => {
@@ -131,14 +138,17 @@ export const FuelScreen = () => {
           </Text>
         </View>
       ) : (
-        meals.map((meal) => (
+        meals.map((meal, i) => (
           <View
             key={meal.id}
             className="mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md"
           >
-            <View className="h-14 w-14 items-center justify-center rounded-sm bg-surface-container-highest">
-              <Flame size={22} color={color.primaryFixed} />
-            </View>
+            <Image
+              source={MEAL_IMGS[i % MEAL_IMGS.length]!}
+              accessibilityLabel={meal.name}
+              style={{ width: 56, height: 56, borderRadius: 8 }}
+              resizeMode="cover"
+            />
             <View className="flex-1">
               <Text className="font-body text-body-sm text-on-surface-variant">
                 {meal.slot} · {meal.time}

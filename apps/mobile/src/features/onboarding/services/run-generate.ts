@@ -5,6 +5,7 @@ import {
   putOnboarding,
 } from "@/lib/api";
 import type { OnboardingPutBody, PlanJobResponse } from "@/lib/api/types";
+import { usePlanStore } from "@/stores/plan-store";
 
 import type { OnboardingAnswers, OnboardingWeekPlan } from "../types";
 import { toOnboardingBody } from "../map-body";
@@ -77,7 +78,9 @@ const tryApiGenerate = async (
   await putOnboarding(body);
   const key = `onb-${Date.now()}`;
   const { jobId } = await generatePlan(key);
+  usePlanStore.getState().setJob(jobId, { status: "queued" });
   const job = await pollJob(jobId);
+  usePlanStore.getState().setJob(jobId, job);
   if (job.status === "failed") {
     throw new Error(job.error ?? "Plan job failed");
   }
@@ -85,6 +88,7 @@ const tryApiGenerate = async (
     throw new Error("Plan job timed out");
   }
   const raw = await getApiCurrentPlan();
+  usePlanStore.getState().setPlan(raw);
   const plan = normalizeApiPlan(raw);
   if (!plan || plan.days.length === 0) {
     throw new Error("Empty current plan");

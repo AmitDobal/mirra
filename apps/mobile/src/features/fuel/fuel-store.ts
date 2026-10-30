@@ -1,7 +1,10 @@
 import { create } from "zustand";
 
-import { getFuelToday, logMeal } from "@/db";
-import { createMeal } from "@/lib/api";
+import { getFuelToday as getLocalFuel, logMeal } from "@/db";
+import {
+  createMeal,
+  getFuelToday as getApiFuel,
+} from "@/lib/api";
 
 export type LocalMeal = {
   readonly id: string;
@@ -55,7 +58,30 @@ export const useFuelStore = create<FuelState>((set, get) => ({
   hydrate: async () => {
     set({ loading: true });
     try {
-      const fuel = await getFuelToday();
+      const fuel = await getApiFuel();
+      const meals: LocalMeal[] = fuel.meals.map((m) => ({
+        id: m.id,
+        name: m.name,
+        calories: m.calories ?? 0,
+        proteinG: m.proteinG ?? 0,
+        localDate: fuel.date,
+        slot: "Meal",
+        time: formatTime(),
+        source: "api" as const,
+      }));
+      set({
+        meals,
+        target: fuel.caloriesTarget ?? get().target,
+        proteinTarget: get().proteinTarget,
+        loading: false,
+      });
+      return;
+    } catch {
+      /* local */
+    }
+
+    try {
+      const fuel = await getLocalFuel();
       const meals: LocalMeal[] = fuel.meals.map((m) => ({
         id: m.id,
         name: m.name,
@@ -107,6 +133,7 @@ export const useFuelStore = create<FuelState>((set, get) => ({
           m.id === local.id ? { ...m, id: remote.id, source: "api" as const } : m,
         ),
       }));
+      await get().hydrate();
       return { ...local, id: remote.id, source: "api" };
     } catch {
       return local;

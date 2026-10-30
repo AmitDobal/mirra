@@ -1,22 +1,49 @@
 import { router } from "expo-router";
 import { X } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { useEffect } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 
+import { s13Paywall } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
+import { usePurchases } from "@/lib/purchases";
 import { color } from "@/theme/tokens";
 import { Button, Card } from "@/ui";
 
-/** S13 — Soft paywall stub → tabs (mark onboarding complete). */
+/** S13 — Soft paywall (stub OK) → tabs. */
 const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
   const setPaywallPlan = useOnboardingStore((s) => s.setPaywallPlan);
   const markCompleted = useOnboardingStore((s) => s.markCompleted);
+  const { loading, purchase, restore, loadOfferings, offerings } = usePurchases();
+
+  useEffect(() => {
+    void loadOfferings();
+  }, [loadOfferings]);
 
   const finish = () => {
     markCompleted();
     router.replace("/(tabs)/today");
+  };
+
+  const packageId =
+    offerings[0]?.packages.find((p) =>
+      plan === "annual"
+        ? /annual|year/i.test(p.identifier)
+        : /month/i.test(p.identifier),
+    )?.identifier ??
+    offerings[0]?.packages[0]?.identifier ??
+    (plan === "annual" ? "$rc_annual" : "$rc_monthly");
+
+  const handleTrial = async () => {
+    await purchase(packageId);
+    finish();
+  };
+
+  const handleRestore = async () => {
+    await restore();
+    finish();
   };
 
   const goAuth = () => router.push("/(onboarding)/auth");
@@ -38,14 +65,29 @@ const PaywallScreen = () => {
       }
       footer={
         <>
-          <Button label={c.trial} onPress={finish} />
-          <Button label={c.restore} variant="ghost" onPress={finish} />
+          <Button
+            label={loading ? "…" : c.trial}
+            onPress={() => void handleTrial()}
+          />
+          <Button
+            label={c.restore}
+            variant="ghost"
+            onPress={() => void handleRestore()}
+          />
           <Text className="text-center font-body text-body-sm text-outline">
             {c.legal}
           </Text>
         </>
       }
     >
+      <View className="mb-space-md items-center">
+        <Image
+          source={s13Paywall.coachCutout}
+          accessibilityLabel="Mirra coach"
+          style={{ width: 112, height: 112, borderRadius: 56 }}
+          resizeMode="cover"
+        />
+      </View>
       <Text className="font-headline text-headline-lg text-on-surface">
         {c.title}
       </Text>

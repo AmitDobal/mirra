@@ -8,6 +8,9 @@
     "scheme": "mirra",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "ai.mirra.app"
@@ -29,13 +32,24 @@
       "bundler": "metro",
       "backgroundColor": "#131313"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "apiBaseUrl": "http://localhost:8787",
-      "mirraUserId": "dev-user-1"
+      "apiBaseUrl": "https://mirra-api.amit-dobalwork.workers.dev",
+      "mirraUserId": "day-test-1",
+      "router": {},
+      "eas": {
+        "projectId": "c0deee59-d915-4467-836d-accec54fbdd3"
+      }
+    },
+    "owner": "amitdobal141",
+    "updates": {
+      "url": "https://u.expo.dev/c0deee59-d915-4467-836d-accec54fbdd3"
     }
   }
 }

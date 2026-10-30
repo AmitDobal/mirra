@@ -18,12 +18,13 @@ import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { ensureMirraDb } from "@/lib/local";
+import { configurePurchases } from "@/lib/purchases";
 import { color } from "@/theme/tokens";
 
 void SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
-  const [dbSettled, setDbSettled] = useState(false);
+  const [bootSettled, setBootSettled] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
@@ -34,17 +35,24 @@ const RootLayout = () => {
   });
 
   useEffect(() => {
-    void ensureMirraDb()
-      .catch((error: unknown) => {
+    void (async () => {
+      try {
+        await ensureMirraDb();
+      } catch (error: unknown) {
         console.warn("[mirra] ensureMirraDb failed", error);
-      })
-      .finally(() => {
-        setDbSettled(true);
-      });
+      }
+      try {
+        await configurePurchases();
+      } catch (error: unknown) {
+        console.warn("[mirra] configurePurchases failed", error);
+      } finally {
+        setBootSettled(true);
+      }
+    })();
   }, []);
 
   const fontsReady = fontsLoaded || Boolean(fontError);
-  const appReady = fontsReady && dbSettled;
+  const appReady = fontsReady && bootSettled;
 
   useEffect(() => {
     if (appReady) {

@@ -1,8 +1,9 @@
 import { router } from "expo-router";
 import { Camera, CheckCircle2, Sparkles, X } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Image, Pressable, Text, TextInput, View } from "react-native";
 
+import { s19LogMeal } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -110,11 +111,19 @@ export const LogMealScreen = () => {
           <Sparkles size={14} color={color.primaryFixed} />
           <CapsLabel tone="lime">Manual entry</CapsLabel>
         </View>
-        <View className="h-36 w-full items-center justify-center rounded-lg bg-surface-container-highest">
-          <Camera size={40} color={color.onSurfaceVariant} />
-          <Text className="mt-2 font-body text-body-sm text-on-surface-variant">
-            Optional photo · snap from Fuel
-          </Text>
+        <View className="h-36 w-full overflow-hidden rounded-lg bg-surface-container-highest">
+          <Image
+            source={s19LogMeal.mealFlankSteak}
+            accessibilityLabel="Meal preview"
+            style={{ width: "100%", height: "100%" }}
+            resizeMode="cover"
+          />
+          <View className="absolute inset-0 items-center justify-center bg-black/25">
+            <Camera size={32} color={color.onSurface} />
+            <Text className="mt-2 font-body text-body-sm text-on-surface">
+              Optional photo · snap from Fuel
+            </Text>
+          </View>
         </View>
       </View>
 

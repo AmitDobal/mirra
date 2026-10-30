@@ -1,8 +1,9 @@
 import { router } from "expo-router";
 import { ChevronRight, LogOut } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Alert, Linking, Pressable, Switch, Text, View } from "react-native";
+import { Alert, Image, Linking, Pressable, Switch, Text, View } from "react-native";
 
+import { s24ProfileSettings } from "../../../assets/stitch";
 import { getCurrentPlan, getProfile, type LocalPlan, type LocalProfile } from "@/db";
 import { useOnboardingStore } from "@/features/onboarding";
 import { getPurchases } from "@/lib/purchases";
@@ -112,11 +113,12 @@ export const YouScreen = () => {
   return (
     <ScreenScroll>
       <View className="mb-space-md flex-row items-center gap-space-md">
-        <View className="h-16 w-16 items-center justify-center rounded-full bg-primary-fixed">
-          <Text className="font-headline text-headline-md text-on-primary-fixed">
-            {(name[0] ?? "M").toUpperCase()}
-          </Text>
-        </View>
+        <Image
+          source={s24ProfileSettings.avatarAlexChen}
+          accessibilityLabel="Profile avatar"
+          style={{ width: 64, height: 64, borderRadius: 32 }}
+          resizeMode="cover"
+        />
         <View className="flex-1">
           <Text className="font-headline text-headline-md text-on-surface">{name}</Text>
           <Text className="font-body text-body-sm text-on-surface-variant">{handle}</Text>

@@ -1,5 +1,29 @@
 # Handoff
 
+## 2026-10-31 — iOS day-test (laptop off)
+
+**Done:** Cloudflare `mirra-api` deployed; D1 migrate + OpenAI secrets; R2 `mirra-media`; EAS project + Update on branch/channel `day-test`.
+
+| | |
+| --- | --- |
+| API | https://mirra-api.amit-dobalwork.workers.dev |
+| Open on phone | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/4d10a299-539e-4f9e-bd33-32c6fdc70546 → Open in Expo Go |
+| Runbook | `docs/09-runbooks/ios-day-test.md` |
+
+**Next:** Use Expo Go for ~1 day; note bugs. Republish with `eas update --branch day-test` after JS fixes. Turn off `ALLOW_DEV_USER_HEADER` before real prod.
+
+## 2026-10-31 — GOAL COMPLETE
+
+**Evidence:** [Tester smoke Mirra app](ffde98c0-4dea-47fd-8087-6ee3afbbb96f) + re-verify typecheck/health. See `SMOKE.md`.
+
+**Run:** `npm run api:dev` + `npm run mobile`
+
+**Polish later:** Stitch pixel QA, live Auth/RC keys, S11/S24 PNGs.
+
+## 2026-10-31 — Integrator (G-INT) closed
+
+**Done:** [Integrate API purchases assets](d25fc8cc-2608-48b8-8c82-e40f2327e5cd)
+
 ## G2-TEST results
 
 **Verdict:** typecheck + curl **green** — do not mark product Done yet (mock-heavy tabs remain).
@@ -64,18 +88,20 @@
 
 **Decision:** Mobile **expo-sqlite local-first** + CF D1 API write-through.
 
+## 2026-10-31 — Integrate landed; tester in flight
+
+**Done**
+- [Integrate API purchases assets](d25fc8cc-2608-48b8-8c82-e40f2327e5cd): boot purchases, generate→plan store, Today/Fuel API, paywall stub, stitch images; mobile typecheck PASS
+
+**Doing**
+- [Tester smoke Mirra app](ffde98c0-4dea-47fd-8087-6ee3afbbb96f)
+
+**Gaps (soft)**
+- Live RC / Better Auth; some secondary mock chrome; visual QA vs Stitch
+
 ## 2026-10-31 — Build wave 1 complete → integrate
 
-**Landed**
-- [Download Stitch AIDA assets](7751f527-186e-4af4-9b2b-0f1635e9afd5) 28/28
-- [Onboarding screens S01-S14](c153c727-e160-44d0-b7bb-4580e887c26c)
-- [Tab screens S15-S24 shells](9e144154-c923-4e01-936e-ebbad8b7763b)
-- [API core flow routes](ad1aaff0-c756-4c15-a67f-6d1ed7b9ac20)
-- [RevenueCat port + API client](d367ffea-8f7e-4684-a6ff-186aff84f15e)
-
-**Next (wave 2 agents)**
-- Integrate API/purchases/assets into screens
-- Fix typecheck; tester smoke until app runs
+Wave 1 builders all done (assets/onb/tabs/api/rc).
 
 ## 2026-10-31 — GOAL kickoff (running app)
 

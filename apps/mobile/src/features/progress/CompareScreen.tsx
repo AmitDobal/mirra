@@ -1,8 +1,9 @@
 import { router } from "expo-router";
 import { ArrowLeft, Share2 } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, Share, Text, View } from "react-native";
+import { Alert, Image, Pressable, Share, Text, View } from "react-native";
 
+import { s23MirrorComparison } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -117,17 +118,29 @@ export const CompareScreen = () => {
       </View>
 
       <View className="mb-space-md flex-row gap-space-sm">
-        <View className="h-56 flex-1 items-center justify-center rounded-lg bg-surface-container-highest">
-          <CapsLabel>{left.label}</CapsLabel>
-          <Text className="mt-2 font-body text-body-sm text-on-surface-variant">
-            {left.uri ? "Photo attached" : "Placeholder"}
-          </Text>
+        <View className="h-56 flex-1 overflow-hidden rounded-lg bg-surface-container-highest">
+          <Image
+            source={
+              left.uri
+                ? { uri: left.uri }
+                : s23MirrorComparison.progressAfter
+            }
+            accessibilityLabel={left.label}
+            style={{ width: "100%", height: "100%" }}
+            resizeMode="cover"
+          />
         </View>
-        <View className="h-56 flex-1 items-center justify-center rounded-lg bg-surface-container-high">
-          <CapsLabel>{right.label}</CapsLabel>
-          <Text className="mt-2 font-body text-body-sm text-on-surface-variant">
-            {right.uri ? "Photo attached" : "Placeholder"}
-          </Text>
+        <View className="h-56 flex-1 overflow-hidden rounded-lg bg-surface-container-high">
+          <Image
+            source={
+              right.uri
+                ? { uri: right.uri }
+                : s23MirrorComparison.progressBaseline
+            }
+            accessibilityLabel={right.label}
+            style={{ width: "100%", height: "100%" }}
+            resizeMode="cover"
+          />
         </View>
       </View>
 

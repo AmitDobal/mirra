@@ -1,14 +1,22 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
+import { s12WeekReveal } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { loadWeekPlanFromDb } from "@/features/onboarding/services/plan-persist";
 import type { OnboardingWeekPlan } from "@/features/onboarding/types";
+import { getCurrentPlan } from "@/lib/api";
+import { usePlanStore } from "@/stores/plan-store";
 import { Button, Card } from "@/ui";
 
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"] as const;
+const WORKOUT_IMGS = [
+  s12WeekReveal.dumbbellOverheadPress,
+  s12WeekReveal.barbellBentOverRow,
+  s12WeekReveal.barbellBackSquat,
+] as const;
 
 const goalLabel = (goal: string | null) => {
   const map: Record<string, string> = {
@@ -27,28 +35,93 @@ const dayTag = (kind: string) => {
   return "Rest";
 };
 
-/** S12 — Plan days/workouts from SQLite `getCurrentPlan`. */
+const toOnboardingWorkout = (
+  w: NonNullable<Awaited<ReturnType<typeof getCurrentPlan>>["days"][number]["workout"]>,
+): OnboardingWeekPlan["workouts"][number] => ({
+  id: w.id,
+  title: w.title,
+  durationMin: w.durationMin,
+  focus: w.focus,
+  exercises: w.exercises.map((e) => ({
+    id: e.id,
+    name: e.name,
+    cue: e.cue,
+    targetSets: e.targetSets,
+    targetReps: e.targetReps,
+    restSec: e.restSec,
+  })),
+});
+
+const fromApiPlan = (
+  raw: Awaited<ReturnType<typeof getCurrentPlan>>,
+): OnboardingWeekPlan => {
+  const workouts = raw.days
+    .map((d) => d.workout)
+    .filter((w): w is NonNullable<typeof w> => w != null)
+    .map(toOnboardingWorkout);
+  const seen = new Set<string>();
+  const unique = workouts.filter((w) => {
+    if (seen.has(w.id)) return false;
+    seen.add(w.id);
+    return true;
+  });
+  const summary = raw.summary as OnboardingWeekPlan["summary"] | undefined;
+  return {
+    id: raw.id,
+    version: raw.version,
+    status: raw.status,
+    weekStart: raw.weekStart,
+    summary,
+    days: raw.days.map((d) => ({
+      id: d.id,
+      dayIndex: d.dayIndex,
+      date: d.date,
+      kind: d.kind,
+      label: d.label,
+      workout: d.workout ? toOnboardingWorkout(d.workout) : null,
+    })),
+    workouts: unique,
+    source: "api",
+  };
+};
+
+/** S12 — Plan from store / API / SQLite. */
 const WeekRevealScreen = () => {
   const c = onboardingCopy.weekReveal;
   const goal = useOnboardingStore((s) => s.goal);
   const trainingDays = useOnboardingStore((s) => s.trainingDays);
   const storePlan = useOnboardingStore((s) => s.weekPlan);
-  const [dbPlan, setDbPlan] = useState<OnboardingWeekPlan | null>(null);
+  const planStore = usePlanStore((s) => s.plan);
+  const setPlan = usePlanStore((s) => s.setPlan);
+  const [extra, setExtra] = useState<OnboardingWeekPlan | null>(null);
 
   useEffect(() => {
     let alive = true;
-    void loadWeekPlanFromDb().then((plan) => {
-      if (alive) setDbPlan(plan);
-    });
+    void (async () => {
+      try {
+        const api = await getCurrentPlan();
+        if (!alive || !api?.days?.length) throw new Error("empty");
+        setPlan(api);
+        setExtra(fromApiPlan(api));
+        return;
+      } catch {
+        /* fall through */
+      }
+      const db = await loadWeekPlanFromDb();
+      if (alive) setExtra(db);
+    })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [setPlan]);
 
-  const plan = dbPlan ?? storePlan;
+  const fromStore: OnboardingWeekPlan | null = planStore
+    ? fromApiPlan(planStore)
+    : null;
+  const plan = storePlan ?? fromStore ?? extra;
 
   const daysCount =
-    plan?.days.filter((d) => d.kind === "lift").length ??
+    plan?.days.filter((d) => d.kind === "lift" || d.workout).length ??
     trainingDays.filter(Boolean).length;
 
   const kcal = plan?.summary?.kcalTarget;
@@ -62,7 +135,7 @@ const WeekRevealScreen = () => {
       ? plan.days.map((d, i) => ({
           letter: DAY_LETTERS[i]!,
           tag: dayTag(d.kind),
-          lift: d.kind === "lift",
+          lift: d.kind === "lift" || Boolean(d.workout),
         }))
       : c.days.map((d) => ({
           letter: d.letter,
@@ -110,11 +183,12 @@ const WeekRevealScreen = () => {
               </Text>
             </View>
           </View>
-          <View className="h-14 w-14 items-center justify-center rounded-full border-2 border-on-primary-fixed/40">
-            <Text className="font-label-bold text-label-lg text-on-primary-fixed">
-              {c.progress}
-            </Text>
-          </View>
+          <Image
+            source={WORKOUT_IMGS[0]}
+            accessibilityLabel="Week workout"
+            style={{ width: 56, height: 56, borderRadius: 28 }}
+            resizeMode="cover"
+          />
         </View>
       </Card>
 
@@ -144,14 +218,22 @@ const WeekRevealScreen = () => {
       </View>
 
       <View className="mt-space-lg gap-space-sm">
-        {workouts.map((w) => (
-          <Card key={w.name} tone="lavender" className="p-space-md">
-            <Text className="font-headline-semi text-headline-sm text-on-secondary-container">
-              {w.name}
-            </Text>
-            <Text className="mt-1 font-body text-body-sm text-secondary">
-              {w.mins} · {w.meta}
-            </Text>
+        {workouts.map((w, i) => (
+          <Card key={w.name} tone="lavender" className="flex-row gap-space-md p-space-md">
+            <Image
+              source={WORKOUT_IMGS[i % WORKOUT_IMGS.length]!}
+              accessibilityLabel={w.name}
+              style={{ width: 56, height: 56, borderRadius: 8 }}
+              resizeMode="cover"
+            />
+            <View className="flex-1">
+              <Text className="font-headline-semi text-headline-sm text-on-secondary-container">
+                {w.name}
+              </Text>
+              <Text className="mt-1 font-body text-body-sm text-secondary">
+                {w.mins} · {w.meta}
+              </Text>
+            </View>
           </Card>
         ))}
       </View>

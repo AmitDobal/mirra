@@ -2,6 +2,8 @@ import { create } from "zustand";
 
 import { copy } from "@/content/copy";
 import { listCheckIns, submitCheckIn } from "@/db";
+import { useFuelStore } from "@/features/fuel/fuel-store";
+import { useTodayStore } from "@/features/today/today-store";
 import {
   applyRebuild,
   createCheckIn,
@@ -150,6 +152,10 @@ export const useCoachStore = create<CoachState>((set, get) => ({
 
     set({ lastCheckInId: checkInId, notice: `Check-in saved (${status})` });
     await fetchAdvise();
+    await Promise.all([
+      useTodayStore.getState().hydrate(),
+      useFuelStore.getState().hydrate(),
+    ]).catch(() => undefined);
     if (status !== "skipped") return "done";
 
     try {

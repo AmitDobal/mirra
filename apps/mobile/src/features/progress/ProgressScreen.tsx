@@ -1,8 +1,9 @@
 import { router } from "expo-router";
 import { Camera, ChevronRight, Lock } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Image, Pressable, Text, View } from "react-native";
 
+import { s22ProgressGallery } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -10,6 +11,15 @@ import { color } from "@/theme/tokens";
 import { useCoachStore } from "@/features/coach/coach-store";
 
 import { useProgressStore } from "./progress-store";
+
+const GALLERY = [
+  s22ProgressGallery.checkinBaselineStudio,
+  s22ProgressGallery.checkinLockerDefined,
+  s22ProgressGallery.checkinUpperBody,
+  s22ProgressGallery.checkinMidPhase,
+  s22ProgressGallery.checkinApartment,
+  s22ProgressGallery.checkinDayOne,
+] as const;
 
 /** S22 Progress gallery — SQLite photos + cache. */
 export const ProgressScreen = () => {
@@ -92,11 +102,17 @@ export const ProgressScreen = () => {
           </View>
         </View>
         <View className="flex-row gap-space-sm">
-          <PhotoSlot label="Baseline" sub={prior?.label ?? "Add a second photo"} uri={prior?.uri} />
+          <PhotoSlot
+            label="Baseline"
+            sub={prior?.label ?? "Add a second photo"}
+            uri={prior?.uri}
+            fallback={s22ProgressGallery.checkinBaselineStudio}
+          />
           <PhotoSlot
             label="Current"
             sub={latest?.label ?? "No photo yet"}
             uri={latest?.uri}
+            fallback={s22ProgressGallery.checkinLockerDefined}
             highlight
           />
         </View>
@@ -125,7 +141,7 @@ export const ProgressScreen = () => {
           </Text>
         </View>
       ) : (
-        photos.map((e) => (
+        photos.map((e, i) => (
           <Pressable
             key={e.id}
             accessibilityRole="button"
@@ -133,7 +149,16 @@ export const ProgressScreen = () => {
             onPress={handleCompare}
             className="mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md"
           >
-            <View className="h-12 w-12 rounded-sm bg-surface-container-highest" />
+            <Image
+              source={
+                e.uri
+                  ? { uri: e.uri }
+                  : GALLERY[i % GALLERY.length]!
+              }
+              accessibilityLabel={e.label}
+              style={{ width: 48, height: 48, borderRadius: 6 }}
+              resizeMode="cover"
+            />
             <View className="flex-1">
               <Text className="font-label text-label-md text-primary-fixed">{e.label}</Text>
               <Text className="font-body text-body-sm text-on-surface-variant">{e.note}</Text>
@@ -177,23 +202,26 @@ const PhotoSlot = ({
   sub,
   highlight,
   uri,
+  fallback,
 }: {
   label: string;
   sub: string;
   highlight?: boolean;
   uri?: string | null;
+  fallback: (typeof GALLERY)[number];
 }) => (
   <View className="flex-1">
     <View
-      className={`mb-space-xs h-40 items-center justify-center rounded-lg ${
-        highlight
-          ? "border border-primary-fixed bg-primary-fixed/20"
-          : "bg-surface-container-highest"
+      className={`mb-space-xs h-40 overflow-hidden rounded-lg ${
+        highlight ? "border border-primary-fixed" : ""
       }`}
     >
-      <Text className="font-label-bold text-label-lg text-on-surface-variant">
-        {uri ? "Photo" : label}
-      </Text>
+      <Image
+        source={uri ? { uri } : fallback}
+        accessibilityLabel={label}
+        style={{ width: "100%", height: "100%" }}
+        resizeMode="cover"
+      />
     </View>
     <CapsLabel>{sub}</CapsLabel>
   </View>

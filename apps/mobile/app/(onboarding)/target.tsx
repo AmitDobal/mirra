@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { Minus, Plus } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
+import { s06Target } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
@@ -45,6 +46,12 @@ const TargetScreen = () => {
       <Text className="mt-space-lg font-headline text-headline-md text-on-surface">
         {c.title}
       </Text>
+      <Image
+        source={s06Target.athleteTyingShoes}
+        accessibilityLabel="Athlete tying shoes"
+        style={{ width: "100%", height: 140, borderRadius: 12, marginTop: 16 }}
+        resizeMode="cover"
+      />
       <View className="mt-space-lg rounded-DEFAULT bg-surface-container-high p-space-md">
         <Text className="mb-space-sm font-label text-label-md text-on-surface-variant">
           {c.goalWeight}

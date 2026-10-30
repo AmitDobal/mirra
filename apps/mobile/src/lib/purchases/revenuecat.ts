@@ -52,10 +52,10 @@ const mapCustomer = (info: RcCustomerInfo): CustomerInfo => ({
 
 const loadRc = async (): Promise<RcModule["default"] | null> => {
   try {
-    // Native module — absent in Expo Go / until linked. Never crash.
-    const mod = (await import(
-      /* webpackIgnore: true */ "react-native-purchases"
-    )) as RcModule;
+    // Native module — absent in Expo Go / until linked. Prefer require so
+    // Hermes bytecode export does not choke on dynamic `import()`.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("react-native-purchases") as RcModule;
     return mod.default ?? (mod as unknown as RcModule["default"]);
   } catch {
     return null;

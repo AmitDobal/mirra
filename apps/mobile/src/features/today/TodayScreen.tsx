@@ -1,8 +1,9 @@
 import { router } from "expo-router";
-import { Bell, ChevronLeft, ChevronRight, Footprints, Play, Plus, Zap } from "lucide-react-native";
+import { Bell, ChevronLeft, ChevronRight, Play, Plus, Zap } from "lucide-react-native";
 import { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
+import { s15Today } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -152,9 +153,12 @@ export const TodayScreen = () => {
             {workout?.focus ?? "Recovery focus"}
           </Text>
         </View>
-        <View className="h-28 w-28 items-end justify-end overflow-hidden rounded-full bg-on-primary-fixed/10">
-          <Footprints size={48} color={color.onPrimaryFixed} style={{ opacity: 0.35, margin: 24 }} />
-        </View>
+        <Image
+          source={s15Today.athleteMidMotion}
+          accessibilityLabel="Today focus"
+          style={{ width: 112, height: 112, borderRadius: 56 }}
+          resizeMode="cover"
+        />
       </View>
 
       <View className="mb-space-md flex-row gap-space-sm">

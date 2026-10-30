@@ -16,3 +16,4 @@
 | 2026-10-31 | **Repo shape:** monorepo `apps/mobile` + `apps/api` + `packages/contracts` |
 | 2026-10-31 | **Data:** mobile **expo-sqlite local-first** for speed; write-through / sync to CF D1 API when reachable |
 | 2026-10-31 | **AI:** OpenAI (`gpt-4o-mini` default) via `PlanGenerator` + Coach advise — heuristic only as fallback |
+| 2026-10-31 | **Integrations rule:** every vendor behind port + adapter + env factory (`integrations.md`); `AI_PROVIDER` switches AI backends without UI rewrites |

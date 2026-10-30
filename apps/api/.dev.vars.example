@@ -1,0 +1,11 @@
+# Copy to .dev.vars (gitignored). Never commit real keys.
+ALLOW_DEV_USER_HEADER=true
+
+# openai | heuristic | anthropic | workers-ai (empty = auto)
+AI_PROVIDER=openai
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4o-mini
+
+# Reserved — wire adapters then set AI_PROVIDER=anthropic
+# ANTHROPIC_API_KEY=
+# ANTHROPIC_MODEL=claude-sonnet-4-5

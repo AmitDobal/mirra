@@ -16,6 +16,7 @@ Open **small** files. Do not load the whole tree into one chat.
 | API | `03-engineering/api.md` |
 | D1 schema | `03-engineering/d1-schema.md` |
 | Security | `03-engineering/security.md` |
+| Integrations (ports/adapters) | `03-engineering/integrations.md` |
 | Stitch asset inventory | `03-engineering/stitch-assets.md` |
 | Tickets | `05-project-management/STATUS.md` |
 | Last wave summary | `06-knowledge-base/handoff.md` |

@@ -3,11 +3,27 @@ import { heuristicCoachAdvisor } from "../adapters/heuristic-coach-advisor";
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
 import type { CoachAdvisor } from "../ports/coach-advisor";
+import { resolveAiProvider } from "./ai/resolve-provider";
 
-/** OpenAI when key present; else heuristic. */
+/**
+ * Provider-swappable co-coach. Same `AI_PROVIDER` resolution as plans.
+ * Routes/UI must not import OpenAI adapters directly.
+ */
 export const getCoachAdvisor = (env: MirraEnv, db?: AppDB): CoachAdvisor => {
-  if (env.OPENAI_API_KEY?.trim()) return createOpenAiCoachAdvisor(env, db);
-  return heuristicCoachAdvisor;
+  const provider = resolveAiProvider(env);
+  switch (provider) {
+    case "openai":
+      return createOpenAiCoachAdvisor(env, db);
+    case "anthropic":
+      console.warn("[ai] anthropic CoachAdvisor not implemented; heuristic");
+      return heuristicCoachAdvisor;
+    case "workers-ai":
+      console.warn("[ai] workers-ai CoachAdvisor not implemented; heuristic");
+      return heuristicCoachAdvisor;
+    case "heuristic":
+    default:
+      return heuristicCoachAdvisor;
+  }
 };
 
 export const hasOpenAi = (env: MirraEnv): boolean =>

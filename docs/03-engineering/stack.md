@@ -42,7 +42,7 @@
 | Async jobs | **Queues** | Plan generate, rebuild, push fan-out |
 | Secrets | Wrangler secrets / CF Secrets Store | Never in git / client |
 | Auth server | **Better Auth** on Worker | Apple / Google / email |
-| AI | `PlanGenerator` + `CoachAdvisor` | **OpenAI live** when `OPENAI_API_KEY` set (model via `OPENAI_MODEL`, default `gpt-4o-mini`); else heuristic fallback. Chat Completions JSON mode; usage metered to console + optional `audit_log`. |
+| AI | `PlanGenerator` + `CoachAdvisor` **ports** | Default adapter **OpenAI** (`AI_PROVIDER` / auto). Swap via factory → Anthropic / Workers AI adapters later. Heuristic fallback. Detail: `integrations.md`. |
 | Observability | CF Workers logs + optional PostHog | No PII in analytics props |
 
 ## Payments (important)
@@ -75,7 +75,7 @@ Until monorepo lands, docs + stitch live at repo root; Wave 1 creates `apps/*`.
 - Routes thin; logic in `features/` + `lib/`
 - Theme tokens only in `src/theme/` — **no raw hex in components**
 - Copy in `src/content/` — no English hardcoding in UI
-- Purchases + AI + storage behind **interfaces** (stub → live)
+- **All integrations** behind ports + adapters (`integrations.md`) — AI, purchases, storage, email, …
 - Standard libs first; no custom framework soup
 - Dynamic modular components (compound UI primitives under `src/ui/`)
 

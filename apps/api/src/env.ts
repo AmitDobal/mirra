@@ -12,7 +12,15 @@ export type MirraEnv = {
   ALLOW_DEV_USER_HEADER?: string;
   /** Optional AI / auth secrets — set via wrangler secrets later. */
   BETTER_AUTH_SECRET?: string;
+  /**
+   * AI backend: `openai` | `heuristic` | `anthropic` | `workers-ai`.
+   * Empty = auto (OpenAI key → openai, else heuristic). See integrations.md.
+   */
+  AI_PROVIDER?: string;
   OPENAI_API_KEY?: string;
   /** Chat model id; defaults to gpt-4o-mini when unset. */
   OPENAI_MODEL?: string;
+  /** Reserved for Anthropic PlanGenerator / CoachAdvisor adapters. */
+  ANTHROPIC_API_KEY?: string;
+  ANTHROPIC_MODEL?: string;
 };

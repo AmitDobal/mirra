@@ -1,12 +1,11 @@
 # Handoff
 
-## 2026-10-31 — NativeWind styles broken on Expo Go OTA (fixed)
+## 2026-10-31 — Styles fixed (StyleSheet; NativeWind removed)
 
-**Symptom:** Expo Go day-test looked unstyled (“CSS vanished”).
-**Cause:** production CSS cache often baked as empty `injectData({})` (NativeWind virtual-module race on `eas update`).
-**Fix:** `forceWriteFileSystem: true` in `metro.config.js`; `cssInterop` for Moti/GestureHandlerRootView; root StyleSheet fallback. New update: https://expo.dev/accounts/amitdobal141/projects/mirra/updates/a0b08188-9f2d-4b6e-a983-db975f215aa9
-
-**Local:** Metro on `:8081` (`npx expo start --go --lan --clear`).
+**Root cause:** NativeWind/`react-native-css-interop` + React 19.3 + Reanimated 4.7 throws / no-ops (useReducer dispatch TDZ). Not an Expo Go “CSS file” issue.
+**Fix:** Drop NativeWind babel/metro; core UI + welcome/onboarding shell use StyleSheet + theme tokens. Simulator uses Expo Go **58.0.7** (`npx expo-go download ios 58`).
+**Phone update:** https://expo.dev/accounts/amitdobal141/projects/mirra/updates/7974e369-c9a1-40ad-a222-cac83b8008e8
+**Still TODO:** feature screens that still pass `className` need StyleSheet conversion (className is ignored now).
 
 ## 2026-10-31 — Upgraded to Expo SDK 58
 

@@ -1,19 +1,39 @@
-import { router } from "expo-router";
-import { Bell, ChevronLeft, ChevronRight, Play, Plus, Zap } from "lucide-react-native";
-import { useEffect } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { Bell, Zap } from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
 import { s15Today } from "../../../assets/stitch";
+import { AiBadge } from "@/ui/AiBadge";
 import { CapsLabel } from "@/ui/CapsLabel";
-import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 import { selectLoggedKcal, useFuelStore } from "@/features/fuel/fuel-store";
+import {
+  selectHasOpenPlannedMeal,
+  useMealPlanStore,
+} from "@/features/fuel/meal-plan-store";
 import { useWorkoutStore } from "@/features/workout/workout-store";
-
+import { type DailyGoal, type NextAction } from "@/lib/api";
+import { kcalStatus } from "@/lib/accountability";
+import { GoalChecklist } from "./GoalChecklist";
+import { HeroNextCard } from "./HeroNextCard";
+import { KcalDonut } from "./KcalDonut";
+import { MacroStrip } from "./MacroStrip";
+import { FuelLogStrip, RoutineCard } from "./RoutineCard";
+import { TodayActionsPending } from "./TodayActionsPending";
+import { TodayBrief } from "./TodayBrief";
+import { resolveGoalRoute } from "./goal-routes";
+import { useTodayActions } from "./use-today-actions";
+import { useVoiceCueOnFocus } from "./use-voice-cue";
+import { useTodayInsights } from "./use-today-insights";
+import { useRoutineEdit } from "./use-routine-edit";
+import { TodayIconBtn } from "./TodayIconBtn";
+import { WeekStripCard } from "./WeekStripCard";
 import { useTodayStore } from "./today-store";
+import { sx } from "@/theme/sx";
 
-/** S15 Today home — SQLite plan + fuel. */
+/** S15 Today home — Stitch order: week → focus → fuel/donut → routine → extras. */
 export const TodayScreen = () => {
   const workout = useTodayStore((s) => s.workout);
   const weekDays = useTodayStore((s) => s.weekDays);
@@ -24,53 +44,84 @@ export const TodayScreen = () => {
   const hydrate = useTodayStore((s) => s.hydrate);
   const swapDay = useTodayStore((s) => s.swapDay);
   const shiftWeek = useTodayStore((s) => s.shiftWeek);
+  const selectDay = useTodayStore((s) => s.selectDay);
   const setNotice = useTodayStore((s) => s.setNotice);
   const meals = useFuelStore((s) => s.meals);
   const target = useFuelStore((s) => s.target);
   const hydrateFuel = useFuelStore((s) => s.hydrate);
+  const hydratePlan = useMealPlanStore((s) => s.hydrate);
+  const hasOpenPlannedMeal = useMealPlanStore(selectHasOpenPlannedMeal);
   const startWorkout = useWorkoutStore((s) => s.start);
+  const openExercise = useWorkoutStore((s) => s.openExercise);
+  const { actions, failed: actionsFailed, refetch: refetchActions } = useTodayActions();
+  useVoiceCueOnFocus();
+  const { insights, load: loadInsights } = useTodayInsights();
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    void hydrate();
-    void hydrateFuel();
-  }, [hydrate, hydrateFuel]);
+  const reload = useCallback(
+    async (force = false) => {
+      await Promise.all([hydrate(), hydrateFuel(), hydratePlan(), refetchActions()]);
+      await loadInsights(force);
+    },
+    [hydrate, hydrateFuel, hydratePlan, refetchActions, loadInsights],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await reload(true).finally(() => setRefreshing(false));
+  }, [reload]);
 
   const logged = selectLoggedKcal(meals);
   const fuelTarget = target || kcalTarget || 0;
-  const remaining = Math.max(0, fuelTarget - logged);
+  const kcal = kcalStatus(logged, fuelTarget);
   const title = workout?.title ?? "Rest / recovery";
-  const duration = workout?.durationMin ?? 0;
-  const moves = workout?.exercises.length ?? 0;
-  const detail =
-    workout?.exercises.map((e) => e.name).slice(0, 4).join(", ") ||
-    "No lifts scheduled for this day";
   const activeDay = weekDays[dayIndex];
-  const strip =
-    weekDays.length > 0
-      ? weekDays.slice(0, 7).map((d, i) => ({
-          d: Number(d.date.slice(-2)) || i + 1,
-          active: i === dayIndex % 7,
-        }))
-      : Array.from({ length: 7 }, (_, i) => ({
-          d: new Date().getDate() - 3 + i,
-          active: i === 3,
-        }));
+
+  const monthLabel = useMemo(() => {
+    const iso = activeDay?.date ?? new Date().toISOString().slice(0, 10);
+    const d = new Date(`${iso}T12:00:00`);
+    return d.toLocaleString(undefined, { month: "long", year: "numeric" });
+  }, [activeDay?.date]);
+
+  const weekLabel = useMemo(() => {
+    const label = activeDay?.label ?? activeDay?.kind;
+    return label ? `Week · ${label}` : "This week";
+  }, [activeDay?.kind, activeDay?.label]);
+
+  const routineEdit = useRoutineEdit(workout, hydrate, setNotice);
 
   const handleStart = () => {
     void startWorkout(workout).then(() => router.push("/workout/live"));
   };
 
+  const handleOpenExercise = (exerciseId: string) =>
+    void openExercise(workout, exerciseId).then(() => router.push("/workout/live"));
+
+  const handleOpenRoute = (ctaRoute: string) => {
+    const target = resolveGoalRoute(ctaRoute, hasOpenPlannedMeal);
+    if (target.kind === "workout") return handleStart();
+    router.push(target.href);
+  };
+  const handleHeroPress = (next: NextAction) => handleOpenRoute(next.ctaRoute);
+  const handleGoalPress = (goal: DailyGoal) => handleOpenRoute(goal.ctaRoute);
+
   return (
-    <ScreenScroll>
-      <View className="mb-space-lg flex-row items-center justify-between">
-        <View className="flex-row items-center gap-space-sm">
-          <View className="h-2.5 w-2.5 rounded-full bg-primary-fixed" />
-          <Text className="font-headline-semi text-headline-sm uppercase text-on-surface">
+    <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
+      <View style={sx("mb-space-lg flex-row items-center justify-between")}>
+        <View style={sx("flex-row items-center gap-space-sm")}>
+          <View style={sx("h-2.5 w-2.5 rounded-full bg-primary-fixed")} />
+          <Text style={sx("font-headline-semi text-headline-sm uppercase text-on-surface")}>
             Today
           </Text>
         </View>
-        <View className="flex-row gap-space-sm">
-          <IconBtn
+        <View style={sx("flex-row gap-space-sm")}>
+          <TodayIconBtn
             label="Notifications"
             Icon={Bell}
             onPress={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")}
@@ -79,9 +130,9 @@ export const TodayScreen = () => {
             accessibilityRole="button"
             accessibilityLabel="Open profile"
             onPress={() => router.push("/(tabs)/you")}
-            className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high"
+            style={sx("h-11 w-11 items-center justify-center rounded-full bg-surface-container-high")}
           >
-            <Text className="font-label-bold text-label-md text-primary-fixed">A</Text>
+            <Text style={sx("font-label-bold text-label-md text-primary-fixed")}>A</Text>
           </Pressable>
         </View>
       </View>
@@ -90,7 +141,7 @@ export const TodayScreen = () => {
         <Pressable
           accessibilityRole="button"
           onPress={() => useTodayStore.getState().clearNotice()}
-          className="mb-space-sm rounded-full bg-primary-fixed/20 px-3 py-1.5"
+          style={sx("mb-space-sm rounded-full bg-primary-fixed/20 px-3 py-1.5")}
         >
           <CapsLabel tone="lime">{notice}</CapsLabel>
         </Pressable>
@@ -101,55 +152,36 @@ export const TodayScreen = () => {
           accessibilityRole="button"
           accessibilityLabel="Open check-in"
           onPress={() => router.push("/(tabs)/coach")}
-          className="mb-space-md self-start rounded-full bg-primary-fixed px-3 py-1.5"
+          style={sx("mb-space-md flex-row items-center gap-1.5 self-start rounded-full bg-primary-fixed px-3 py-1.5")}
         >
+          <AiBadge label={false} tone="dark" size={16} />
           <CapsLabel tone="dark">Check-in</CapsLabel>
         </Pressable>
       ) : null}
 
-      <View className="mb-space-md rounded-lg bg-surface-container-low p-space-md">
-        <View className="mb-space-sm flex-row items-center justify-between">
-          <View>
-            <CapsLabel>{activeDay?.label ?? activeDay?.kind ?? "This week"}</CapsLabel>
-            <Text className="font-headline-sm text-headline-sm text-on-surface">
-              {activeDay?.date ?? new Date().toISOString().slice(0, 10)}
-            </Text>
-          </View>
-          <View className="flex-row gap-1 rounded-full bg-surface-container-high p-1">
-            <IconBtn label="Previous week" Icon={ChevronLeft} small onPress={() => shiftWeek(-1)} />
-            <IconBtn label="Next week" Icon={ChevronRight} small onPress={() => shiftWeek(1)} />
-          </View>
-        </View>
-        <View className="flex-row justify-between">
-          {strip.map((day) => (
-            <View
-              key={`${day.d}-${day.active}`}
-              className={`h-9 w-9 items-center justify-center rounded-full ${
-                day.active ? "bg-primary-fixed" : ""
-              }`}
-            >
-              <Text
-                className={`font-headline-sm text-headline-sm ${
-                  day.active ? "text-on-primary-fixed" : "text-on-surface-variant"
-                }`}
-              >
-                {day.d}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
+      <WeekStripCard
+        weekDays={weekDays}
+        dayIndex={dayIndex}
+        weekLabel={weekLabel}
+        monthLabel={monthLabel}
+        onPrev={() => shiftWeek(-1)}
+        onNext={() => shiftWeek(1)}
+        onSelectDay={selectDay}
+      />
 
-      <View className="mb-space-md min-h-[148px] flex-row items-center justify-between overflow-hidden rounded-lg bg-primary-fixed p-space-lg">
-        <View className="max-w-[62%] flex-col">
-          <View className="mb-1.5 w-fit flex-row items-center gap-1 rounded-full bg-on-primary-fixed/10 px-2.5 py-0.5">
+      <View style={sx("mb-space-md min-h-[148px] flex-row items-center justify-between overflow-hidden rounded-lg bg-primary-fixed p-space-lg")}>
+        <View style={sx("max-w-[62%] flex-1 flex-col gap-space-sm")}>
+          <View style={sx("self-start flex-row items-center gap-1 rounded-full bg-on-primary-fixed/10 px-2.5 py-1")}>
             <Zap size={14} color={color.onPrimaryFixed} />
             <CapsLabel tone="dark">Today&apos;s Focus</CapsLabel>
           </View>
-          <Text className="font-headline text-headline-lg leading-tight text-on-primary-fixed">
+          <Text
+            style={sx("font-headline text-headline-lg text-on-primary-fixed")}
+            numberOfLines={3}
+          >
             {title}
           </Text>
-          <Text className="mt-1 font-body-medium text-body-sm text-on-primary-fixed/85">
+          <Text style={sx("font-body-medium text-body-sm text-on-primary-fixed/85")}>
             {workout?.focus ?? "Recovery focus"}
           </Text>
         </View>
@@ -161,90 +193,73 @@ export const TodayScreen = () => {
         />
       </View>
 
-      <View className="mb-space-md flex-row gap-space-sm">
-        <View className="min-h-[148px] flex-1 justify-between rounded-lg bg-secondary p-space-md">
+      <View style={sx("mb-space-md flex-row gap-space-sm")}>
+        <View style={sx("min-h-[148px] flex-1 justify-between rounded-lg bg-secondary p-space-md")}>
           <CapsLabel tone="dark">Fuel target</CapsLabel>
           <View>
-            <Text className="font-display text-display-metric text-on-secondary-fixed">
+            <Text style={sx("font-display text-display-metric text-on-secondary-fixed")}>
               {fuelTarget || "—"}
             </Text>
-            <Text className="font-body text-body-sm text-on-secondary-fixed">kcal / day</Text>
+            <Text style={sx("font-body text-body-sm text-on-secondary-fixed")}>kcal / day</Text>
           </View>
         </View>
-        <View className="min-h-[148px] flex-1 justify-between rounded-lg bg-surface-container-high p-space-md">
-          <CapsLabel>Logged</CapsLabel>
-          <Text className="font-headline text-headline-md text-on-surface">
-            {moves} moves
-          </Text>
-          <Text className="font-display text-display-metric text-primary-fixed">
-            {fuelTarget ? Math.min(100, Math.round((logged / fuelTarget) * 100)) : 0}%
-          </Text>
-          <Text className="font-display text-headline-md text-on-surface">{logged}</Text>
-          <Text className="font-body text-body-sm text-on-surface-variant">Logged kcal</Text>
+        <View style={sx("min-h-[148px] flex-1 justify-between rounded-lg bg-surface-container-high p-space-md")}>
+          <View style={sx("flex-row items-center justify-between")}>
+            <CapsLabel>Logged</CapsLabel>
+            <View style={sx("rounded-full bg-surface-container-highest px-2 py-0.5")}>
+              <CapsLabel tone="lime">Target</CapsLabel>
+            </View>
+          </View>
+          <View style={sx("flex-row items-center gap-space-sm")}>
+            <KcalDonut pct={kcal.pct} />
+            <View>
+              <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>
+                {logged}
+              </Text>
+              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
+                Active kcal
+              </Text>
+            </View>
+          </View>
+          <View style={sx("flex-row items-center gap-2")}>
+            <View style={sx("h-2 w-2 rounded-full bg-primary-fixed")} />
+            <CapsLabel>Calorie target</CapsLabel>
+          </View>
         </View>
       </View>
 
-      <View className="mb-space-md overflow-hidden rounded-lg bg-surface-container-high">
-        <View className="p-space-md">
-          <View className="mb-space-sm flex-row items-center justify-between">
-            <CapsLabel>Today&apos;s Routine</CapsLabel>
-            <Text className="font-body text-body-sm text-on-surface-variant">
-              {duration} mins · {moves} movements
-            </Text>
-          </View>
-          <Text className="font-headline-sm text-headline-sm text-on-surface">{title}</Text>
-          <Text className="mt-1 font-body text-body-md text-on-surface-variant">{detail}</Text>
-        </View>
-        <View className="flex-row gap-space-sm px-space-md pb-space-md">
-          <LimeCta
-            label="Start Workout"
-            onPress={handleStart}
-            className="flex-1"
-            icon={<Play size={18} color={color.onPrimaryFixed} fill={color.onPrimaryFixed} />}
-          />
-          <LimeCta label="Swap" onPress={swapDay} variant="dark" className="px-space-md" />
-        </View>
-      </View>
+      <RoutineCard
+        workout={workout}
+        onStart={handleStart}
+        onSwap={swapDay}
+        onOpenExercise={handleOpenExercise}
+        onAskCoach={() => router.push("/(tabs)/plan-chat")}
+        onLongPressExercise={routineEdit.openActions}
+        onAddExercise={routineEdit.openAdd}
+      />
+      {routineEdit.sheet}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Log meal"
-        onPress={() => router.push("/(tabs)/log-meal")}
-        className="flex-row items-center justify-between rounded-lg bg-surface-container-low p-space-md"
-      >
-        <View>
-          <Text className="font-headline-sm text-headline-sm text-on-surface">
-            {logged} / {fuelTarget || "—"}
-          </Text>
-          <Text className="font-body text-body-sm text-on-surface-variant">
-            Calories logged · {remaining} kcal remaining
-          </Text>
+      <FuelLogStrip
+        logged={logged}
+        target={fuelTarget}
+        left={kcal.left}
+        over={kcal.over}
+        overBy={kcal.overBy}
+        onLog={() => router.push("/(tabs)/log-meal")}
+      />
+
+      {actions ? (
+        <View style={sx("mt-space-md gap-space-sm")}>
+          <HeroNextCard next={actions.next} scenario={actions.scenario} onPress={handleHeroPress} />
+          <GoalChecklist goals={actions.goals} onPress={handleGoalPress} />
+          <MacroStrip macros={actions.macros} />
         </View>
-        <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-container-high">
-          <Plus size={20} color={color.onSurface} />
+      ) : (
+        <View style={sx("mt-space-md")}>
+          <TodayActionsPending failed={actionsFailed} onRetry={() => void refetchActions()} />
+          {insights ? <TodayBrief insights={insights} /> : null}
         </View>
-      </Pressable>
+      )}
     </ScreenScroll>
   );
 };
-
-const IconBtn = ({
-  label,
-  Icon,
-  small,
-  onPress,
-}: {
-  label: string;
-  Icon: typeof Bell;
-  small?: boolean;
-  onPress?: () => void;
-}) => (
-  <Pressable
-    accessibilityRole="button"
-    accessibilityLabel={label}
-    onPress={onPress}
-    className={`items-center justify-center rounded-full ${small ? "h-8 w-8" : "h-11 w-11"}`}
-  >
-    <Icon size={small ? 18 : 22} color={color.onSurface} />
-  </Pressable>
-);

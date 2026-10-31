@@ -1,6 +1,6 @@
 import { getDb } from "../client";
 import { mondayOf, todayUtc } from "../dates";
-import { LOCAL_USER_ID, newId, nowMs } from "../ids";
+import { getLocalUserId, newId, nowMs } from "../ids";
 import { parseJson, toJson } from "../json";
 import type {
   LocalExercise,
@@ -128,7 +128,7 @@ export type SavePlanInput = {
 };
 
 export const savePlan = async (input: SavePlanInput): Promise<LocalPlan> => {
-  const userId = input.userId ?? LOCAL_USER_ID;
+  const userId = input.userId ?? getLocalUserId();
   const db = await getDb();
   const ts = nowMs();
   const weekStart = input.weekStart ?? mondayOf(todayUtc());
@@ -215,7 +215,7 @@ export const savePlan = async (input: SavePlanInput): Promise<LocalPlan> => {
 };
 
 export const getCurrentPlan = async (
-  userId: string = LOCAL_USER_ID,
+  userId: string = getLocalUserId(),
 ): Promise<LocalPlan | null> => {
   const db = await getDb();
   const plan = await db.getFirstAsync<PlanRow>(
@@ -228,7 +228,7 @@ export const getCurrentPlan = async (
 };
 
 export const getToday = async (
-  userId: string = LOCAL_USER_ID,
+  userId: string = getLocalUserId(),
   date: string = todayUtc(),
 ): Promise<TodayBundle> => {
   const plan = await getCurrentPlan(userId);

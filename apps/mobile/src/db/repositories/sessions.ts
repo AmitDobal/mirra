@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { getDb } from "../client";
-import { LOCAL_USER_ID, newId, nowMs } from "../ids";
+import { getLocalUserId, newId, nowMs } from "../ids";
 import { toJson } from "../json";
 
 const StartSchema = z.object({
@@ -55,7 +55,7 @@ export const startSession = async (
   input: StartSessionInput = {},
 ): Promise<LocalSession> => {
   const data = StartSchema.parse(input);
-  const userId = data.userId ?? LOCAL_USER_ID;
+  const userId = data.userId ?? getLocalUserId();
   const db = await getDb();
   const id = newId("sess");
   const startedAt = nowMs();
@@ -113,6 +113,29 @@ export const logSet = async (input: LogSetInput): Promise<LocalSetLog> => {
     completed,
     loggedAt,
   };
+};
+
+export type LastSet = {
+  readonly weightKg: number | null;
+  readonly reps: number | null;
+};
+
+/** Most recent completed set for an exercise across all local sessions. */
+export const getLastSetForExercise = async (
+  exerciseId: string | null,
+  exerciseName: string,
+): Promise<LastSet | null> => {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ weight_kg: number | null; reps: number | null }>(
+    `SELECT weight_kg, reps FROM set_logs
+     WHERE completed = 1 AND (weight_kg IS NOT NULL OR reps IS NOT NULL)
+       AND ((? IS NOT NULL AND exercise_id = ?) OR exercise_name = ?)
+     ORDER BY logged_at DESC LIMIT 1`,
+    exerciseId,
+    exerciseId,
+    exerciseName,
+  );
+  return row ? { weightKg: row.weight_kg, reps: row.reps } : null;
 };
 
 export const completeSession = async (

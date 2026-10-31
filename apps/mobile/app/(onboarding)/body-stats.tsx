@@ -7,10 +7,12 @@ import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
   ProgressHeader,
+  QuizEyebrow,
   useOnboardingStore,
 } from "@/features/onboarding";
 import { color } from "@/theme/tokens";
 import { Button, Chip } from "@/ui";
+import { sx } from "@/theme/sx";
 
 type StepperProps = {
   label: string;
@@ -21,30 +23,34 @@ type StepperProps = {
 };
 
 const Stepper = ({ label, value, onDec, onInc, trailing }: StepperProps) => (
-  <View className="rounded-DEFAULT bg-surface-container-high p-space-md">
-    <View className="mb-space-sm flex-row items-center justify-between">
-      <Text className="font-label text-label-md text-on-surface-variant">
+  <View style={sx("rounded-DEFAULT bg-surface-container-high p-space-md")}>
+    <View style={sx("mb-space-sm flex-row items-center justify-between")}>
+      <Text style={sx("font-label text-label-md text-on-surface-variant")}>
         {label}
       </Text>
       {trailing}
     </View>
-    <View className="flex-row items-center justify-between">
+    <View style={sx("flex-row items-center justify-between")}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Decrease ${label}`}
         onPress={onDec}
-        className="h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest"
+        style={sx(
+          "h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest",
+        )}
       >
         <Minus color={color.onSurface} size={18} />
       </Pressable>
-      <Text className="font-display text-display-metric text-on-surface">
+      <Text style={sx("font-display text-display-metric text-on-surface")}>
         {value}
       </Text>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Increase ${label}`}
         onPress={onInc}
-        className="h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest"
+        style={sx(
+          "h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest",
+        )}
       >
         <Plus color={color.onSurface} size={18} />
       </Pressable>
@@ -69,9 +75,7 @@ const BodyStatsScreen = () => {
   const setWeightUnit = useOnboardingStore((s) => s.setWeightUnit);
 
   const heightDisplay =
-    heightUnit === "cm"
-      ? `${heightCm}`
-      : `${(heightCm / 30.48).toFixed(1)}`;
+    heightUnit === "cm" ? `${heightCm}` : `${(heightCm / 30.48).toFixed(1)}`;
   const weightDisplay =
     weightUnit === "kg"
       ? `${Math.round(weightKg)}`
@@ -87,13 +91,19 @@ const BodyStatsScreen = () => {
         />
       }
     >
-      <Text className="mt-space-lg font-headline text-headline-md text-on-surface">
+      <QuizEyebrow label={c.eyebrow} />
+      <Text style={sx("font-headline text-headline-md text-on-surface")}>
         {c.title}
       </Text>
-      <Text className="mt-space-lg font-label text-label-md text-on-surface-variant">
+      <Text style={sx("mt-space-sm font-body text-body-sm text-on-surface-variant")}>
+        {c.sub}
+      </Text>
+      <Text
+        style={sx("mt-space-lg font-label text-label-md text-on-surface-variant")}
+      >
         {c.sex}
       </Text>
-      <View className="mt-space-sm flex-row flex-wrap gap-space-sm">
+      <View style={sx("mt-space-sm flex-row flex-wrap gap-space-sm")}>
         {c.sexOptions.map((opt) => (
           <Chip
             key={opt.id}
@@ -103,7 +113,7 @@ const BodyStatsScreen = () => {
           />
         ))}
       </View>
-      <View className="mt-space-md gap-space-sm">
+      <View style={sx("mt-space-md gap-space-sm")}>
         <Stepper
           label={c.age}
           value={`${age}`}
@@ -116,7 +126,7 @@ const BodyStatsScreen = () => {
           onDec={() => setHeightCm(Math.max(120, heightCm - 1))}
           onInc={() => setHeightCm(Math.min(230, heightCm + 1))}
           trailing={
-            <View className="flex-row gap-space-xs">
+            <View style={sx("flex-row gap-space-xs")}>
               {(["cm", "ft"] as const).map((u) => (
                 <Chip
                   key={u}
@@ -134,7 +144,7 @@ const BodyStatsScreen = () => {
           onDec={() => setWeightKg(Math.max(35, weightKg - 1))}
           onInc={() => setWeightKg(Math.min(250, weightKg + 1))}
           trailing={
-            <View className="flex-row gap-space-xs">
+            <View style={sx("flex-row gap-space-xs")}>
               {(["kg", "lb"] as const).map((u) => (
                 <Chip
                   key={u}

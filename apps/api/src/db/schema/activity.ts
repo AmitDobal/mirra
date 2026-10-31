@@ -76,3 +76,17 @@ export const checkIns = sqliteTable(
   },
   (t) => [uniqueIndex("check_ins_user_date_uq").on(t.userId, t.localDate)],
 );
+
+export const waterLogs = sqliteTable(
+  "water_logs",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    localDate: text("local_date").notNull(),
+    ml: integer("ml").notNull(),
+    loggedAt: integer("logged_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+  },
+  (t) => [index("water_logs_user_date_idx").on(t.userId, t.localDate)],
+);

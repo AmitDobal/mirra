@@ -8,6 +8,41 @@
       "when": 1761852000000,
       "tag": "0001_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1761938400000,
+      "tag": "0002_water_logs",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1762024800000,
+      "tag": "0003_meal_plans",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1762110000000,
+      "tag": "0004_ai_usage_voice",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1762196400000,
+      "tag": "0005_cuisine",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1762282800000,
+      "tag": "0006_trainer_persona",
+      "breakpoints": true
     }
   ]
 }

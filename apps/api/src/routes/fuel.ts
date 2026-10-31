@@ -1,42 +1,33 @@
 import {
   type FuelTodayResponse,
+  type MealListResponse,
   MealBodySchema,
-  type MealResponse,
-  type MealSlotSchema,
+  type MealDeleteResponse,
+  MealPatchBodySchema,
+  MealEstimateBodySchema,
+  type MealEstimateResponse,
 } from "@mirra/contracts";
-import type { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, gte, lt } from "drizzle-orm";
 import { Hono } from "hono";
 
 import { createDb } from "../db";
 import { meals } from "../db/schema";
 import type { MirraEnv } from "../env";
-import { dayBoundsMs, msToUnix, todayUtc } from "../lib/dates";
-import { newId } from "../lib/id";
+import { sanitizeAiCopy } from "../lib/ai-copy";
+import { dayBoundsMs, todayUtc } from "../lib/dates";
+import { getMealEstimator } from "../lib/meal-estimator";
+import { decodeCursor, olderThan, parsePageQuery, toPage } from "../lib/pagination";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
+import { loadHydration } from "../services/hydration";
+import { deleteMeal, insertMeal, toMealResponse, updateMeal } from "../services/meals";
 import { defaultFuelTargets, loadCurrentPlan } from "../services/plan-loaders";
-
-type MealSlot = z.infer<typeof MealSlotSchema>;
 
 export const fuelRoutes = new Hono<{
   Bindings: MirraEnv;
   Variables: AuthVars;
 }>();
-
-const toMeal = (m: typeof meals.$inferSelect): MealResponse => ({
-  id: m.id,
-  name: m.name,
-  mealSlot: m.mealSlot as MealSlot,
-  kcal: m.kcal,
-  proteinG: m.proteinG,
-  carbsG: m.carbsG,
-  fatG: m.fatG,
-  eatenAt: msToUnix(m.eatenAt) ?? 0,
-  mediaId: m.mediaId,
-  createdAt: msToUnix(m.createdAt) ?? 0,
-});
 
 fuelRoutes.get("/v1/fuel/today", requireAuth, async (c) => {
   const date = c.req.query("date") || todayUtc();
@@ -45,13 +36,18 @@ fuelRoutes.get("/v1/fuel/today", requireAuth, async (c) => {
   const current = await loadCurrentPlan(db, userId);
   const targets = defaultFuelTargets(current.plan?.summary ?? null);
   const { start, end } = dayBoundsMs(date);
-  const rows = await db.select().from(meals).where(eq(meals.userId, userId));
-  const dayMeals = rows
-    .filter((m) => {
-      const t = m.eatenAt instanceof Date ? m.eatenAt.getTime() : Number(m.eatenAt);
-      return t >= start && t < end;
-    })
-    .map(toMeal);
+  // Day-bounded in SQL (uses meals_user_eaten_idx) — never scan the whole history.
+  const rows = await db
+    .select()
+    .from(meals)
+    .where(
+      and(
+        eq(meals.userId, userId),
+        gte(meals.eatenAt, new Date(start)),
+        lt(meals.eatenAt, new Date(end)),
+      ),
+    );
+  const dayMeals = rows.map(toMealResponse);
 
   const logged = dayMeals.reduce(
     (acc, m) => ({
@@ -79,47 +75,71 @@ fuelRoutes.get("/v1/fuel/today", requireAuth, async (c) => {
       fatG: Math.max(0, targets.fatG - logged.fatG),
     },
     meals: dayMeals,
+    hydration: await loadHydration(db, userId, date),
   };
   return c.json(body);
 });
 
-fuelRoutes.post("/v1/meals", requireAuth, async (c) => {
-  const body = parseBody(MealBodySchema, await c.req.json());
+/** Cal AI–style estimate from photo and/or description (does not save). */
+fuelRoutes.post("/v1/meals/estimate", requireAuth, async (c) => {
+  const body = parseBody(MealEstimateBodySchema, await c.req.json());
   const userId = c.get("userId");
   const db = createDb(c.env.DB);
-  const now = new Date();
-  const eatenAt = body.eatenAt != null ? new Date(body.eatenAt) : now;
-  const id = newId();
-
-  const proteinG = body.proteinG ?? 0;
-  const carbsG = body.carbsG ?? 0;
-  const fatG = body.fatG ?? 0;
-
-  await db.insert(meals).values({
-    id,
+  const estimator = getMealEstimator(c.env, db);
+  const result = await estimator.estimate({
     userId,
-    eatenAt,
-    name: body.name,
-    mealSlot: body.mealSlot,
-    kcal: body.kcal,
-    proteinG,
-    carbsG,
-    fatG,
-    mediaId: body.mediaId ?? null,
-    createdAt: now,
+    imageDataUrl: body.imageDataUrl,
+    description: body.description,
   });
-
-  const response: MealResponse = {
-    id,
-    name: body.name,
-    mealSlot: body.mealSlot,
-    kcal: body.kcal,
-    proteinG,
-    carbsG,
-    fatG,
-    eatenAt: eatenAt.getTime(),
-    mediaId: body.mediaId ?? null,
-    createdAt: now.getTime(),
+  const response: MealEstimateResponse = {
+    name: sanitizeAiCopy(result.name) || result.name,
+    kcal: Math.round(result.kcal),
+    proteinG: result.proteinG,
+    carbsG: result.carbsG,
+    fatG: result.fatG,
+    confidence: result.confidence,
+    notes: result.notes ? sanitizeAiCopy(result.notes) : result.notes,
+    source: result.source,
   };
-  return c.json(response, 201);
+  return c.json(response);
+});
+
+fuelRoutes.post("/v1/meals", requireAuth, async (c) => {
+  const body = parseBody(MealBodySchema, await c.req.json());
+  const db = createDb(c.env.DB);
+  return c.json(await insertMeal(db, c.get("userId"), body), 201);
+});
+
+fuelRoutes.patch("/v1/meals/:id", requireAuth, async (c) => {
+  const body = parseBody(MealPatchBodySchema, await c.req.json().catch(() => ({})));
+  const db = createDb(c.env.DB);
+  return c.json(await updateMeal(db, c.get("userId"), c.req.param("id"), body));
+});
+
+fuelRoutes.delete("/v1/meals/:id", requireAuth, async (c) => {
+  const db = createDb(c.env.DB);
+  await deleteMeal(db, c.get("userId"), c.req.param("id"));
+  const response: MealDeleteResponse = { ok: true };
+  return c.json(response);
+});
+
+/** Newest-first meal log history. `?limit=` (default 20, max 50) + opaque `?cursor=`. */
+fuelRoutes.get("/v1/meals", requireAuth, async (c) => {
+  const { limit, cursor } = parsePageQuery(c.req.query());
+  const db = createDb(c.env.DB);
+  const userId = c.get("userId");
+  const rows = await db
+    .select()
+    .from(meals)
+    .where(
+      and(
+        eq(meals.userId, userId),
+        cursor ? olderThan(meals.eatenAt, meals.id, decodeCursor(cursor)) : undefined,
+      ),
+    )
+    .orderBy(desc(meals.eatenAt), desc(meals.id))
+    .limit(limit + 1);
+  const page = toPage(rows, limit, (r) => r.eatenAt.getTime());
+  const body: MealListResponse = { items: page.items.map(toMealResponse), nextCursor: page.nextCursor };
+  return c.json(body);
 });

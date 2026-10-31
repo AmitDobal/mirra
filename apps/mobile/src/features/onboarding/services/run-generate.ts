@@ -4,7 +4,9 @@ import {
   getPlanJob,
   putOnboarding,
 } from "@/lib/api";
+import { MirraApiError } from "@/lib/api/client";
 import type { OnboardingPutBody, PlanJobResponse } from "@/lib/api/types";
+import { errorMessage, logger } from "@/lib/logger";
 import { usePlanStore } from "@/stores/plan-store";
 
 import type { OnboardingAnswers, OnboardingWeekPlan } from "../types";
@@ -72,10 +74,14 @@ const normalizeApiPlan = (raw: unknown): OnboardingWeekPlan | null => {
   return null;
 };
 
+export type GeneratePhase = "connecting" | "building" | "offline";
+
 const tryApiGenerate = async (
   body: OnboardingPutBody,
+  onPhase?: (phase: GeneratePhase) => void,
 ): Promise<OnboardingWeekPlan> => {
   await putOnboarding(body);
+  onPhase?.("building");
   const key = `onb-${Date.now()}`;
   const { jobId } = await generatePlan(key);
   usePlanStore.getState().setJob(jobId, { status: "queued" });
@@ -87,29 +93,52 @@ const tryApiGenerate = async (
   if (!jobDone(job.status)) {
     throw new Error("Plan job timed out");
   }
-  const raw = await getApiCurrentPlan();
-  usePlanStore.getState().setPlan(raw);
-  const plan = normalizeApiPlan(raw);
+  const current = await getApiCurrentPlan();
+  usePlanStore.getState().setPlan(current);
+  const plan = normalizeApiPlan(current);
   if (!plan || plan.days.length === 0) {
     throw new Error("Empty current plan");
   }
   return plan;
 };
 
-/**
- * PUT onboarding → POST generate → poll; local heuristic fallback.
- * Persists profile via `saveOnboarding` and plan via `savePlan`.
- */
+/** PUT onboarding → POST generate → poll; local heuristic fallback. */
 export const runOnboardingGenerate = async (
   answers: OnboardingAnswers,
+  onPhase?: (phase: GeneratePhase) => void,
 ): Promise<OnboardingWeekPlan> => {
   const body = toOnboardingBody(answers);
   await persistOnboardingProfile(body);
+  onPhase?.("connecting");
 
   try {
-    const apiPlan = await tryApiGenerate(body);
-    return persistWeekPlan(apiPlan, "api");
-  } catch {
-    return generateLocalWeekPlan(body);
+    const apiPlan = await tryApiGenerate(body, onPhase);
+    const persisted = await persistWeekPlan(apiPlan, "api");
+    const generator = apiPlan.summary?.generator;
+    logger.info("plan.generate.api", { planId: apiPlan.id, generator });
+    return {
+      ...persisted,
+      source: "api",
+      summary: generator
+        ? { ...persisted.summary, generator }
+        : persisted.summary,
+    };
+  } catch (apiErr) {
+    logger.warn("plan.generate.fallback", {
+      reason: errorMessage(apiErr),
+      status: apiErr instanceof MirraApiError ? apiErr.status : undefined,
+      code: apiErr instanceof MirraApiError ? apiErr.code : undefined,
+    });
+    onPhase?.("offline");
+    try {
+      const local = await generateLocalWeekPlan(body, { variant: "recommended" });
+      return { ...local, source: "local" };
+    } catch (localErr) {
+      logger.error("plan.generate.failed", {
+        apiError: errorMessage(apiErr),
+        localError: errorMessage(localErr),
+      });
+      throw localErr;
+    }
   }
 };

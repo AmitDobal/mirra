@@ -33,9 +33,41 @@ export type DietId =
   | "dairy_free"
   | "gluten_free";
 
+export type CuisineId =
+  | "indian"
+  | "american"
+  | "chinese"
+  | "japanese"
+  | "mediterranean"
+  | "mexican"
+  | "middle_eastern"
+  | "korean"
+  | "thai"
+  | "other";
+
+import type { TrainerPersonaId } from "@/content/trainer-personas";
+
+export type { TrainerPersonaId };
+
 export type SessionMinutes = 20 | 30 | 45 | 60;
 
+export type PhysiqueId =
+  | "lean_cut"
+  | "athletic"
+  | "muscular"
+  | "toned"
+  | "strong";
+
 export type PaywallPlan = "annual" | "monthly";
+
+export type PlanOptionKey = "recommended" | "alternate";
+
+export type PlanOptionMeta = {
+  key: PlanOptionKey;
+  title: string;
+  pitch: string;
+  badge: string;
+};
 
 export type OnboardingPlanExercise = {
   id: string;
@@ -73,10 +105,16 @@ export type OnboardingWeekPlan = {
     kcalTarget?: number;
     proteinG?: number;
     outcomeLine?: string;
+    /** Set by API: "openai" | "heuristic". */
+    generator?: string;
   };
   days: OnboardingPlanDay[];
   workouts: OnboardingPlanWorkout[];
   source: "api" | "local";
+};
+
+export type OnboardingPlanOption = OnboardingWeekPlan & {
+  meta: PlanOptionMeta;
 };
 
 export type OnboardingAnswers = {
@@ -94,9 +132,24 @@ export type OnboardingAnswers = {
   trainingDays: boolean[];
   sessionMinutes: SessionMinutes;
   diet: DietId[];
+  /** Required: at least one cuisine before onboarding can continue. */
+  cuisines: CuisineId[];
+  /** Free text when "Other" cuisine is selected. */
+  cuisineOther: string;
   foodsToAvoid: string;
+  /** Optional physique look; null when skipped. */
+  physiqueTarget: PhysiqueId | null;
+  /** Free-text routine / likes; empty when skipped. */
+  lifestyleNotes: string;
+  /** Trainer character picked in onboarding; default drill. */
+  trainerPersona: TrainerPersonaId;
   mirrorSkipped: boolean;
+  /** Local URI after capture / pick; null if skipped or not taken. */
+  mirrorUri: string | null;
   paywallPlan: PaywallPlan;
   completed: boolean;
   weekPlan: OnboardingWeekPlan | null;
+  /** Dual programs after generate; user picks one. */
+  planOptions: OnboardingPlanOption[] | null;
+  selectedPlanKey: PlanOptionKey;
 };

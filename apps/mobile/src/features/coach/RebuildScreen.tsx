@@ -11,8 +11,9 @@ import { color } from "@/theme/tokens";
 import { usePlanStore } from "@/stores/plan-store";
 
 import { useCoachStore } from "./coach-store";
+import { sx } from "@/theme/sx";
 
-/** S21 Rebuild preview — Apply / Keep → today. */
+/** S21 Rebuild preview — Stitch layout; Apply / Keep preserved. */
 export const RebuildScreen = () => {
   const apply = useCoachStore((s) => s.apply);
   const keep = useCoachStore((s) => s.keep);
@@ -31,23 +32,27 @@ export const RebuildScreen = () => {
       tag: i === 0 ? "Today" : d.kind,
       title: d.workout?.title ?? d.label ?? d.kind,
       meta: d.workout ? `${d.workout.durationMin} min` : "Rest",
+      active: i === 0,
     })) ?? [];
 
   const metrics = [
     {
-      label: "Days",
-      value: String(source?.days.length ?? 0),
-      meta: "In plan",
+      label: "Total Vol",
+      value: String(source?.days.filter((d) => d.workout).length ?? 0),
+      meta: "sessions",
+      tone: "lime" as const,
     },
     {
-      label: "Burn",
+      label: "Burn Target",
       value: summary?.kcalTarget != null ? String(summary.kcalTarget) : "—",
-      meta: "kcal target",
+      meta: "kcal",
+      tone: "lav" as const,
     },
     {
       label: "Protein",
-      value: summary?.proteinG != null ? `${summary.proteinG}g` : "—",
-      meta: "Floor",
+      value: summary?.proteinG != null ? String(summary.proteinG) : "—",
+      meta: "g floor",
+      tone: "neutral" as const,
     },
   ];
 
@@ -71,50 +76,89 @@ export const RebuildScreen = () => {
 
   return (
     <ScreenScroll dockPad={false}>
-      <View className="mb-space-md flex-row items-center justify-between">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-          onPress={() => void handleKeep()}
-          className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high"
-        >
-          <X size={22} color={color.onSurface} />
-        </Pressable>
-        <CapsLabel tone="lime">AI Optimization</CapsLabel>
-        <View className="w-11" />
+      <View style={sx("mb-space-md flex-row items-center justify-between")}>
+        <View style={sx("flex-row items-center gap-space-sm")}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            onPress={() => void handleKeep()}
+            style={sx("h-11 w-11 items-center justify-center rounded-full bg-surface-container-high")}
+          >
+            <X size={22} color={color.onSurface} />
+          </Pressable>
+          <View>
+            <CapsLabel tone="lime">AI Optimization</CapsLabel>
+            <Text style={sx("font-headline-sm text-headline-sm uppercase text-on-surface")}>
+              Rebuild Preview
+            </Text>
+          </View>
+        </View>
       </View>
 
-      <Text className="font-headline text-headline-lg text-on-surface">Rebuild Preview</Text>
-      <Image
-        source={s21RebuildPreview.athleteStretching}
-        accessibilityLabel="Rebuild preview"
-        style={{ width: "100%", height: 140, borderRadius: 12, marginTop: 12 }}
-        resizeMode="cover"
-      />
-      <View className="mt-space-sm self-start rounded-full bg-primary-fixed px-3 py-1">
-        <CapsLabel tone="dark">{notice ?? "Volume-preserving shift"}</CapsLabel>
+      <View style={sx("mb-space-md flex-row items-center justify-between")}>
+        <View style={sx("flex-row items-center gap-2")}>
+          <View style={sx("h-2.5 w-2.5 rounded-full bg-primary-container")} />
+          <Text style={sx("font-headline-sm text-headline-sm uppercase text-on-surface")}>
+            Plan Recalibration
+          </Text>
+        </View>
+        <View style={sx("rounded-full bg-surface-container-high px-3 py-1")}>
+          <CapsLabel tone="lime">v2.4 AUTO-SYNC</CapsLabel>
+        </View>
       </View>
-      <Text className="mt-space-md font-headline-sm text-headline-sm text-on-surface">
-        {summary?.outcomeLine || "Your week, re-calibrated."}
-      </Text>
-      <Text className="mt-1 font-body text-body-md text-on-surface-variant">
-        Plan {source ? `v${source.version}` : "unavailable"}
-      </Text>
 
-      <View className="my-space-md flex-row gap-space-sm">
+      <View style={sx("mb-space-lg overflow-hidden rounded-lg bg-surface-container-high p-space-lg")}>
+        <View style={sx("mb-space-sm self-start rounded-full bg-surface-container-lowest px-2.5 py-1")}>
+          <CapsLabel tone="lime">
+            {notice ?? "ZERO GUILT SHIFT · 100% VOLUME"}
+          </CapsLabel>
+        </View>
+        <Text style={sx("font-headline text-headline-lg text-on-surface")}>
+          Your week, re-calibrated.
+        </Text>
+        <Text style={sx("mt-space-sm font-body text-body-md text-on-surface-variant")}>
+          {summary?.outcomeLine ||
+            "Missed stimulus redistributed. Hypertrophy strain stays on target."}
+        </Text>
+        <Image
+          source={s21RebuildPreview.athleteStretching}
+          accessibilityLabel="Rebuild preview"
+          style={{ width: "100%", height: 120, borderRadius: 12, marginTop: 12 }}
+          resizeMode="cover"
+        />
+        <Text style={sx("mt-space-sm font-headline-sm text-headline-sm text-on-surface")}>
+          Smarter rhythm, zero punishment.
+        </Text>
+      </View>
+
+      <View style={sx("mb-space-sm flex-row items-center justify-between")}>
+        <CapsLabel tone="lime">Net metric retention</CapsLabel>
+        <CapsLabel>All goals active</CapsLabel>
+      </View>
+      <View style={sx("mb-space-lg flex-row gap-2")}>
         {metrics.map((met) => (
-          <View key={met.label} className="flex-1 rounded-lg bg-surface-container-high p-space-md">
+          <View key={met.label} style={sx("flex-1 rounded-DEFAULT bg-surface-container p-3")}>
             <CapsLabel>{met.label}</CapsLabel>
-            <Text className="mt-1 font-display text-headline-md text-on-surface">{met.value}</Text>
-            <Text className="font-body text-body-sm text-primary-fixed">{met.meta}</Text>
+            <Text style={sx("mt-1 font-headline text-headline-md text-on-surface")}>
+              {met.value}
+            </Text>
+            <Text
+              style={sx(
+                `font-body text-body-sm ${
+                  met.tone === "lime" ? "text-primary-fixed" : "text-on-surface-variant"
+                }`,
+              )}
+            >
+              {met.meta}
+            </Text>
           </View>
         ))}
       </View>
 
-      <CapsLabel className="mb-space-sm">Schedule Comparison</CapsLabel>
+      <CapsLabel style={sx("mb-space-sm")}>Rebuilt schedule</CapsLabel>
       {days.length === 0 ? (
-        <View className="mb-space-sm rounded-lg bg-surface-container-low p-space-md">
-          <Text className="font-body text-body-md text-on-surface-variant">
+        <View style={sx("mb-space-sm rounded-lg bg-surface-container-low p-space-md")}>
+          <Text style={sx("font-body text-body-md text-on-surface-variant")}>
             No plan days to preview yet.
           </Text>
         </View>
@@ -122,15 +166,21 @@ export const RebuildScreen = () => {
         days.map((d) => (
           <View
             key={`${d.day}-${d.title}`}
-            className="mb-space-sm flex-row gap-space-md rounded-lg bg-surface-container-low p-space-md"
+            style={sx(
+              `mb-space-sm flex-row gap-space-md rounded-lg p-space-md ${
+                d.active
+                  ? "border border-primary-fixed bg-surface-container-high"
+                  : "bg-surface-container-low"
+              }`,
+            )}
           >
-            <View className="w-12">
-              <Text className="font-label-bold text-label-lg text-primary-fixed">{d.day}</Text>
+            <View style={sx("w-12")}>
+              <Text style={sx("font-label-bold text-label-lg text-primary-fixed")}>{d.day}</Text>
               <CapsLabel>{d.tag}</CapsLabel>
             </View>
-            <View className="flex-1">
-              <Text className="font-headline-sm text-headline-sm text-on-surface">{d.title}</Text>
-              <Text className="font-body text-body-sm text-on-surface-variant">{d.meta}</Text>
+            <View style={sx("flex-1")}>
+              <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>{d.title}</Text>
+              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>{d.meta}</Text>
             </View>
           </View>
         ))
@@ -145,9 +195,11 @@ export const RebuildScreen = () => {
         accessibilityRole="button"
         accessibilityLabel="Keep current plan"
         onPress={() => void handleKeep()}
-        className="mt-space-md items-center py-space-sm"
+        style={sx("mt-space-md items-center py-space-sm")}
       >
-        <Text className="font-label text-label-md text-on-surface-variant">Keep current plan</Text>
+        <Text style={sx("font-label text-label-md text-on-surface-variant")}>
+          Keep current plan
+        </Text>
       </Pressable>
     </ScreenScroll>
   );

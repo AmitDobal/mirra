@@ -5,10 +5,12 @@ import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
   ProgressHeader,
+  QuizEyebrow,
   SelectRow,
   useOnboardingStore,
 } from "@/features/onboarding";
 import { Button } from "@/ui";
+import { sx } from "@/theme/sx";
 
 /** S04 — Training experience. */
 const ExperienceScreen = () => {
@@ -33,10 +35,14 @@ const ExperienceScreen = () => {
         />
       }
     >
-      <Text className="mt-space-lg font-headline text-headline-md text-on-surface">
+      <QuizEyebrow label={c.eyebrow} />
+      <Text style={sx("font-headline text-headline-md text-on-surface")}>
         {c.title}
       </Text>
-      <View className="mt-space-lg gap-space-sm">
+      <Text style={sx("mt-space-sm font-body text-body-sm text-on-surface-variant")}>
+        {c.sub}
+      </Text>
+      <View style={sx("mt-space-lg gap-space-sm")}>
         {c.options.map((opt) => (
           <SelectRow
             key={opt.id}

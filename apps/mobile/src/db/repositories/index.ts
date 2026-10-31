@@ -1,12 +1,18 @@
-export { saveOnboarding, getProfile } from "./profile";
+export { saveOnboarding, getProfile, setLocalTrainerPersona } from "./profile";
 export { savePlan, getCurrentPlan, getToday } from "./plans";
 export type { SavePlanInput } from "./plans";
-export { logMeal, getFuelToday } from "./meals";
-export type { LogMealInput } from "./meals";
+export { deleteLocalMeal, logMeal, getFuelToday, updateLocalMeal } from "./meals";
+export type { LocalMealPatch, LocalMealRef, LogMealInput } from "./meals";
 export { submitCheckIn, listCheckIns } from "./check-ins";
 export type { SubmitCheckInInput } from "./check-ins";
-export { startSession, logSet, completeSession } from "./sessions";
+export {
+  startSession,
+  logSet,
+  completeSession,
+  getLastSetForExercise,
+} from "./sessions";
 export type {
+  LastSet,
   StartSessionInput,
   LogSetInput,
   CompleteSessionInput,
@@ -15,3 +21,13 @@ export type {
 } from "./sessions";
 export { saveProgressPhoto, listProgressPhotos } from "./progress-photos";
 export type { SaveProgressPhotoInput } from "./progress-photos";
+export { getCached, setCached, clearCached } from "./ai-cache";
+export type { CachedEntry } from "./ai-cache";
+export {
+  addWeightLog,
+  listWeightLogs,
+  removeWeightLog,
+  replaceWeightLogs,
+  setProfileWeight,
+} from "./weight-logs";
+export type { AddWeightLogInput } from "./weight-logs";

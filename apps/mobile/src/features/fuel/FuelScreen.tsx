@@ -1,15 +1,34 @@
-import { router } from "expo-router";
-import { Camera, Droplets, Flame, Plus } from "lucide-react-native";
-import { useEffect, useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { Camera, Plus } from "lucide-react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Image,
+  Platform,
+  Pressable,
+  type ScrollViewInstance,
+  Text,
+  View,
+} from "react-native";
 
 import { s18Fuel } from "../../../assets/stitch";
+import { AiBadge } from "@/ui/AiBadge";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
+import { kcalStatus } from "@/lib/accountability";
 
+import { CalorieDonut } from "./CalorieDonut";
+import { DescribeMealModal } from "./DescribeMealModal";
+import { HydrationCard } from "./HydrationCard";
+import { MacroMeters } from "./MacroMeters";
+import { useMealEditor } from "./MealEditor";
+import { MealPlanSection } from "./MealPlanSection";
+import { useMealPlanStore } from "./meal-plan-store";
+import { promptRebalanceIfOffPlan } from "./rebalance-prompt";
 import { selectLoggedKcal, useFuelStore } from "./fuel-store";
+import { sx } from "@/theme/sx";
 
 const MEAL_IMGS = [
   s18Fuel.mealProteinOats,
@@ -17,23 +36,61 @@ const MEAL_IMGS = [
   s18Fuel.mealSalmonAsparagus,
 ] as const;
 
+/** Keeps the plan header clear of the status bar after a deep-link scroll. */
+const PLAN_SCROLL_INSET = 72;
+
 /** S18 Fuel dashboard — SQLite meals. */
 export const FuelScreen = () => {
   const meals = useFuelStore((s) => s.meals);
   const target = useFuelStore((s) => s.target);
   const proteinTarget = useFuelStore((s) => s.proteinTarget);
   const hydrate = useFuelStore((s) => s.hydrate);
-  const snapPlaceholder = useFuelStore((s) => s.snapPlaceholder);
-  const [snapNote, setSnapNote] = useState<string | null>(null);
-  const [water, setWater] = useState(0);
+  const snapMeal = useFuelStore((s) => s.snapMeal);
+  const describeMeal = useFuelStore((s) => s.describeMeal);
+  const tip = useFuelStore((s) => s.tip);
+  const clearTip = useFuelStore((s) => s.clearTip);
+  const estimating = useFuelStore((s) => s.estimating);
+  const carbsTarget = useFuelStore((s) => s.carbsTarget);
+  const carbsLogged = useFuelStore((s) => s.carbsLogged);
+  const fatTarget = useFuelStore((s) => s.fatTarget);
+  const fatLogged = useFuelStore((s) => s.fatLogged);
+  const waterLoggedMl = useFuelStore((s) => s.waterLoggedMl);
+  const waterTargetMl = useFuelStore((s) => s.waterTargetMl);
+  const addWater = useFuelStore((s) => s.addWater);
+
+  const hydratePlan = useMealPlanStore((s) => s.hydrate);
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const planY = useRef<number | null>(null);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [describeOpen, setDescribeOpen] = useState(false);
+  const mealEditor = useMealEditor();
+
+  const scrollToPlan = useCallback(() => {
+    if (section !== "plan" || planY.current === null) return;
+    scrollRef.current?.scrollTo({ y: Math.max(0, planY.current - PLAN_SCROLL_INSET), animated: true });
+  }, [section]);
 
   useEffect(() => {
     void hydrate();
-  }, [hydrate]);
+    void hydratePlan();
+  }, [hydrate, hydratePlan]);
+
+  useEffect(scrollToPlan, [scrollToPlan]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([hydrate(), hydratePlan()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [hydrate, hydratePlan]);
 
   const logged = selectLoggedKcal(meals);
-  const remaining = Math.max(0, (target || 0) - logged);
-  const pct = target > 0 ? Math.min(100, Math.round((logged / target) * 100)) : 0;
+  const kcal = kcalStatus(logged, target || 0);
+  const pct = kcal.pct;
   const protein = meals.reduce((s, meal) => s + meal.proteinG, 0);
   const dateLabel = new Date().toLocaleDateString(undefined, {
     weekday: "short",
@@ -43,105 +100,143 @@ export const FuelScreen = () => {
 
   const handleLog = () => router.push("/(tabs)/log-meal");
   const handleSnap = async () => {
-    const meal = await snapPlaceholder();
-    setSnapNote(`Saved ${meal.name}`);
+    const meal = await snapMeal();
+    if (meal) void promptRebalanceIfOffPlan(meal.calories);
+  };
+  const submitDescribe = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const meal = await describeMeal(trimmed);
+    if (meal) void promptRebalanceIfOffPlan(meal.calories);
+  };
+
+  const handleDescribePress = () => {
+    if (Platform.OS === "ios") {
+      Alert.prompt(
+        "Describe meal",
+        "What did you eat?",
+        (value) => {
+          if (value) void submitDescribe(value);
+        },
+        "plain-text",
+      );
+      return;
+    }
+    setDescribeOpen(true);
   };
 
   return (
-    <ScreenScroll>
-      <View className="mb-space-md">
-        <Text className="font-headline text-headline-lg text-on-surface">Fuel</Text>
-        <Text className="font-body text-body-md text-on-surface-variant">
+    <ScreenScroll scrollRef={scrollRef} refreshing={refreshing} onRefresh={handleRefresh}>
+      <View style={sx("mb-space-md")}>
+        <Text style={sx("font-headline text-headline-lg text-on-surface")}>Fuel</Text>
+        <Text style={sx("font-body text-body-md text-on-surface-variant")}>
           Target {target || "—"} kcal
-          {proteinTarget != null ? ` · ${proteinTarget}g protein` : ""}
         </Text>
       </View>
 
-      {snapNote ? (
+      {tip ? (
         <Pressable
           accessibilityRole="button"
-          onPress={() => setSnapNote(null)}
-          className="mb-space-sm self-start rounded-full bg-primary-fixed/20 px-3 py-1"
+          onPress={clearTip}
+          style={sx("mb-space-sm max-w-full flex-row items-center gap-1.5 self-start rounded-full bg-primary-fixed/20 px-3 py-1")}
         >
-          <CapsLabel tone="lime">{snapNote}</CapsLabel>
+          <AiBadge label={false} tone="lime" size={16} />
+          <CapsLabel tone={kcal.over && !estimating ? "alert" : "lime"}>
+            {estimating ? "Estimating…" : tip}
+          </CapsLabel>
         </Pressable>
       ) : null}
 
-      <View className="mb-space-md overflow-hidden rounded-lg bg-surface-container-low p-space-md">
+      <View style={sx("mb-space-md overflow-hidden rounded-2xl bg-surface-container-low p-space-md")}>
         <CapsLabel>{dateLabel}</CapsLabel>
-        <View className="mt-space-sm flex-row items-start justify-between">
-          <View>
-            <CapsLabel>Remaining Budget</CapsLabel>
-            <View className="mt-space-xs flex-row items-baseline gap-space-xs">
-              <Text className="font-display text-display-lg text-on-surface">{remaining}</Text>
-              <Text className="font-headline-sm text-headline-sm text-on-surface-variant">
-                kcal left
+        <View style={sx("mt-space-sm flex-row items-center justify-between gap-space-md")}>
+          <View style={sx("flex-1")}>
+            <CapsLabel tone={kcal.over ? "alert" : "muted"}>
+              {kcal.over ? "Over target" : "Remaining budget"}
+            </CapsLabel>
+            <View style={sx("mt-space-xs flex-row items-baseline gap-space-xs")}>
+              <Text
+                style={sx(`font-display text-display-lg ${
+                  kcal.over ? "text-error" : "text-on-surface"
+                }`)}
+              >
+                {kcal.over ? `+${kcal.overBy}` : kcal.left}
+              </Text>
+              <Text style={sx("font-headline-sm text-headline-sm text-on-surface-variant")}>
+                {kcal.over ? "kcal over" : "kcal left"}
               </Text>
             </View>
-            <Text className="mt-1 font-body text-body-sm text-on-surface-variant">
+            <Text style={sx("mt-1 font-body text-body-sm text-on-surface-variant")}>
               {logged} logged · {target || "—"} target
             </Text>
           </View>
-          <View className="items-center rounded-full bg-primary-fixed px-space-md py-space-sm">
-            <Flame size={16} color={color.onPrimaryFixed} />
-            <Text className="font-label-bold text-label-lg text-on-primary-fixed">{pct}%</Text>
-            <CapsLabel tone="dark">Of Goal</CapsLabel>
-          </View>
+          <CalorieDonut pct={pct} over={kcal.over} />
         </View>
-        <View className="mt-space-md">
-          <View className="mb-1 flex-row justify-between">
-            <CapsLabel>Protein</CapsLabel>
-            <Text className="font-body text-body-sm text-on-surface">
-              {protein}g
-              {proteinTarget != null ? ` / ${proteinTarget}g` : " logged"}
-            </Text>
-          </View>
-          <View className="h-1.5 overflow-hidden rounded-full bg-surface-container-highest">
-            <View
-              className="h-full rounded-full bg-primary-fixed"
-              style={{
-                width: `${
-                  proteinTarget
-                    ? Math.min(100, Math.round((protein / proteinTarget) * 100))
-                    : pct
-                }%`,
-              }}
-            />
-          </View>
-        </View>
+        <MacroMeters
+          protein={{ logged: protein, target: proteinTarget }}
+          carbs={{ logged: carbsLogged, target: carbsTarget }}
+          fat={{ logged: fatLogged, target: fatTarget }}
+        />
       </View>
 
-      <View className="mb-space-md flex-row gap-space-sm">
+      <View style={sx("mb-space-md flex-row gap-space-sm")}>
         <LimeCta
           label="Log meal"
           onPress={handleLog}
-          className="flex-1"
+          style={sx("flex-1")}
           icon={<Plus size={18} color={color.onPrimaryFixed} />}
         />
         <LimeCta
-          label="Snap"
+          label={estimating ? "…" : "Snap"}
           onPress={() => void handleSnap()}
           variant="dark"
           icon={<Camera size={18} color={color.onSurface} />}
         />
+        <LimeCta
+          label={estimating ? "…" : "Describe"}
+          accessibilityLabel="Describe meal with AI"
+          onPress={handleDescribePress}
+          variant="dark"
+          icon={<AiBadge label={false} tone="lime" size={16} />}
+        />
       </View>
 
-      <View className="mb-space-sm flex-row items-center justify-between">
-        <Text className="font-headline-sm text-headline-sm text-on-surface">Today&apos;s Meals</Text>
+      <View
+        onLayout={(e) => {
+          planY.current = e.nativeEvent.layout.y;
+          scrollToPlan();
+        }}
+      >
+        <MealPlanSection />
+      </View>
+
+      <HydrationCard
+        loggedMl={waterLoggedMl}
+        targetMl={waterTargetMl}
+        onAdd={(ml) => void addWater(ml)}
+      />
+
+      <View style={sx("mb-space-sm mt-space-md flex-row items-center justify-between")}>
+        <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>Today&apos;s Meals</Text>
         <CapsLabel>{meals.length} logged</CapsLabel>
       </View>
 
       {meals.length === 0 ? (
-        <View className="mb-space-sm rounded-lg bg-surface-container-high p-space-md">
-          <Text className="font-body text-body-md text-on-surface-variant">
+        <View style={sx("mb-space-sm rounded-lg bg-surface-container-high p-space-md")}>
+          <Text style={sx("font-body text-body-md text-on-surface-variant")}>
             No meals yet — log or snap one.
           </Text>
         </View>
       ) : (
         meals.map((meal, i) => (
-          <View
+          <Pressable
             key={meal.id}
-            className="mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md"
+            accessibilityRole="button"
+            accessibilityLabel={`${meal.name}. Long press to edit or delete`}
+            accessibilityActions={[{ name: "longpress", label: "Edit or delete" }]}
+            onAccessibilityAction={() => mealEditor.openActions(meal)}
+            onLongPress={() => mealEditor.openActions(meal)}
+            style={sx("mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md")}
           >
             <Image
               source={MEAL_IMGS[i % MEAL_IMGS.length]!}
@@ -149,36 +244,28 @@ export const FuelScreen = () => {
               style={{ width: 56, height: 56, borderRadius: 8 }}
               resizeMode="cover"
             />
-            <View className="flex-1">
-              <Text className="font-body text-body-sm text-on-surface-variant">
+            <View style={sx("flex-1")}>
+              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
                 {meal.slot} · {meal.time}
               </Text>
-              <Text className="font-headline-sm text-headline-sm text-on-surface">{meal.name}</Text>
-              <Text className="font-body text-body-sm text-on-surface-variant">
-                {meal.calories} kcal · {meal.proteinG}g Protein
+              <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>{meal.name}</Text>
+              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
+                {meal.calories} kcal · {Math.round(meal.proteinG)}g Protein
               </Text>
             </View>
-            <View className="h-8 w-8 items-center justify-center rounded-full bg-primary-fixed">
-              <Text className="font-label-bold text-label-md text-on-primary-fixed">✓</Text>
+            <View style={sx("h-8 w-8 items-center justify-center rounded-full bg-primary-fixed")}>
+              <Text style={sx("font-label-bold text-label-md text-on-primary-fixed")}>✓</Text>
             </View>
-          </View>
+          </Pressable>
         ))
       )}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Log water"
-        onPress={() => setWater((w) => Math.round((w + 0.25) * 100) / 100)}
-        className="mt-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-low p-space-md"
-      >
-        <Droplets size={22} color={color.primaryFixed} />
-        <View>
-          <CapsLabel>Hydration Tracker</CapsLabel>
-          <Text className="font-body-medium text-body-md text-on-surface">
-            {water}L logged · Goal 3.0L
-          </Text>
-        </View>
-      </Pressable>
+      {mealEditor.sheet}
+      <DescribeMealModal
+        visible={describeOpen}
+        onClose={() => setDescribeOpen(false)}
+        onSubmit={(text) => void submitDescribe(text)}
+      />
     </ScreenScroll>
   );
 };

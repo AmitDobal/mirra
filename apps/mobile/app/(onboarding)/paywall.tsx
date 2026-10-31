@@ -1,14 +1,17 @@
 import { router } from "expo-router";
-import { X } from "lucide-react-native";
+import { ArrowRight, X, Zap } from "lucide-react-native";
 import { useEffect } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 
-import { s13Paywall } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
+import { PaywallFeatureList } from "@/features/onboarding/components/PaywallFeatureList";
+import { PaywallHero } from "@/features/onboarding/components/PaywallHero";
+import { PaywallPlanCard } from "@/features/onboarding/components/PaywallPlanCard";
 import { usePurchases } from "@/lib/purchases";
 import { color } from "@/theme/tokens";
-import { Button, Card } from "@/ui";
+import { LimeCta } from "@/ui";
+import { sx } from "@/theme/sx";
 
 /** S13 — Soft paywall (stub OK) → tabs. */
 const PaywallScreen = () => {
@@ -48,119 +51,94 @@ const PaywallScreen = () => {
 
   const goAuth = () => router.push("/(onboarding)/auth");
 
+  const handleTerms = () => {
+    void Linking.openURL(onboardingCopy.auth.termsUrl);
+  };
+
   return (
     <OnboardingShell
       header={
-        <View className="items-end">
+        <View style={sx("flex-row items-center justify-between pb-space-md")}>
+          <View
+            style={sx("flex-row items-center gap-space-xs rounded-full bg-primary-container px-space-md py-space-xs")}
+          >
+            <Zap color={color.onPrimaryFixed} fill={color.onPrimaryFixed} size={14} />
+            <Text style={sx("font-label-bold text-label-caps uppercase text-on-primary-fixed")}>
+              {c.badge}
+            </Text>
+          </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Close paywall"
+            accessibilityLabel={c.closeLabel}
             onPress={goAuth}
-            hitSlop={12}
-            className="h-touch w-touch items-center justify-center"
+            hitSlop={8}
+            style={sx("h-9 w-9 items-center justify-center rounded-full bg-surface-container-high")}
           >
-            <X color={color.onSurface} size={22} />
+            <X color={color.onSurface} size={18} />
           </Pressable>
         </View>
       }
       footer={
-        <>
-          <Button
+        <View style={sx("items-center gap-space-sm pb-space-xs")}>
+          <LimeCta
             label={loading ? "…" : c.trial}
+            icon={<ArrowRight color={color.onPrimaryFixed} size={18} />}
             onPress={() => void handleTrial()}
+            style={sx("w-full")}
           />
-          <Button
-            label={c.restore}
-            variant="ghost"
-            onPress={() => void handleRestore()}
-          />
-          <Text className="text-center font-body text-body-sm text-outline">
+          <View style={sx("flex-row items-center justify-center gap-space-md pt-space-xs")}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={c.restore}
+              onPress={() => void handleRestore()}
+              hitSlop={8}
+            >
+              <Text style={sx("font-label text-label-md text-on-surface-variant")}>
+                {c.restore}
+              </Text>
+            </Pressable>
+            <Text style={sx("font-body text-body-sm text-surface-container-highest")}>•</Text>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={c.termsLink}
+              onPress={handleTerms}
+              hitSlop={8}
+            >
+              <Text style={sx("font-label text-label-md text-on-surface-variant")}>
+                {c.termsLink}
+              </Text>
+            </Pressable>
+          </View>
+          <Text
+            style={sx("max-w-xs text-center font-body text-body-sm text-on-surface-variant leading-tight")}
+          >
             {c.legal}
           </Text>
-        </>
+        </View>
       }
     >
-      <View className="mb-space-md items-center">
-        <Image
-          source={s13Paywall.coachCutout}
-          accessibilityLabel="Mirra coach"
-          style={{ width: 112, height: 112, borderRadius: 56 }}
-          resizeMode="cover"
-        />
-      </View>
-      <Text className="font-headline text-headline-lg text-on-surface">
-        {c.title}
-      </Text>
-      <View className="mt-space-lg gap-space-sm">
-        {c.benefits.map((b) => (
-          <Card key={b} tone="lavender" className="px-space-md py-space-sm">
-            <Text className="font-body-semi text-body-md text-on-secondary-container">
-              {b}
-            </Text>
-          </Card>
-        ))}
-      </View>
-
-      <View className="mt-space-xl gap-space-sm">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ selected: plan === "annual" }}
-          onPress={() => setPaywallPlan("annual")}
-        >
-          <Card
-            tone="elevated"
-            className={`border p-space-md ${
-              plan === "annual"
-                ? "border-primary-container"
-                : "border-transparent"
-            }`}
-          >
-            <View className="flex-row items-center justify-between">
-              <View>
-                <View className="mb-1 flex-row items-center gap-space-sm">
-                  <Text className="font-headline-semi text-headline-sm text-on-surface">
-                    {c.annual}
-                  </Text>
-                  <View className="rounded-full bg-primary-container px-space-sm py-0.5">
-                    <Text className="font-label-bold text-label-caps text-on-primary-fixed">
-                      {c.best}
-                    </Text>
-                  </View>
-                </View>
-                <Text className="font-body text-body-sm text-on-surface-variant">
-                  {c.annualPerMo}
-                </Text>
-              </View>
-              <Text className="font-label text-label-lg text-on-surface">
-                {c.annualPrice}
-              </Text>
-            </View>
-          </Card>
-        </Pressable>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ selected: plan === "monthly" }}
-          onPress={() => setPaywallPlan("monthly")}
-        >
-          <Card
-            tone="elevated"
-            className={`border p-space-md ${
-              plan === "monthly"
-                ? "border-primary-container"
-                : "border-transparent"
-            }`}
-          >
-            <View className="flex-row items-center justify-between">
-              <Text className="font-headline-semi text-headline-sm text-on-surface">
-                {c.monthly}
-              </Text>
-              <Text className="font-label text-label-lg text-on-surface">
-                {c.monthlyPrice}
-              </Text>
-            </View>
-          </Card>
-        </Pressable>
+      <View style={sx("gap-space-md")}>
+        <PaywallHero />
+        <PaywallFeatureList />
+        <View style={sx("gap-space-sm")}>
+          <PaywallPlanCard
+            title={c.annual}
+            note={c.annualPerMo}
+            price={c.annualPrice}
+            unit={c.annualUnit}
+            badge={c.best}
+            selected={plan === "annual"}
+            onSelect={() => setPaywallPlan("annual")}
+          />
+          <PaywallPlanCard
+            title={c.monthly}
+            note={c.monthlyNote}
+            price={c.monthlyPrice}
+            unit={c.monthlyUnit}
+            selected={plan === "monthly"}
+            onSelect={() => setPaywallPlan("monthly")}
+          />
+        </View>
       </View>
     </OnboardingShell>
   );

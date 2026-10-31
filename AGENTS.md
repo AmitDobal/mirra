@@ -24,8 +24,9 @@ Mirror backend patterns from:
 
 ## PM vs builders
 
+- **Lead / orchestrator seat** → dispatch only. **Never** implement `apps/mobile` / `apps/api` feature code. Rule: `.cursor/rules/91-orchestrate-dont-build.mdc`.
 - **PM** → `PROMPT-PM.md` — STATUS, handoff, dispatch. No feature code.
-- **Builders** → one ticket, path index, ≤400 word return.
+- **Builders** → one ticket, path index, ≤400 word return. Push branch. Smoke-test with real screenshots vs Stitch when UI.
 - Files ≤ **300** lines (prefer 250). Theme tokens; no hex in UI. Zod contracts.
 - **Integrations = ports + adapters.** Never call OpenAI / RevenueCat / R2 / etc. from UI or routes directly. Factories pick the provider (`AI_PROVIDER`, purchases stub vs RC). See `docs/03-engineering/integrations.md`. New vendor = new adapter + factory case, same port.
 

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { PlanExerciseSchema } from "./plans";
+
 export const CreateWorkoutSessionBodySchema = z.object({
   workoutId: z.string().min(1),
 });
@@ -44,3 +46,36 @@ export type WorkoutSessionResponse = z.infer<typeof WorkoutSessionResponseSchema
 export type LogSetBody = z.infer<typeof LogSetBodySchema>;
 export type SetLogResponse = z.infer<typeof SetLogResponseSchema>;
 export type CompleteSessionBody = z.infer<typeof CompleteSessionBodySchema>;
+
+/** Reps may be a number (8) or a range/text ("8-12"); stored as text. */
+const TargetRepsSchema = z
+  .union([z.string().trim().min(1).max(20), z.number().int().min(1).max(200)])
+  .transform((v) => String(v));
+
+export const CreatePlanExerciseBodySchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  targetSets: z.number().int().min(1).max(20),
+  targetReps: TargetRepsSchema,
+  restSec: z.number().int().min(0).max(1800).nullable().optional(),
+  cue: z.string().trim().max(500).nullable().optional(),
+});
+
+export const PatchPlanExerciseBodySchema = z
+  .object({
+    name: z.string().trim().min(1).max(120).optional(),
+    targetSets: z.number().int().min(1).max(20).optional(),
+    targetReps: TargetRepsSchema.optional(),
+    restSec: z.number().int().min(0).max(1800).nullable().optional(),
+    cue: z.string().trim().max(500).nullable().optional(),
+  })
+  .refine((b) => Object.values(b).some((v) => v !== undefined), {
+    message: "Provide at least one field to update",
+  });
+
+export const PlanExerciseResponseSchema = PlanExerciseSchema;
+export const PlanExerciseDeleteResponseSchema = z.object({ ok: z.literal(true) });
+
+export type CreatePlanExerciseBody = z.infer<typeof CreatePlanExerciseBodySchema>;
+export type PatchPlanExerciseBody = z.infer<typeof PatchPlanExerciseBodySchema>;
+export type PlanExerciseResponse = z.infer<typeof PlanExerciseResponseSchema>;
+export type PlanExerciseDeleteResponse = z.infer<typeof PlanExerciseDeleteResponseSchema>;

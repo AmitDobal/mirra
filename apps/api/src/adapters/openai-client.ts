@@ -1,8 +1,16 @@
 /** Thin Workers-friendly OpenAI chat completions client. Never log apiKey. */
 
+export type ChatTextPart = { type: "text"; text: string };
+export type ChatImagePart = {
+  type: "image_url";
+  image_url: { url: string; detail?: "low" | "high" | "auto" };
+};
+
+export type ChatMessageContent = string | Array<ChatTextPart | ChatImagePart>;
+
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: ChatMessageContent;
 };
 
 export type ChatCompletionOpts = {
@@ -11,6 +19,8 @@ export type ChatCompletionOpts = {
   messages: ChatMessage[];
   jsonMode?: boolean;
   temperature?: number;
+  /** Caps completion tokens (cheap replies). */
+  maxTokens?: number;
 };
 
 export type ChatUsage = {
@@ -49,6 +59,7 @@ export const chatCompletion = async (
       model: opts.model,
       messages: opts.messages,
       temperature: opts.temperature ?? 0.4,
+      ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
       ...(opts.jsonMode ? { response_format: { type: "json_object" } } : {}),
     }),
   });

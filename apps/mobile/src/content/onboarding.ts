@@ -1,3 +1,5 @@
+import { CUISINE_OPTIONS } from "./cuisines";
+
 /** Onboarding S01–S14 copy — STITCH-PASTE / wireframes. Screens never hardcode. */
 export const onboardingCopy = {
   splash: {
@@ -108,6 +110,15 @@ export const onboardingCopy = {
       { id: "dairy_free" as const, label: "Dairy-free" },
       { id: "gluten_free" as const, label: "Gluten-free" },
     ],
+  },
+  cuisine: {
+    title: "Cuisines you eat",
+    sub: "Pick every cuisine you cook or order. Meals are built from these.",
+    selected: (n: number) => `${n} selected`,
+    otherLabel: "Other cuisines",
+    otherPlaceholder: "e.g. Ethiopian, Peruvian",
+    continue: "Continue",
+    options: CUISINE_OPTIONS,
   },
   mirror: {
     title: "Mirror selfie",

@@ -19,6 +19,7 @@ const OnboardingLayout = () => (
     <Stack.Screen name="equipment" />
     <Stack.Screen name="schedule" />
     <Stack.Screen name="diet" />
+    <Stack.Screen name="cuisine" />
     <Stack.Screen name="mirror" />
     <Stack.Screen name="generating" />
     <Stack.Screen name="week-reveal" />

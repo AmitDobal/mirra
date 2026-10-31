@@ -24,6 +24,21 @@
 | `expo export` ios | PASS |
 | Integrate | [Integrate API purchases assets](d25fc8cc-2608-48b8-8c82-e40f2327e5cd) |
 
+## Merge queue (merged to `main` 2026-10-31)
+
+| PR | Scope | Linear |
+| --- | --- | --- |
+| [#1](https://github.com/AmitDobal/mirra/pull/1) | Wave 0 cuisine/prefs P0s | n/a |
+| [#2](https://github.com/AmitDobal/mirra/pull/2) | Presence dots + day history (`0008`) | AMI-124 |
+| [#3](https://github.com/AmitDobal/mirra/pull/3) | AI credits core (`0009`) | AMI-125 |
+| [#4](https://github.com/AmitDobal/mirra/pull/4) | PersonalizationContextPort | AMI-122 |
+| [#7](https://github.com/AmitDobal/mirra/pull/7) | Sex default `prefer_not` | AMI-126 |
+| [#8](https://github.com/AmitDobal/mirra/pull/8) | Meal detail sheet + Chef chat (`0010`) | AMI-127 |
+| [#5](https://github.com/AmitDobal/mirra/pull/5) | `sx()` arbitrary px radii | n/a |
+| [#6](https://github.com/AmitDobal/mirra/pull/6) | S12 week-reveal Stitch parity | AMI-123 |
+
+Branches #3, #4, #7, #8, #6 were rebased onto `main` (barrel-export conflicts only) and force-pushed with lease. Next: testers run smoke on `main`.
+
 ## Run
 
 ```bash

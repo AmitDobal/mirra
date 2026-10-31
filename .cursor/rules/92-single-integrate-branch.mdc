@@ -1,0 +1,24 @@
+---
+description: One integrate branch for Mirra — never day-test from dirty primary or parallel feature sprawl.
+alwaysApply: true
+---
+
+# Single integrate branch (hard rule)
+
+## Why this exists
+
+Parallel ticket branches + a dirty primary checkout (`feat/sx-arbitrary-radius` with uncommitted WIP) caused day-test / Expo to run an **old or broken `main`** (NativeWind `className` dead) while the polished UI lived only as **local uncommitted files**. Features looked “deleted.” Never again.
+
+## Required
+
+1. **One ship line:** `main` (or a single short-lived `integrate/<date>` that merges to `main` the same session). All day-test, EAS Update, and smoke use **only** that line after merge.
+2. **Never** publish EAS / Expo day-test from the primary dirty checkout or from a branch that is not merged (or about to merge in the same session).
+3. **Builders:** one worktree per ticket from `origin/main`. Push. Merge (or queue into the single integrate branch). **Remove the worktree** after merge. Do not leave finished feature branches as the thing Metro opens.
+4. **Uncommitted WIP is not shipped.** If work only exists in the working tree, it is **not done**. Commit → push → PR → merge before any smoke sign-off or EAS.
+5. **Styling:** Expo uses `sx()` / StyleSheet + tokens. NativeWind/`className` is off. New UI with `className` is a P0 fail.
+6. **Orchestrator:** before “done,” verify `origin/main` contains every requested screen/feature path (not just the local tree). Smoke against a clean worktree of `origin/main`.
+7. After a wave: prune merged remote ticket branches when safe; keep primary checkout on `main` or explicitly park WIP on a named pushed branch — never a mixed dirty tree as the default.
+
+## Day-test gate
+
+`eas update --branch day-test` only from a **clean** checkout of the commit that just passed smoke on `origin/main`.

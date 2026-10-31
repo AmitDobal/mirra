@@ -169,6 +169,12 @@ export const CoachScreen = () => {
       })}
 
       <LimeCta
+        label="Adjust plan with AI"
+        accessibilityLabel="Adjust plan with AI"
+        variant="dark"
+        onPress={() => router.push("/(tabs)/plan-chat")}
+      />
+      <LimeCta
         label={busy ? c.submitting : c.submit}
         onPress={() => void handleSubmit()}
       />

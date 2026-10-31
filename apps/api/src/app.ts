@@ -20,6 +20,8 @@ import { planRoutes } from "./routes/plans";
 import { recipeRoutes } from "./routes/recipe";
 import { todayRoutes } from "./routes/today";
 import { workoutRoutes } from "./routes/workouts";
+import { weightRoutes } from "./routes/weight";
+import { aiRoutes } from "./routes/ai";
 
 export const createApp = () => {
   const app = new Hono<{ Bindings: MirraEnv; Variables: AuthVars }>();
@@ -55,6 +57,8 @@ export const createApp = () => {
   app.route("/", mealPlanRoutes);
   app.route("/", recipeRoutes);
   app.route("/", workoutRoutes);
+  app.route("/", weightRoutes);
+  app.route("/", aiRoutes);
   app.route("/", creditsRoutes);
   app.route("/", creditsDevRoutes);
 

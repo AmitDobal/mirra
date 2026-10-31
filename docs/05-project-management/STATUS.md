@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** Full-smoke **PASS** (2026-11-01). Weight + AI usage on prod API. EAS day-test republished: [update ad37ef04](https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ad37ef04-61bc-4478-b9d3-d3e9c51d6c39) · iOS manifest https://u.expo.dev/update/01a1937c-5804-715c-ae52-6990b300d08a · evidence `/tmp/mirra-qa/full-smoke-20261101004921`.
+**Latest:** Tab UI restore **merged** PR #17 (`ccc28c8`). Light smoke `/tmp/mirra-qa/restore-all-screens/`. Full-smoke+EAS pending. Weight + AI usage on prod API. EAS day-test republished: [update ad37ef04](https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ad37ef04-61bc-4478-b9d3-d3e9c51d6c39) · iOS manifest https://u.expo.dev/update/01a1937c-5804-715c-ae52-6990b300d08a · evidence `/tmp/mirra-qa/full-smoke-20261101004921`.
 
 | | |
 | --- | --- |

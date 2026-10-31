@@ -1,5 +1,16 @@
 # Handoff
 
+## 2026-11-01 — restore-all-screens merged (PR #17)
+
+**Done:** Polished tab UI on `origin/main`. Today = main attendance (WeekStrip PresenceDot + DayHistorySheet) + local HeroNext/GoalChecklist/RoutineCard+edit/TodayBrief/actions/voice (`sx()`). Coach AdviseCard+AiMoodPills+voice-cue; You SpeakCuesToggle; Fuel/Progress/Workout sx.
+**PR:** https://github.com/AmitDobal/mirra/pull/17 · merge `ccc28c8`
+**className:** empty under tab features + `app/(tabs)`
+**Typecheck:** mobile + api PASS
+**Smoke:** `/tmp/mirra-qa/restore-all-screens/` (today/fuel/coach/progress/you + deeplink-fuel) — styled. No EAS.
+**P1:** Deployed API 404 on `GET /v1/insights/today` (API route still local WIP). Client now `quiet` until route ports.
+**Left local-only:** API insights/voice services, onboarding WIP diffs, research docs on dirty `feat/sx-arbitrary-radius`.
+**Next:** Full smoke → EAS from clean `origin/main` only.
+
 ## 2026-11-01 — full-smoke PASS + EAS day-test
 
 **Verdict:** PASS — styled 12-step onboarding + S11/S12, plan `ready`/`openai` (`api-plan.json`), weight GET 200 (`x-mirra-user-id`), plan-chat + Progress weight UI evidence.

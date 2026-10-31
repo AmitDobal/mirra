@@ -25,7 +25,7 @@ const DietScreen = () => {
         <Button
           label={c.continue}
           disabled={diet.length === 0}
-          onPress={() => router.push("/(onboarding)/mirror")}
+          onPress={() => router.push("/(onboarding)/cuisine")}
         />
       }
     >

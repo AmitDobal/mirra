@@ -23,7 +23,7 @@ const MirrorScreen = () => {
 
   return (
     <OnboardingShell
-      header={<ProgressHeader step={8} onBack={() => router.back()} />}
+      header={<ProgressHeader step={9} onBack={() => router.back()} />}
       footer={
         <>
           <Button label={c.capture} onPress={() => goNext(false)} />

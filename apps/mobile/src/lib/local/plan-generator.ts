@@ -1,5 +1,12 @@
 import { addDays, mondayOf, todayUtc } from "../../db/dates";
 import type { PlanSummary } from "../../db/types";
+import {
+  ageRecoveryHint,
+  cuisineHint,
+  fitToEquipment,
+  scaleVolume,
+  sexBand,
+} from "./plan-tuning";
 
 export type HeuristicExercise = {
   readonly name: string;
@@ -34,6 +41,7 @@ export type HeuristicPlanResult = {
 
 export type HeuristicPlanInput = {
   readonly weekStart?: string;
+  readonly sex?: string | null;
   readonly weightKg?: number | null;
   readonly goalWeightKg?: number | null;
   readonly pace?: string | null;
@@ -41,6 +49,14 @@ export type HeuristicPlanInput = {
   readonly experience?: string;
   readonly trainDays?: number[];
   readonly sessionMinutes?: number;
+  readonly ageYears?: number | null;
+  readonly equipment?: readonly string[];
+  readonly dietTags?: readonly string[];
+  readonly foodsAvoid?: string | null;
+  readonly cuisineStyles?: readonly string[];
+  readonly physiqueTarget?: string | null;
+  readonly lifestyleNotes?: string | null;
+  readonly variant?: "recommended" | "alternate";
 };
 
 const TEMPLATES: Record<string, HeuristicExercise[]> = {
@@ -65,32 +81,63 @@ const TEMPLATES: Record<string, HeuristicExercise[]> = {
     { name: "Row", targetSets: 3, targetReps: "8-12", restSec: 75, swapGroup: "row" },
     { name: "Plank", targetSets: 2, targetReps: "30-45s", restSec: 45, swapGroup: "core" },
   ],
+  upper: [
+    { name: "Bench / floor press", targetSets: 3, targetReps: "6-10", restSec: 90, swapGroup: "press" },
+    { name: "Row", targetSets: 3, targetReps: "8-12", restSec: 90, swapGroup: "row" },
+    { name: "Lateral raise", targetSets: 2, targetReps: "12-15", restSec: 60, swapGroup: "side" },
+    { name: "Curl + extension", targetSets: 2, targetReps: "10-12", restSec: 60, swapGroup: "arms" },
+  ],
+  lower: [
+    { name: "Front squat / goblet", targetSets: 3, targetReps: "6-10", restSec: 120, swapGroup: "squat" },
+    { name: "Hip hinge", targetSets: 3, targetReps: "8-10", restSec: 90, swapGroup: "hinge" },
+    { name: "Split squat", targetSets: 2, targetReps: "8/leg", restSec: 75, swapGroup: "lunge" },
+    { name: "Calf raise", targetSets: 2, targetReps: "12-15", restSec: 45, swapGroup: "calf" },
+  ],
 };
 
-const ROTATION = ["push", "pull", "legs", "full"] as const;
+const PPL = ["push", "pull", "legs", "full"] as const;
+const UPPER_LOWER = ["upper", "lower", "upper", "lower"] as const;
+
+const rotationFor = (input: HeuristicPlanInput): readonly string[] => {
+  if (input.variant === "alternate") return UPPER_LOWER;
+  if (input.physiqueTarget === "athletic" || input.physiqueTarget === "strong") {
+    return UPPER_LOWER;
+  }
+  return PPL;
+};
 
 const macroTargets = (input: HeuristicPlanInput): PlanSummary => {
   const weight = input.weightKg ?? 70;
   const goal = input.primaryGoal ?? "consistency";
-  let kcal = Math.round(weight * 30);
-  if (goal === "lose_fat") kcal = Math.round(weight * 26);
-  if (goal === "build_muscle") kcal = Math.round(weight * 34);
+  const band = sexBand(input.sex);
+  let kcal = Math.round(weight * band.base);
+  if (goal === "lose_fat") kcal = Math.round(weight * band.cut);
+  if (goal === "build_muscle") kcal = Math.round(weight * band.build);
+  if (input.physiqueTarget === "lean_cut") kcal -= 100;
+  if (input.physiqueTarget === "muscular") kcal += 120;
   if (input.pace === "aggressive" && goal === "lose_fat") kcal -= 150;
-  const proteinG = Math.round(weight * 1.8);
+  const proteinG = Math.round(weight * band.protein);
   const fatG = Math.round((kcal * 0.25) / 9);
   const carbsG = Math.round((kcal - proteinG * 4 - fatG * 9) / 4);
-  const outcomeLine =
-    goal === "lose_fat"
-      ? "Steady fat loss with lift days protected"
+  const look =
+    input.physiqueTarget?.replace(/_/g, " ") ??
+    (goal === "lose_fat"
+      ? "lean progress"
       : goal === "build_muscle"
-        ? "Progressive overload with surplus fuel"
-        : "Consistency-first week plan";
+        ? "muscle gain"
+        : "consistency");
+  const variantNote =
+    input.variant === "alternate" ? "Upper/lower balance" : "Progressive lift focus";
+  const lifestyleHint = input.lifestyleNotes?.trim()
+    ? " Tuned to your routine notes."
+    : "";
+  const tuning = `${ageRecoveryHint(input.ageYears)}${cuisineHint(input.cuisineStyles)}`;
   return {
     kcalTarget: Math.max(1400, kcal),
     proteinG,
     carbsG: Math.max(80, carbsG),
     fatG,
-    outcomeLine,
+    outcomeLine: `${variantNote} for ${look}.${lifestyleHint}${tuning}`.trim(),
   };
 };
 
@@ -105,6 +152,7 @@ export const generateHeuristicWeekPlan = (
     ),
   );
   const minutes = input.sessionMinutes ?? 45;
+  const rotation = rotationFor(input);
   const summary = macroTargets(input);
   const workouts: HeuristicWorkout[] = [];
   const days: HeuristicDay[] = [];
@@ -117,7 +165,7 @@ export const generateHeuristicWeekPlan = (
       days.push({ dayIndex, date, kind: "rest", label: "Rest" });
       continue;
     }
-    const key = ROTATION[liftCount % ROTATION.length]!;
+    const key = rotation[liftCount % rotation.length]!;
     const label = key[0]!.toUpperCase() + key.slice(1);
     const workoutIndex = workouts.length;
     workouts.push({
@@ -125,7 +173,10 @@ export const generateHeuristicWeekPlan = (
       durationMin: minutes,
       focus: key,
       calorieEst: Math.round(minutes * 7),
-      exercises: TEMPLATES[key] ?? TEMPLATES.full!,
+      exercises: scaleVolume(
+        fitToEquipment(TEMPLATES[key] ?? TEMPLATES.full!, input.equipment),
+        { experience: input.experience, ageYears: input.ageYears, minutes },
+      ),
     });
     days.push({ dayIndex, date, kind: "lift", label, workoutIndex });
     liftCount += 1;

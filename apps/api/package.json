@@ -7,13 +7,16 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
+    "test:cuisine": "tsx scripts/assert-cuisine-filter.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply mirra-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply mirra-db --remote",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@better-auth/expo": "^1.7.14",
     "@mirra/contracts": "*",
+    "better-auth": "^1.7.14",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.9.6",
     "zod": "^3.25.76"
@@ -21,6 +24,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250917.0",
     "drizzle-kit": "^0.31.4",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.2",
     "wrangler": "^4.37.0"
   }

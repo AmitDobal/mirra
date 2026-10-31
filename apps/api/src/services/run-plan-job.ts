@@ -8,6 +8,7 @@ import { badRequest } from "../lib/errors";
 import { newId } from "../lib/id";
 import { getPlanGenerator } from "../lib/plan-generator";
 import { persistGeneratedPlan } from "./persist-plan";
+import { buildPlanPrefsJson, buildPlanProfileJson } from "./plan-input";
 
 type RunOpts = {
   db: AppDB;
@@ -53,17 +54,8 @@ export const runPlanGenerateJob = async ({
       timezone: profile.timezone,
       weekStart,
       kind: "generate",
-      prefsJson: JSON.stringify({
-        primaryGoal: prefs.primaryGoal,
-        experience: prefs.experience,
-        trainDays: JSON.parse(prefs.trainDaysJson) as number[],
-        sessionMinutes: prefs.sessionMinutes,
-      }),
-      profileJson: JSON.stringify({
-        weightKg: profile.weightKg,
-        goalWeightKg: profile.goalWeightKg,
-        pace: profile.pace,
-      }),
+      prefsJson: buildPlanPrefsJson(prefs),
+      profileJson: buildPlanProfileJson(profile),
     });
 
     const { planId } = await persistGeneratedPlan({

@@ -1,5 +1,14 @@
 # Handoff
 
+## 2026-11-01 — integrate/day-test-all-features merged (PR #14)
+
+**Done:** Plan-chat UI + route, `/v1/coach/revise` + `/v1/ai/usage`, weight journey UI + `/v1/weight`, rule `92-single-integrate-branch`, AGENTS single-ship bullet. Merge `c00282c`.
+**Typecheck:** `@mirra/api` + `@mirra/mobile` OK.
+**Smoke shots:** `/tmp/mirra-qa/integrate-all-features/` (`plan-chat-open.png`, `weight-log-sheet.png`, `onboarding-step1-of-12.png`).
+**P1:** Production API still 404 on `/v1/weight` + `/v1/ai/usage` until Workers deploy from `origin/main` (mobile against live API showed toast).
+**Next:** Orchestrator full smoke + EAS from clean `origin/main`. Do not day-test from dirty primary.
+**Left local-only:** TodayBrief, SpeakCuesToggle, voice-cue, other WIP under primary `feat/sx-arbitrary-radius` — not on main.
+
 ## 2026-10-31 — Styles fixed (StyleSheet; NativeWind removed)
 
 **Root cause:** NativeWind/`react-native-css-interop` + React 19.3 + Reanimated 4.7 throws / no-ops (useReducer dispatch TDZ). Not an Expo Go “CSS file” issue.

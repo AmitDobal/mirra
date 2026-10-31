@@ -16,6 +16,17 @@
 | Smoke | `docs/05-project-management/SMOKE.md` |
 | Day-test runbook | `docs/09-runbooks/ios-day-test.md` |
 
+## 2026-11-01 — Restore smoke PASS + EAS
+
+| | |
+| --- | --- |
+| Verdict | **PASS** — tabs sx (#17) + insights/actions/voice API (#20/#21) on prod |
+| Main tip | `3289337` |
+| API | insights/today, today/actions, voice/cue/today → 200 |
+| Shots | `/tmp/mirra-qa/restore-all-screens/{today,fuel,coach,progress,you}.png` |
+| EAS | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/9a0ad4fd-3fbd-4524-8a74-461ccf2e522d |
+| iOS manifest | https://u.expo.dev/update/01a19399-461a-759c-9338-f1ea1c1a2170 |
+
 ## Evidence (goal)
 
 | Gate | Result |

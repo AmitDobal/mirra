@@ -3,3 +3,4 @@ export * from "./object-store";
 export * from "./plan-generator";
 export * from "./plan-reviser";
 export * from "./speech-synthesizer";
+export * from "./personalization-context";

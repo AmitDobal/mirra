@@ -26,6 +26,7 @@ Feature / route
 | `CoachAdvisor` | `getCoachAdvisor(env)` | OpenAI | Heuristic |
 | `PlanReviser` | `getPlanReviser(env, db)` | OpenAI (JSON intent) | Heuristic rules |
 | `MealEstimator` | `getMealEstimator(env)` | OpenAI vision | Heuristic keywords |
+| `PersonalizationContextPort` | `getPersonalizationContext(env, db)` | D1 (`preferences` + `profiles`) | n/a. Envelope feeds `PlanGenerator` (`workout_plan`). See `ai-context-and-credits-architecture.md` §A |
 | `ObjectStore` | `getObjectStore(env)` | R2 (when wired) | Stub |
 | `SpeechSynthesizer` | `getSpeechSynthesizer(env, db)` | ElevenLabs (D1 + R2 cache) | Stub (text-only) |
 | `AiBudget` (service, not a vendor) | `assertCanSpend` / `canSpend` / `recordUsage` in `services/ai-budget.ts` | D1 `ai_usage_*` | n/a. Over budget → heuristic adapter |

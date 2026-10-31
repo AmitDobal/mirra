@@ -29,6 +29,16 @@ export const s13Paywall = {
   coachCutout: require("./s13_paywall/coach-cutout.jpg"),
 } as const;
 
+/** S09B — Stitch-generated trainer character portraits (Kinetic Performance). */
+export const s09bTrainers = {
+  drill: require("./s09b_trainers/drill.jpg"),
+  honey: require("./s09b_trainers/honey.jpg"),
+  wit: require("./s09b_trainers/wit.jpg"),
+  spark: require("./s09b_trainers/spark.jpg"),
+  zen: require("./s09b_trainers/zen.jpg"),
+  rival: require("./s09b_trainers/rival.jpg"),
+} as const;
+
 export const s15Today = {
   athleteMidMotion: require("./s15_today/athlete-mid-motion.jpg"),
   trainerSquat: require("./s15_today/trainer-squat.jpg"),
@@ -73,6 +83,7 @@ export const s24ProfileSettings = {
 export const stitchAssets = {
   s02WelcomeHook,
   s06Target,
+  s09bTrainers,
   s11GeneratingWeek,
   s12WeekReveal,
   s13Paywall,

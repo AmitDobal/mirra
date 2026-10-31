@@ -29,3 +29,24 @@ export const CheckInResponseSchema = z.object({
 export type CheckInBody = z.infer<typeof CheckInBodySchema>;
 export type CheckInResponse = z.infer<typeof CheckInResponseSchema>;
 export type CheckInStatus = z.infer<typeof CheckInStatusSchema>;
+
+/** Shared cursor-pagination query for history lists (progress photos, check-ins, meals). */
+export const PageQuerySchema = z.object({
+  /** Default 20; values above 50 are clamped to 50. */
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .default(20)
+    .transform((n) => Math.min(n, 50)),
+  /** Opaque cursor returned as `nextCursor` by the previous page. */
+  cursor: z.string().max(200).optional(),
+});
+
+export const CheckInListResponseSchema = z.object({
+  items: z.array(CheckInResponseSchema.omit({ coachMessage: true })),
+  nextCursor: z.string().nullable(),
+});
+
+export type PageQuery = z.infer<typeof PageQuerySchema>;
+export type CheckInListResponse = z.infer<typeof CheckInListResponseSchema>;

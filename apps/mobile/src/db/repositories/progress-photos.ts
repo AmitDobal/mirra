@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { getDb } from "../client";
-import { LOCAL_USER_ID, newId, nowMs } from "../ids";
+import { getLocalUserId, newId, nowMs } from "../ids";
 import { PoseSchema, type LocalProgressPhoto } from "../types";
 
 const SaveSchema = z.object({
@@ -18,7 +18,7 @@ export const saveProgressPhoto = async (
   input: SaveProgressPhotoInput,
 ): Promise<LocalProgressPhoto> => {
   const data = SaveSchema.parse(input);
-  const userId = data.userId ?? LOCAL_USER_ID;
+  const userId = data.userId ?? getLocalUserId();
   const db = await getDb();
   const id = newId("photo");
   const takenAt = data.takenAt ?? nowMs();
@@ -62,7 +62,7 @@ const mapRow = (r: Row): LocalProgressPhoto => ({
 });
 
 export const listProgressPhotos = async (
-  userId: string = LOCAL_USER_ID,
+  userId: string = getLocalUserId(),
   limit = 50,
 ): Promise<LocalProgressPhoto[]> => {
   const db = await getDb();

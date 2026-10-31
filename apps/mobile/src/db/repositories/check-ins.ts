@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { getDb } from "../client";
-import { LOCAL_USER_ID, newId, nowMs } from "../ids";
+import { getLocalUserId, newId, nowMs } from "../ids";
 import { CheckInStatusSchema, type LocalCheckIn } from "../types";
 
 const SubmitSchema = z.object({
@@ -36,7 +36,7 @@ export const submitCheckIn = async (
   input: SubmitCheckInInput,
 ): Promise<LocalCheckIn> => {
   const data = SubmitSchema.parse(input);
-  const userId = data.userId ?? LOCAL_USER_ID;
+  const userId = data.userId ?? getLocalUserId();
   const db = await getDb();
   const ts = nowMs();
   const existing = await db.getFirstAsync<{ id: string }>(
@@ -84,7 +84,7 @@ export const submitCheckIn = async (
 };
 
 export const listCheckIns = async (
-  userId: string = LOCAL_USER_ID,
+  userId: string = getLocalUserId(),
   limit = 30,
 ): Promise<LocalCheckIn[]> => {
   const db = await getDb();

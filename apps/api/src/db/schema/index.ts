@@ -5,3 +5,5 @@ export * from "./activity";
 export * from "./media";
 export * from "./billing";
 export * from "./ops";
+export * from "./meal-plans";
+export * from "./ai-usage";

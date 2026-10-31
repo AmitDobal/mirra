@@ -13,6 +13,7 @@ import { creditsDevRoutes } from "./routes/credits-dev";
 import { fuelRoutes } from "./routes/fuel";
 import { healthRoutes } from "./routes/health";
 import { historyRoutes } from "./routes/history";
+import { insightsRoutes } from "./routes/insights";
 import { mealPlanRoutes } from "./routes/meal-plan";
 import { meRoutes } from "./routes/me";
 import { onboardingRoutes } from "./routes/onboarding";
@@ -58,6 +59,7 @@ export const createApp = () => {
   app.route("/", recipeRoutes);
   app.route("/", workoutRoutes);
   app.route("/", weightRoutes);
+  app.route("/", insightsRoutes);
   app.route("/", aiRoutes);
   app.route("/", creditsRoutes);
   app.route("/", creditsDevRoutes);

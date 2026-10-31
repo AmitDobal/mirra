@@ -49,4 +49,5 @@ export type PersonalInsights = {
 export const getTodayInsights = (date?: string) =>
   apiFetch<PersonalInsights>("/v1/insights/today", {
     query: date ? { date } : undefined,
+    quiet: true,
   });

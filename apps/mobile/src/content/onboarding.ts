@@ -117,7 +117,17 @@ export const onboardingCopy = {
     privacy: "Encrypted & private to your device",
   },
   generating: {
-    label: "AI building your week…",
+    engine: "AI CALIBRATION ENGINE",
+    version: "v2.4 SYNTH",
+    blueprintKicker: "Weekly Blueprint",
+    blueprintTitle: "Microcycle Ingest",
+    meterLabel: "METABOLIC LOAD ALIGNMENT",
+    stepLabel: "STEP 3 OF 4",
+    stepFinal: "FINAL COMPILATION",
+    title: "Building your week…",
+    sub: "Aligning metabolic volume, recovery cadence, and equipment profiles.",
+    badgeRecovery: "VO2 RECOVERY: OPTIMAL",
+    badgeEquipment: "BARBELL + DUMBBELL",
   },
   weekReveal: {
     title: "Your week is ready",

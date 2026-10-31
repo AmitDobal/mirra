@@ -17,6 +17,10 @@ export const s11GeneratingWeek = {
   athleteSquat: require("./s11_generating_week/athlete-squat.jpg"),
   sprinterKneeling: require("./s11_generating_week/sprinter-kneeling.jpg"),
   athleteBarbell: require("./s11_generating_week/athlete-barbell.jpg"),
+  /** Grayscale + contrast-125 variants (Stitch `grayscale contrast-125` on the avatars). */
+  athleteSquatBw: require("./s11_generating_week/athlete-squat-bw.jpg"),
+  sprinterKneelingBw: require("./s11_generating_week/sprinter-kneeling-bw.jpg"),
+  athleteBarbellBw: require("./s11_generating_week/athlete-barbell-bw.jpg"),
 } as const;
 
 export const s12WeekReveal = {

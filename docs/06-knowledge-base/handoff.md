@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-11-01 — Restore tabs + insights API day-test PASS
+
+**Done:** Prod Worker serves `GET /v1/insights/today`, `/v1/today/actions`, `/v1/voice/cue/today` (200). Main `3289337` (#17 UI + #20/#21 API). Tab smoke shots in `/tmp/mirra-qa/restore-all-screens/`. EAS day-test republished.
+
+**Open on phone:** https://u.expo.dev/update/01a19399-461a-759c-9338-f1ea1c1a2170
+
+**Watch:** Older Today shot may show pre-deploy insights toast; curl proves routes live now. Primary checkout still dirty WIP — do not EAS from it.
+
 ## 2026-11-01 — restore-all-screens merged (PR #17)
 
 **Done:** Polished tab UI on `origin/main`. Today = main attendance (WeekStrip PresenceDot + DayHistorySheet) + local HeroNext/GoalChecklist/RoutineCard+edit/TodayBrief/actions/voice (`sx()`). Coach AdviseCard+AiMoodPills+voice-cue; You SpeakCuesToggle; Fuel/Progress/Workout sx.

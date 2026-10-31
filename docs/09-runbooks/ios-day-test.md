@@ -14,12 +14,14 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ad37ef04-61bc-4478-b9d3-d3e9c51d6c39 |
-| iOS update ID | `01a1937c-5804-715c-ae52-6990b300d08a` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1937c-5804-715c-ae52-6990b300d08a |
+| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/9a0ad4fd-3fbd-4524-8a74-461ccf2e522d |
+| iOS update ID | `01a19399-461a-759c-9338-f1ea1c1a2170` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19399-461a-759c-9338-f1ea1c1a2170 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `day-test: #13 sx onboarding + #14 plan-chat/weight` (from `8b5c2d1`) |
+| Message | `day-test: restore tabs sx #17 + insights/actions/voice API` (from `3289337`) |
+| Smoke shots | `/tmp/mirra-qa/restore-all-screens/` (today/fuel/coach/progress/you) |
+| API prove | `GET /v1/insights/today`, `/v1/today/actions`, `/v1/voice/cue/today` → 200 |
 
 ### Open on phone (laptop can be off)
 

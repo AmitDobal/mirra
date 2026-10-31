@@ -14,6 +14,7 @@ import { fuelRoutes } from "./routes/fuel";
 import { healthRoutes } from "./routes/health";
 import { historyRoutes } from "./routes/history";
 import { insightsRoutes } from "./routes/insights";
+import { todayActionsRoutes } from "./routes/today-actions";
 import { mealPlanRoutes } from "./routes/meal-plan";
 import { meRoutes } from "./routes/me";
 import { onboardingRoutes } from "./routes/onboarding";
@@ -50,6 +51,7 @@ export const createApp = () => {
   app.route("/", onboardingRoutes);
   app.route("/", planRoutes);
   app.route("/", todayRoutes);
+  app.route("/", todayActionsRoutes);
   app.route("/", attendanceRoutes);
   app.route("/", historyRoutes);
   app.route("/", checkInRoutes);

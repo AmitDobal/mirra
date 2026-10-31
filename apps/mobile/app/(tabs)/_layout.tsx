@@ -1,6 +1,7 @@
 import { Slot, usePathname } from "expo-router";
 import { View } from "react-native";
 
+import { sx } from "@/theme/sx";
 import { TabDock } from "@/ui/TabDock";
 
 const hideDock = (path: string) =>
@@ -12,8 +13,8 @@ const TabsLayout = () => {
   const showDock = !hideDock(path);
 
   return (
-    <View className="flex-1 bg-background">
-      <View className="flex-1">
+    <View style={sx("flex-1 bg-background")}>
+      <View style={sx("flex-1")}>
         <Slot />
       </View>
       {showDock ? <TabDock /> : null}

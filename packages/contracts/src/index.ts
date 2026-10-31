@@ -16,3 +16,4 @@ export * from "./meal-plan";
 export * from "./weight";
 export * from "./attendance";
 export * from "./credits";
+export * from "./ai-context";

@@ -1,3 +1,5 @@
+import type { ContextEnvelope } from "@mirra/contracts";
+
 /** Week plan AI generation — heuristic adapter until Workers AI / OpenAI lands. */
 
 export type PlanGenerateInput = {
@@ -6,6 +8,11 @@ export type PlanGenerateInput = {
   weekStart: string;
   prefsJson: string;
   profileJson: string;
+  /**
+   * Feature-scoped settings snapshot (`feature: "workout_plan"`). LLM adapters read this instead
+   * of `prefsJson`/`profileJson`. The heuristic adapter still reads the JSON bundles.
+   */
+  context?: ContextEnvelope;
   kind: "generate" | "rebuild";
 };
 

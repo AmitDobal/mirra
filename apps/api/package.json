@@ -8,6 +8,7 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "test:cuisine": "tsx scripts/assert-cuisine-filter.ts",
+    "test:context": "tsx scripts/assert-personalization-context.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply mirra-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply mirra-db --remote",

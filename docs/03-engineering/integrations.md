@@ -24,6 +24,7 @@ Feature / route
 | --- | --- | --- | --- |
 | `PlanGenerator` | `getPlanGenerator(env)` | OpenAI | Heuristic |
 | `CoachAdvisor` | `getCoachAdvisor(env)` | OpenAI | Heuristic |
+| `PersonalizationContextPort` | `getPersonalizationContext(env, db)` | D1 (`preferences` + `profiles`) | n/a. Envelope feeds `PlanGenerator` (`workout_plan`). See `ai-context-and-credits-architecture.md` §A |
 | `ObjectStore` | `getObjectStore(env)` | R2 (when wired) | Stub |
 | `PurchasesPort` (mobile) | `getPurchases()` / `createPurchases()` | RevenueCat | Stub |
 

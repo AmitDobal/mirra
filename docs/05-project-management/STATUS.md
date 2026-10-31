@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** PR #14 `integrate/day-test-all-features` merged to main (`c00282c`) — plan-chat + weight journey. Deploy API for `/v1/weight` + `/v1/ai/usage` before day-test against prod.
+**Latest:** Full-smoke **PASS** (2026-11-01). Weight + AI usage on prod API. EAS day-test republished: [update ad37ef04](https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ad37ef04-61bc-4478-b9d3-d3e9c51d6c39) · iOS manifest https://u.expo.dev/update/01a1937c-5804-715c-ae52-6990b300d08a · evidence `/tmp/mirra-qa/full-smoke-20261101004921`.
 
 | | |
 | --- | --- |

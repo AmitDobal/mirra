@@ -6,7 +6,7 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 2. **JS app hosted** (EAS Update) opened in **Expo Go** on the phone  
    — or a full **EAS Build** IPA (needs Apple Developer Program) if you outgrow Expo Go
 
-## Live right now (2026-10-31)
+## Live right now (2026-11-01)
 
 | Piece | Value |
 | --- | --- |
@@ -14,10 +14,12 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/7974e369-c9a1-40ad-a222-cac83b8008e8 |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a18eb7-117b-721c-af84-e9156f16d5c1 |
+| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ad37ef04-61bc-4478-b9d3-d3e9c51d6c39 |
+| iOS update ID | `01a1937c-5804-715c-ae52-6990b300d08a` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1937c-5804-715c-ae52-6990b300d08a |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
+| Message | `day-test: #13 sx onboarding + #14 plan-chat/weight` (from `8b5c2d1`) |
 
 ### Open on phone (laptop can be off)
 
@@ -41,9 +43,11 @@ npx wrangler deploy
 
 ```bash
 cd apps/mobile
+# Prefer --platform ios (web export fails on expo-sqlite wasm).
+CI=1 \
 EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev \
 EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 \
-npx eas-cli update --branch day-test --environment preview --message "…" --non-interactive
+npx eas-cli update --branch day-test --environment preview --platform ios --message "…" --non-interactive
 ```
 
 ## B. Standalone IPA (best feel, Apple Developer required)

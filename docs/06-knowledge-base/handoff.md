@@ -1,5 +1,14 @@
 # Handoff
 
+## 2026-11-01 — full-smoke PASS + EAS day-test
+
+**Verdict:** PASS — styled 12-step onboarding + S11/S12, plan `ready`/`openai` (`api-plan.json`), weight GET 200 (`x-mirra-user-id`), plan-chat + Progress weight UI evidence.
+**EAS:** https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ad37ef04-61bc-4478-b9d3-d3e9c51d6c39  
+**iOS manifest:** https://u.expo.dev/update/01a1937c-5804-715c-ae52-6990b300d08a  
+**Evidence:** `/tmp/mirra-qa/full-smoke-20261101004921` (+ `10025`).
+**P1:** Maestro paywall→tabs `NO_HIER` flakes (use deeplink/dev tester); `eas update` needs `--platform ios` + `babel-preset-expo` in mobile; local Metro dies if smoke worktree removed mid-run.
+**Next:** Phone day-test on new update; prune finished worktrees.
+
 ## 2026-11-01 — integrate/day-test-all-features merged (PR #14)
 
 **Done:** Plan-chat UI + route, `/v1/coach/revise` + `/v1/ai/usage`, weight journey UI + `/v1/weight`, rule `92-single-integrate-branch`, AGENTS single-ship bullet. Merge `c00282c`.

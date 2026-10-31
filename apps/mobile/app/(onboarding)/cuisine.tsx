@@ -5,13 +5,14 @@ import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
   ProgressHeader,
+  QuizEyebrow,
   useOnboardingStore,
 } from "@/features/onboarding";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 import { Button, Chip } from "@/ui";
 
-/** S09b — Cuisine styles (required, min 1). "Other" adds free text for AI context. */
+/** S09b — Cuisine styles (required, min 1). Other → free-text for AI context. */
 const CuisineScreen = () => {
   const c = onboardingCopy.cuisine;
   const cuisines = useOnboardingStore((s) => s.cuisines);
@@ -23,11 +24,11 @@ const CuisineScreen = () => {
   const otherOk = !otherSelected || cuisineOther.trim().length > 0;
   const canContinue = cuisines.length > 0 && otherOk;
 
-  const handleContinue = () => router.push("/(onboarding)/mirror");
+  const handleContinue = () => router.push("/(onboarding)/trainer");
 
   return (
     <OnboardingShell
-      header={<ProgressHeader step={8} onBack={() => router.back()} />}
+      header={<ProgressHeader step={10} onBack={() => router.back()} />}
       footer={
         <Button
           label={c.continue}
@@ -36,12 +37,13 @@ const CuisineScreen = () => {
         />
       }
     >
-      <View style={sx("mt-space-lg flex-row items-end justify-between gap-space-md")}>
+      <QuizEyebrow label={c.eyebrow} />
+      <View style={sx("flex-row items-end justify-between gap-space-md")}>
         <Text style={sx("flex-1 font-headline text-headline-md text-on-surface")}>
           {c.title}
         </Text>
         {cuisines.length > 0 ? (
-          <Text style={sx("font-label text-label-md text-primary-fixed")}>
+          <Text style={sx("font-label-bold text-label-md text-primary-fixed")}>
             {c.selected(cuisines.length)}
           </Text>
         ) : null}
@@ -72,7 +74,9 @@ const CuisineScreen = () => {
             value={cuisineOther}
             onChangeText={setCuisineOther}
             maxLength={200}
-            style={sx("min-h-touch rounded-DEFAULT bg-surface-container-high px-space-md font-body text-body-lg text-on-surface")}
+            style={sx(
+              "min-h-touch rounded-2xl bg-surface-container-high px-space-md py-space-sm font-body text-body-md text-on-surface",
+            )}
           />
         </View>
       ) : null}

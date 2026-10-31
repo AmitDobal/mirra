@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 
@@ -121,7 +121,7 @@ export const MealPlanSection = () => {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Adjust meals with AI"
-              onPress={() => router.push("/(tabs)/plan-chat")}
+              onPress={() => router.push("/(tabs)/plan-chat" as Href)}
               style={sx("flex-row items-center gap-1.5")}
             >
               <AiBadge label={false} tone="lime" size={16} />

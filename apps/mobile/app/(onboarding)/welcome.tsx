@@ -34,8 +34,16 @@ const WelcomeScreen = () => {
           style={styles.hero}
           resizeMode="cover"
         />
-        <View style={styles.eyebrow}>
-          <Text style={styles.eyebrowText}>{c.eyebrow}</Text>
+        <View style={styles.topRow}>
+          <View style={styles.eyebrow}>
+            <Text style={styles.eyebrowText}>{c.eyebrow}</Text>
+          </View>
+          <View style={styles.enginePill}>
+            <Text style={styles.engineText}>{c.engine}</Text>
+            <View style={styles.engineBadge}>
+              <Text style={styles.engineBadgeText}>{c.engineBadge}</Text>
+            </View>
+          </View>
         </View>
         <Text style={styles.title}>{c.titleLine1}</Text>
         <Text style={styles.title}>{c.titleLine2}</Text>
@@ -54,11 +62,20 @@ const WelcomeScreen = () => {
             resizeMode="cover"
           />
         </View>
+        <Text style={styles.motto}>{c.motto}</Text>
         <Card tone="lavender" style={styles.card}>
-          {c.steps.map((step) => (
+          {c.steps.map((step, index) => (
             <View key={step.num} style={styles.stepRow}>
-              <Text style={styles.stepNum}>{step.num}</Text>
-              <Text style={styles.stepLabel}>{step.label}</Text>
+              <View style={styles.stepRail}>
+                <View style={styles.stepDot}>
+                  <Text style={styles.stepNum}>{step.num}</Text>
+                </View>
+                {index < c.steps.length - 1 ? <View style={styles.stepLine} /> : null}
+              </View>
+              <View style={styles.stepCopy}>
+                <Text style={styles.stepLabel}>{step.label}</Text>
+                <Text style={styles.stepDetail}>{step.detail}</Text>
+              </View>
             </View>
           ))}
         </Card>
@@ -77,9 +94,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.DEFAULT,
     marginBottom: space.md,
   },
+  topRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: space.sm,
+    marginBottom: space.md,
+  },
   eyebrow: {
     alignSelf: "flex-start",
-    marginBottom: space.md,
     borderRadius: radius.full,
     backgroundColor: color.primaryContainer,
     paddingHorizontal: space.sm,
@@ -87,10 +110,42 @@ const styles = StyleSheet.create({
   },
   eyebrowText: {
     fontFamily: font.labelBold,
-    fontSize: type.labelCaps.size,
-    lineHeight: type.labelCaps.line,
-    letterSpacing: type.labelCaps.tracking * type.labelCaps.size,
+    fontSize: 10,
+    lineHeight: 12,
+    letterSpacing: 0.8,
     color: color.onPrimaryFixed,
+    textTransform: "uppercase",
+  },
+  enginePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: radius.full,
+    backgroundColor: color.surfaceContainerHigh,
+    paddingHorizontal: space.sm,
+    paddingVertical: 4,
+    maxWidth: "100%",
+  },
+  engineText: {
+    fontFamily: font.label,
+    fontSize: 10,
+    lineHeight: 12,
+    letterSpacing: 0.6,
+    color: color.onSurfaceVariant,
+    textTransform: "uppercase",
+    flexShrink: 1,
+  },
+  engineBadge: {
+    borderRadius: radius.full,
+    backgroundColor: color.secondaryContainer,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  engineBadgeText: {
+    fontFamily: font.labelBold,
+    fontSize: 8,
+    lineHeight: 10,
+    color: color.onSecondaryContainer,
     textTransform: "uppercase",
   },
   title: {
@@ -119,27 +174,75 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   card: {
-    marginTop: space.xl,
-    gap: space.md,
-    padding: space.md,
+    marginTop: space.md,
+    gap: 0,
+    paddingVertical: 10,
+    paddingHorizontal: space.md,
+    borderWidth: 1,
+    borderColor: "rgba(203,241,80,0.22)",
   },
   stepRow: {
     flexDirection: "row",
+    alignItems: "stretch",
+    gap: space.sm,
+    minHeight: 42,
+  },
+  stepRail: {
+    width: 28,
     alignItems: "center",
-    gap: space.md,
+  },
+  stepDot: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: color.primaryFixed,
+    shadowColor: color.primaryFixed,
+    shadowOpacity: 0.45,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  stepLine: {
+    flex: 1,
+    width: 2,
+    marginVertical: 2,
+    borderRadius: 1,
+    backgroundColor: "rgba(203,241,80,0.4)",
   },
   stepNum: {
-    width: 32,
-    fontFamily: font.label,
-    fontSize: type.labelMd.size,
-    lineHeight: type.labelMd.line,
-    color: color.primaryFixed,
+    fontFamily: font.labelBold,
+    fontSize: 10,
+    lineHeight: 12,
+    color: color.onPrimaryFixed,
+  },
+  stepCopy: {
+    flex: 1,
+    justifyContent: "center",
+    paddingBottom: 5,
+    gap: 1,
   },
   stepLabel: {
     fontFamily: font.bodySemi,
-    fontSize: type.bodyLg.size,
-    lineHeight: type.bodyLg.line,
+    fontSize: 14,
+    lineHeight: 18,
+    letterSpacing: 0.2,
     color: color.onSecondaryContainer,
+  },
+  stepDetail: {
+    fontFamily: font.body,
+    fontSize: 11,
+    lineHeight: 14,
+    color: color.secondary,
+  },
+  motto: {
+    marginTop: space.md,
+    textAlign: "center",
+    fontFamily: font.label,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.4,
+    color: color.onSurfaceVariant,
   },
 });
 

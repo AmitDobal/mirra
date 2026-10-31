@@ -13,9 +13,11 @@ import { creditsDevRoutes } from "./routes/credits-dev";
 import { fuelRoutes } from "./routes/fuel";
 import { healthRoutes } from "./routes/health";
 import { historyRoutes } from "./routes/history";
+import { mealPlanRoutes } from "./routes/meal-plan";
 import { meRoutes } from "./routes/me";
 import { onboardingRoutes } from "./routes/onboarding";
 import { planRoutes } from "./routes/plans";
+import { recipeRoutes } from "./routes/recipe";
 import { todayRoutes } from "./routes/today";
 import { workoutRoutes } from "./routes/workouts";
 
@@ -50,6 +52,8 @@ export const createApp = () => {
   app.route("/", checkInRoutes);
   app.route("/", coachRoutes);
   app.route("/", fuelRoutes);
+  app.route("/", mealPlanRoutes);
+  app.route("/", recipeRoutes);
   app.route("/", workoutRoutes);
   app.route("/", creditsRoutes);
   app.route("/", creditsDevRoutes);

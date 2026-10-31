@@ -10,6 +10,9 @@ export type ApiErrorCode =
   | "ai_credits_exhausted"
   | "ai_spend_cap"
   | "ai_action_cap"
+  | "thread_capped"
+  | "constraint_violation"
+  | "unsafe_output"
   | "internal";
 
 export class ApiError extends Error {

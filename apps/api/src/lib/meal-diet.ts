@@ -44,6 +44,29 @@ const tokens = (text: string | null | undefined): string[] =>
     .split(/[^a-z]+/)
     .filter((t) => t.length >= 3);
 
+/** Words from a free-text avoid list (3+ letters, lowercased). */
+export const avoidWordsOf = (foodsAvoid: string | null | undefined): string[] => tokens(foodsAvoid);
+
+/** Catalog tags excluded by diet ids and by the free-text avoid list. */
+export const excludedTagsFor = (
+  dietTags: readonly string[],
+  foodsAvoid: string | null | undefined,
+): Set<string> => {
+  const excludedTags = new Set<string>();
+  for (const d of dietTags) for (const t of DIET_EXCLUDES[d] ?? []) excludedTags.add(t);
+  for (const w of tokens(foodsAvoid)) {
+    const tag = KEYWORD_TAGS[w] ?? KEYWORD_TAGS[w.replace(/s$/, "")];
+    if (tag) excludedTags.add(tag);
+  }
+  return excludedTags;
+};
+
+/** Free-text keywords (flat) that map to a catalog tag, e.g. chicken → meat. */
+export const keywordsForTags = (tags: ReadonlySet<string>): string[] =>
+  Object.entries(KEYWORD_TAGS)
+    .filter(([, tag]) => tags.has(tag))
+    .map(([word]) => word);
+
 /** Catalog rows safe for this user's diet tags, avoid-list and cuisines. */
 export const filterCatalog = (
   dietTags: string[],
@@ -52,14 +75,8 @@ export const filterCatalog = (
   /** Free text (lifestyle notes) that can boost cuisines when the user picked "other". */
   cuisineHintText?: string | null,
 ): VettedFood[] => {
-  const excludedTags = new Set<string>();
-  for (const d of dietTags) for (const t of DIET_EXCLUDES[d] ?? []) excludedTags.add(t);
-
+  const excludedTags = excludedTagsFor(dietTags, foodsAvoid);
   const words = tokens(foodsAvoid);
-  for (const w of words) {
-    const tag = KEYWORD_TAGS[w] ?? KEYWORD_TAGS[w.replace(/s$/, "")];
-    if (tag) excludedTags.add(tag);
-  }
 
   return VETTED_FOODS.filter((f) => {
     if (!matchesCuisines(f, cuisineStyles, cuisineHintText)) return false;

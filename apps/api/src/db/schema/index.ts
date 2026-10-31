@@ -9,3 +9,4 @@ export * from "./meal-plans";
 export * from "./ai-usage";
 export * from "./attendance";
 export * from "./credits";
+export * from "./recipe-chat";

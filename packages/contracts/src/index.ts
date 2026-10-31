@@ -17,3 +17,4 @@ export * from "./weight";
 export * from "./attendance";
 export * from "./credits";
 export * from "./ai-context";
+export * from "./recipe-chat";

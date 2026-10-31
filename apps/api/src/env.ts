@@ -25,6 +25,12 @@ export type MirraEnv = {
   OPENAI_API_KEY?: string;
   /** Chat model id; defaults to gpt-4o-mini when unset. */
   OPENAI_MODEL?: string;
+  /** Optional OpenAI-compatible base URL (local mock for smoke). Default api.openai.com/v1. */
+  OPENAI_BASE_URL?: string;
+  /** Chef chat: max user turns per planned-meal thread (default 8). */
+  RECIPE_CHAT_MAX_TURNS?: string;
+  /** Chef chat: max user messages per minute per user (default 6). */
+  RECIPE_CHAT_RATE_PER_MIN?: string;
   /** Reserved for Anthropic PlanGenerator / CoachAdvisor adapters. */
   ANTHROPIC_API_KEY?: string;
   ANTHROPIC_MODEL?: string;

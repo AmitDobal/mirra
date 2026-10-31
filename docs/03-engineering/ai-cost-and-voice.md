@@ -73,3 +73,26 @@ Worst case free user: 3 voice cues/day is bounded by the cap, but the app plays 
 | `VOICE_PROVIDER` | `elevenlabs` \| `stub`; empty = elevenlabs if key present |
 
 Smoke: `apps/api/scripts/smoke-ai-budget-voice.mjs`.
+
+## Credits (AMI-125, migration `0009_ai_credits.sql`)
+
+User-facing monthly credits sit on top of the daily call caps above. Code: `lib/ai-credits.ts` (config), `services/credits-*.ts`, `routes/credits.ts`. Heuristic replies and provider failures cost 0 (the hold is released).
+
+| Feature | Credits |
+| --- | ---: |
+| `revise`, `coach`, `meal_estimate`, `chef_chat`, `voice_tts` | 1 |
+| `recipe_gen` | 2 |
+| `meal_plan` | 3 |
+| `plan_gen` | 5 |
+
+| Cap | Free | Pro (RevenueCat entitlement) |
+| --- | ---: | ---: |
+| Monthly grant (lazy, UTC month, no rollover) | 40 | 400 |
+| Absolute ceiling incl. referral bonus | 60 | 600 |
+| Referral bonus per month | +20 | +20 |
+| Provider cost per month | $0.50 | $6 |
+| `meal_plan` / `plan_gen` actions per month | 2 / 2 | 20 / 12 |
+
+`AI_CREDITS_MODE`: `off` (no ledger), `shadow` (default: ledger written, never blocks, logs what enforce would block), `enforce` (402 `ai_credits_exhausted` when empty, 429 `ai_spend_cap` / `ai_action_cap`). Overrides: `AI_CREDITS_FREE_GRANT`, `AI_CREDITS_PRO_GRANT`, `AI_USD_CAP_FREE_MICROS`, `AI_USD_CAP_PRO_MICROS`, `REFERRAL_TOPUP_ENABLED` (default off).
+
+Wired so far: `POST /v1/coach/advise` (LLM path only, via `withAiCredits`). Send `x-mirra-ai-mode: heuristic` to stay on free rules after a 402. Other call sites (revise, plan gen, meal plan, estimate, voice) still use the old gate and are next. Smoke: `apps/api/scripts/smoke-credits.mjs`.

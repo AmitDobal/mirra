@@ -23,3 +23,9 @@ OPENAI_MODEL=gpt-4o-mini
 # ELEVENLABS_API_KEY=
 # ELEVENLABS_VOICE_ID=
 # ELEVENLABS_MODEL=eleven_multilingual_v2
+
+# AI credits: off | shadow (default) | enforce
+# AI_CREDITS_MODE=shadow
+# AI_CREDITS_FREE_GRANT=40
+# AI_CREDITS_PRO_GRANT=400
+# REFERRAL_TOPUP_ENABLED=false

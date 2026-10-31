@@ -9,6 +9,8 @@ import { aiRoutes } from "./routes/ai";
 import { authRoutes } from "./routes/auth";
 import { checkInRoutes } from "./routes/check-ins";
 import { coachRoutes } from "./routes/coach";
+import { creditsRoutes } from "./routes/credits";
+import { creditsDevRoutes } from "./routes/credits-dev";
 import { devAuthRoutes } from "./routes/dev-auth";
 import { fuelRoutes } from "./routes/fuel";
 import { healthRoutes } from "./routes/health";
@@ -41,6 +43,7 @@ export const createApp = () => {
         "Idempotency-Key",
         "x-mirra-user-id",
         "x-user-id",
+        "x-mirra-ai-mode",
         "expo-origin",
       ],
       exposeHeaders: ["x-request-id", "Set-Cookie", "set-auth-token"],
@@ -66,10 +69,12 @@ export const createApp = () => {
   app.route("/", progressRoutes);
   app.route("/", weightRoutes);
   app.route("/", aiRoutes);
+  app.route("/", creditsRoutes);
+  app.route("/", creditsDevRoutes);
 
   app.onError((err, c) => {
     if (err instanceof ApiError) {
-      return c.json({ error: { code: err.code, message: err.message } }, err.status);
+      return c.json({ error: { code: err.code, message: err.message, ...err.details } }, err.status);
     }
     console.error(err);
     return c.json({ error: { code: "internal", message: "Internal error" } }, 500);

@@ -8,7 +8,9 @@ export type AiFeature =
   | "meal_plan"
   | "meal_estimate"
   | "plan_gen"
-  | "voice_tts";
+  | "voice_tts"
+  | "recipe_gen"
+  | "chef_chat";
 
 export type TierQuota = {
   monthlyTokens: number;

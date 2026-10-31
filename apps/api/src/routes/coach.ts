@@ -10,6 +10,7 @@ import type { MirraEnv } from "../env";
 import type { CoachAccountability } from "../ports/coach-advisor";
 import { getCoachAdvisor } from "../lib/coach-advisor";
 import { sanitizeAiCopy } from "../lib/ai-copy";
+import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { todayUtc } from "../lib/dates";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
@@ -17,6 +18,7 @@ import { requireAuth } from "../middleware/auth";
 import { isHarshPick } from "../services/accountability-copy";
 import { buildCoachContext, toCoachAccountability } from "../services/coach-context";
 import { deriveCoachPills } from "../services/coach-pills";
+import { withAiCredits } from "../services/credits-gate";
 import { buildPersonalDayContext } from "../services/personal-context";
 import { revisePlans } from "../services/plan-revise";
 import { loadTrainerPersona } from "../services/trainer-persona";
@@ -66,17 +68,28 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
   }
 
   const persona = await loadTrainerPersona(db, userId);
-  const advisor = getCoachAdvisor(c.env, db);
-  const result = await advisor.advise({
-    userId,
-    readiness: readinessToScore(body.readiness),
-    status: statusFromBody(body.status, body.readiness),
-    note: body.note,
-    vectorId: body.vectorId,
-    context,
-    accountability,
-    persona,
-  });
+  // `x-mirra-ai-mode: heuristic` lets the app keep working after a 402 (no LLM, no credits).
+  const forceHeuristic = c.req.header("x-mirra-ai-mode")?.toLowerCase() === "heuristic";
+  const advisor = getCoachAdvisor(c.env, db, { forceHeuristic });
+  const result = await withAiCredits(
+    { env: c.env, db, userId },
+    {
+      feature: "coach",
+      paid: !forceHeuristic && resolveAiProvider(c.env) === "openai",
+      wasPaid: (r) => r.source === "openai",
+    },
+    () =>
+      advisor.advise({
+        userId,
+        readiness: readinessToScore(body.readiness),
+        status: statusFromBody(body.status, body.readiness),
+        note: body.note,
+        vectorId: body.vectorId,
+        context,
+        accountability,
+        persona,
+      }),
+  );
 
   const message = sanitizeAiCopy(
     personalWin && !result.message.toLowerCase().includes("win")

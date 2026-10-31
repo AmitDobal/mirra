@@ -7,17 +7,28 @@ export type ApiErrorCode =
   | "validation_error"
   | "conflict"
   | "rate_limited"
+  | "ai_credits_exhausted"
+  | "ai_spend_cap"
+  | "ai_action_cap"
   | "internal";
 
 export class ApiError extends Error {
   readonly code: ApiErrorCode;
   readonly status: ContentfulStatusCode;
+  /** Extra machine-readable fields merged into `error` (e.g. `resetsAt`). */
+  readonly details?: Record<string, unknown>;
 
-  constructor(code: ApiErrorCode, message: string, status: ContentfulStatusCode) {
+  constructor(
+    code: ApiErrorCode,
+    message: string,
+    status: ContentfulStatusCode,
+    details?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = "ApiError";
     this.code = code;
     this.status = status;
+    this.details = details;
   }
 }
 

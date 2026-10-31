@@ -8,6 +8,8 @@ import { requestIdMiddleware } from "./middleware/request-id";
 import { attendanceRoutes } from "./routes/attendance";
 import { checkInRoutes } from "./routes/check-ins";
 import { coachRoutes } from "./routes/coach";
+import { creditsRoutes } from "./routes/credits";
+import { creditsDevRoutes } from "./routes/credits-dev";
 import { fuelRoutes } from "./routes/fuel";
 import { healthRoutes } from "./routes/health";
 import { historyRoutes } from "./routes/history";
@@ -32,6 +34,7 @@ export const createApp = () => {
         "Idempotency-Key",
         "x-mirra-user-id",
         "x-user-id",
+        "x-mirra-ai-mode",
       ],
       exposeHeaders: ["x-request-id"],
     }),
@@ -48,10 +51,12 @@ export const createApp = () => {
   app.route("/", coachRoutes);
   app.route("/", fuelRoutes);
   app.route("/", workoutRoutes);
+  app.route("/", creditsRoutes);
+  app.route("/", creditsDevRoutes);
 
   app.onError((err, c) => {
     if (err instanceof ApiError) {
-      return c.json({ error: { code: err.code, message: err.message } }, err.status);
+      return c.json({ error: { code: err.code, message: err.message, ...err.details } }, err.status);
     }
     console.error(err);
     return c.json({ error: { code: "internal", message: "Internal error" } }, 500);

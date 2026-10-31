@@ -15,3 +15,4 @@ export * from "./today-actions";
 export * from "./meal-plan";
 export * from "./weight";
 export * from "./attendance";
+export * from "./credits";

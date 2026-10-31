@@ -20,6 +20,8 @@ export type CoachAdviseResult = {
   message: string;
   vectors?: CoachVector[];
   rebuildSuggested: boolean;
+  /** Which advisor produced this (credits gate settles only paid results). */
+  source?: "openai" | "heuristic";
 };
 
 export type CoachAdvisor = {

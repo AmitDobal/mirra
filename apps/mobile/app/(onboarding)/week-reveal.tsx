@@ -1,15 +1,27 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { Image, Text, View } from "react-native";
+import { TrendingUp } from "lucide-react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Text, View } from "react-native";
 
 import { s12WeekReveal } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
-import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
+import {
+  OnboardingShell,
+  useOnboardingStore,
+} from "@/features/onboarding";
+import {
+  WeekRevealDayStrip,
+  WeekRevealHero,
+  WeekRevealWorkoutCard,
+  splitTitleFromWorkouts,
+} from "@/features/onboarding/components/WeekRevealParts";
 import { loadWeekPlanFromDb } from "@/features/onboarding/services/plan-persist";
 import type { OnboardingWeekPlan } from "@/features/onboarding/types";
 import { getCurrentPlan } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
-import { Button, Card } from "@/ui";
+import { color } from "@/theme/tokens";
+import { Button } from "@/ui";
+import { sx } from "@/theme/sx";
 
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 const WORKOUT_IMGS = [
@@ -29,14 +41,16 @@ const goalLabel = (goal: string | null) => {
   return goal ? (map[goal] ?? "Build muscle") : "Build muscle";
 };
 
-const dayTag = (kind: string) => {
-  if (kind === "lift") return "Lift";
+const dayTag = (kind: string, hasWorkout: boolean) => {
+  if (kind === "lift" || hasWorkout) return "Lift";
   if (kind === "fuel") return "Fuel";
   return "Rest";
 };
 
 const toOnboardingWorkout = (
-  w: NonNullable<Awaited<ReturnType<typeof getCurrentPlan>>["days"][number]["workout"]>,
+  w: NonNullable<
+    Awaited<ReturnType<typeof getCurrentPlan>>["days"][number]["workout"]
+  >,
 ): OnboardingWeekPlan["workouts"][number] => ({
   id: w.id,
   title: w.title,
@@ -85,7 +99,7 @@ const fromApiPlan = (
   };
 };
 
-/** S12 — Plan from store / API / SQLite. */
+/** S12 — Stitch week reveal + expandable exercises. */
 const WeekRevealScreen = () => {
   const c = onboardingCopy.weekReveal;
   const goal = useOnboardingStore((s) => s.goal);
@@ -94,6 +108,7 @@ const WeekRevealScreen = () => {
   const planStore = usePlanStore((s) => s.plan);
   const setPlan = usePlanStore((s) => s.setPlan);
   const [extra, setExtra] = useState<OnboardingWeekPlan | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -120,123 +135,173 @@ const WeekRevealScreen = () => {
     : null;
   const plan = storePlan ?? fromStore ?? extra;
 
-  const daysCount =
-    plan?.days.filter((d) => d.kind === "lift" || d.workout).length ??
-    trainingDays.filter(Boolean).length;
+  const dayStats = useMemo(() => {
+    const days = plan?.days ?? [];
+    if (!days.length) {
+      const lifts = trainingDays.filter(Boolean).length;
+      return {
+        workouts: lifts || 3,
+        rest: Math.max(0, 7 - lifts - 1),
+        recovery: lifts ? 1 : 0,
+      };
+    }
+    let workouts = 0;
+    let rest = 0;
+    let recovery = 0;
+    for (const d of days) {
+      const lift = d.kind === "lift" || Boolean(d.workout);
+      if (lift) workouts += 1;
+      else if (d.kind === "fuel") recovery += 1;
+      else rest += 1;
+    }
+    return { workouts, rest, recovery };
+  }, [plan?.days, trainingDays]);
 
   const kcal = plan?.summary?.kcalTarget;
-  const hero =
-    plan?.summary?.outcomeLine ||
-    plan?.workouts[0]?.title ||
-    c.heroSplit;
+  const splitTitle = splitTitleFromWorkouts(
+    plan?.workouts ?? [],
+    c.heroSplit,
+  );
+  const readinessPct = Math.round((dayStats.workouts / 7) * 100);
+  const outcome = plan?.summary?.outcomeLine;
 
   const strip =
     plan?.days.length === 7
-      ? plan.days.map((d, i) => ({
-          letter: DAY_LETTERS[i]!,
-          tag: dayTag(d.kind),
-          lift: d.kind === "lift" || Boolean(d.workout),
-        }))
-      : c.days.map((d) => ({
+      ? plan.days.map((d, i) => {
+          const lift = d.kind === "lift" || Boolean(d.workout);
+          return {
+            letter: DAY_LETTERS[i]!,
+            num: Number(d.date.slice(-2)) || i + 1,
+            tag: dayTag(d.kind, Boolean(d.workout)),
+            lift,
+          };
+        })
+      : c.days.map((d, i) => ({
           letter: d.letter,
+          num: 16 + i,
           tag: d.tag,
           lift: d.tag === "Lift",
         }));
 
   const workouts =
     plan?.workouts.length
-      ? plan.workouts.map((w) => ({
-          name: w.title,
-          mins: `${w.durationMin} min`,
-          meta: `${w.exercises.length} exercises${w.focus ? ` · ${w.focus}` : ""}`,
-        }))
-      : c.workouts;
-
-  const handleStart = () => router.push("/(onboarding)/paywall");
-  const handleEdit = () => router.replace("/(onboarding)/goal");
+      ? plan.workouts.map((w, i) => {
+          const day = plan.days.find((d) => d.workout?.id === w.id);
+          const dayNum = day ? day.dayIndex + 1 : i + 1;
+          const focusRaw = w.focus?.trim() || "";
+          const fromTitle = w.title
+            .replace(/\s+(day|workout|strength|session)$/i, "")
+            .trim();
+          const dayFocus =
+            focusRaw && focusRaw.toLowerCase() !== "session"
+              ? focusRaw
+              : fromTitle || "Session";
+          // Stitch-style second chip: keep short; avoid duplicating the title
+          const focusTag =
+            focusRaw && focusRaw.toLowerCase() !== "session"
+              ? focusRaw
+              : fromTitle.split(/\s+/).slice(0, 2).join(" ") || "Training";
+          return {
+            id: w.id,
+            name: w.title,
+            mins: `${w.durationMin} min`,
+            focusTag,
+            exerciseCount: w.exercises.length,
+            dayLabel: `Day ${String(dayNum).padStart(2, "0")} · ${dayFocus.toUpperCase()}`,
+            exercises: w.exercises,
+          };
+        })
+      : c.workouts.map((w, i) => ({
+          id: `fallback-${i}`,
+          name: w.name,
+          mins: w.mins,
+          focusTag: w.meta.split("·")[0]?.trim() || "Session",
+          exerciseCount: Number.parseInt(w.meta, 10) || 0,
+          dayLabel: `Day ${String(i + 1).padStart(2, "0")}`,
+          exercises: [] as {
+            name: string;
+            targetSets: number;
+            targetReps: string;
+          }[],
+        }));
 
   return (
     <OnboardingShell
       footer={
         <>
-          <Button label={c.start} onPress={handleStart} />
-          <Button label={c.edit} variant="ghost" onPress={handleEdit} />
+          <Button label={c.start} onPress={() => router.push("/(onboarding)/paywall")} />
+          <Button
+            label={c.edit}
+            variant="ghost"
+            onPress={() => router.replace("/(onboarding)/goal")}
+          />
         </>
       }
     >
-      <Text className="mt-space-md font-headline text-headline-lg text-on-surface">
-        {c.title}
-      </Text>
-      <Text className="mt-space-xs font-body-medium text-body-md text-on-surface-variant">
-        {goalLabel(goal)} · {daysCount} days / week
+      <Text style={sx("font-headline text-headline-md text-on-surface")}>{c.title}</Text>
+      <Text style={[sx("font-body text-body-md text-on-surface-variant"), { marginTop: 2 }]}>
+        {goalLabel(goal)} · {dayStats.workouts} days / week
       </Text>
 
-      <Card tone="lime" className="mt-space-lg p-space-md">
-        <View className="flex-row items-start justify-between">
-          <View className="flex-1 pr-space-md">
-            <Text className="font-headline-semi text-headline-sm text-on-primary-fixed">
-              {hero}
-            </Text>
-            <View className="mt-space-sm self-start rounded-full bg-on-primary-fixed/15 px-space-sm py-1">
-              <Text className="font-label text-label-md text-on-primary-fixed">
-                {kcal ? `~${kcal.toLocaleString()} kcal/day` : c.kcal}
-              </Text>
-            </View>
-          </View>
-          <Image
-            source={WORKOUT_IMGS[0]}
-            accessibilityLabel="Week workout"
-            style={{ width: 56, height: 56, borderRadius: 28 }}
-            resizeMode="cover"
-          />
-        </View>
-      </Card>
-
-      <View className="mt-space-lg flex-row justify-between">
-        {strip.map((day, i) => (
-          <View key={`${day.letter}-${i}`} className="items-center gap-1">
-            <View
-              className={`h-9 w-9 items-center justify-center rounded-full ${
-                day.lift
-                  ? "bg-primary-container"
-                  : "bg-surface-container-high"
-              }`}
-            >
-              <Text
-                className={`font-label text-label-md ${
-                  day.lift ? "text-on-primary-fixed" : "text-on-surface"
-                }`}
-              >
-                {day.letter}
-              </Text>
-            </View>
-            <Text className="font-body text-body-sm text-on-surface-variant">
-              {day.tag}
-            </Text>
-          </View>
-        ))}
+      <View style={sx("mt-space-lg")}>
+        <WeekRevealHero
+          title={splitTitle}
+          kcal={kcal}
+          fallbackKcal={c.kcal}
+          workoutCount={dayStats.workouts}
+          restCount={dayStats.rest}
+          recoveryCount={dayStats.recovery}
+          readinessPct={readinessPct}
+        />
       </View>
 
-      <View className="mt-space-lg gap-space-sm">
+      <View style={sx("mt-space-lg")}>
+        <WeekRevealDayStrip days={strip} />
+      </View>
+
+      <View style={sx("mt-space-lg mb-space-sm flex-row items-center justify-between")}>
+        <Text style={sx("font-label text-label-lg uppercase text-on-surface")}>
+          Target Routine
+        </Text>
+        <Text style={sx("font-label text-label-md text-secondary")}>
+          {workouts.length} of {dayStats.workouts || workouts.length} planned
+        </Text>
+      </View>
+      <Text style={sx("mb-space-sm font-body text-body-sm text-on-surface-variant")}>
+        Tap a session to see exercises
+      </Text>
+      <View style={{ gap: 14 }}>
         {workouts.map((w, i) => (
-          <Card key={w.name} tone="lavender" className="flex-row gap-space-md p-space-md">
-            <Image
-              source={WORKOUT_IMGS[i % WORKOUT_IMGS.length]!}
-              accessibilityLabel={w.name}
-              style={{ width: 56, height: 56, borderRadius: 8 }}
-              resizeMode="cover"
-            />
-            <View className="flex-1">
-              <Text className="font-headline-semi text-headline-sm text-on-secondary-container">
-                {w.name}
-              </Text>
-              <Text className="mt-1 font-body text-body-sm text-secondary">
-                {w.mins} · {w.meta}
-              </Text>
-            </View>
-          </Card>
+          <WeekRevealWorkoutCard
+            key={w.id}
+            name={w.name}
+            mins={w.mins}
+            focusTag={w.focusTag}
+            exerciseCount={w.exerciseCount}
+            dayLabel={w.dayLabel}
+            image={WORKOUT_IMGS[i % WORKOUT_IMGS.length]!}
+            exercises={w.exercises}
+            featured={i === 0}
+            expanded={openId === w.id}
+            onToggle={() => setOpenId((cur) => (cur === w.id ? null : w.id))}
+          />
         ))}
       </View>
+
+      {outcome ? (
+        <View style={sx("mt-space-lg mb-space-sm flex-row items-center justify-center gap-2")}>
+          <TrendingUp size={18} color={color.primaryContainer} />
+          <Text
+            numberOfLines={2}
+            style={[
+              sx("text-center font-body-medium text-body-md text-on-surface-variant"),
+              { flexShrink: 1 },
+            ]}
+          >
+            {outcome}
+          </Text>
+        </View>
+      ) : null}
     </OnboardingShell>
   );
 };

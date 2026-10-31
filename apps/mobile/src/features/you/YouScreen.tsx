@@ -1,82 +1,83 @@
 import { router } from "expo-router";
-import { ChevronRight, LogOut } from "lucide-react-native";
-import { useEffect, useState } from "react";
-import { Alert, Image, Linking, Pressable, Switch, Text, View } from "react-native";
+import { LogOut } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Image, Linking, Pressable, Text, View } from "react-native";
 
 import { s24ProfileSettings } from "../../../assets/stitch";
+import type { TrainerPersonaId } from "@/content/trainer-personas";
 import { getCurrentPlan, getProfile, type LocalPlan, type LocalProfile } from "@/db";
+import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
+import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useOnboardingStore } from "@/features/onboarding";
+import { PersonaGrid, usePersonaStore } from "@/features/trainer";
 import { getPurchases } from "@/lib/purchases";
-import { CapsLabel } from "@/ui/CapsLabel";
-import { LimeCta } from "@/ui/LimeCta";
-import { ScreenScroll } from "@/ui/ScreenScroll";
-import { color } from "@/theme/tokens";
 import { usePlanStore } from "@/stores/plan-store";
+import { color } from "@/theme/tokens";
+import { CapsLabel } from "@/ui/CapsLabel";
+import { ScreenScroll } from "@/ui/ScreenScroll";
+import { sx } from "@/theme/sx";
+
+import { SpeakCuesToggle } from "./SpeakCuesToggle";
+import { Divider, Group, Row, StatusRow, ToggleRow } from "./you-settings";
 
 const PRIVACY_URL = "https://adtechservices.in/privacy";
 const TERMS_URL = "https://adtechservices.in/terms";
 
-const TOGGLES = [
-  { id: "rebuild", title: "Adaptive Rebuild", detail: "Redistributes missed sets across microcycle" },
-  { id: "rest", title: "Rest Day Aggressiveness", detail: "HRV + Load auto-trigger · Balanced 48h" },
-  { id: "voice", title: "Voice Coaching HUD", detail: "Real-time tempo cadences · Minimal Cues" },
-] as const;
-
-const HARDWARE = [
-  { title: "Apple Health / Watch", meta: "Synced" },
-  { title: "Withings Body Scan", meta: "Ready" },
-  { title: "USDA & Vision Scanner", meta: "Ready" },
-] as const;
-
-/** S24 You — profile + plan from SQLite. */
+/** S24 You (clean) — Stitch redesign: compact hero, trainer grid, grouped settings. */
 export const YouScreen = () => {
-  const [toggles, setToggles] = useState<Record<string, boolean>>({
-    rebuild: true,
-    rest: true,
-    voice: false,
-  });
+  const [rebuildOn, setRebuildOn] = useState(true);
   const [locationId, setLocationId] = useState("gym");
   const [subNote, setSubNote] = useState<string | null>(null);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
   const [plan, setPlan] = useState<LocalPlan | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const resetOnboarding = useOnboardingStore((s) => s.reset);
   const clearPlan = usePlanStore((s) => s.clear);
+  const hasMealPlan = useMealPlanStore((s) => s.plan !== null);
+  const regenerateMealPlan = useMealPlanStore((s) => s.generate);
+  const persona = usePersonaStore((s) => s.persona);
+  const personaSaving = usePersonaStore((s) => s.saving);
+  const choosePersona = usePersonaStore((s) => s.choose);
 
-  useEffect(() => {
-    void (async () => {
-      const [p, pl] = await Promise.all([getProfile(), getCurrentPlan()]);
-      setProfile(p);
-      setPlan(pl);
-    })();
+  const reload = useCallback(async () => {
+    const [p, pl] = await Promise.all([getProfile(), getCurrentPlan()]);
+    setProfile(p);
+    setPlan(pl);
   }, []);
 
-  const prefs = profile?.preferences;
-  const locations = [
-    {
-      id: "gym",
-      title: "Primary kit",
-      detail: prefs?.equipment.length
-        ? prefs.equipment.join(", ")
-        : "Olympic racks, cables, benches",
-    },
-    {
-      id: "home",
-      title: "Home Minimal",
-      detail: "Adjustable DBs, pull-up bar, bands",
-    },
-    {
-      id: "hotel",
-      title: "Hotel & Bodyweight",
-      detail: "Calisthenics, tempo control, micro-bands",
-    },
-  ];
+  useEffect(() => {
+    void reload();
+  }, [reload]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [reload]);
+
+  const prefs = profile?.preferences;
+  const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
+  const EXP_LABELS: Record<string, string> = {
+    new: "New",
+    months: "Some months",
+    some_months: "Some months",
+    y1_2: "1–2 years",
+    one_two_years: "1–2 years",
+    y3_plus: "3+ years",
+    three_plus: "3+ years",
+  };
+  const expNice = prefs?.experience
+    ? (EXP_LABELS[prefs.experience] ??
+      prefs.experience.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase()))
+    : "Member";
   const name =
-    profile?.sex != null
-      ? `Athlete · ${prefs?.primaryGoal?.replace(/_/g, " ") ?? "training"}`
-      : "Mirra athlete";
+    profile?.sex != null ? `Athlete · ${goalNice}` : "Mirra athlete";
   const handle = profile
-    ? `${prefs?.experience ?? "member"} · ${prefs?.sessionMinutes ?? 45} min sessions`
+    ? `${expNice} · ${prefs?.sessionMinutes ?? 45} min sessions`
     : "Complete onboarding for profile";
   const protocolTitle = plan?.days.find((d) => d.workout)?.workout?.title ?? "No active plan";
   const protocolBody =
@@ -87,14 +88,12 @@ export const YouScreen = () => {
   const planLabel = plan ? `Plan v${plan.version} · ${plan.status}` : "No subscription plan";
 
   const openUrl = async (url: string) => {
-    const ok = await Linking.canOpenURL(url);
-    if (ok) await Linking.openURL(url);
+    if (await Linking.canOpenURL(url)) await Linking.openURL(url);
     else Alert.alert("Link", url);
   };
 
   const handleManageSub = async () => {
-    const port = getPurchases();
-    const restored = await port.restore();
+    const restored = await getPurchases().restore();
     if (restored.ok) {
       setSubNote("Restored purchases");
       Alert.alert("Subscription", "Purchases restored.");
@@ -104,160 +103,182 @@ export const YouScreen = () => {
     router.push("/(onboarding)/paywall");
   };
 
-  const handleSignOut = () => {
-    resetOnboarding();
-    clearPlan();
-    router.replace("/(onboarding)/welcome");
+  const handlePrefsSaved = () => {
+    setPrefsOpen(false);
+    if (!hasMealPlan) return;
+    Alert.alert("Food prefs saved", "Rebuild today's meal plan with them?", [
+      { text: "Not now", style: "cancel" },
+      { text: "Rebuild", onPress: () => void regenerateMealPlan(true) },
+    ]);
   };
 
+  const handleChoosePersona = async (id: TrainerPersonaId) => {
+    if (id === persona) return;
+    if (!(await choosePersona(id))) Alert.alert("Trainer", "Couldn't switch trainer. Try again.");
+  };
+
+  const locations = [
+    { id: "gym", label: "Primary kit" },
+    { id: "home", label: "Home" },
+    { id: "hotel", label: "Hotel" },
+  ] as const;
+
   return (
-    <ScreenScroll>
-      <View className="mb-space-md flex-row items-center gap-space-md">
+    <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
+      <View style={sx("mb-space-lg flex-row items-center gap-space-md")}>
         <Image
           source={s24ProfileSettings.avatarAlexChen}
           accessibilityLabel="Profile avatar"
-          style={{ width: 64, height: 64, borderRadius: 32 }}
+          style={{ width: 56, height: 56, borderRadius: 28 }}
           resizeMode="cover"
         />
-        <View className="flex-1">
-          <Text className="font-headline text-headline-md text-on-surface">{name}</Text>
-          <Text className="font-body text-body-sm text-on-surface-variant">{handle}</Text>
+        <View style={sx("min-w-0 flex-1")}>
+          <View style={sx("flex-row items-center gap-space-sm")}>
+            <Text
+              numberOfLines={1}
+              style={sx("min-w-0 flex-shrink font-headline text-headline-sm text-on-surface")}
+            >
+              {name}
+            </Text>
+            <View style={sx("shrink-0 rounded-full bg-primary-fixed px-2 py-0.5")}>
+              <Text style={sx("font-label-bold text-[9px] leading-3 text-on-primary-fixed")}>
+                PRO
+              </Text>
+            </View>
+          </View>
+          <Text
+            numberOfLines={2}
+            style={sx("mt-0.5 font-body text-body-sm text-on-surface-variant")}
+          >
+            {handle}
+          </Text>
         </View>
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Manage subscription"
-        onPress={() => void handleManageSub()}
-        className="mb-space-md flex-row items-center justify-between rounded-lg bg-primary-fixed px-space-md py-space-sm"
-      >
-        <CapsLabel tone="dark">{subNote ?? planLabel}</CapsLabel>
-        <Text className="font-label-bold text-label-md text-on-primary-fixed">Manage</Text>
-      </Pressable>
-
-      <View className="mb-space-md rounded-lg bg-surface-container-low p-space-md">
-        <CapsLabel>Active Protocol Engine</CapsLabel>
-        <Text className="mt-1 font-label text-label-md text-primary-fixed">
-          Week of {plan?.weekStart ?? "—"}
+      <View style={sx("mb-space-sm flex-row items-end justify-between gap-space-sm")}>
+        <CapsLabel>Your trainer</CapsLabel>
+        <Text
+          numberOfLines={1}
+          style={sx("shrink font-body text-[11px] text-on-surface-variant")}
+        >
+          Tap to switch
         </Text>
-        <Text className="mt-space-sm font-headline-sm text-headline-sm text-on-surface">
-          {protocolTitle}
-        </Text>
-        <Text className="mt-1 font-body text-body-md text-on-surface-variant">{protocolBody}</Text>
-        <LimeCta
-          label="Recalibrate Goals & Volume"
-          onPress={() => router.push("/(tabs)/coach")}
-          className="mt-space-md"
-        />
       </View>
-
-      <CapsLabel className="mb-space-sm">Equipment Locations · 3 Presets</CapsLabel>
-      {locations.map((loc) => (
-        <Pressable
-          key={loc.id}
-          accessibilityRole="button"
-          accessibilityState={{ selected: locationId === loc.id }}
-          onPress={() => setLocationId(loc.id)}
-          className={`mb-space-sm rounded-lg border p-space-md ${
-            locationId === loc.id
-              ? "border-primary-fixed bg-surface-container-low"
-              : "border-transparent bg-surface-container-high"
-          }`}
-        >
-          <View className="flex-row items-center justify-between">
-            <Text className="font-headline-sm text-headline-sm text-on-surface">{loc.title}</Text>
-            {locationId === loc.id ? (
-              <CapsLabel tone="lime">Active</CapsLabel>
-            ) : (
-              <Text className="font-label text-label-md text-on-surface-variant">Select</Text>
-            )}
-          </View>
-          <Text className="mt-1 font-body text-body-sm text-on-surface-variant">{loc.detail}</Text>
-        </Pressable>
-      ))}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Add location profile"
-        onPress={() => Alert.alert("Locations", "Custom location profiles land in v2.")}
-        className="mb-space-md items-center py-space-sm"
-      >
-        <Text className="font-label text-label-md text-primary-fixed">+ Add New Location Profile</Text>
-      </Pressable>
-
-      <CapsLabel className="mb-space-sm">Intelligence & HUD Controls</CapsLabel>
-      {TOGGLES.map((t) => (
-        <View
-          key={t.id}
-          className="mb-space-sm flex-row items-center justify-between rounded-lg bg-surface-container-high p-space-md"
-        >
-          <View className="mr-space-md flex-1">
-            <Text className="font-headline-sm text-headline-sm text-on-surface">{t.title}</Text>
-            <Text className="font-body text-body-sm text-on-surface-variant">{t.detail}</Text>
-          </View>
-          <Switch
-            accessibilityLabel={t.title}
-            value={!!toggles[t.id]}
-            onValueChange={(v) => setToggles((prev) => ({ ...prev, [t.id]: v }))}
-            trackColor={{ false: color.surfaceContainerHighest, true: color.primaryFixedDim }}
-            thumbColor={toggles[t.id] ? color.onPrimaryFixed : color.onSurfaceVariant}
-          />
-        </View>
-      ))}
-
-      <CapsLabel className="mb-space-sm mt-space-sm">Connected Hardware & Sync</CapsLabel>
-      {HARDWARE.map((h) => (
-        <Row
-          key={h.title}
-          title={h.title}
-          meta={h.meta}
-          onPress={() => Alert.alert(h.title, `${h.meta} · sync status updated`)}
-        />
-      ))}
-
-      <CapsLabel className="mb-space-sm mt-space-md">Privacy & Data Engine</CapsLabel>
-      <Row title="Privacy Policy" meta="Open in browser" onPress={() => void openUrl(PRIVACY_URL)} />
-      <Row title="Terms of Use" meta="Open in browser" onPress={() => void openUrl(TERMS_URL)} />
-      <Row
-        title="Subscription & Billing"
-        meta="Restore / paywall"
-        onPress={() => void handleManageSub()}
+      <PersonaGrid
+        compact
+        value={persona}
+        disabled={personaSaving}
+        onSelect={(id) => void handleChoosePersona(id)}
       />
+
+      <Group title="Active training">
+        <View style={sx("p-space-md")}>
+          <CapsLabel>Active plan</CapsLabel>
+          <Text style={sx("mt-1 font-label text-label-md text-primary-fixed")}>
+            Week of {plan?.weekStart ?? "—"}
+          </Text>
+          <Text style={sx("mt-space-sm font-headline-sm text-headline-sm text-on-surface")}>
+            {protocolTitle}
+          </Text>
+          <Text style={sx("mt-1 font-body text-body-sm text-on-surface-variant")}>{protocolBody}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open coach check-in"
+            onPress={() => router.push("/(tabs)/coach")}
+            style={sx("mt-space-sm self-start")}
+          >
+            <Text style={sx("font-label-bold text-label-md text-primary-fixed")}>Open coach →</Text>
+          </Pressable>
+        </View>
+        <Divider />
+        <View style={sx("px-space-md py-space-sm")}>
+          <CapsLabel style={sx("mb-space-sm")}>Training locations</CapsLabel>
+          <View style={sx("flex-row flex-wrap gap-space-sm")}>
+            {locations.map((loc) => {
+              const active = locationId === loc.id;
+              return (
+                <Pressable
+                  key={loc.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  onPress={() => setLocationId(loc.id)}
+                  style={sx(
+                    `rounded-full px-3 py-2 ${
+                      active ? "bg-primary-fixed" : "bg-surface-container-highest"
+                    }`,
+                  )}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={sx(
+                      `font-label text-[11px] leading-4 ${
+                        active ? "text-on-primary-fixed" : "text-on-surface"
+                      }`,
+                    )}
+                  >
+                    {loc.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+        <Divider />
+        <Row title="Food prefs" meta="Diet, cuisines & foods to avoid" onPress={() => setPrefsOpen(true)} />
+      </Group>
+
+      <Group title="Coaching">
+        <SpeakCuesToggle embedded />
+        <Divider />
+        <ToggleRow
+          title="Adaptive rebuild"
+          detail="Redistributes missed sets"
+          value={rebuildOn}
+          onChange={setRebuildOn}
+        />
+      </Group>
+
+      <Group title="Subscription">
+        <Row
+          title={subNote ?? planLabel}
+          meta="Manage / restore"
+          onPress={() => void handleManageSub()}
+        />
+      </Group>
+
+      <Group title="Connected">
+        <StatusRow title="Apple Health / Watch" meta="Synced" />
+        <Divider />
+        <StatusRow title="Withings Body Scan" meta="Ready" />
+        <Divider />
+        <StatusRow title="USDA & Vision Scanner" meta="Ready" />
+      </Group>
+
+      <Group title="Legal">
+        <Row title="Privacy Policy" meta="Open in browser" onPress={() => void openUrl(PRIVACY_URL)} />
+        <Divider />
+        <Row title="Terms of Use" meta="Open in browser" onPress={() => void openUrl(TERMS_URL)} />
+      </Group>
 
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Log out"
-        onPress={handleSignOut}
-        className="mt-space-lg flex-row items-center justify-center gap-space-sm rounded-full bg-surface-container-highest py-space-md"
+        onPress={() => {
+          resetOnboarding();
+          clearPlan();
+          router.replace("/(onboarding)/welcome");
+        }}
+        style={sx("mt-space-md flex-row items-center justify-center gap-space-sm py-space-md")}
       >
-        <LogOut size={18} color={color.error} />
-        <Text className="font-label-bold text-label-lg text-error">Log Out</Text>
+        <LogOut size={16} color={color.error} />
+        <Text style={sx("font-label-bold text-label-lg text-error")}>Sign out</Text>
       </Pressable>
-      <Text className="mt-space-md text-center font-body text-body-sm text-on-surface-variant">
-        Mirra · local SQLite profile
-      </Text>
+
+      <DietPrefsSheet
+        visible={prefsOpen}
+        onClose={() => setPrefsOpen(false)}
+        onSaved={handlePrefsSaved}
+      />
     </ScreenScroll>
   );
 };
-
-const Row = ({
-  title,
-  meta,
-  onPress,
-}: {
-  title: string;
-  meta: string;
-  onPress: () => void;
-}) => (
-  <Pressable
-    accessibilityRole="button"
-    accessibilityLabel={title}
-    onPress={onPress}
-    className="mb-space-xs flex-row items-center justify-between rounded-lg bg-surface-container-high px-space-md py-space-md"
-  >
-    <View>
-      <Text className="font-headline-sm text-headline-sm text-on-surface">{title}</Text>
-      <Text className="font-body text-body-sm text-on-surface-variant">{meta}</Text>
-    </View>
-    <ChevronRight size={18} color={color.onSurfaceVariant} />
-  </Pressable>
-);

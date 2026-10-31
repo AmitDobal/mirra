@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
 import { logAiUsage } from "../lib/ai-usage";
+import { canSpend } from "../services/ai-budget";
 import type {
   PlanGenerateInput,
   PlanGenerateResult,
@@ -48,12 +49,20 @@ const PlanResultSchema = z.object({
   workouts: z.array(WorkoutSchema),
 });
 
-const SYSTEM = `You are Mirra, an AI co-coach. Return STRICT JSON only matching:
+const SYSTEM = `You are Mirra, an AI co-coach building a highly personalized week. Return STRICT JSON only matching:
 {"summary":{"kcalTarget":int,"proteinG":number,"carbsG":number,"fatG":number,"outcomeLine":string},
 "days":[{"dayIndex":0-6,"date":"YYYY-MM-DD","kind":"lift"|"rest"|"fuel","label"?:string,"workoutIndex"?:int}],
 "workouts":[{"title":string,"durationMin":int,"focus"?:string,"calorieEst"?:int,
 "exercises":[{"name":string,"cue"?:string,"targetSets":int,"targetReps":string,"restSec"?:int,"swapGroup"?:string}]}]}
-Rules: exactly 7 days Mon-Sun (dayIndex 0=Mon). Lift days must set workoutIndex into workouts[]. Rest/fuel omit workoutIndex. Respect trainDays (1=Mon..7=Sun). Keep cues short and practical.`;
+Rules:
+- Exactly 7 days Mon-Sun (dayIndex 0=Mon). Lift days must set workoutIndex into workouts[]. Rest/fuel omit workoutIndex.
+- Respect trainDays (1=Mon..7=Sun) and sessionMinutes.
+- Use profile.sex, ageYears, heightCm, weightKg, goalWeightKg, pace for macros and volume (female athletes: slightly higher relative protein floor, avoid defaulting to male-only programming).
+- Prefer exercises available given prefs.equipment.
+- Shape the split and volume toward prefs.physiqueTarget when set (lean_cut, athletic, muscular, toned, strong).
+- Honor prefs.lifestyleNotes when present (schedule constraints, likes/dislikes, recovery, travel, desk job, etc.) — adapt session density and exercise selection.
+- Respect dietTags / foodsAvoid for outcomeLine tone only (meals are planned separately).
+- Keep cues short and practical. outcomeLine must feel personal (1 sentence), never invent fake stats or social proof.`;
 
 type MeterCtx = { db?: AppDB; userId?: string };
 
@@ -65,6 +74,11 @@ export const createOpenAiPlanGenerator = (
   generate: async (input: PlanGenerateInput): Promise<PlanGenerateResult> => {
     const apiKey = env.OPENAI_API_KEY;
     if (!apiKey) return heuristicPlanGenerator.generate(input);
+
+    if (!(await canSpend(meter?.db, meter?.userId ?? input.userId, "plan_gen"))) {
+      console.warn("[openai-plan] AI budget reached → heuristic");
+      return heuristicPlanGenerator.generate(input);
+    }
 
     const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
     try {
@@ -92,6 +106,7 @@ export const createOpenAiPlanGenerator = (
         db: meter?.db,
         userId: meter?.userId ?? input.userId,
         action: "openai.plan.generate",
+        feature: "plan_gen",
         model: completion.model,
         usage: completion.usage,
         meta: { kind: input.kind },
@@ -99,7 +114,10 @@ export const createOpenAiPlanGenerator = (
 
       const parsed = PlanResultSchema.safeParse(JSON.parse(completion.content));
       if (!parsed.success) {
-        console.warn("[openai-plan] zod failed; heuristic fallback");
+        console.warn(
+          "[openai-plan] fallback to heuristic: response failed schema validation",
+          parsed.error.issues.map((i) => i.message).join("; "),
+        );
         const fb = await heuristicPlanGenerator.generate(input);
         return { ...fb, summary: { ...fb.summary, generator: "heuristic" } };
       }
@@ -110,8 +128,8 @@ export const createOpenAiPlanGenerator = (
       };
     } catch (err) {
       console.warn(
-        "[openai-plan] error; heuristic fallback",
-        err instanceof Error ? err.message : err,
+        "[openai-plan] fallback to heuristic: error —",
+        err instanceof Error ? err.message : String(err),
       );
       const fb = await heuristicPlanGenerator.generate(input);
       return { ...fb, summary: { ...fb.summary, generator: "heuristic" } };

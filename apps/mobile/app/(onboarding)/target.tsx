@@ -7,10 +7,12 @@ import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
   ProgressHeader,
+  QuizEyebrow,
   useOnboardingStore,
 } from "@/features/onboarding";
 import { color } from "@/theme/tokens";
 import { Button, Chip } from "@/ui";
+import { sx } from "@/theme/sx";
 
 /** S06 — Goal weight + pace. */
 const TargetScreen = () => {
@@ -27,10 +29,10 @@ const TargetScreen = () => {
       ? `${Math.round(kg)}`
       : `${Math.round(kg * 2.2046)}`;
 
-  const handleContinue = () => router.push("/(onboarding)/equipment");
+  const handleContinue = () => router.push("/(onboarding)/physique");
   const handleSkip = () => {
     setGoalWeightKg(null);
-    router.push("/(onboarding)/equipment");
+    router.push("/(onboarding)/physique");
   };
 
   return (
@@ -43,8 +45,12 @@ const TargetScreen = () => {
         </>
       }
     >
-      <Text className="mt-space-lg font-headline text-headline-md text-on-surface">
+      <QuizEyebrow label={c.eyebrow} />
+      <Text style={sx("font-headline text-headline-md text-on-surface")}>
         {c.title}
+      </Text>
+      <Text style={sx("mt-space-sm font-body text-body-sm text-on-surface-variant")}>
+        {c.sub}
       </Text>
       <Image
         source={s06Target.athleteTyingShoes}
@@ -52,36 +58,46 @@ const TargetScreen = () => {
         style={{ width: "100%", height: 140, borderRadius: 12, marginTop: 16 }}
         resizeMode="cover"
       />
-      <View className="mt-space-lg rounded-DEFAULT bg-surface-container-high p-space-md">
-        <Text className="mb-space-sm font-label text-label-md text-on-surface-variant">
+      <View
+        style={sx("mt-space-lg rounded-DEFAULT bg-surface-container-high p-space-md")}
+      >
+        <Text
+          style={sx("mb-space-sm font-label text-label-md text-on-surface-variant")}
+        >
           {c.goalWeight}
         </Text>
-        <View className="flex-row items-center justify-between">
+        <View style={sx("flex-row items-center justify-between")}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Decrease goal weight"
             onPress={() => setGoalWeightKg(Math.max(40, kg - 1))}
-            className="h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest"
+            style={sx(
+              "h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest",
+            )}
           >
             <Minus color={color.onSurface} size={18} />
           </Pressable>
-          <Text className="font-display text-display-metric text-on-surface">
+          <Text style={sx("font-display text-display-metric text-on-surface")}>
             {display} {weightUnit}
           </Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Increase goal weight"
             onPress={() => setGoalWeightKg(Math.min(200, kg + 1))}
-            className="h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest"
+            style={sx(
+              "h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest",
+            )}
           >
             <Plus color={color.onSurface} size={18} />
           </Pressable>
         </View>
       </View>
-      <Text className="mt-space-lg font-label text-label-md text-on-surface-variant">
+      <Text
+        style={sx("mt-space-lg font-label text-label-md text-on-surface-variant")}
+      >
         {c.pace}
       </Text>
-      <View className="mt-space-sm flex-row gap-space-sm">
+      <View style={sx("mt-space-sm flex-row gap-space-sm")}>
         <Chip
           label={c.steady}
           selected={pace === "steady"}

@@ -4,6 +4,7 @@ import { createMiddleware } from "hono/factory";
 import { createDb } from "../db";
 import { users } from "../db/schema";
 import type { MirraEnv } from "../env";
+import { createAuth } from "../lib/auth";
 import { unauthorized } from "../lib/errors";
 import type { RequestIdVars } from "./request-id";
 
@@ -14,49 +15,54 @@ export type AuthVars = RequestIdVars & {
 const isDevUserHeaderAllowed = (env: MirraEnv): boolean =>
   env.ALLOW_DEV_USER_HEADER === "true";
 
+const upsertDevUser = async (env: MirraEnv, userId: string): Promise<void> => {
+  const db = createDb(env.DB);
+  const [existing] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  if (existing) return;
+  const now = new Date();
+  await db.insert(users).values({
+    id: userId,
+    email: null,
+    name: `dev:${userId}`,
+    createdAt: now,
+    updatedAt: now,
+  });
+};
+
 /**
  * Require authenticated user.
  *
- * DEV ONLY: when `ALLOW_DEV_USER_HEADER=true`, accept `x-mirra-user-id`
- * (alias `x-user-id`) and upsert an ephemeral users row. Do not use in prod.
+ * 1. Better Auth session (cookie or `Authorization: Bearer <token>`)
+ * 2. DEV ONLY: when `ALLOW_DEV_USER_HEADER=true`, accept `x-mirra-user-id`
+ *    (alias `x-user-id`) and upsert an ephemeral users row. Never enable in prod.
  */
 export const requireAuth = createMiddleware<{
   Bindings: MirraEnv;
   Variables: AuthVars;
 }>(async (c, next) => {
-  // Better Auth session wiring lands later — session path always unset for now.
-  const sessionUserId: string | null = null;
-
-  if (sessionUserId) {
-    c.set("userId", sessionUserId);
-    await next();
-    return;
+  try {
+    const auth = createAuth(c.env);
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    if (session?.user?.id) {
+      c.set("userId", session.user.id);
+      await next();
+      return;
+    }
+  } catch {
+    // Fall through to dev header when session lookup fails / is unset.
   }
 
   if (!isDevUserHeaderAllowed(c.env)) {
     throw unauthorized();
   }
 
-  // DEV ONLY bypass — documented in env.ts / wrangler vars.
   const header =
     c.req.header("x-mirra-user-id")?.trim() || c.req.header("x-user-id")?.trim();
   if (!header) {
     throw unauthorized("Missing session or x-mirra-user-id (DEV ONLY)");
   }
 
-  const db = createDb(c.env.DB);
-  const [existing] = await db.select().from(users).where(eq(users.id, header)).limit(1);
-  if (!existing) {
-    const now = new Date();
-    await db.insert(users).values({
-      id: header,
-      email: null,
-      name: `dev:${header}`,
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-
+  await upsertDevUser(c.env, header);
   c.set("userId", header);
   await next();
 });

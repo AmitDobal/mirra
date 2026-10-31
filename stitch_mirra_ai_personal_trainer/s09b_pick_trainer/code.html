@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Mirra AI — Pick Your Trainer</title>
+<!-- Tailwind CSS CDN with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration for Custom Colors & Fonts -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#121212',
+            surface: '#181818',
+            surfaceCard: '#1E1E1E',
+            limeAccent: '#D8FF5C',
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+<style data-purpose="custom-scroll-and-effects">
+    /* Hide scrollbars for clean native app experience */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-black text-white font-sans flex justify-center items-start min-h-screen antialiased selection:bg-limeAccent selection:text-black">
+<!-- BEGIN: MobileContainer -->
+<!-- Constrained precisely to 390px mobile view with obsidian backdrop -->
+<div class="w-full max-w-[390px] min-h-screen bg-obsidian flex flex-col justify-between relative shadow-2xl overflow-hidden pb-8" data-purpose="mobile-viewport">
+<!-- Top Content Wrapper -->
+<div class="flex flex-col w-full">
+<!-- BEGIN: StatusBar -->
+<!-- iOS Mobile Status Bar -->
+<div class="w-full pt-3 px-6 pb-2 flex items-center justify-between text-xs text-white tracking-tight" data-purpose="ios-status-bar">
+<span class="font-semibold text-sm tracking-normal">9:41</span>
+<div class="flex items-center space-x-1.5 opacity-90">
+<!-- Cellular Icon -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+<rect height="3" rx="0.5" width="2" x="0" y="9"></rect>
+<rect height="6" rx="0.5" width="2" x="3.5" y="6"></rect>
+<rect height="8.5" rx="0.5" width="2" x="7" y="3.5"></rect>
+<rect height="11.5" rx="0.5" width="2" x="10.5" y="0.5"></rect>
+</svg>
+<!-- Wifi Icon -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+<path d="M8 2.5C5.1 2.5 2.5 3.7 0.7 5.7L2.1 7.1C3.5 5.5 5.6 4.5 8 4.5C10.4 4.5 12.5 5.5 13.9 7.1L15.3 5.7C13.5 3.7 10.9 2.5 8 2.5ZM8 6.5C6.3 6.5 4.8 7.2 3.6 8.4L8 12.8L12.4 8.4C11.2 7.2 9.7 6.5 8 6.5Z"></path>
+</svg>
+<!-- Battery Icon -->
+<div class="w-5 h-2.5 border border-white/80 rounded-sm p-0.5 flex items-center">
+<div class="w-full h-full bg-white rounded-2xs"></div>
+</div>
+</div>
+</div>
+<!-- END: StatusBar -->
+<!-- BEGIN: HeaderRow -->
+<!-- Top Navigation & Stage Capsule -->
+<header class="px-5 pt-2 pb-1 flex items-center justify-between" data-purpose="navigation-header">
+<!-- Back Chevron -->
+<button aria-label="Go back" class="w-9 h-9 rounded-full bg-surface flex items-center justify-center text-zinc-300 hover:text-white transition-colors" type="button">
+<svg class="w-5 h-5 -ml-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Step Indicator Capsule -->
+<div class="flex items-center space-x-1.5 px-3 py-1 bg-surface rounded-full border border-white/5" data-purpose="step-capsule">
+<span class="w-1.5 h-1.5 rounded-full bg-limeAccent"></span>
+<span class="text-[11px] font-semibold tracking-wider text-zinc-200 uppercase">Step 9 / 10</span>
+</div>
+<!-- Brand Wordmark -->
+<span class="text-xs font-mono font-medium tracking-widest text-zinc-400">MIRRA AI</span>
+</header>
+<!-- END: HeaderRow -->
+<!-- BEGIN: ProgressBar -->
+<!-- Step 9 of 10 Progress Bar (90%) -->
+<div class="w-full px-5 mt-2" data-purpose="onboarding-progress">
+<div class="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+<div class="h-full bg-limeAccent rounded-full" style="width: 90%;"></div>
+</div>
+</div>
+<!-- END: ProgressBar -->
+<!-- BEGIN: TitleSection -->
+<!-- Headline & Subtext -->
+<div class="px-5 mt-5" data-purpose="title-section">
+<!-- Eyebrow Pill -->
+<div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 bg-limeAccent/15 border border-limeAccent/20 rounded-full mb-3">
+<span class="w-1.5 h-1.5 rounded-full bg-limeAccent"></span>
+<span class="text-[10px] font-bold tracking-widest text-limeAccent uppercase">Voice &amp; Demeanor</span>
+</div>
+<h1 class="text-2xl font-bold tracking-tight text-white">Pick your trainer.</h1>
+<p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+          Choose the voice that will coach you every day. You can change this later in <span class="text-zinc-200 font-medium">You</span>.
+        </p>
+</div>
+<!-- END: TitleSection -->
+<!-- BEGIN: TrainerGrid -->
+<!-- 2x3 Responsive Selection Cards Grid -->
+<section class="px-5 mt-4 grid grid-cols-2 gap-2.5" data-purpose="trainer-grid">
+<!-- Trainer 1: Drill Sergeant -->
+<article class="bg-surface/85 border border-white/5 rounded-2xl p-3 flex flex-col items-center text-center relative transition-transform active:scale-[0.98]" data-purpose="trainer-card">
+<div class="relative w-16 h-16 mb-2">
+<img alt="Drill Sergeant Trainer Portrait" class="w-full h-full object-cover rounded-full ring-2 ring-white/10" src="https://lh3.googleusercontent.com/aida/AEtjO1WmZbTz4lb-yVRLWIgxWiQA794c_tPAdt9rwZzAAci_hFm6CYJyx1QkcodSMqeMvH62pskg69C6B_w8bhKDR3iXClCTHQCxky84umKW1G98Zi7kpDJ-7Jgm73_Gkm_pq5TeUNSW0G2A5oyjixbYMgUAbv3Xza6bp5z0x1rsw6dwTpqcuraBuY89bAHaMGDCWh6ggta8ZE6FTuAK-8UuoiEqoRg4LdcPGEF-sJ7hOLabhC8QIsyb44xn1HU"/>
+<!-- Status dot: Red -->
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-red-500 rounded-full ring-2 ring-obsidian"></span>
+</div>
+<h2 class="text-xs font-semibold text-white tracking-tight">Drill Sergeant</h2>
+<p class="text-[10px] text-zinc-400 mt-1 leading-tight line-clamp-2">Rude, loud, relentless. Pushes your limits.</p>
+</article>
+<!-- Trainer 2: Sweet Spot -->
+<article class="bg-surface/85 border border-white/5 rounded-2xl p-3 flex flex-col items-center text-center relative transition-transform active:scale-[0.98]" data-purpose="trainer-card">
+<div class="relative w-16 h-16 mb-2">
+<img alt="Sweet Spot Trainer Portrait" class="w-full h-full object-cover rounded-full ring-2 ring-white/10" src="https://lh3.googleusercontent.com/aida/AEtjO1Vj1f4b8qKPXGXEgOkUFlBq4Dq9Bv22Xo5H00idmZlB03W63qad4XZlLQI9vnZQxDeXkUG3npkMOIKxxj0HjEWraJw5T9NFcT-PHj7keK3swMewnNJUfHZ7QWB8nnpzko8fs4eRG4PUanMD_KrRNhMexxPoDWDtKnZqWuOsAqCdH4AtpwtYmKn9WV7HN2fJiw55WtHSm0qkNE68f8Cyq6KLSuRgSSnLoZ885V1BQftzZ6A_hveavjs2lVA5"/>
+<!-- Status dot: Green -->
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-obsidian"></span>
+</div>
+<h2 class="text-xs font-semibold text-white tracking-tight">Sweet Spot</h2>
+<p class="text-[10px] text-zinc-400 mt-1 leading-tight line-clamp-2">Warm, gentle, always in your corner.</p>
+</article>
+<!-- Trainer 3: Side-Eye (SELECTED ACTIVE CARD) -->
+<article class="bg-surface/90 border-2 border-limeAccent rounded-2xl p-3 flex flex-col items-center text-center relative shadow-[0_0_15px_rgba(216,255,92,0.12)] transition-transform active:scale-[0.98]" data-purpose="trainer-card">
+<!-- Active Badge Top Left -->
+<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase text-limeAccent bg-limeAccent/10">Active</span>
+<!-- Checkmark Icon Top Right -->
+<span class="absolute top-2 right-2 w-4 h-4 rounded-full bg-limeAccent flex items-center justify-center text-black">
+<svg class="w-2.5 h-2.5 stroke-black stroke-[3]" fill="none" viewbox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</span>
+<div class="relative w-16 h-16 mb-2">
+<img alt="Side-Eye Trainer Portrait" class="w-full h-full object-cover rounded-full ring-2 ring-limeAccent" src="https://lh3.googleusercontent.com/aida/AEtjO1W5PoYc75V106nJ7fmDgmcE2opyd1TRLU6jqgwHGmvI175iMSfDh1EmFahJBxgTSl9_JWOWvx_2mcWLzdq8c9yJryw3d-IA4MTdL-Z1HT6jLPHIzyPfxe31GwAZvO1DS2yTZPiqUsttqkyfy1cOKt8vKgVkrvuBLO0i6M0Yv-W0R2XEhyCNLfCAQBSGAK_zPTj1Uyxo_ux58GRItoRdUuUWIB0H5uLKhY4Ht-97qr-XLyBtzgr9O3JyQ1I"/>
+<!-- Status dot: Yellow/Amber -->
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-amber-400 rounded-full ring-2 ring-obsidian"></span>
+</div>
+<h2 class="text-xs font-semibold text-white tracking-tight">Side-Eye</h2>
+<p class="text-[10px] text-zinc-300 mt-1 leading-tight line-clamp-2">Dry, sarcastic, annoyingly accurate.</p>
+</article>
+<!-- Trainer 4: Spark -->
+<article class="bg-surface/85 border border-white/5 rounded-2xl p-3 flex flex-col items-center text-center relative transition-transform active:scale-[0.98]" data-purpose="trainer-card">
+<div class="relative w-16 h-16 mb-2">
+<img alt="Spark Trainer Portrait" class="w-full h-full object-cover rounded-full ring-2 ring-white/10" src="https://lh3.googleusercontent.com/aida/AEtjO1VnmUlt5nd3NI9IWghFPfT1BWjYLOv8BVaPe8ZEFWhiMBpYW5LR2wyNXgvA5KsFpJzhWq-TMV-JSo_tx4-xAIUmj3S8HMHH8_PlzqYy2jvUOiwjX6gaGfIxwMuX1PlUeOAzicdsufFnhUileTnLDbd_2SkhinIb0vKme24RlvQ9b2nh3hZmA6xrBll1wmHXeMTyZAnPu_84by5cTaAaa1gLkAGU0770DztT0N6TtBQbgcja1RM87VvXiyCD"/>
+<!-- Status dot: Orange -->
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-orange-400 rounded-full ring-2 ring-obsidian"></span>
+</div>
+<h2 class="text-xs font-semibold text-white tracking-tight">Spark</h2>
+<p class="text-[10px] text-zinc-400 mt-1 leading-tight line-clamp-2">Playful, funny, still keeps you honest.</p>
+</article>
+<!-- Trainer 5: Steady -->
+<article class="bg-surface/85 border border-white/5 rounded-2xl p-3 flex flex-col items-center text-center relative transition-transform active:scale-[0.98]" data-purpose="trainer-card">
+<div class="relative w-16 h-16 mb-2">
+<img alt="Steady Trainer Portrait" class="w-full h-full object-cover rounded-full ring-2 ring-white/10" src="https://lh3.googleusercontent.com/aida/AEtjO1U-Z0jX_EiuBAbI-piKcvurKpMG9roI2DDWOi9OQxxU1Wb8H6aNKYSkCFt1r1MGsWSf2fWogVQUowSZJjwYWKlQ9ombXgHgf-s-p9RyiKrh-0HZYoFcrNCkxGHJprV01qWgNGmTSlGjPknZHbCs_f6BRjZCt-TN72HBC9JLUzPcJnVLeC8zNSG7gCOjV4qxnI5Wpxln66lwS30pUYYmBKOTHxczoKwChLMsPSdJGDba_s44LqsM0glZU_u9"/>
+<!-- Status dot: Blue -->
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-sky-400 rounded-full ring-2 ring-obsidian"></span>
+</div>
+<h2 class="text-xs font-semibold text-white tracking-tight">Steady</h2>
+<p class="text-[10px] text-zinc-400 mt-1 leading-tight line-clamp-2">Calm mentor. Short, grounded cues.</p>
+</article>
+<!-- Trainer 6: Rival -->
+<article class="bg-surface/85 border border-white/5 rounded-2xl p-3 flex flex-col items-center text-center relative transition-transform active:scale-[0.98]" data-purpose="trainer-card">
+<div class="relative w-16 h-16 mb-2">
+<img alt="Rival Trainer Portrait" class="w-full h-full object-cover rounded-full ring-2 ring-white/10" src="https://lh3.googleusercontent.com/aida/AEtjO1XdqggZuwAhYsX4LM_cOKS_th8fX2UyJe5l8PXv-ovFqXMCBHP1ZUPAymCtRdBwcW0IZfLPBDnCEAADnTaUSXkZRBtn3odBSm8q2hyx6MhhUQCAtW8HuMCb63dAvu8jBHZTNWCz49EKKF6FS0qXUo9m2YOemdUxUvjMFUDLt8dDmMT0AVYKAvGfTWYgfWLwAeqffK-oGTUnrGJbOahWfUm-LVARpPCZW5lr-mCOZkVBB1ABV5HUP9-70ZIp"/>
+<!-- Status dot: Purple -->
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-indigo-400 rounded-full ring-2 ring-obsidian"></span>
+</div>
+<h2 class="text-xs font-semibold text-white tracking-tight">Rival</h2>
+<p class="text-[10px] text-zinc-400 mt-1 leading-tight line-clamp-2">Peer energy. Beat yesterday.</p>
+</article>
+</section>
+<!-- END: TrainerGrid -->
+<!-- BEGIN: VoicePreviewCard -->
+<!-- Audio snippet controller for active trainer -->
+<section class="px-5 mt-3.5" data-purpose="voice-preview-player">
+<div class="bg-surface/95 border border-white/10 rounded-2xl p-3 flex items-center justify-between">
+<div class="flex items-center space-x-3 overflow-hidden">
+<!-- Lime Play Button -->
+<button aria-label="Play voice preview" class="w-9 h-9 rounded-full bg-limeAccent flex-shrink-0 flex items-center justify-center text-black shadow-md hover:brightness-105 active:scale-95 transition-all" type="button">
+<svg class="w-4 h-4 ml-0.5 fill-current" viewbox="0 0 24 24">
+<path d="M8 5v14l11-7z"></path>
+</svg>
+</button>
+<!-- Text Content -->
+<div class="flex flex-col min-w-0 pr-2">
+<span class="text-[9px] font-bold text-limeAccent tracking-wider uppercase">Voice Preview</span>
+<p class="text-[11px] italic text-zinc-300 truncate tracking-tight">
+                "You're really resting that long? Okay."
+              </p>
+</div>
+</div>
+<!-- Waveform Visualizer Graphic -->
+<div class="flex items-center space-x-0.5 flex-shrink-0 pl-1 text-limeAccent/80" data-purpose="waveform-graphic">
+<span class="w-0.5 h-2 bg-limeAccent rounded-full animate-pulse"></span>
+<span class="w-0.5 h-4 bg-limeAccent rounded-full"></span>
+<span class="w-0.5 h-3 bg-limeAccent rounded-full"></span>
+<span class="w-0.5 h-5 bg-limeAccent rounded-full"></span>
+<span class="w-0.5 h-2 bg-limeAccent rounded-full"></span>
+<span class="w-0.5 h-4 bg-limeAccent rounded-full"></span>
+<span class="w-0.5 h-1.5 bg-limeAccent rounded-full"></span>
+</div>
+</div>
+</section>
+<!-- END: VoicePreviewCard -->
+</div>
+<!-- BEGIN: StickyFooterCTA -->
+<!-- Primary Continue Action & iOS Home Bar Indicator -->
+<footer class="px-5 pt-4 flex flex-col items-center w-full" data-purpose="footer-controls">
+<!-- Full-width Electric Lime Pill Button -->
+<button class="w-full bg-limeAccent text-black font-semibold text-sm py-3.5 rounded-full flex items-center justify-center space-x-2 tracking-tight shadow-lg shadow-limeAccent/10 hover:brightness-105 active:scale-[0.99] transition-all" type="button">
+<span>Continue</span>
+<svg class="w-4 h-4 stroke-black stroke-[2.5]" fill="none" viewbox="0 0 24 24">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Standard iOS Home Indicator Bar -->
+<div class="w-32 h-1 bg-white/20 rounded-full mt-4" data-purpose="home-indicator"></div>
+</footer>
+<!-- END: StickyFooterCTA -->
+</div>
+<!-- END: MobileContainer -->
+</body></html>

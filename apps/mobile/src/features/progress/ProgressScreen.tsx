@@ -1,18 +1,30 @@
 import { router } from "expo-router";
 import { Camera, ChevronRight, Lock } from "lucide-react-native";
-import { useEffect, useState } from "react";
-import { Alert, Image, Pressable, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Pressable,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { s22ProgressGallery } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
-import { ScreenScroll } from "@/ui/ScreenScroll";
-import { color } from "@/theme/tokens";
-import { useCoachStore } from "@/features/coach/coach-store";
+import { color, space } from "@/theme/tokens";
+import { getTodayInsights } from "@/lib/api";
 
-import { useProgressStore } from "./progress-store";
+import { useProgressStore, type ProgressPhoto } from "./progress-store";
+import { PhotoSlot, Stat } from "./ProgressParts";
+import { WeightJourneyCard } from "./WeightJourneyCard";
+import { sx } from "@/theme/sx";
 
-const GALLERY = [
+const GALLERY_FALLBACKS = [
   s22ProgressGallery.checkinBaselineStudio,
   s22ProgressGallery.checkinLockerDefined,
   s22ProgressGallery.checkinUpperBody,
@@ -21,21 +33,50 @@ const GALLERY = [
   s22ProgressGallery.checkinDayOne,
 ] as const;
 
-/** S22 Progress gallery — SQLite photos + cache. */
+/** S22 Progress gallery — paginated history (20 per page, load more on scroll). */
 export const ProgressScreen = () => {
+  const insets = useSafeAreaInsets();
   const photos = useProgressStore((s) => s.photos);
+  const hasMore = useProgressStore((s) => s.nextCursor !== null);
+  const loadingMore = useProgressStore((s) => s.loadingMore);
+  const loadMore = useProgressStore((s) => s.loadMore);
   const addPhoto = useProgressStore((s) => s.addPhoto);
   const hydratePhotos = useProgressStore((s) => s.hydrate);
-  const weekLogged = useCoachStore((s) => s.weekLogged);
-  const hydrateCoach = useCoachStore((s) => s.hydrate);
   const [note, setNote] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [weekSessions, setWeekSessions] = useState(0);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadInsights = useCallback(async () => {
+    try {
+      const i = await getTodayInsights();
+      setStreak(i.checkIn.streakDays);
+      setWeekSessions(i.training.sessionsThisWeek);
+    } catch {
+      /* optional */
+    }
+  }, []);
 
   useEffect(() => {
     void hydratePhotos();
-    void hydrateCoach();
-  }, [hydratePhotos, hydrateCoach]);
+    void loadInsights();
+  }, [hydratePhotos, loadInsights]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([hydratePhotos(), loadInsights()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [hydratePhotos, loadInsights]);
 
   const handleCompare = () => router.push("/(tabs)/compare");
+
+  const handleEndReached = useCallback(() => {
+    void loadMore();
+  }, [loadMore]);
 
   const handleAdd = async () => {
     try {
@@ -70,159 +111,165 @@ export const ProgressScreen = () => {
 
   const latest = photos[0] ?? null;
   const prior = photos[1] ?? null;
-  const checkInRate =
-    photos.length > 0 ? `${Math.min(100, photos.length * 12)}%` : weekLogged ? `${weekLogged}` : "—";
 
-  return (
-    <ScreenScroll>
-      <CapsLabel tone="lime">Progression Index</CapsLabel>
-      <Text className="font-headline text-headline-lg text-on-surface">Progress Gallery</Text>
-      <Text className="mb-space-md font-body text-body-md text-on-surface-variant">
-        {photos.length ? `${photos.length} on-device photos` : "Add your first check-in photo"}
+  const renderPhoto = ({
+    item: e,
+    index,
+  }: {
+    item: ProgressPhoto;
+    index: number;
+  }) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Open ${e.label}`}
+      onPress={handleCompare}
+      style={sx("mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md")}
+    >
+      {e.uri ? (
+        <Image
+          source={{ uri: e.uri }}
+          accessibilityLabel={e.label}
+          style={{ width: 56, height: 72, borderRadius: 8 }}
+          resizeMode="cover"
+        />
+      ) : (
+        <Image
+          source={GALLERY_FALLBACKS[index % GALLERY_FALLBACKS.length]}
+          accessibilityLabel={e.label}
+          style={{ width: 56, height: 72, borderRadius: 8 }}
+          resizeMode="cover"
+        />
+      )}
+      <View style={sx("flex-1")}>
+        <Text style={sx("font-label text-label-md text-primary-fixed")}>{e.label}</Text>
+        <Text style={sx("font-body text-body-sm text-on-surface-variant")}>{e.note}</Text>
+        <Text style={sx("font-body-medium text-body-md text-on-surface")}>
+          {new Date(e.takenAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+        </Text>
+      </View>
+      <ChevronRight size={18} color={color.onSurfaceVariant} />
+    </Pressable>
+  );
+
+  const count = `${photos.length}${hasMore ? "+" : ""}`;
+
+  const header = (
+    <View>
+      <CapsLabel tone="lime">Microcycle</CapsLabel>
+      <Text style={sx("font-headline text-headline-lg text-on-surface")}>
+        Progress Gallery
+      </Text>
+      <Text style={sx("mb-space-md font-body text-body-md text-on-surface-variant")}>
+        {photos.length
+          ? `${count} check-ins · private on device`
+          : "Add your first check-in photo"}
       </Text>
 
       {note ? (
         <Pressable
           accessibilityRole="button"
           onPress={() => setNote(null)}
-          className="mb-space-sm self-start rounded-full bg-primary-fixed/20 px-3 py-1"
+          style={sx("mb-space-sm self-start rounded-full bg-primary-fixed/20 px-3 py-1")}
         >
           <CapsLabel tone="lime">{note}</CapsLabel>
         </Pressable>
       ) : null}
 
-      <View className="mb-space-md overflow-hidden rounded-lg bg-surface-container-low p-space-md">
-        <View className="mb-space-sm flex-row items-center justify-between">
+      <View style={sx("mb-space-md overflow-hidden rounded-lg bg-surface-container-low p-space-md")}>
+        <View style={sx("mb-space-sm flex-row items-center justify-between")}>
           <CapsLabel>
             {photos.length >= 2 ? "Latest vs prior" : "Shape evolution"}
           </CapsLabel>
-          <View className="flex-row items-center gap-1">
+          <View style={sx("flex-row items-center gap-1")}>
             <Lock size={12} color={color.onSurfaceVariant} />
             <CapsLabel>On-Device</CapsLabel>
           </View>
         </View>
-        <View className="flex-row gap-space-sm">
+        <View style={sx("flex-row gap-space-sm")}>
           <PhotoSlot
             label="Baseline"
             sub={prior?.label ?? "Add a second photo"}
             uri={prior?.uri}
-            fallback={s22ProgressGallery.checkinBaselineStudio}
           />
           <PhotoSlot
             label="Current"
             sub={latest?.label ?? "No photo yet"}
             uri={latest?.uri}
-            fallback={s22ProgressGallery.checkinLockerDefined}
             highlight
           />
         </View>
         <LimeCta
-          label="Open Full Delta Biometric Split"
-          onPress={handleCompare}
-          className="mt-space-md"
+          label={photos.length >= 2 ? "Compare your photos" : "Add photo"}
+          onPress={photos.length >= 2 ? handleCompare : () => void handleAdd()}
+          style={sx("mt-space-md")}
         />
       </View>
 
-      <View className="mb-space-md flex-row gap-space-sm">
-        <Stat label="Photos" value={String(photos.length)} unit="saved" />
-        <Stat label="Check-ins" value={String(weekLogged)} unit="recent" />
-        <Stat label="Logging" value={checkInRate} unit="activity" />
+      <WeightJourneyCard />
+
+      <View style={sx("mb-space-md flex-row gap-space-sm")}>
+        <Stat label="Photos" value={count} unit="saved" />
+        <Stat label="Streak" value={String(streak)} unit="check-ins" />
+        <Stat label="Sessions" value={String(weekSessions)} unit="this week" />
       </View>
 
-      <View className="mb-space-sm flex-row items-center justify-between">
-        <Text className="font-headline-sm text-headline-sm text-on-surface">Biometric Chronology</Text>
-        <CapsLabel>{photos.length} check-ins</CapsLabel>
+      <View style={sx("mb-space-sm flex-row items-center justify-between")}>
+        <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>Check-in history</Text>
+        <CapsLabel>{count} check-ins</CapsLabel>
       </View>
+    </View>
+  );
 
-      {photos.length === 0 ? (
-        <View className="mb-space-sm rounded-lg bg-surface-container-high p-space-md">
-          <Text className="font-body text-body-md text-on-surface-variant">
-            No progress photos yet. Add one to start comparing.
-          </Text>
-        </View>
-      ) : (
-        photos.map((e, i) => (
-          <Pressable
-            key={e.id}
-            accessibilityRole="button"
-            accessibilityLabel={`Open ${e.label}`}
-            onPress={handleCompare}
-            className="mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md"
-          >
-            <Image
-              source={
-                e.uri
-                  ? { uri: e.uri }
-                  : GALLERY[i % GALLERY.length]!
-              }
-              accessibilityLabel={e.label}
-              style={{ width: 48, height: 48, borderRadius: 6 }}
-              resizeMode="cover"
-            />
-            <View className="flex-1">
-              <Text className="font-label text-label-md text-primary-fixed">{e.label}</Text>
-              <Text className="font-body text-body-sm text-on-surface-variant">{e.note}</Text>
-              <Text className="font-body-medium text-body-md text-on-surface">
-                {e.kg} kg · {e.bf} BF · {e.pose}
-              </Text>
-            </View>
-            <ChevronRight size={18} color={color.onSurfaceVariant} />
-          </Pressable>
-        ))
-      )}
-
+  const footer = (
+    <View>
+      {loadingMore ? (
+        <ActivityIndicator color={color.primaryFixed} style={sx("my-space-md")} />
+      ) : null}
       <LimeCta
         label="Add photo"
         onPress={() => void handleAdd()}
-        className="mt-space-sm"
+        style={sx("mt-space-sm")}
         icon={<Camera size={18} color={color.onPrimaryFixed} />}
       />
-    </ScreenScroll>
+    </View>
+  );
+
+  return (
+    <FlatList
+      data={photos}
+      keyExtractor={(p) => p.id}
+      renderItem={renderPhoto}
+      ListHeaderComponent={header}
+      ListFooterComponent={footer}
+      ListEmptyComponent={
+        <View style={sx("mb-space-sm rounded-lg bg-surface-container-high p-space-md")}>
+          <Text style={sx("font-body text-body-md text-on-surface-variant")}>
+            No progress photos yet. Add one to start comparing.
+          </Text>
+        </View>
+      }
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={0.4}
+      initialNumToRender={10}
+      windowSize={7}
+      showsVerticalScrollIndicator={false}
+      style={{ flex: 1, backgroundColor: color.surface }}
+      contentContainerStyle={{
+        paddingTop: insets.top + space.lg,
+        paddingBottom: space.dockClearance + insets.bottom,
+        paddingHorizontal: space.margin,
+      }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            void handleRefresh();
+          }}
+          tintColor={color.primaryFixed}
+          colors={[color.primaryFixed]}
+          progressBackgroundColor={color.surfaceContainerHigh}
+        />
+      }
+    />
   );
 };
-
-const Stat = ({
-  label,
-  value,
-  unit,
-}: {
-  label: string;
-  value: string;
-  unit: string;
-}) => (
-  <View className="flex-1 rounded-lg bg-surface-container-high p-space-md">
-    <CapsLabel>{label}</CapsLabel>
-    <Text className="mt-1 font-display text-headline-md text-primary-fixed">{value}</Text>
-    <Text className="font-body text-body-sm text-on-surface-variant">{unit}</Text>
-  </View>
-);
-
-const PhotoSlot = ({
-  label,
-  sub,
-  highlight,
-  uri,
-  fallback,
-}: {
-  label: string;
-  sub: string;
-  highlight?: boolean;
-  uri?: string | null;
-  fallback: (typeof GALLERY)[number];
-}) => (
-  <View className="flex-1">
-    <View
-      className={`mb-space-xs h-40 overflow-hidden rounded-lg ${
-        highlight ? "border border-primary-fixed" : ""
-      }`}
-    >
-      <Image
-        source={uri ? { uri } : fallback}
-        accessibilityLabel={label}
-        style={{ width: "100%", height: "100%" }}
-        resizeMode="cover"
-      />
-    </View>
-    <CapsLabel>{sub}</CapsLabel>
-  </View>
-);

@@ -1,0 +1,15 @@
+---
+description: Lead seat orchestrates agents only — never implements Mirra app/API code.
+alwaysApply: true
+---
+
+# Orchestrate, do not build (lead seat)
+
+When the user (or a `/goal`) asks the **lead / orchestrator** to ship product work:
+
+1. **Do not** write, edit, or delete app/API feature code yourself (`apps/mobile`, `apps/api`, migrations, schema, UI screens).
+2. **Do** create/update Linear tickets or STATUS, write architecture/research docs if asked, and **spin Task/subagents** (`builder`, `reviewer`, `pm`, `explore`, `generalPurpose`) to implement, smoke-test, and fix.
+3. **Do** require builders to: path index, Stitch match, ≤400 word return, push branches, smoke screenshots of real screens.
+4. **Exception:** lead may edit `.cursor/rules/`, `AGENTS.md`, STATUS/handoff indexes, and orchestration prompts — not product features.
+5. If you catch yourself about to open a feature file to “just fix it”, stop and dispatch a builder instead.
+6. Loop: dispatch → read agent returns → smoke/review gaps → re-dispatch until gates pass. Do not mark goals done on intent alone.

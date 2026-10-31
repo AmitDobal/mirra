@@ -1,20 +1,24 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Check } from "lucide-react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { color, font, radius, space, type } from "@/theme/tokens";
+import { color, font, radius, space } from "@/theme/tokens";
 
 type ChipProps = {
   label: string;
   selected?: boolean;
   onPress: () => void;
   accessibilityLabel?: string;
+  /** Show check glyph when selected (Stitch equipment pills). */
+  showCheck?: boolean;
 };
 
-/** Selectable pill — lime fill when selected. */
+/** Selectable pill — lime fill when selected. Compact type so long labels fit. */
 export const Chip = ({
   label,
   selected = false,
   onPress,
   accessibilityLabel,
+  showCheck = false,
 }: ChipProps) => (
   <Pressable
     accessibilityRole="button"
@@ -34,7 +38,13 @@ export const Chip = ({
           },
     ]}
   >
+    {showCheck && selected ? (
+      <View style={styles.check}>
+        <Check size={11} color={color.onPrimaryFixed} strokeWidth={3} />
+      </View>
+    ) : null}
     <Text
+      numberOfLines={1}
       style={[
         styles.label,
         { color: selected ? color.onPrimaryFixed : color.onSurface },
@@ -47,18 +57,26 @@ export const Chip = ({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: space.touch,
+    minHeight: 44,
+    maxWidth: "100%",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 5,
     borderRadius: radius.full,
     borderWidth: 1,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+  },
+  check: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
+    flexShrink: 1,
     fontFamily: font.label,
-    fontSize: type.labelMd.size,
-    lineHeight: type.labelMd.line,
-    letterSpacing: type.labelMd.tracking * type.labelMd.size,
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0.02 * 12,
   },
 });

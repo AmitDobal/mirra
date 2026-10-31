@@ -5,7 +5,7 @@ import { color, font, type } from "@/theme/tokens";
 
 type Props = {
   children: ReactNode;
-  tone?: "muted" | "lime" | "dark";
+  tone?: "muted" | "lime" | "dark" | "alert";
   /** @deprecated NativeWind removed */ className?: string;
   style?: StyleProp<TextStyle>;
 };
@@ -14,6 +14,7 @@ const toneColor = {
   muted: color.onSurfaceVariant,
   lime: color.primaryFixed,
   dark: color.onPrimaryFixed,
+  alert: color.error,
 } as const;
 
 export const CapsLabel = ({ children, tone = "muted", style }: Props) => (

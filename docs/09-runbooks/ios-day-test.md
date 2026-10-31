@@ -13,9 +13,13 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | API | https://mirra-api.amit-dobalwork.workers.dev |
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
+| Google OAuth | See `mirra-google-oauth.md` — sim uses **Continue as Dev Tester** |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/7974e369-c9a1-40ad-a222-cac83b8008e8 |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a18eb7-117b-721c-af84-e9156f16d5c1 |
+| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/0d497585-77d9-4c12-8118-f0d5187984ac |
+| iOS update ID | `01a19247-48c4-710e-9f3a-584fb4b72789` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19247-48c4-710e-9f3a-584fb4b72789 |
+| Local API first | `cd apps/api && npx wrangler dev --port 8787` then `API_BASE=http://127.0.0.1:8787 node scripts/smoke-*.mjs` |
+| Trainer smoke | `API_BASE=http://127.0.0.1:8787 node scripts/smoke-trainer-persona.mjs` |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
 
@@ -33,8 +37,11 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 ```bash
 cd apps/api
 npx wrangler secret put OPENAI_API_KEY   # once
+# optional spoken cues: wrangler secret put ELEVENLABS_API_KEY
 npx wrangler d1 migrations apply mirra-db --remote
 npx wrangler deploy
+# local sim against wrangler dev:
+npx wrangler d1 migrations apply mirra-db --local
 ```
 
 ### Republish mobile after JS changes

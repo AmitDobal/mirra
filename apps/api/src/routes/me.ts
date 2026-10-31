@@ -1,4 +1,10 @@
-import type { MeResponse, OnboardingPreferences, OnboardingProfile } from "@mirra/contracts";
+import {
+  UpdatePreferencesBodySchema,
+  type MeResponse,
+  type OnboardingPreferences,
+  type OnboardingProfile,
+  type UpdatePreferencesResponse,
+} from "@mirra/contracts";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 
@@ -6,7 +12,8 @@ import { createDb } from "../db";
 import { entitlements, preferences, profiles, users } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { msToUnix } from "../lib/dates";
-import { parseJson } from "../lib/json";
+import { toPreferencesOut } from "../lib/prefs-out";
+import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 
@@ -44,18 +51,7 @@ meRoutes.get("/v1/me", requireAuth, async (c) => {
       }
     : null;
 
-  const prefsOut: OnboardingPreferences | null = prefs
-    ? {
-        primaryGoal: prefs.primaryGoal as OnboardingPreferences["primaryGoal"],
-        experience: prefs.experience as OnboardingPreferences["experience"],
-        equipment: parseJson<string[]>(prefs.equipmentJson, []),
-        trainDays: parseJson<number[]>(prefs.trainDaysJson, []),
-        sessionMinutes: prefs.sessionMinutes as OnboardingPreferences["sessionMinutes"],
-        dietTags: parseJson<string[]>(prefs.dietTagsJson, []),
-        foodsAvoid: prefs.foodsAvoid,
-        units: prefs.units as OnboardingPreferences["units"],
-      }
-    : null;
+  const prefsOut: OnboardingPreferences | null = prefs ? toPreferencesOut(prefs) : null;
 
   const body: MeResponse = {
     user: {
@@ -74,4 +70,30 @@ meRoutes.get("/v1/me", requireAuth, async (c) => {
     onboardingCompleted: Boolean(profile?.onboardingCompletedAt),
   };
   return c.json(body);
+});
+
+/** Edit food prefs + trainer persona after onboarding. Meal-plan generate/swap/rebalance read these from D1. */
+meRoutes.patch("/v1/me/preferences", requireAuth, async (c) => {
+  const body = parseBody(UpdatePreferencesBodySchema, await c.req.json());
+  const userId = c.get("userId");
+  const db = createDb(c.env.DB);
+
+  const patch = {
+    ...(body.dietTags !== undefined && { dietTagsJson: JSON.stringify(body.dietTags) }),
+    ...(body.foodsAvoid !== undefined && { foodsAvoid: body.foodsAvoid || null }),
+    ...(body.cuisineStyles !== undefined && {
+      cuisineJson: JSON.stringify([...new Set(body.cuisineStyles)]),
+    }),
+    ...(body.trainerPersona !== undefined && { trainerPersona: body.trainerPersona }),
+    updatedAt: new Date(),
+  };
+
+  const [row] = await db
+    .insert(preferences)
+    .values({ userId, primaryGoal: "consistency", experience: "new", ...patch })
+    .onConflictDoUpdate({ target: preferences.userId, set: patch })
+    .returning();
+
+  const out: UpdatePreferencesResponse = { preferences: toPreferencesOut(row!) };
+  return c.json(out);
 });

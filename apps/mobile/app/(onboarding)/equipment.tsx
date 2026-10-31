@@ -1,13 +1,18 @@
 import { router } from "expo-router";
+import { MapPin } from "lucide-react-native";
 import { Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
   ProgressHeader,
+  QuizEyebrow,
+  QuizHint,
   useOnboardingStore,
 } from "@/features/onboarding";
+import { color } from "@/theme/tokens";
 import { Button, Chip } from "@/ui";
+import { sx } from "@/theme/sx";
 
 /** S07 — Multi-select equipment. */
 const EquipmentScreen = () => {
@@ -17,7 +22,7 @@ const EquipmentScreen = () => {
 
   return (
     <OnboardingShell
-      header={<ProgressHeader step={5} onBack={() => router.back()} />}
+      header={<ProgressHeader step={6} onBack={() => router.back()} />}
       footer={
         <Button
           label={c.continue}
@@ -26,19 +31,30 @@ const EquipmentScreen = () => {
         />
       }
     >
-      <Text className="mt-space-lg font-headline text-headline-md text-on-surface">
+      <QuizEyebrow label={c.eyebrow} />
+      <Text style={sx("font-headline text-headline-md text-on-surface")}>
         {c.title}
       </Text>
-      <View className="mt-space-lg flex-row flex-wrap gap-space-sm">
+      <Text style={sx("mt-space-sm font-body text-body-sm text-on-surface-variant")}>
+        {c.sub}
+      </Text>
+      <View style={sx("mt-space-lg flex-row flex-wrap gap-space-sm")}>
         {c.options.map((opt) => (
           <Chip
             key={opt.id}
             label={opt.label}
             selected={equipment.includes(opt.id)}
+            showCheck
             onPress={() => toggleEquipment(opt.id)}
           />
         ))}
       </View>
+      <QuizHint
+        icon={<MapPin size={16} color={color.onSecondaryContainer} />}
+        caption={c.hintCaption}
+      >
+        {c.hint}
+      </QuizHint>
     </OnboardingShell>
   );
 };

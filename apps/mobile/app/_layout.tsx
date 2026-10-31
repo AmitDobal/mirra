@@ -17,6 +17,7 @@ import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { hydrateAuthSession } from "@/lib/auth";
 import { ensureMirraDb } from "@/lib/local";
 import { configurePurchases } from "@/lib/purchases";
 import { color } from "@/theme/tokens";
@@ -40,6 +41,11 @@ const RootLayout = () => {
         await ensureMirraDb();
       } catch (error: unknown) {
         console.warn("[mirra] ensureMirraDb failed", error);
+      }
+      try {
+        await hydrateAuthSession();
+      } catch (error: unknown) {
+        console.warn("[mirra] hydrateAuthSession failed", error);
       }
       try {
         await configurePurchases();
@@ -66,16 +72,15 @@ const RootLayout = () => {
 
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView
-        className="flex-1 bg-background"
-        style={styles.root}
-      >
+      <GestureHandlerRootView style={styles.root}>
         <StatusBar style="light" />
         <Stack
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: color.background },
-            animation: "fade",
+            // Platform default: iOS slide-from-right; Android slide. Fade feels webby.
+            animation: "default",
+            gestureEnabled: true,
           }}
         >
           <Stack.Screen name="index" />

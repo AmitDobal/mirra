@@ -1,5 +1,13 @@
-import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import type { ReactNode, Ref } from "react";
+import {
+  RefreshControl,
+  ScrollView,
+  type ScrollViewInstance,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { color, space } from "@/theme/tokens";
@@ -9,6 +17,10 @@ type Props = {
   /** Extra bottom pad for floating TabDock (default true). */
   dockPad?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** When set, enables pull-to-refresh. */
+  onRefresh?: () => void | Promise<void>;
+  refreshing?: boolean;
+  scrollRef?: Ref<ScrollViewInstance>;
 };
 
 /** Safe-area scroll shell used by tab + session screens. */
@@ -16,12 +28,16 @@ export const ScreenScroll = ({
   children,
   dockPad = true,
   style,
+  onRefresh,
+  refreshing = false,
+  scrollRef,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const bottom = (dockPad ? space.dockClearance : space.xl) + insets.bottom;
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={[styles.root, style]}
       contentContainerStyle={{
         paddingTop: insets.top + space.lg,
@@ -29,6 +45,19 @@ export const ScreenScroll = ({
         paddingHorizontal: space.margin,
       }}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              void onRefresh();
+            }}
+            tintColor={color.primaryFixed}
+            colors={[color.primaryFixed]}
+            progressBackgroundColor={color.surfaceContainerHigh}
+          />
+        ) : undefined
+      }
     >
       {children}
     </ScrollView>

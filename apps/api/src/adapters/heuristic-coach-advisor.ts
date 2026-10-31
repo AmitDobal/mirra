@@ -3,13 +3,17 @@ import type {
   CoachAdviseResult,
   CoachAdvisor,
 } from "../ports/coach-advisor";
+import { coachScenarioMessage } from "../services/accountability-copy";
+import { styleHeuristicCopy } from "../services/trainer-persona";
 
 const SKIP_STATUSES = new Set(["skipped", "travel", "low_sleep"]);
 
-/** Deterministic coach copy when OpenAI is unavailable. */
+/** Deterministic coach copy when OpenAI is unavailable — uses personal context when present. */
 export const heuristicCoachAdvisor: CoachAdvisor = {
   advise: async (input: CoachAdviseInput): Promise<CoachAdviseResult> => {
-    const rebuildSuggested = SKIP_STATUSES.has(input.status);
+    const acc = input.accountability;
+    const rebuildSuggested =
+      SKIP_STATUSES.has(input.status) || acc?.scenario === "LOW_READINESS";
     const vectors = rebuildSuggested
       ? [
           {
@@ -27,19 +31,33 @@ export const heuristicCoachAdvisor: CoachAdvisor = {
         ]
       : undefined;
 
-    const message =
-      input.status === "done"
-        ? "Solid check-in. Keep the next session as planned."
-        : input.status === "partial"
-          ? "Partial is still progress. Finish the unfinished lifts tomorrow if energy allows."
-          : input.status === "soreness"
-            ? "Honor the sore tissue — mobility today, push later this week."
-            : input.status === "low_sleep"
-              ? "Sleep debt noted. Shorter session or deload is smart today."
-              : input.status === "travel"
-                ? "Travel mode: bodyweight or hotel gym is enough. Rebuild when you land."
-                : "Missed day logged. Rebuild can shift the week so you stay consistent.";
+    let message: string;
+    if (acc) {
+      // Scenario copy cites logged/target/delta from the same facts as the insights tips.
+      message = coachScenarioMessage(acc.scenario, acc.secondary, acc.facts);
+    } else if (input.status === "done") {
+      message = "Solid check-in. Keep the next session as planned.";
+    } else if (input.status === "partial") {
+      message =
+        "Partial is still progress. Finish unfinished lifts tomorrow if energy allows.";
+    } else if (input.status === "soreness") {
+      message = "Honor the sore tissue — mobility today, push later this week.";
+    } else if (input.status === "low_sleep") {
+      message = "Sleep debt noted. Shorter session or deload is smart today.";
+    } else if (input.status === "travel") {
+      message =
+        "Travel mode: bodyweight or hotel gym is enough. Rebuild when you land.";
+    } else {
+      message =
+        "Missed day logged. Rebuild can shift the week so you stay consistent.";
+    }
 
-    return { message, vectors, rebuildSuggested };
+    return {
+      message: styleHeuristicCopy(input.persona ?? "drill", message),
+      vectors,
+      rebuildSuggested,
+      source: "heuristic",
+      scenario: acc?.scenario,
+    };
   },
 };

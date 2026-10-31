@@ -28,7 +28,9 @@ type TodayState = {
   readonly notice: string | null;
   readonly hydrate: () => Promise<void>;
   readonly swapDay: () => void;
+  /** Move ±1 day in the current week strip (Stitch S15 chevrons). */
   readonly shiftWeek: (delta: -1 | 1) => void;
+  readonly selectDay: (index: number) => void;
   readonly clearNotice: () => void;
   readonly setNotice: (notice: string) => void;
 };
@@ -110,10 +112,16 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         0,
         days.findIndex((d) => d.date === (today.date ?? date)),
       );
-      const workout =
-        today.workout ??
-        days[idx]?.workout ??
-        days.find((d) => d.workout)?.workout ??
+      // Never fall back to "any lift this week" — rest days must look like rest.
+      const workout = today.workout ?? days[idx]?.workout ?? null;
+      const kcalTarget =
+        today.fuel?.kcalTarget ??
+        kcalFromSummary(today.summary) ??
+        kcalFromSummary(plan?.summary) ??
+        kcalFromSummary(cached?.summary ?? undefined);
+      const fuelRemaining =
+        today.fuel?.kcalRemaining ??
+        today.fuelRemaining?.calories ??
         null;
       set({
         date: today.date ?? date,
@@ -121,15 +129,16 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         weekDays: days,
         dayIndex: idx >= 0 ? idx : 0,
         checkInDue: today.checkInDue,
-        fuelRemaining: today.fuelRemaining?.calories ?? null,
-        kcalTarget:
-          kcalFromSummary(plan?.summary) ??
-          kcalFromSummary(cached?.summary ?? undefined),
+        fuelRemaining,
+        kcalTarget: kcalTarget ?? null,
         loading: false,
+        notice: null,
       });
       return;
-    } catch {
-      /* local fallback */
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not reach API";
+      set({ notice: `Today offline — ${message}` });
     }
 
     try {
@@ -140,11 +149,7 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         0,
         days.findIndex((d) => d.date === (today.date ?? date)),
       );
-      const workout =
-        asWorkout(today.day?.workout) ??
-        days[idx]?.workout ??
-        days.find((d) => d.workout)?.workout ??
-        null;
+      const workout = asWorkout(today.day?.workout) ?? days[idx]?.workout ?? null;
       set({
         date: today.date ?? date,
         workout,
@@ -193,18 +198,32 @@ export const useTodayStore = create<TodayState>((set, get) => ({
     });
   },
 
+  selectDay: (index) => {
+    const { weekDays } = get();
+    if (!weekDays.length) return;
+    const next = Math.min(weekDays.length - 1, Math.max(0, index));
+    const day = weekDays[next]!;
+    set({
+      dayIndex: next,
+      workout: day.workout ?? null,
+      date: day.date,
+      notice: null,
+    });
+  },
+
   shiftWeek: (delta) => {
     const { weekDays, dayIndex } = get();
     if (!weekDays.length) {
       set({ notice: delta < 0 ? "Earlier week" : "Later week" });
       return;
     }
-    const next = Math.min(weekDays.length - 1, Math.max(0, dayIndex + delta * 7));
+    const next = Math.min(weekDays.length - 1, Math.max(0, dayIndex + delta));
     const day = weekDays[next]!;
     set({
       dayIndex: next,
-      workout: day.workout ?? get().workout,
-      notice: delta < 0 ? "Previous week strip" : "Next week strip",
+      workout: day.workout ?? null,
+      date: day.date,
+      notice: null,
     });
   },
 }));

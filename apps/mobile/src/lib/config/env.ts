@@ -41,6 +41,25 @@ export const env = {
     "dev-user-1",
   ),
 
+  /** Show "Continue as Dev Tester" outside `__DEV__` (e.g. preview builds). */
+  allowDevAuth:
+    (process.env.EXPO_PUBLIC_ALLOW_DEV_AUTH ??
+      fromExtra("allowDevAuth") ??
+      "") === "true",
+  /** Google OAuth web client id (Better Auth / Google sign-in). Empty = disabled. */
+  googleWebClientId: readOptional(
+    "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
+    "googleWebClientId",
+  ),
+  googleIosClientId: readOptional(
+    "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID",
+    "googleIosClientId",
+  ),
+  googleAndroidClientId: readOptional(
+    "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID",
+    "googleAndroidClientId",
+  ),
+
   revenueCatApiKey,
   /** Explicit flag + non-empty key required to leave the stub adapter. */
   revenueCatEnabled: revenueCatFlag && revenueCatApiKey.length > 0,

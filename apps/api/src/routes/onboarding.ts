@@ -60,7 +60,11 @@ onboardingRoutes.put("/v1/onboarding", requireAuth, async (c) => {
       sessionMinutes: body.preferences.sessionMinutes,
       dietTagsJson: JSON.stringify(body.preferences.dietTags),
       foodsAvoid: body.preferences.foodsAvoid ?? null,
+      cuisineJson: JSON.stringify(body.preferences.cuisineStyles),
       units: body.preferences.units,
+      trainerPersona: body.preferences.trainerPersona,
+      physiqueTarget: body.preferences.physiqueTarget ?? null,
+      lifestyleNotes: body.preferences.lifestyleNotes?.trim() || null,
       updatedAt: now,
     })
     .onConflictDoUpdate({
@@ -73,7 +77,11 @@ onboardingRoutes.put("/v1/onboarding", requireAuth, async (c) => {
         sessionMinutes: body.preferences.sessionMinutes,
         dietTagsJson: JSON.stringify(body.preferences.dietTags),
         foodsAvoid: body.preferences.foodsAvoid ?? null,
+        cuisineJson: JSON.stringify(body.preferences.cuisineStyles),
         units: body.preferences.units,
+        trainerPersona: body.preferences.trainerPersona,
+        physiqueTarget: body.preferences.physiqueTarget ?? null,
+        lifestyleNotes: body.preferences.lifestyleNotes?.trim() || null,
         updatedAt: now,
       },
     });

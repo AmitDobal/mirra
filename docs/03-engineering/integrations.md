@@ -24,7 +24,11 @@ Feature / route
 | --- | --- | --- | --- |
 | `PlanGenerator` | `getPlanGenerator(env)` | OpenAI | Heuristic |
 | `CoachAdvisor` | `getCoachAdvisor(env)` | OpenAI | Heuristic |
+| `PlanReviser` | `getPlanReviser(env, db)` | OpenAI (JSON intent) | Heuristic rules |
+| `MealEstimator` | `getMealEstimator(env)` | OpenAI vision | Heuristic keywords |
 | `ObjectStore` | `getObjectStore(env)` | R2 (when wired) | Stub |
+| `SpeechSynthesizer` | `getSpeechSynthesizer(env, db)` | ElevenLabs (D1 + R2 cache) | Stub (text-only) |
+| `AiBudget` (service, not a vendor) | `assertCanSpend` / `canSpend` / `recordUsage` in `services/ai-budget.ts` | D1 `ai_usage_*` | n/a. Over budget → heuristic adapter |
 | `PurchasesPort` (mobile) | `getPurchases()` / `createPurchases()` | RevenueCat | Stub |
 
 ## Adding a provider (example: Anthropic for plans)
@@ -46,6 +50,7 @@ Same steps for payments (new `PurchasesPort` adapter), email, push, storage, ana
 | `OPENAI_API_KEY` / `OPENAI_MODEL` | OpenAI adapter |
 | `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | Reserved for Anthropic adapter |
 | Future Workers AI | Bindings + `AI_PROVIDER=workers-ai` |
+| `VOICE_PROVIDER` / `ELEVENLABS_API_KEY` | TTS switch. See `ai-cost-and-voice.md` |
 
 ## Agent / PR checklist
 

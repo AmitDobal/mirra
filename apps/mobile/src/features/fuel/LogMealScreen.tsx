@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Camera, CheckCircle2, Sparkles, X } from "lucide-react-native";
+import { Camera, CheckCircle2, X } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 
@@ -10,6 +10,8 @@ import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 
 import { useFuelStore } from "./fuel-store";
+import { promptRebalanceIfOffPlan } from "./rebalance-prompt";
+import { sx } from "@/theme/sx";
 
 const slots = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
@@ -46,15 +48,18 @@ export const LogMealScreen = () => {
   const handleSave = async () => {
     if (saving) return;
     setSaving(true);
-    await addMeal({
+    const meal = await addMeal({
       name: extras.length ? `${name} + adds` : name,
       calories: kcal,
       proteinG: protein,
+      carbsG: carbs,
+      fatG: fats,
       slot,
       source: "manual",
     });
     setSaving(false);
     router.back();
+    void promptRebalanceIfOffPlan(meal.calories);
   };
 
   const toggleAdd = (n: string) => {
@@ -63,42 +68,42 @@ export const LogMealScreen = () => {
 
   return (
     <ScreenScroll dockPad={false}>
-      <View className="mb-space-md flex-row items-center justify-between">
+      <View style={sx("mb-space-md flex-row items-center justify-between")}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Cancel"
           onPress={handleClose}
-          className="h-11 w-11 items-center justify-center rounded-full bg-surface-container-high"
+          style={sx("h-11 w-11 items-center justify-center rounded-full bg-surface-container-high")}
         >
           <X size={22} color={color.onSurface} />
         </Pressable>
-        <Text className="font-headline-sm text-headline-sm text-on-surface">Log meal</Text>
+        <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>Log meal</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Save"
           onPress={() => void handleSave()}
         >
-          <Text className="font-label-bold text-label-lg text-primary-fixed">
+          <Text style={sx("font-label-bold text-label-lg text-primary-fixed")}>
             {saving ? "…" : "Save"}
           </Text>
         </Pressable>
       </View>
 
-      <View className="mb-space-md flex-row gap-space-xs">
+      <View style={sx("mb-space-md flex-row gap-space-xs")}>
         {slots.map((s) => (
           <Pressable
             key={s}
             accessibilityRole="button"
             accessibilityState={{ selected: slot === s }}
             onPress={() => setSlot(s)}
-            className={`flex-1 items-center rounded-full py-2 ${
+            style={sx(`flex-1 items-center rounded-full py-2 ${
               slot === s ? "bg-primary-fixed" : "bg-surface-container-high"
-            }`}
+            }`)}
           >
             <Text
-              className={`font-label text-label-md ${
+              style={sx(`font-label text-label-md ${
                 slot === s ? "text-on-primary-fixed" : "text-on-surface-variant"
-              }`}
+              }`)}
             >
               {s}
             </Text>
@@ -106,21 +111,18 @@ export const LogMealScreen = () => {
         ))}
       </View>
 
-      <View className="mb-space-md items-center rounded-lg bg-surface-container-low p-space-lg">
-        <View className="mb-space-sm flex-row items-center gap-1 rounded-full bg-primary-fixed/20 px-3 py-1">
-          <Sparkles size={14} color={color.primaryFixed} />
-          <CapsLabel tone="lime">Manual entry</CapsLabel>
-        </View>
-        <View className="h-36 w-full overflow-hidden rounded-lg bg-surface-container-highest">
+      <View style={sx("mb-space-md items-center rounded-lg bg-surface-container-low p-space-lg")}>
+        <CapsLabel tone="lime">Manual entry</CapsLabel>
+        <View style={sx("h-36 w-full overflow-hidden rounded-lg bg-surface-container-highest")}>
           <Image
             source={s19LogMeal.mealFlankSteak}
             accessibilityLabel="Meal preview"
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
-          <View className="absolute inset-0 items-center justify-center bg-black/25">
+          <View style={sx("absolute inset-0 items-center justify-center bg-black/25")}>
             <Camera size={32} color={color.onSurface} />
-            <Text className="mt-2 font-body text-body-sm text-on-surface">
+            <Text style={sx("mt-2 font-body text-body-sm text-on-surface")}>
               Optional photo · snap from Fuel
             </Text>
           </View>
@@ -131,17 +133,17 @@ export const LogMealScreen = () => {
         accessibilityLabel="Meal name"
         value={name}
         onChangeText={setName}
-        className="mb-space-sm rounded-lg bg-surface-container-high px-space-md py-space-sm font-headline-sm text-headline-sm text-on-surface"
+        style={sx("mb-space-sm rounded-lg bg-surface-container-high px-space-md py-space-sm font-headline-sm text-headline-sm text-on-surface")}
         placeholderTextColor={color.onSurfaceVariant}
         placeholder="Meal name"
       />
-      <View className="mb-space-md flex-row gap-space-sm">
+      <View style={sx("mb-space-md flex-row gap-space-sm")}>
         <TextInput
           accessibilityLabel="Calories"
           value={baseKcal}
           onChangeText={setBaseKcal}
           keyboardType="number-pad"
-          className="flex-1 rounded-lg bg-surface-container-high px-space-md py-space-sm font-display text-headline-md text-on-surface"
+          style={sx("flex-1 rounded-lg bg-surface-container-high px-space-md py-space-sm font-display text-headline-md text-on-surface")}
           placeholder="kcal"
           placeholderTextColor={color.onSurfaceVariant}
         />
@@ -150,31 +152,31 @@ export const LogMealScreen = () => {
           value={baseProtein}
           onChangeText={setBaseProtein}
           keyboardType="number-pad"
-          className="flex-1 rounded-lg bg-surface-container-high px-space-md py-space-sm font-display text-headline-md text-on-surface"
+          style={sx("flex-1 rounded-lg bg-surface-container-high px-space-md py-space-sm font-display text-headline-md text-on-surface")}
           placeholder="protein g"
           placeholderTextColor={color.onSurfaceVariant}
         />
       </View>
 
-      <View className="mb-space-md mt-space-sm flex-row items-baseline gap-space-sm">
-        <Text className="font-display text-display-lg text-on-surface">{kcal}</Text>
-        <Text className="font-headline-sm text-headline-sm text-on-surface-variant">kcal</Text>
+      <View style={sx("mb-space-md mt-space-sm flex-row items-baseline gap-space-sm")}>
+        <Text style={sx("font-display text-display-lg text-on-surface")}>{kcal}</Text>
+        <Text style={sx("font-headline-sm text-headline-sm text-on-surface-variant")}>kcal</Text>
       </View>
 
-      <View className="mb-space-md flex-row gap-space-sm">
+      <View style={sx("mb-space-md flex-row gap-space-sm")}>
         {[
           { name: "Protein", g: protein },
           { name: "Carbs", g: carbs },
           { name: "Fats", g: fats },
         ].map((mac) => (
-          <View key={mac.name} className="flex-1 rounded-lg bg-surface-container-high p-space-md">
+          <View key={mac.name} style={sx("flex-1 rounded-lg bg-surface-container-high p-space-md")}>
             <CapsLabel>{mac.name}</CapsLabel>
-            <Text className="mt-1 font-headline text-headline-md text-on-surface">{mac.g}g</Text>
+            <Text style={sx("mt-1 font-headline text-headline-md text-on-surface")}>{mac.g}g</Text>
           </View>
         ))}
       </View>
 
-      <CapsLabel className="mb-space-sm">Quick Micro-Adds</CapsLabel>
+      <CapsLabel style={sx("mb-space-sm")}>Quick Micro-Adds</CapsLabel>
       {ADDS.map((a) => {
         const on = extras.includes(a.name);
         return (
@@ -183,12 +185,12 @@ export const LogMealScreen = () => {
             accessibilityRole="button"
             accessibilityState={{ selected: on }}
             onPress={() => toggleAdd(a.name)}
-            className={`mb-space-xs flex-row items-center justify-between rounded-lg px-space-md py-space-sm ${
+            style={sx(`mb-space-xs flex-row items-center justify-between rounded-lg px-space-md py-space-sm ${
               on ? "bg-primary-fixed/20" : "bg-surface-container-low"
-            }`}
+            }`)}
           >
-            <Text className="font-body-medium text-body-md text-on-surface">{a.name}</Text>
-            <Text className="font-label text-label-md text-primary-fixed">
+            <Text style={sx("font-body-medium text-body-md text-on-surface")}>{a.name}</Text>
+            <Text style={sx("font-label text-label-md text-primary-fixed")}>
               {on ? "Added" : a.meta}
             </Text>
           </Pressable>
@@ -198,7 +200,7 @@ export const LogMealScreen = () => {
       <LimeCta
         label={saving ? "Saving…" : "Save meal"}
         onPress={() => void handleSave()}
-        className="mt-space-md"
+        style={sx("mt-space-md")}
         icon={<CheckCircle2 size={20} color={color.onPrimaryFixed} />}
       />
     </ScreenScroll>

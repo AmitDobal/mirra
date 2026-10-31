@@ -30,3 +30,18 @@ export const msToUnix = (value: Date | number | null | undefined): number | null
   if (value == null) return null;
   return value instanceof Date ? value.getTime() : value;
 };
+
+/** `YYYY-MM-DD` of `at` as seen in IANA timezone `tz` (falls back to UTC on a bad zone). */
+export const localDateIn = (tz: string, at: Date = new Date()): string => {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(at);
+    return /^\d{4}-\d{2}-\d{2}$/.test(parts) ? parts : toDateString(at);
+  } catch {
+    return toDateString(at);
+  }
+};

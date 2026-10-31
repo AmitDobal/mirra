@@ -10,6 +10,7 @@ import { newId } from "../lib/id";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
+import { recordAttendanceSafe } from "../services/attendance";
 
 export const checkInRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -43,6 +44,8 @@ checkInRoutes.post("/v1/check-ins", requireAuth, async (c) => {
         triggeredRebuild,
       },
     });
+
+  await recordAttendanceSafe(db, userId, "checkedIn");
 
   let coachMessage: string | undefined;
   if (hasOpenAi(c.env)) {

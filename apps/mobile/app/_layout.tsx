@@ -17,6 +17,7 @@ import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useAttendancePing } from "@/lib/attendance-ping";
 import { hydrateAuthSession } from "@/lib/auth";
 import { ensureMirraDb } from "@/lib/local";
 import { configurePurchases } from "@/lib/purchases";
@@ -59,6 +60,7 @@ const RootLayout = () => {
 
   const fontsReady = fontsLoaded || Boolean(fontError);
   const appReady = fontsReady && bootSettled;
+  useAttendancePing(appReady);
 
   useEffect(() => {
     if (appReady) {

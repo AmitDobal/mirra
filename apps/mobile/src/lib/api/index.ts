@@ -19,3 +19,4 @@ export * from "./coach-revise";
 export * from "./ai-usage";
 export * from "./voice-cue";
 export * from "./weight";
+export * from "./attendance";

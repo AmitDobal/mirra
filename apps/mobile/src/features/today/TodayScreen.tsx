@@ -29,6 +29,8 @@ import { useVoiceCueOnFocus } from "./use-voice-cue";
 import { useTodayInsights } from "./use-today-insights";
 import { useRoutineEdit } from "./use-routine-edit";
 import { TodayIconBtn } from "./TodayIconBtn";
+import { useAttendanceStore } from "./attendance-store";
+import { useDayHistory } from "./use-day-history";
 import { WeekStripCard } from "./WeekStripCard";
 import { useTodayStore } from "./today-store";
 import { sx } from "@/theme/sx";
@@ -57,13 +59,20 @@ export const TodayScreen = () => {
   useVoiceCueOnFocus();
   const { insights, load: loadInsights } = useTodayInsights();
   const [refreshing, setRefreshing] = useState(false);
+  const attendance = useAttendanceStore((s) => s.byDate);
+  const loadAttendance = useAttendanceStore((s) => s.load);
+  const serverToday = useAttendanceStore((s) => s.today);
+  const todayDate = serverToday ?? new Date().toISOString().slice(0, 10);
+  const weekDates = useMemo(() => weekDays.map((d) => d.date), [weekDays]);
+  const { onSelectDay, sheet: dayHistorySheet } = useDayHistory(weekDates, todayDate, selectDay);
 
   const reload = useCallback(
     async (force = false) => {
       await Promise.all([hydrate(), hydrateFuel(), hydratePlan(), refetchActions()]);
+      void loadAttendance(useTodayStore.getState().weekDays[0]?.date);
       await loadInsights(force);
     },
-    [hydrate, hydrateFuel, hydratePlan, refetchActions, loadInsights],
+    [hydrate, hydrateFuel, hydratePlan, refetchActions, loadInsights, loadAttendance],
   );
 
   useFocusEffect(
@@ -166,8 +175,11 @@ export const TodayScreen = () => {
         monthLabel={monthLabel}
         onPrev={() => shiftWeek(-1)}
         onNext={() => shiftWeek(1)}
-        onSelectDay={selectDay}
+        attendance={attendance}
+        today={todayDate}
+        onSelectDay={onSelectDay}
       />
+      {dayHistorySheet}
 
       <View style={sx("mb-space-md min-h-[148px] flex-row items-center justify-between overflow-hidden rounded-lg bg-primary-fixed p-space-lg")}>
         <View style={sx("max-w-[62%] flex-1 flex-col gap-space-sm")}>

@@ -36,4 +36,14 @@ export type MirraEnv = {
   ELEVENLABS_MODEL?: string;
   /** `elevenlabs` | `stub`. Empty = elevenlabs when a key exists, else stub (text-only). */
   VOICE_PROVIDER?: string;
+  /** `off` | `shadow` | `enforce`. Default `shadow` (ledger written, never blocks). */
+  AI_CREDITS_MODE?: string;
+  /** Monthly credit grant overrides (integers). Defaults: free 40, pro 400. */
+  AI_CREDITS_FREE_GRANT?: string;
+  AI_CREDITS_PRO_GRANT?: string;
+  /** Monthly provider-cost ceilings in USD micros (1_000_000 = $1). Defaults: free $0.50, pro $6. */
+  AI_USD_CAP_FREE_MICROS?: string;
+  AI_USD_CAP_PRO_MICROS?: string;
+  /** `true` lets referral redemptions award bonus credits. Default off (stub). */
+  REFERRAL_TOPUP_ENABLED?: string;
 };

@@ -9,7 +9,12 @@ import { resolveAiProvider } from "./ai/resolve-provider";
  * Provider-swappable co-coach. Same `AI_PROVIDER` resolution as plans.
  * Routes/UI must not import OpenAI adapters directly.
  */
-export const getCoachAdvisor = (env: MirraEnv, db?: AppDB): CoachAdvisor => {
+export const getCoachAdvisor = (
+  env: MirraEnv,
+  db?: AppDB,
+  opts?: { forceHeuristic?: boolean },
+): CoachAdvisor => {
+  if (opts?.forceHeuristic) return heuristicCoachAdvisor;
   const provider = resolveAiProvider(env);
   switch (provider) {
     case "openai":

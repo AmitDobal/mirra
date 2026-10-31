@@ -74,7 +74,7 @@ export const createOpenAiCoachAdvisor = (
         console.warn("[openai-coach] zod failed; heuristic fallback");
         return heuristicCoachAdvisor.advise(input);
       }
-      return parsed.data;
+      return { ...parsed.data, source: "openai" };
     } catch (err) {
       console.warn(
         "[openai-coach] error; heuristic fallback",

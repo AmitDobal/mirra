@@ -40,6 +40,6 @@ export const heuristicCoachAdvisor: CoachAdvisor = {
                 ? "Travel mode: bodyweight or hotel gym is enough. Rebuild when you land."
                 : "Missed day logged. Rebuild can shift the week so you stay consistent.";
 
-    return { message, vectors, rebuildSuggested };
+    return { message, vectors, rebuildSuggested, source: "heuristic" };
   },
 };

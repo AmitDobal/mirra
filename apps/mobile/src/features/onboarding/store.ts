@@ -23,7 +23,8 @@ import type {
 const defaultAnswers: OnboardingAnswers = {
   goal: "build_muscle",
   experience: "one_two_years",
-  sex: "male",
+  // Never silently male: user picks, otherwise neutral estimate (prefer_not -> "unspecified").
+  sex: "prefer_not",
   age: 28,
   heightCm: 175,
   heightUnit: "cm",

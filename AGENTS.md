@@ -25,6 +25,7 @@ Mirror backend patterns from:
 ## PM vs builders
 
 - **Lead / orchestrator seat** → dispatch only. **Never** implement `apps/mobile` / `apps/api` feature code. Rule: `.cursor/rules/91-orchestrate-dont-build.mdc`.
+- **Single ship line** → only `main` (or one short-lived `integrate/*` merged same session). Never EAS/day-test from a dirty primary or unmerged WIP. Rule: `.cursor/rules/92-single-integrate-branch.mdc`. Expo styling = `sx()` / StyleSheet only (NativeWind/`className` is off).
 - **PM** → `PROMPT-PM.md` — STATUS, handoff, dispatch. No feature code.
 - **Builders** → one ticket, path index, ≤400 word return. Push branch. Smoke-test with real screenshots vs Stitch when UI.
 - Files ≤ **300** lines (prefer 250). Theme tokens; no hex in UI. Zod contracts.

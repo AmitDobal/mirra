@@ -11,6 +11,7 @@ import { color } from "@/theme/tokens";
 import { useCoachStore } from "@/features/coach/coach-store";
 
 import { useProgressStore } from "./progress-store";
+import { WeightJourneyCard } from "./WeightJourneyCard";
 
 const GALLERY = [
   s22ProgressGallery.checkinBaselineStudio,
@@ -75,6 +76,7 @@ export const ProgressScreen = () => {
 
   return (
     <ScreenScroll>
+      <WeightJourneyCard />
       <CapsLabel tone="lime">Progression Index</CapsLabel>
       <Text className="font-headline text-headline-lg text-on-surface">Progress Gallery</Text>
       <Text className="mb-space-md font-body text-body-md text-on-surface-variant">

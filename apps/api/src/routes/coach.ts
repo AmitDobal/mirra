@@ -1,4 +1,8 @@
-import { CoachAdviseBodySchema, type CoachAdviseResponse } from "@mirra/contracts";
+import {
+  CoachAdviseBodySchema,
+  CoachReviseBodySchema,
+  type CoachAdviseResponse,
+} from "@mirra/contracts";
 import { Hono } from "hono";
 
 import { createDb } from "../db";
@@ -9,6 +13,7 @@ import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { withAiCredits } from "../services/credits-gate";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
+import { revisePlans } from "../services/plan-revise";
 
 export const coachRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -63,5 +68,15 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
     rebuildSuggested: result.rebuildSuggested,
     coachMessage: result.message,
   };
+  return c.json(response);
+});
+
+/** Plan chat: revise the existing meal/workout plans from a chat message. */
+coachRoutes.post("/v1/coach/revise", requireAuth, async (c) => {
+  const body = parseBody(CoachReviseBodySchema, await c.req.json().catch(() => ({})));
+  const response = await revisePlans(
+    { env: c.env, db: createDb(c.env.DB), userId: c.get("userId") },
+    body,
+  );
   return c.json(response);
 });

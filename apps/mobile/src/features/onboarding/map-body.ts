@@ -48,6 +48,13 @@ export const toOnboardingBody = (
   const timezone =
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
+  const lifestyleParts = [
+    answers.lifestyleNotes.trim(),
+    answers.cuisines.includes("other") && answers.cuisineOther.trim()
+      ? `Other cuisines: ${answers.cuisineOther.trim()}`
+      : "",
+  ].filter(Boolean);
+
   return {
     profile: {
       sex: SEX_MAP[answers.sex],
@@ -66,7 +73,11 @@ export const toOnboardingBody = (
       sessionMinutes: answers.sessionMinutes,
       dietTags: answers.diet,
       foodsAvoid: answers.foodsToAvoid.trim() || null,
+      cuisineStyles: answers.cuisines,
       units,
+      trainerPersona: answers.trainerPersona,
+      physiqueTarget: answers.physiqueTarget,
+      lifestyleNotes: lifestyleParts.length ? lifestyleParts.join("\n") : null,
     },
   };
 };

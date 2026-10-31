@@ -7,34 +7,19 @@ import { useTodayStore } from "@/features/today/today-store";
 import {
   applyRebuild,
   createCheckIn,
-  postCoachAdvise,
   previewRebuild,
   type CheckInStatus,
+  type CoachPill,
   type CoachVector,
   type CurrentPlan,
 } from "@/lib/api";
+import { MirraApiError } from "@/lib/api/client";
+import { errorMessage, logger } from "@/lib/logger";
 import { usePlanStore } from "@/stores/plan-store";
 
-export const FALLBACK_VECTORS: readonly CoachVector[] = [
-  {
-    id: "missed",
-    title: "Missed Session Recalibration",
-    recommended: true,
-    detail: "Redistribute missed volume across remaining microcycle days.",
-  },
-  {
-    id: "deload",
-    title: "Deload / Low Readiness",
-    recommended: false,
-    detail: "Drop load and swap high-strain compounds for active flow.",
-  },
-  {
-    id: "express",
-    title: "20-Min Express Compression",
-    recommended: false,
-    detail: "High-density supersets preserving top compound mechanics.",
-  },
-];
+import { FALLBACK_VECTORS, runAdvise } from "./advise-fetch";
+
+export { FALLBACK_VECTORS };
 
 type CoachState = {
   readonly readiness: "push" | "rest";
@@ -45,22 +30,29 @@ type CoachState = {
   readonly weekLogged: number;
   readonly notice: string | null;
   readonly adviseMessage: string;
+  readonly advisePills: readonly CoachPill[];
   readonly vectors: readonly CoachVector[];
   readonly adviseLoading: boolean;
+  /** Epoch ms of the network fetch behind the current advise (null = fallback copy). */
+  readonly adviseCachedAt: number | null;
+  /** True when the last forced refresh was blocked by the 60s throttle. */
+  readonly adviseThrottled: boolean;
+  /** ISO date of last successful check-in this session (Today chip + CTA). */
+  readonly checkedInDate: string | null;
   readonly setReadiness: (readiness: "push" | "rest") => void;
   readonly setVectorId: (vectorId: string) => void;
   readonly hydrate: () => Promise<void>;
+  /** Cache-first advise (15 min TTL per date/readiness/vector). */
   readonly fetchAdvise: () => Promise<void>;
-  readonly submitCheckIn: () => Promise<"rebuild" | "done">;
+  /** Corner-refresh: bypass TTL, throttled to once per 60s per key. */
+  readonly forceRefreshAdvise: () => Promise<void>;
+  readonly submitCheckIn: () => Promise<"rebuild" | "done" | "failed">;
   readonly apply: () => Promise<void>;
   readonly keep: () => Promise<void>;
   readonly clearNotice: () => void;
 };
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
-
-const fallbackFor = (readiness: "push" | "rest") =>
-  readiness === "rest" ? copy.coach.fallbackRest : copy.coach.fallbackMessage;
 
 export const useCoachStore = create<CoachState>((set, get) => ({
   readiness: "push",
@@ -71,8 +63,12 @@ export const useCoachStore = create<CoachState>((set, get) => ({
   weekLogged: 0,
   notice: null,
   adviseMessage: copy.coach.fallbackMessage,
+  advisePills: [],
   vectors: FALLBACK_VECTORS,
   adviseLoading: false,
+  adviseCachedAt: null,
+  adviseThrottled: false,
+  checkedInDate: null,
 
   setReadiness: (readiness) => set({ readiness }),
   setVectorId: (vectorId) => set({ vectorId }),
@@ -80,52 +76,42 @@ export const useCoachStore = create<CoachState>((set, get) => ({
 
   hydrate: async () => {
     try {
-      const rows = await listCheckIns("local", 14);
+      const rows = await listCheckIns(undefined, 14);
+      const today = todayIso();
       const done = rows.filter((r) =>
-        ["done", "on_track", "modified", "partial"].includes(r.status),
+        ["done", "on_track", "modified", "partial", "skipped", "low_sleep", "travel", "soreness"].includes(
+          r.status,
+        ),
       ).length;
-      set({ weekLogged: done });
+      const todayRow = rows.find((r) => r.localDate === today);
+      set({
+        weekLogged: done,
+        checkedInDate: todayRow ? today : get().checkedInDate,
+      });
     } catch {
       /* keep prior */
     }
   },
 
-  fetchAdvise: async () => {
-    const { readiness, vectorId } = get();
-    set({ adviseLoading: true });
-    try {
-      const res = await postCoachAdvise({
-        readiness,
-        vectorId,
-        localDate: todayIso(),
-      });
-      const message = res.coachMessage ?? res.message;
-      const vectors =
-        res.vectors && res.vectors.length > 0 ? res.vectors : FALLBACK_VECTORS;
-      const nextId = vectors.some((v) => v.id === vectorId)
-        ? vectorId
-        : (vectors.find((v) => v.recommended)?.id ?? vectors[0]?.id ?? vectorId);
-      set({
-        adviseMessage: message || fallbackFor(readiness),
-        vectors,
-        vectorId: nextId,
-        adviseLoading: false,
-      });
-    } catch {
-      set({
-        adviseMessage: fallbackFor(readiness),
-        vectors: FALLBACK_VECTORS,
-        adviseLoading: false,
-      });
-    }
-  },
+  fetchAdvise: () => runAdvise(get, set, false),
+  forceRefreshAdvise: () => runAdvise(get, set, true),
 
   submitCheckIn: async () => {
     const { readiness, vectorId, fetchAdvise } = get();
+    // Map coach UI → API CheckInStatusSchema (done|partial|skipped|soreness|low_sleep|travel).
     const status: CheckInStatus =
-      readiness === "rest" ? "skipped" : vectorId === "missed" ? "on_track" : "modified";
+      readiness === "rest"
+        ? "skipped"
+        : vectorId === "missed"
+          ? "partial"
+          : vectorId === "deload"
+            ? "low_sleep"
+            : vectorId === "express"
+              ? "travel"
+              : "done";
     const localDate = todayIso();
     let checkInId: string | null = null;
+    let coachMessage: string | undefined;
 
     try {
       const row = await submitCheckIn({
@@ -135,10 +121,12 @@ export const useCoachStore = create<CoachState>((set, get) => ({
         triggeredRebuild: status === "skipped",
       });
       checkInId = row.id;
-    } catch {
+    } catch (err) {
+      logger.warn("coach.checkin.local.failed", { message: errorMessage(err) });
       checkInId = `local_${Date.now()}`;
     }
 
+    let remoteOk = false;
     try {
       const remote = await createCheckIn({
         localDate,
@@ -146,17 +134,41 @@ export const useCoachStore = create<CoachState>((set, get) => ({
         note: `vector:${vectorId}`,
       });
       checkInId = remote.id;
-    } catch {
-      /* sqlite already saved */
+      coachMessage = remote.coachMessage;
+      remoteOk = true;
+      logger.info("coach.checkin.remote.ok", { id: remote.id, status });
+    } catch (err) {
+      logger.error("coach.checkin.remote.failed", {
+        message: errorMessage(err),
+        status: err instanceof MirraApiError ? err.status : undefined,
+        code: err instanceof MirraApiError ? err.code : undefined,
+      });
     }
 
-    set({ lastCheckInId: checkInId, notice: `Check-in saved (${status})` });
-    await fetchAdvise();
-    await Promise.all([
-      useTodayStore.getState().hydrate(),
-      useFuelStore.getState().hydrate(),
-    ]).catch(() => undefined);
-    if (status !== "skipped") return "done";
+    if (!remoteOk) {
+      // Never claim "saved": the server (source of truth for Today) did not get it.
+      set({
+        lastCheckInId: null,
+        notice: "Check-in failed to sync — not saved. Check your connection and try again.",
+      });
+      return "failed";
+    } else {
+      set({
+        lastCheckInId: checkInId,
+        checkedInDate: localDate,
+        notice: "Check-in saved — Today updated",
+        ...(coachMessage ? { adviseMessage: coachMessage } : {}),
+      });
+      // Optimistic: hide Today "Check-in" chip before hydrate round-trip.
+      useTodayStore.setState({ checkInDue: false });
+      await get().hydrate();
+      if (!coachMessage) await fetchAdvise();
+      await Promise.all([
+        useTodayStore.getState().hydrate(),
+        useFuelStore.getState().hydrate(),
+      ]).catch(() => undefined);
+      if (status !== "skipped") return "done";
+    }
 
     try {
       const preview = await previewRebuild({
@@ -168,7 +180,14 @@ export const useCoachStore = create<CoachState>((set, get) => ({
         previewAfter: preview.after,
       });
       if (preview.after) usePlanStore.getState().setPlan(preview.after);
-    } catch {
+      logger.info("coach.rebuild.preview.ok", {
+        hasToken: Boolean(preview.previewToken),
+      });
+    } catch (err) {
+      logger.error("coach.rebuild.preview.failed", {
+        message: errorMessage(err),
+        status: err instanceof MirraApiError ? err.status : undefined,
+      });
       set({ previewToken: "local_preview", previewAfter: null });
     }
     return "rebuild";
@@ -180,9 +199,14 @@ export const useCoachStore = create<CoachState>((set, get) => ({
       if (previewToken && previewToken !== "local_preview") {
         const plan = await applyRebuild({ previewToken }, `apply_${Date.now()}`);
         usePlanStore.getState().setPlan(plan);
+        logger.info("coach.rebuild.apply.ok", { planId: plan.id });
       }
       set({ notice: "New plan applied", previewToken: null });
-    } catch {
+    } catch (err) {
+      logger.error("coach.rebuild.apply.failed", {
+        message: errorMessage(err),
+        status: err instanceof MirraApiError ? err.status : undefined,
+      });
       set({ notice: "Applied locally", previewToken: null });
     }
   },

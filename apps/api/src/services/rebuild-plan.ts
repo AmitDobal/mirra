@@ -16,6 +16,7 @@ import { getPlanGenerator } from "../lib/plan-generator";
 import type { PlanGenerateResult } from "../ports/plan-generator";
 import { loadCurrentPlan } from "./plan-loaders";
 import { persistGeneratedPlan } from "./persist-plan";
+import { buildPlanPrefsJson, buildPlanProfileJson } from "./plan-input";
 
 type PreviewStore = {
   reason: string;
@@ -152,17 +153,8 @@ export const previewRebuild = async (
     timezone: profile.timezone,
     weekStart,
     kind: "rebuild",
-    prefsJson: JSON.stringify({
-      primaryGoal: prefs.primaryGoal,
-      experience: prefs.experience,
-      trainDays,
-      sessionMinutes: prefs.sessionMinutes,
-    }),
-    profileJson: JSON.stringify({
-      weightKg: profile.weightKg,
-      goalWeightKg: profile.goalWeightKg,
-      pace: profile.pace,
-    }),
+    prefsJson: buildPlanPrefsJson(prefs, { trainDays }),
+    profileJson: buildPlanProfileJson(profile),
   });
 
   // Slight kcal nudge so diffs are visible when days unchanged.

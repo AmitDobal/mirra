@@ -10,8 +10,13 @@ export type MirraEnv = {
    * and upserts an ephemeral users row. Never enable in production.
    */
   ALLOW_DEV_USER_HEADER?: string;
-  /** Optional AI / auth secrets — set via wrangler secrets later. */
+  /** Better Auth base URL (e.g. http://127.0.0.1:8787 or workers.dev). */
+  APP_URL?: string;
+  /** Better Auth signing secret — set via wrangler secret / .dev.vars. */
   BETTER_AUTH_SECRET?: string;
+  /** Google OAuth (Better Auth social). Both required to enable Google. */
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
   /**
    * AI backend: `openai` | `heuristic` | `anthropic` | `workers-ai`.
    * Empty = auto (OpenAI key → openai, else heuristic). See integrations.md.
@@ -23,4 +28,12 @@ export type MirraEnv = {
   /** Reserved for Anthropic PlanGenerator / CoachAdvisor adapters. */
   ANTHROPIC_API_KEY?: string;
   ANTHROPIC_MODEL?: string;
+  /** ElevenLabs TTS (spoken coach cues). Secret: `wrangler secret put ELEVENLABS_API_KEY`. */
+  ELEVENLABS_API_KEY?: string;
+  /** Voice id; defaults to a premade voice when unset. */
+  ELEVENLABS_VOICE_ID?: string;
+  /** TTS model; defaults to eleven_multilingual_v2 (eleven_flash_v2_5 is ~half price). */
+  ELEVENLABS_MODEL?: string;
+  /** `elevenlabs` | `stub`. Empty = elevenlabs when a key exists, else stub (text-only). */
+  VOICE_PROVIDER?: string;
 };

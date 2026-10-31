@@ -1,5 +1,5 @@
 import { getDb } from "../client";
-import { LOCAL_USER_ID, nowMs } from "../ids";
+import { getLocalUserId, nowMs } from "../ids";
 import { parseJson, toJson } from "../json";
 import {
   OnboardingInputSchema,
@@ -28,11 +28,15 @@ type PrefsRow = {
   diet_tags_json: string;
   foods_avoid: string | null;
   units: string;
+  trainer_persona: string | null;
+  cuisine_json: string | null;
+  physique_target: string | null;
+  lifestyle_notes: string | null;
 };
 
 export const saveOnboarding = async (input: OnboardingInput): Promise<string> => {
   const data = OnboardingInputSchema.parse(input);
-  const userId = data.userId ?? LOCAL_USER_ID;
+  const userId = data.userId ?? getLocalUserId();
   const db = await getDb();
   const ts = nowMs();
   const { profile: p, preferences: pref } = data;
@@ -63,13 +67,17 @@ export const saveOnboarding = async (input: OnboardingInput): Promise<string> =>
   await db.runAsync(
     `INSERT INTO preferences (
       user_id, primary_goal, experience, equipment_json, train_days_json,
-      session_minutes, diet_tags_json, foods_avoid, units, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      session_minutes, diet_tags_json, foods_avoid, units, trainer_persona,
+      cuisine_json, physique_target, lifestyle_notes, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET
       primary_goal=excluded.primary_goal, experience=excluded.experience,
       equipment_json=excluded.equipment_json, train_days_json=excluded.train_days_json,
       session_minutes=excluded.session_minutes, diet_tags_json=excluded.diet_tags_json,
-      foods_avoid=excluded.foods_avoid, units=excluded.units, updated_at=excluded.updated_at`,
+      foods_avoid=excluded.foods_avoid, units=excluded.units,
+      trainer_persona=excluded.trainer_persona, cuisine_json=excluded.cuisine_json,
+      physique_target=excluded.physique_target, lifestyle_notes=excluded.lifestyle_notes,
+      updated_at=excluded.updated_at`,
     userId,
     pref.primaryGoal,
     pref.experience,
@@ -79,14 +87,32 @@ export const saveOnboarding = async (input: OnboardingInput): Promise<string> =>
     toJson(pref.dietTags ?? []),
     pref.foodsAvoid ?? null,
     pref.units ?? "metric",
+    pref.trainerPersona ?? "drill",
+    toJson(pref.cuisineStyles ?? []),
+    pref.physiqueTarget ?? null,
+    pref.lifestyleNotes?.trim() || null,
     ts,
   );
 
   return userId;
 };
 
+/** Update only the trainer persona on the local preferences row (no-op without a row). */
+export const setLocalTrainerPersona = async (
+  persona: string,
+  userId: string = getLocalUserId(),
+): Promise<void> => {
+  const db = await getDb();
+  await db.runAsync(
+    "UPDATE preferences SET trainer_persona = ?, updated_at = ? WHERE user_id = ?",
+    persona,
+    nowMs(),
+    userId,
+  );
+};
+
 export const getProfile = async (
-  userId: string = LOCAL_USER_ID,
+  userId: string = getLocalUserId(),
 ): Promise<LocalProfile | null> => {
   const db = await getDb();
   const profile = await db.getFirstAsync<ProfileRow>(
@@ -120,6 +146,10 @@ export const getProfile = async (
           dietTags: parseJson(prefs.diet_tags_json, [] as string[]),
           foodsAvoid: prefs.foods_avoid,
           units: prefs.units,
+          trainerPersona: prefs.trainer_persona ?? "drill",
+          cuisineStyles: parseJson(prefs.cuisine_json, [] as string[]),
+          physiqueTarget: prefs.physique_target,
+          lifestyleNotes: prefs.lifestyle_notes,
         }
       : null,
   };

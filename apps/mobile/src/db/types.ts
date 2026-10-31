@@ -11,6 +11,8 @@ export const GoalSchema = z.enum([
 ]);
 export const ExperienceSchema = z.enum(["new", "months", "y1_2", "y3_plus"]);
 export const UnitsSchema = z.enum(["metric", "imperial"]);
+export const TrainerPersonaSchema = z.enum(["drill", "honey", "wit", "spark", "zen", "rival"]);
+export const PhysiqueTargetSchema = z.enum(["lean_cut", "athletic", "muscular", "toned", "strong"]);
 export const MealSlotSchema = z.enum(["breakfast", "lunch", "dinner", "snack"]);
 export const CheckInStatusSchema = z.enum([
   "done",
@@ -43,7 +45,11 @@ export const OnboardingInputSchema = z.object({
     sessionMinutes: z.union([z.literal(20), z.literal(30), z.literal(45), z.literal(60)]),
     dietTags: z.array(z.string()).optional(),
     foodsAvoid: z.string().nullable().optional(),
+    cuisineStyles: z.array(z.string()).optional(),
+    physiqueTarget: PhysiqueTargetSchema.nullable().optional(),
+    lifestyleNotes: z.string().max(2000).nullable().optional(),
     units: UnitsSchema.optional(),
+    trainerPersona: TrainerPersonaSchema.optional(),
   }),
 });
 
@@ -68,6 +74,10 @@ export type LocalProfile = {
     readonly dietTags: string[];
     readonly foodsAvoid: string | null;
     readonly units: string;
+    readonly trainerPersona: string;
+    readonly cuisineStyles: string[];
+    readonly physiqueTarget: string | null;
+    readonly lifestyleNotes: string | null;
   } | null;
 };
 
@@ -159,4 +169,10 @@ export type LocalProgressPhoto = {
   readonly pose: string;
   readonly takenAt: number;
   readonly note: string | null;
+};
+
+export type LocalWeightLog = {
+  readonly id: string;
+  readonly kg: number;
+  readonly loggedAt: number;
 };

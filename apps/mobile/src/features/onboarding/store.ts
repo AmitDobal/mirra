@@ -1,17 +1,22 @@
 import { create } from "zustand";
 
 import type {
+  CuisineId,
   DietId,
   EquipmentId,
   ExperienceId,
   GoalId,
   HeightUnit,
   OnboardingAnswers,
+  OnboardingPlanOption,
   OnboardingWeekPlan,
   PaceId,
   PaywallPlan,
+  PhysiqueId,
+  PlanOptionKey,
   SessionMinutes,
   SexId,
+  TrainerPersonaId,
   WeightUnit,
 } from "./types";
 
@@ -30,11 +35,19 @@ const defaultAnswers: OnboardingAnswers = {
   trainingDays: [true, false, true, false, true, false, false],
   sessionMinutes: 45,
   diet: ["high_protein"],
+  cuisines: [],
+  cuisineOther: "",
   foodsToAvoid: "",
+  physiqueTarget: null,
+  lifestyleNotes: "",
+  trainerPersona: "drill",
   mirrorSkipped: false,
+  mirrorUri: null,
   paywallPlan: "annual",
   completed: false,
   weekPlan: null,
+  planOptions: null,
+  selectedPlanKey: "recommended",
 };
 
 type OnboardingStore = OnboardingAnswers & {
@@ -52,10 +65,18 @@ type OnboardingStore = OnboardingAnswers & {
   toggleTrainingDay: (index: number) => void;
   setSessionMinutes: (sessionMinutes: SessionMinutes) => void;
   toggleDiet: (id: DietId) => void;
+  toggleCuisine: (id: CuisineId) => void;
+  setCuisineOther: (cuisineOther: string) => void;
   setFoodsToAvoid: (foodsToAvoid: string) => void;
+  setPhysiqueTarget: (physiqueTarget: PhysiqueId | null) => void;
+  setLifestyleNotes: (lifestyleNotes: string) => void;
+  setTrainerPersona: (trainerPersona: TrainerPersonaId) => void;
   setMirrorSkipped: (mirrorSkipped: boolean) => void;
+  setMirrorUri: (mirrorUri: string | null) => void;
   setPaywallPlan: (paywallPlan: PaywallPlan) => void;
   setWeekPlan: (weekPlan: OnboardingWeekPlan | null) => void;
+  setPlanOptions: (planOptions: OnboardingPlanOption[] | null) => void;
+  setSelectedPlanKey: (selectedPlanKey: PlanOptionKey) => void;
   markCompleted: () => void;
   reset: () => void;
 };
@@ -85,11 +106,24 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
     }),
   setSessionMinutes: (sessionMinutes) => set({ sessionMinutes }),
   toggleDiet: (id) => set((s) => ({ diet: toggleIn(s.diet, id) })),
+  toggleCuisine: (id) =>
+    set((s) => {
+      const cuisines = toggleIn(s.cuisines, id);
+      const cuisineOther =
+        id === "other" && !cuisines.includes("other") ? "" : s.cuisineOther;
+      return { cuisines, cuisineOther };
+    }),
+  setCuisineOther: (cuisineOther) => set({ cuisineOther }),
   setFoodsToAvoid: (foodsToAvoid) => set({ foodsToAvoid }),
+  setPhysiqueTarget: (physiqueTarget) => set({ physiqueTarget }),
+  setLifestyleNotes: (lifestyleNotes) => set({ lifestyleNotes }),
+  setTrainerPersona: (trainerPersona) => set({ trainerPersona }),
   setMirrorSkipped: (mirrorSkipped) => set({ mirrorSkipped }),
+  setMirrorUri: (mirrorUri) => set({ mirrorUri }),
   setPaywallPlan: (paywallPlan) => set({ paywallPlan }),
   setWeekPlan: (weekPlan) => set({ weekPlan }),
-  /** UI flag; SQLite `profiles.onboarding_completed_at` set in `saveOnboarding`. */
+  setPlanOptions: (planOptions) => set({ planOptions }),
+  setSelectedPlanKey: (selectedPlanKey) => set({ selectedPlanKey }),
   markCompleted: () => set({ completed: true }),
   reset: () => set({ ...defaultAnswers }),
 }));

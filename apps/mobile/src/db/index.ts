@@ -1,4 +1,11 @@
 export { getDb } from "./client";
-export { LOCAL_USER_ID, newId, nowMs } from "./ids";
+export {
+  getLocalUserId,
+  LOCAL_USER_ID,
+  newId,
+  nowMs,
+  setLocalUserId,
+} from "./ids";
+export { reassignLocalUser } from "./reassign-user";
 export * from "./repositories";
 export type * from "./types";

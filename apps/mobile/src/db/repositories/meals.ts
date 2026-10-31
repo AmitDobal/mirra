@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { getDb } from "../client";
 import { dayBoundsMs, todayUtc } from "../dates";
-import { LOCAL_USER_ID, newId, nowMs } from "../ids";
+import { getLocalUserId, newId, nowMs } from "../ids";
 import { MealSlotSchema, type FuelToday, type LocalMeal } from "../types";
 import { getCurrentPlan } from "./plans";
 
@@ -44,7 +44,7 @@ const mapMeal = (r: MealRow): LocalMeal => ({
 
 export const logMeal = async (input: LogMealInput): Promise<LocalMeal> => {
   const data = LogMealSchema.parse(input);
-  const userId = data.userId ?? LOCAL_USER_ID;
+  const userId = data.userId ?? getLocalUserId();
   const db = await getDb();
   const ts = nowMs();
   const date = data.localDate ?? todayUtc();
@@ -79,8 +79,71 @@ export const logMeal = async (input: LogMealInput): Promise<LocalMeal> => {
   };
 };
 
+export type LocalMealRef = {
+  readonly id: string;
+  /** Logged-at ms + name: local rows keep their own id, so match the API copy by these too. */
+  readonly eatenAt?: number;
+  readonly name?: string;
+};
+
+export type LocalMealPatch = {
+  readonly name?: string;
+  readonly mealSlot?: string;
+  readonly kcal?: number;
+  readonly proteinG?: number;
+  readonly carbsG?: number;
+  readonly fatG?: number;
+  readonly eatenAt?: number;
+};
+
+const COLUMNS: Record<keyof LocalMealPatch, string> = {
+  name: "name",
+  mealSlot: "meal_slot",
+  kcal: "kcal",
+  proteinG: "protein_g",
+  carbsG: "carbs_g",
+  fatG: "fat_g",
+  eatenAt: "eaten_at",
+};
+
+const matchClause = (ref: LocalMealRef) =>
+  ref.eatenAt != null && ref.name != null
+    ? { sql: "(id = ? OR (eaten_at = ? AND name = ?))", args: [ref.id, ref.eatenAt, ref.name] }
+    : { sql: "id = ?", args: [ref.id] };
+
+/** Best-effort local mirror of PATCH /v1/meals/:id. */
+export const updateLocalMeal = async (
+  ref: LocalMealRef,
+  patch: LocalMealPatch,
+  userId: string = getLocalUserId(),
+): Promise<void> => {
+  const entries = (Object.keys(COLUMNS) as (keyof LocalMealPatch)[])
+    .filter((k) => patch[k] !== undefined)
+    .map((k) => [COLUMNS[k], patch[k] as string | number] as const);
+  if (entries.length === 0) return;
+  const db = await getDb();
+  const match = matchClause(ref);
+  await db.runAsync(
+    `UPDATE meals SET ${entries.map(([col]) => `${col} = ?`).join(", ")}
+     WHERE user_id = ? AND ${match.sql}`,
+    ...entries.map(([, v]) => v),
+    userId,
+    ...match.args,
+  );
+};
+
+/** Best-effort local mirror of DELETE /v1/meals/:id. */
+export const deleteLocalMeal = async (
+  ref: LocalMealRef,
+  userId: string = getLocalUserId(),
+): Promise<void> => {
+  const db = await getDb();
+  const match = matchClause(ref);
+  await db.runAsync(`DELETE FROM meals WHERE user_id = ? AND ${match.sql}`, userId, ...match.args);
+};
+
 export const getFuelToday = async (
-  userId: string = LOCAL_USER_ID,
+  userId: string = getLocalUserId(),
   date: string = todayUtc(),
 ): Promise<FuelToday> => {
   const db = await getDb();

@@ -6,6 +6,7 @@ import { mealPlanItems, meals } from "../db/schema";
 import { dayBoundsMs, msToUnix } from "../lib/dates";
 import { notFound } from "../lib/errors";
 import { newId } from "../lib/id";
+import { recordAttendanceSafe } from "./attendance";
 
 export const toMealResponse = (m: typeof meals.$inferSelect): MealResponse => ({
   id: m.id,
@@ -49,6 +50,7 @@ export const insertMeal = async (
     createdAt: now,
   };
   await db.insert(meals).values(row);
+  await recordAttendanceSafe(db, userId, "mealLogged");
   return toMealResponse({ ...row, createdAt: now } as typeof meals.$inferSelect);
 };
 

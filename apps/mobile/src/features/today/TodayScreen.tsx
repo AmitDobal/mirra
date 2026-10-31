@@ -1,6 +1,6 @@
 import { router } from "expo-router";
-import { Bell, ChevronLeft, ChevronRight, Play, Plus, Zap } from "lucide-react-native";
-import { useEffect } from "react";
+import { Bell, Play, Plus, Zap } from "lucide-react-native";
+import { useEffect, useMemo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
 import { s15Today } from "../../../assets/stitch";
@@ -11,7 +11,10 @@ import { color } from "@/theme/tokens";
 import { selectLoggedKcal, useFuelStore } from "@/features/fuel/fuel-store";
 import { useWorkoutStore } from "@/features/workout/workout-store";
 
+import { useAttendanceStore } from "./attendance-store";
+import { useDayHistory } from "./use-day-history";
 import { useTodayStore } from "./today-store";
+import { WeekStripCard } from "./WeekStripCard";
 
 /** S15 Today home — SQLite plan + fuel. */
 export const TodayScreen = () => {
@@ -24,16 +27,26 @@ export const TodayScreen = () => {
   const hydrate = useTodayStore((s) => s.hydrate);
   const swapDay = useTodayStore((s) => s.swapDay);
   const shiftWeek = useTodayStore((s) => s.shiftWeek);
+  const selectDay = useTodayStore((s) => s.selectDay);
   const setNotice = useTodayStore((s) => s.setNotice);
   const meals = useFuelStore((s) => s.meals);
   const target = useFuelStore((s) => s.target);
   const hydrateFuel = useFuelStore((s) => s.hydrate);
   const startWorkout = useWorkoutStore((s) => s.start);
 
+  const attendance = useAttendanceStore((s) => s.byDate);
+  const loadAttendance = useAttendanceStore((s) => s.load);
+  const serverToday = useAttendanceStore((s) => s.today);
+  const todayDate = serverToday ?? new Date().toISOString().slice(0, 10);
+  const weekDates = useMemo(() => weekDays.map((d) => d.date), [weekDays]);
+  const { onSelectDay, sheet: dayHistorySheet } = useDayHistory(weekDates, todayDate, selectDay);
+
   useEffect(() => {
-    void hydrate();
-    void hydrateFuel();
-  }, [hydrate, hydrateFuel]);
+    void (async () => {
+      await Promise.all([hydrate(), hydrateFuel()]);
+      void loadAttendance(useTodayStore.getState().weekDays[0]?.date);
+    })();
+  }, [hydrate, hydrateFuel, loadAttendance]);
 
   const logged = selectLoggedKcal(meals);
   const fuelTarget = target || kcalTarget || 0;
@@ -45,17 +58,14 @@ export const TodayScreen = () => {
     workout?.exercises.map((e) => e.name).slice(0, 4).join(", ") ||
     "No lifts scheduled for this day";
   const activeDay = weekDays[dayIndex];
-  const strip =
-    weekDays.length > 0
-      ? weekDays.slice(0, 7).map((d, i) => ({
-          d: Number(d.date.slice(-2)) || i + 1,
-          active: i === dayIndex % 7,
-        }))
-      : Array.from({ length: 7 }, (_, i) => ({
-          d: new Date().getDate() - 3 + i,
-          active: i === 3,
-        }));
-
+  const monthLabel = useMemo(() => {
+    const iso = activeDay?.date ?? new Date().toISOString().slice(0, 10);
+    return new Date(`${iso}T12:00:00`).toLocaleString(undefined, { month: "long", year: "numeric" });
+  }, [activeDay?.date]);
+  const weekLabel = useMemo(() => {
+    const label = activeDay?.label ?? activeDay?.kind;
+    return label ? `Week · ${label}` : "This week";
+  }, [activeDay?.kind, activeDay?.label]);
   const handleStart = () => {
     void startWorkout(workout).then(() => router.push("/workout/live"));
   };
@@ -107,38 +117,18 @@ export const TodayScreen = () => {
         </Pressable>
       ) : null}
 
-      <View className="mb-space-md rounded-lg bg-surface-container-low p-space-md">
-        <View className="mb-space-sm flex-row items-center justify-between">
-          <View>
-            <CapsLabel>{activeDay?.label ?? activeDay?.kind ?? "This week"}</CapsLabel>
-            <Text className="font-headline-sm text-headline-sm text-on-surface">
-              {activeDay?.date ?? new Date().toISOString().slice(0, 10)}
-            </Text>
-          </View>
-          <View className="flex-row gap-1 rounded-full bg-surface-container-high p-1">
-            <IconBtn label="Previous week" Icon={ChevronLeft} small onPress={() => shiftWeek(-1)} />
-            <IconBtn label="Next week" Icon={ChevronRight} small onPress={() => shiftWeek(1)} />
-          </View>
-        </View>
-        <View className="flex-row justify-between">
-          {strip.map((day) => (
-            <View
-              key={`${day.d}-${day.active}`}
-              className={`h-9 w-9 items-center justify-center rounded-full ${
-                day.active ? "bg-primary-fixed" : ""
-              }`}
-            >
-              <Text
-                className={`font-headline-sm text-headline-sm ${
-                  day.active ? "text-on-primary-fixed" : "text-on-surface-variant"
-                }`}
-              >
-                {day.d}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
+      <WeekStripCard
+        weekDays={weekDays}
+        dayIndex={dayIndex}
+        weekLabel={weekLabel}
+        monthLabel={monthLabel}
+        onPrev={() => shiftWeek(-1)}
+        onNext={() => shiftWeek(1)}
+        attendance={attendance}
+        today={todayDate}
+        onSelectDay={onSelectDay}
+      />
+      {dayHistorySheet}
 
       <View className="mb-space-md min-h-[148px] flex-row items-center justify-between overflow-hidden rounded-lg bg-primary-fixed p-space-lg">
         <View className="max-w-[62%] flex-col">

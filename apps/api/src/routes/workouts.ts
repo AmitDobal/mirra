@@ -17,6 +17,7 @@ import { newId } from "../lib/id";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
+import { recordAttendanceSafe } from "../services/attendance";
 import { loadCurrentPlan } from "../services/plan-loaders";
 
 export const workoutRoutes = new Hono<{
@@ -135,6 +136,7 @@ workoutRoutes.post("/v1/workouts/sessions/:id/complete", requireAuth, async (c) 
       notes: body.notes ?? null,
     })
     .where(eq(workoutSessions.id, sessionId));
+  await recordAttendanceSafe(db, userId, "workoutDone");
 
   return c.json(
     toSession({

@@ -1,17 +1,36 @@
 import { router } from "expo-router";
-import { MotiView, type MotiTransition } from "moti";
-import { useEffect, useRef } from "react";
-import { Image, Text, View } from "react-native";
+import { Gauge, Dumbbell } from "lucide-react-native";
+import { useEffect, useRef, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
-import { s11GeneratingWeek } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
+import { GeneratingBlueprintCard } from "@/features/onboarding/components/GeneratingBlueprintCard";
+import { GeneratingHeader } from "@/features/onboarding/components/GeneratingHeader";
 import { runOnboardingGenerate } from "@/features/onboarding/services/run-generate";
 import type { OnboardingWeekPlan } from "@/features/onboarding/types";
 import type { CurrentPlan } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
+import { color, font, radius } from "@/theme/tokens";
 
-const MIN_MS = 1600;
+const MIN_MS = 2600;
+/** Stitch calibration meter: starts at 74%, creeps toward 96%. */
+const START_PERCENT = 74;
+const MAX_PERCENT = 96;
+const FINAL_STEP_AT = 85;
+const TICK_MS = 400;
+const TICK_STEP = 3;
+
+const useCalibrationPercent = () => {
+  const [percent, setPercent] = useState(START_PERCENT);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPercent((p) => Math.min(MAX_PERCENT, p + TICK_STEP));
+    }, TICK_MS);
+    return () => clearInterval(id);
+  }, []);
+  return percent;
+};
 
 const toCurrentPlan = (plan: OnboardingWeekPlan): CurrentPlan => ({
   id: plan.id,
@@ -29,12 +48,13 @@ const toCurrentPlan = (plan: OnboardingWeekPlan): CurrentPlan => ({
   })),
 });
 
-/** S11 — PUT onboarding → generate plan → week-reveal. */
+/** S11 — PUT onboarding → generate plan → week-reveal (Stitch calibration UI). */
 const GeneratingScreen = () => {
   const c = onboardingCopy.generating;
   const setWeekPlan = useOnboardingStore((s) => s.setWeekPlan);
   const setPlan = usePlanStore((s) => s.setPlan);
   const started = useRef(false);
+  const percent = useCalibrationPercent();
 
   useEffect(() => {
     if (started.current) return;
@@ -61,72 +81,85 @@ const GeneratingScreen = () => {
 
   return (
     <OnboardingShell scroll={false}>
-      <View className="flex-1 items-center justify-center gap-space-lg">
-        <View className="mb-space-md flex-row gap-space-sm">
-          {[
-            s11GeneratingWeek.athleteSquat,
-            s11GeneratingWeek.sprinterKneeling,
-            s11GeneratingWeek.athleteBarbell,
-          ].map((src, i) => (
-            <Image
-              key={i}
-              source={src}
-              accessibilityLabel="Generating plan"
-              style={{ width: 72, height: 96, borderRadius: 10 }}
-              resizeMode="cover"
-            />
-          ))}
+      <View style={styles.root}>
+        <GeneratingHeader />
+        <View style={styles.center}>
+          <GeneratingBlueprintCard
+            percent={percent}
+            finalStep={percent > FINAL_STEP_AT}
+          />
+          <View style={styles.status}>
+            <Text style={styles.statusTitle}>{c.title}</Text>
+            <Text style={styles.statusSub}>{c.sub}</Text>
+          </View>
+          <View style={styles.badges}>
+            <View style={styles.badge}>
+              <Gauge size={14} color={color.primaryFixed} />
+              <Text style={styles.badgeText}>{c.badgeRecovery}</Text>
+            </View>
+            <View style={styles.badge}>
+              <Dumbbell size={14} color={color.secondary} />
+              <Text style={styles.badgeText}>{c.badgeEquipment}</Text>
+            </View>
+          </View>
         </View>
-        <View className="w-full max-w-[280px] gap-space-sm">
-          {[1, 0.72, 0.9, 0.55].map((w, i) => (
-            <MotiView
-              key={i}
-              from={{ opacity: 0.35 }}
-              animate={{ opacity: 0.9 }}
-              transition={
-                {
-                  type: "timing",
-                  duration: 900,
-                  loop: true,
-                  delay: i * 120,
-                } as MotiTransition
-              }
-              style={{
-                width: `${w * 100}%`,
-                height: 12,
-                borderRadius: 9999,
-                backgroundColor: "#2a2a2a",
-                overflow: "hidden",
-              }}
-            >
-              <View
-                style={{
-                  height: "100%",
-                  width: "33%",
-                  borderRadius: 9999,
-                  backgroundColor: "rgba(203,241,80,0.4)",
-                }}
-              />
-            </MotiView>
-          ))}
-        </View>
-        <Text className="font-label text-label-caps text-on-surface-variant">
-          {c.label}
-        </Text>
-        <MotiView
-          from={{ width: "20%" }}
-          animate={{ width: "88%" }}
-          transition={{ type: "timing", duration: MIN_MS } as MotiTransition}
-          style={{
-            height: 4,
-            alignSelf: "stretch",
-            borderRadius: 9999,
-            backgroundColor: "#cbf150",
-          }}
-        />
       </View>
     </OnboardingShell>
   );
 };
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 28,
+  },
+  status: {
+    alignItems: "center",
+    maxWidth: 320,
+    gap: 4,
+  },
+  statusTitle: {
+    fontFamily: font.headlineSemi,
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: -0.18,
+    color: color.primary,
+    textAlign: "center",
+  },
+  statusSub: {
+    fontFamily: font.body,
+    fontSize: 12,
+    lineHeight: 19.5,
+    color: color.onSurfaceVariant,
+    textAlign: "center",
+  },
+  badges: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 8,
+  },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+    backgroundColor: color.surfaceContainerHigh,
+  },
+  badgeText: {
+    fontFamily: font.labelBold,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.88,
+    color: color.onSurface,
+  },
+});
 
 export default GeneratingScreen;

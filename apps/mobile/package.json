@@ -11,7 +11,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "update:day-test": "EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 eas-cli update --branch day-test --environment preview --non-interactive",
+    "update:day-test": "CI=1 EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 eas-cli update --branch day-test --environment preview --platform ios --non-interactive",
     "postinstall": "node ./scripts/patch-css-interop.mjs"
   },
   "dependencies": {
@@ -59,6 +59,7 @@
   "devDependencies": {
     "@babel/core": "^7.28.4",
     "@types/react": "~19.3.0",
+    "babel-preset-expo": "^58.0.23",
     "tailwindcss": "^3.4.17",
     "typescript": "~6.0.3"
   }

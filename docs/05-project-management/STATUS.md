@@ -1,5 +1,7 @@
 # STATUS
 
+**Latest:** PR #14 `integrate/day-test-all-features` merged to main (`c00282c`) — plan-chat + weight journey. Deploy API for `/v1/weight` + `/v1/ai/usage` before day-test against prod.
+
 | | |
 | --- | --- |
 | Product | Mirra |

@@ -32,6 +32,10 @@ export const preferences = sqliteTable("preferences", {
   sessionMinutes: integer("session_minutes").notNull().default(45),
   dietTagsJson: text("diet_tags_json").notNull().default("[]"),
   foodsAvoid: text("foods_avoid"),
+  cuisineJson: text("cuisine_json").notNull().default("[]"),
   units: text("units").notNull().default("metric"),
+  trainerPersona: text("trainer_persona").notNull().default("drill"),
+  physiqueTarget: text("physique_target"),
+  lifestyleNotes: text("lifestyle_notes"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 });

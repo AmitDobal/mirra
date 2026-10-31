@@ -12,6 +12,7 @@ import { mondayOf, todayUtc } from "../lib/dates";
 import { badRequest, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseJson } from "../lib/json";
+import { getPersonalizationContext } from "../lib/personalization-context";
 import { getPlanGenerator } from "../lib/plan-generator";
 import type { PlanGenerateResult } from "../ports/plan-generator";
 import { loadCurrentPlan } from "./plan-loaders";
@@ -147,6 +148,13 @@ export const previewRebuild = async (
     reason,
   );
   const generator = getPlanGenerator(env, { db, userId });
+  const context = await getPersonalizationContext(env, db).build({
+    userId,
+    feature: "workout_plan",
+    subjectId: weekStart,
+    localDate: todayUtc(),
+    overrides: { trainDays },
+  });
   const generated = await generator.generate({
     userId,
     timezone: profile.timezone,
@@ -163,6 +171,7 @@ export const previewRebuild = async (
       goalWeightKg: profile.goalWeightKg,
       pace: profile.pace,
     }),
+    context,
   });
 
   // Slight kcal nudge so diffs are visible when days unchanged.

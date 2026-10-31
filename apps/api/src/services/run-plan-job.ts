@@ -6,6 +6,7 @@ import type { MirraEnv } from "../env";
 import { mondayOf, todayUtc } from "../lib/dates";
 import { badRequest } from "../lib/errors";
 import { newId } from "../lib/id";
+import { getPersonalizationContext } from "../lib/personalization-context";
 import { getPlanGenerator } from "../lib/plan-generator";
 import { persistGeneratedPlan } from "./persist-plan";
 
@@ -48,6 +49,12 @@ export const runPlanGenerateJob = async ({
 
   try {
     const generator = getPlanGenerator(env, { db, userId });
+    const context = await getPersonalizationContext(env, db).build({
+      userId,
+      feature: "workout_plan",
+      subjectId: weekStart,
+      localDate: todayUtc(),
+    });
     const generated = await generator.generate({
       userId,
       timezone: profile.timezone,
@@ -64,6 +71,7 @@ export const runPlanGenerateJob = async ({
         goalWeightKg: profile.goalWeightKg,
         pace: profile.pace,
       }),
+      context,
     });
 
     const { planId } = await persistGeneratedPlan({

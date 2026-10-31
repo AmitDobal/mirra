@@ -8,3 +8,4 @@ export * from "./check-ins";
 export * from "./coach";
 export * from "./fuel";
 export * from "./workouts";
+export * from "./ai-context";

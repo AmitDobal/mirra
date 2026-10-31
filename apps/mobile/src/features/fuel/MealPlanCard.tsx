@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Repeat2, Trash2 } from "lucide-react-native";
+import { Check, ChefHat, ChevronDown, Repeat2, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -40,10 +40,14 @@ type PlannedCardProps = {
   readonly onLog: (meal: PlannedMeal) => void;
   readonly onSwap: (meal: PlannedMeal) => void;
   readonly onDelete: (meal: PlannedMeal) => void;
+  /** Open the meal detail sheet (row tap). */
+  readonly onOpen: (meal: PlannedMeal) => void;
+  /** Open the detail sheet straight into Chef chat. */
+  readonly onChef: (meal: PlannedMeal) => void;
 };
 
-/** Open meal: compact row (slot+protein chip · title · kcal · chevron); tap to expand. */
-export const PlannedCard = ({ meal, busy, onLog, onSwap, onDelete }: PlannedCardProps) => {
+/** Open meal: compact row (slot+protein chip · title · kcal). Row tap → detail sheet; chevron → quick actions. */
+export const PlannedCard = ({ meal, busy, onLog, onSwap, onDelete, onOpen, onChef }: PlannedCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const shown = meal.items.slice(0, MAX_ITEMS);
   const extra = meal.items.length - shown.length;
@@ -54,36 +58,45 @@ export const PlannedCard = ({ meal, busy, onLog, onSwap, onDelete }: PlannedCard
         "mb-space-sm overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high",
       )}
     >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ expanded }}
-        accessibilityLabel={`${meal.title}, ${meal.kcal} kcal. ${expanded ? "Collapse" : "Expand"}`}
-        onPress={() => setExpanded((v) => !v)}
-        style={({ pressed }) => [
-          sx("flex-row items-center gap-space-sm px-space-md py-space-sm"),
-          { opacity: pressed ? 0.85 : 1 },
-        ]}
-      >
-        <View style={sx("rounded-full bg-primary-fixed px-space-sm py-1")}>
-          <Text style={sx("font-label-bold text-label-md text-on-primary-fixed")}>
-            {meal.slot} · {Math.round(meal.proteinG)}P
-          </Text>
-        </View>
-        <Text
-          numberOfLines={1}
-          style={sx("flex-1 font-headline-semi text-body-lg text-on-surface")}
+      <View style={sx("flex-row items-center")}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${meal.title}, ${meal.kcal} kcal. Open details`}
+          onPress={() => onOpen(meal)}
+          style={({ pressed }) => [
+            sx("flex-1 flex-row items-center gap-space-sm py-space-sm pl-space-md"),
+            { opacity: pressed ? 0.85 : 1 },
+          ]}
         >
-          {meal.title}
-        </Text>
-        <Text style={sx("font-label-bold text-label-lg text-on-surface")}>
-          {meal.fit === "approx" ? "~" : ""}
-          {meal.kcal}
-          <Text style={sx("text-label-md text-on-surface-variant")}> kcal</Text>
-        </Text>
-        <View style={{ transform: [{ rotate: expanded ? "180deg" : "0deg" }] }}>
-          <ChevronDown size={18} color={color.onSurfaceVariant} />
-        </View>
-      </Pressable>
+          <View style={sx("rounded-full bg-primary-fixed px-space-sm py-1")}>
+            <Text style={sx("font-label-bold text-label-md text-on-primary-fixed")}>
+              {meal.slot} · {Math.round(meal.proteinG)}P
+            </Text>
+          </View>
+          <Text
+            numberOfLines={1}
+            style={sx("flex-1 font-headline-semi text-body-lg text-on-surface")}
+          >
+            {meal.title}
+          </Text>
+          <Text style={sx("font-label-bold text-label-lg text-on-surface")}>
+            {meal.fit === "approx" ? "~" : ""}
+            {meal.kcal}
+            <Text style={sx("text-label-md text-on-surface-variant")}> kcal</Text>
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+          accessibilityLabel={`${expanded ? "Collapse" : "Expand"} ${meal.title}`}
+          onPress={() => setExpanded((v) => !v)}
+          style={sx("h-11 w-11 items-center justify-center")}
+        >
+          <View style={{ transform: [{ rotate: expanded ? "180deg" : "0deg" }] }}>
+            <ChevronDown size={18} color={color.onSurfaceVariant} />
+          </View>
+        </Pressable>
+      </View>
 
       {expanded ? (
         <View style={sx("px-space-md pb-space-md")}>
@@ -102,7 +115,15 @@ export const PlannedCard = ({ meal, busy, onLog, onSwap, onDelete }: PlannedCard
               accessibilityLabel={`Log ${meal.title}`}
               onPress={() => onLog(meal)}
               icon={<Check size={16} color={color.onPrimaryFixed} />}
-              style={{ flex: 2, height: CTA_HEIGHT }}
+              style={{ flex: 1.5, height: CTA_HEIGHT }}
+            />
+            <LimeCta
+              label="Chef"
+              accessibilityLabel={`Ask Chef about ${meal.title}`}
+              onPress={() => onChef(meal)}
+              variant="dark"
+              icon={<ChefHat size={16} color={color.onSurface} />}
+              style={{ flex: 1, height: CTA_HEIGHT, paddingHorizontal: 0 }}
             />
             <LimeCta
               label="Swap"

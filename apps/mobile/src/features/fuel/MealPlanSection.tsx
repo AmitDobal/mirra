@@ -15,6 +15,7 @@ import { needsDietPrompt } from "./diet-prefs";
 import { slotKey } from "./fuel-helpers";
 import { SLOT_LABELS, toAmount } from "./MealEditor";
 import { DietPrefsSheet } from "./DietPrefsSheet";
+import { MealDetailSheet } from "./MealDetailSheet";
 import { LoggedRow, PlannedCard } from "./MealPlanCard";
 import { isPlannedOpen, useMealPlanStore } from "./meal-plan-store";
 
@@ -42,6 +43,7 @@ export const MealPlanSection = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [needsPrefs, setNeedsPrefs] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [detail, setDetail] = useState<{ meal: PlannedMeal; chat: boolean } | null>(null);
 
   const refreshNeedsPrefs = useCallback(async () => {
     try {
@@ -156,6 +158,8 @@ export const MealPlanSection = () => {
               onLog={(m) => void log(m)}
               onSwap={(m) => void swap(m)}
               onDelete={handleDelete}
+              onOpen={(m) => setDetail({ meal: m, chat: false })}
+              onChef={(m) => setDetail({ meal: m, chat: true })}
             />
           ) : (
             <LoggedRow key={meal.id} meal={meal} />
@@ -188,6 +192,11 @@ export const MealPlanSection = () => {
         initial={ADD_INITIAL}
         onClose={() => setAddOpen(false)}
         onSubmit={handleAddSubmit}
+      />
+      <MealDetailSheet
+        meal={detail?.meal ?? null}
+        startInChat={detail?.chat ?? false}
+        onClose={() => setDetail(null)}
       />
       <DietPrefsSheet
         visible={sheetOpen}

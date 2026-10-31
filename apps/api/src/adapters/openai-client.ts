@@ -21,6 +21,10 @@ export type ChatCompletionOpts = {
   temperature?: number;
   /** Caps completion tokens (cheap replies). */
   maxTokens?: number;
+  /** Override the API base (local mock / proxy). Defaults to https://api.openai.com/v1. */
+  baseUrl?: string;
+  /** Abort the request after this many ms (no abort when unset). */
+  timeoutMs?: number;
 };
 
 export type ChatUsage = {
@@ -49,8 +53,10 @@ type OpenAiChatResponse = {
 export const chatCompletion = async (
   opts: ChatCompletionOpts,
 ): Promise<ChatCompletionResult> => {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const base = (opts.baseUrl?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
+  const res = await fetch(`${base}/chat/completions`, {
     method: "POST",
+    signal: opts.timeoutMs ? AbortSignal.timeout(opts.timeoutMs) : undefined,
     headers: {
       Authorization: `Bearer ${opts.apiKey}`,
       "Content-Type": "application/json",

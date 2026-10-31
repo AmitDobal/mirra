@@ -23,6 +23,8 @@ export type RequestOptions = {
   readonly query?: Record<string, string | number | boolean | undefined | null>;
   readonly idempotencyKey?: string;
   readonly signal?: AbortSignal;
+  /** Extra request headers (e.g. `x-mirra-ai-mode: heuristic`). */
+  readonly headers?: Record<string, string>;
   /** Best-effort calls (voice cue): log warn, never toast-level error. */
   readonly quiet?: boolean;
 };
@@ -90,7 +92,7 @@ export const apiFetch = async <T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> => {
-  const { method = "GET", body, query, idempotencyKey, signal, quiet } = options;
+  const { method = "GET", body, query, idempotencyKey, signal, quiet, headers } = options;
   const startedAt = Date.now();
   const logBase = { method, path, host: apiHost() };
   const logFail = quiet ? logger.warn.bind(logger) : logger.error.bind(logger);
@@ -99,7 +101,7 @@ export const apiFetch = async <T>(
   try {
     response = await fetch(buildUrl(path, query), {
       method,
-      headers: await buildHeaders(idempotencyKey),
+      headers: { ...(await buildHeaders(idempotencyKey)), ...headers },
       body: body === undefined ? undefined : JSON.stringify(body),
       // Expo attaches Cookie manually — omit browser credential merge.
       credentials: "omit",

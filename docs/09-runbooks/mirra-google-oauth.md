@@ -20,16 +20,24 @@ Free-trial project quota blocked creating a fresh id like `mirra-app`. Unused pr
 | Publishing | Testing |
 | Test users | `amit.dobalwork@gmail.com`, `amit.dobalwork1@gmail.com` |
 
-## Clients (exactly 2 — do not create more)
+## Clients
 
 | Name | Type | Used by |
 | --- | --- | --- |
-| **Mirra API** | Web application | Worker `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, mobile `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, Better Auth |
-| **Mirra Expo Go iOS** | iOS · bundle `host.exp.Exponent` | mobile `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` (Expo Go / day-test) |
+| **Mirra API** | Web application | Worker `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, mobile `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, Better Auth, **Expo Go day-test** |
+| **Mirra iOS** (optional) | iOS · bundle `ai.mirra.app` | Standalone / dev-client only — **not** for Expo Go |
 
-Day-test uses **Expo Go**, so the single iOS client must be `host.exp.Exponent` (not `ai.mirra.app`). For a future standalone build, replace that one iOS client — still keep **exactly two** clients total (1 Web + 1 iOS).
+### Expo Go = Web + auth.expo.io only
 
-Deleted 2026-11-01: duplicate **Mirra Expo Go iOS**, **Mirra iOS**. HitDM-project Mirra clients stay abandoned.
+Day-test runs in **Expo Go**. Do **not** authorize with an iOS client whose bundle is `host.exp.Exponent` — Google often returns **Error 400 `invalid_request`** (Access blocked) for that insecure / wrong-app pairing. Weird third-party branding (e.g. kalshi) can also appear when a stale/bad native client is used.
+
+`GoogleSignInButton` detects Expo Go and:
+
+1. Uses the **Web** client id only
+2. Sets `redirectUri` to `https://auth.expo.io/@amitdobal141/mirra`
+3. Opens the AuthSession **proxy** start URL, then returns via `getDefaultReturnUrl()`
+
+Leave any Expo Go iOS client unused (or delete it in GCP). Create a real iOS client for `ai.mirra.app` only when shipping a standalone build.
 
 ### Web client — Authorized JS origins
 
@@ -44,7 +52,7 @@ Deleted 2026-11-01: duplicate **Mirra Expo Go iOS**, **Mirra iOS**. HitDM-projec
 - `https://auth.expo.io/@amitdobal141/mirra`
 - `https://auth.expo.io/@amitdobal141/mirra/--/expo-auth-session`
 
-Custom schemes (`mirra://`, `exp://`) are **not** valid on Web clients. Mobile must use an **iOS** client id so `expo-auth-session` uses the native redirect (`host.exp.Exponent:/oauthredirect` in Expo Go). Do not force `makeRedirectUri({ scheme: "mirra" })` with only a Web client id (causes `invalid_request`).
+Custom schemes (`mirra://`, `exp://`, `host.exp.Exponent:/…`) are **not** valid on Web clients.
 
 ## Secrets (never commit)
 
@@ -55,16 +63,16 @@ Worker `mirra-api` (`wrangler secret put` from `apps/api`):
 - `APP_URL` = `https://mirra-api.amit-dobalwork.workers.dev`
 
 Local: same in gitignored `apps/api/.dev.vars`.  
-Mobile gitignored `.env`:
+Mobile gitignored `.env` / EAS `preview`:
 
-- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` = Mirra Web client id
-- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` = **Mirra Expo Go iOS** client id only (bundle `host.exp.Exponent`)
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` = Mirra Web client id (**required** for day-test)
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` = empty for Expo Go; set only for standalone `ai.mirra.app`
 - `EXPO_PUBLIC_ALLOW_DEV_AUTH=true` for day-test only
 
 ## Code path
 
 1. API Better Auth at `/api/auth/*` + `GET /api/auth/ok`
-2. Mobile `GoogleSignInButton` → id_token via `useIdTokenAuthRequest` (web + ios client ids; no forced `mirra://` redirect) → Better Auth social → Bearer
+2. Mobile `GoogleSignInButton` → Expo Go proxy id_token **or** native client code/id_token → Better Auth social → Bearer
 
 ## Prove
 
@@ -73,19 +81,15 @@ curl -sS https://mirra-api.amit-dobalwork.workers.dev/api/auth/ok
 # expect {"ok":true,"google":true}
 ```
 
-Consent branding: open Google authorize URL with the **Mirra** Web client id → app name **Mirra**, not HitDM. Screenshots: `/tmp/mirra-qa/google-oauth-mirra-project/`.
+Consent branding: open Google authorize URL with the **Mirra** Web client id → app name **Mirra**, not HitDM/kalshi. Screenshots: `/tmp/mirra-qa/google-oauth-proxy-fix/`.
 
 ## EAS day-test
 
-Republish `day-test` with `EXPO_PUBLIC_GOOGLE_*` from local `.env` **and** EAS env
-`preview` (`eas env:set`). `env.ts` must use static `process.env.EXPO_PUBLIC_GOOGLE_*`
-(Metro does not inline `process.env[key]`). `app.config.ts` also copies them into
-`extra`. After publish, confirm the Hermes `.hbc` contains `apps.googleusercontent.com`
-(length/hit-count only — never log full client ids). Missing string ⇒ alert
-**Google sign-in not configured**. See `ios-day-test.md`.
+Republish `day-test` with `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` from local `.env` **and** EAS env `preview`. Leave IOS empty for Expo Go. `env.ts` must use static `process.env.EXPO_PUBLIC_GOOGLE_*`. After publish, confirm Hermes `.hbc` contains `apps.googleusercontent.com` (length/hit-count only).
 
 ## Follow-ups (P1)
 
 - Create true project id `mirra-app` after quota increase; migrate clients + secrets
+- Standalone: add iOS client for `ai.mirra.app` (not Expo Go)
 - Upload Mirra logo on Branding (optional; Testing skips verification)
 - Cutover: turn off `ALLOW_DEV_USER_HEADER` only for real prod auth

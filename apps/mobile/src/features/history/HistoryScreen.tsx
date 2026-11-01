@@ -1,6 +1,6 @@
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft, CalendarCheck } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { useFuelStore } from "@/features/fuel/fuel-store";
@@ -48,16 +48,20 @@ export const HistoryScreen = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    void load();
-    void loadMeals();
-    void hydrateFuel();
-  }, [load, loadMeals, hydrateFuel]);
+  // Mount + refocus: the store skips the network while the 1h cache is fresh.
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+      void loadMeals();
+      void hydrateFuel();
+    }, [load, loadMeals, hydrateFuel]),
+  );
 
+  // Pull-to-refresh always bypasses the TTL.
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([load(), loadMeals(), hydrateFuel()]);
+      await Promise.all([load({ force: true }), loadMeals({ force: true }), hydrateFuel()]);
     } finally {
       setRefreshing(false);
     }

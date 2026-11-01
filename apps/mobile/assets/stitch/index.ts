@@ -98,6 +98,30 @@ export const s20cAdjustToday = {
   hero: require("./s20c_adjust_today/hero.jpg"),
 } as const;
 
+/** S25 — Exercise hub (session hero + library thumbs), resized to 640px. */
+export const s25ExerciseHub = {
+  hero: require("./s25_exercise_hub/hero.jpg"),
+  bench: require("./s25_exercise_hub/bench.jpg"),
+  row: require("./s25_exercise_hub/row.jpg"),
+  rdl: require("./s25_exercise_hub/rdl.jpg"),
+  ohp: require("./s25_exercise_hub/ohp.jpg"),
+  pushdown: require("./s25_exercise_hub/pushdown.jpg"),
+} as const;
+
+/** S26 — Exercise detail hero. */
+export const s26ExerciseDetail = {
+  hero: require("./s26_exercise_detail/hero.jpg"),
+} as const;
+
+/** S27 — Swap / add sheet alternative thumbs (320px). */
+export const s27ExerciseSwapAdd = {
+  dbPress: require("./s27_exercise_swap_add/db-press.jpg"),
+  machinePress: require("./s27_exercise_swap_add/machine-press.jpg"),
+  pushup: require("./s27_exercise_swap_add/pushup.jpg"),
+  cableFly: require("./s27_exercise_swap_add/cable-fly.jpg"),
+  inclineDb: require("./s27_exercise_swap_add/incline-db.jpg"),
+} as const;
+
 export const stitchAssets = {
   s02WelcomeHook,
   s06Target,
@@ -116,6 +140,9 @@ export const stitchAssets = {
   s22ProgressGallery,
   s23MirrorComparison,
   s24ProfileSettings,
+  s25ExerciseHub,
+  s26ExerciseDetail,
+  s27ExerciseSwapAdd,
 } as const;
 
 export default stitchAssets;

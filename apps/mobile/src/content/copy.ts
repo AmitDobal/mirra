@@ -10,8 +10,8 @@ export const copy = {
   },
   tabs: {
     today: "Today",
+    exercise: "Exercise",
     fuel: "Fuel",
-    coach: "Coach",
     progress: "Progress",
     you: "You",
   },

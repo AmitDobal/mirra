@@ -22,6 +22,7 @@ import { hydrateAuthSession } from "@/lib/auth";
 import { useAttendancePing } from "@/lib/attendance-ping";
 import { ensureMirraDb } from "@/lib/local";
 import { configurePurchases } from "@/lib/purchases";
+import { useCreditsStore } from "@/stores/credits-store";
 import { useMeStore } from "@/stores/me-store";
 import { color } from "@/theme/tokens";
 
@@ -55,6 +56,11 @@ const RootLayout = () => {
         await useMeStore.getState().hydrate();
       } catch (error: unknown) {
         console.warn("[mirra] me-store hydrate failed", error);
+      }
+      try {
+        await useCreditsStore.getState().hydrate();
+      } catch (error: unknown) {
+        console.warn("[mirra] credits-store hydrate failed", error);
       }
       try {
         await configurePurchases();

@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-11-01 — Credits meter no-flash (SecureStore)
+
+**Done:** `credits-store` mirrors `me-store`: persist last `GET /v1/credits` snapshot in SecureStore, hydrate at boot, You tab paints cached remaining/limit instantly; background refresh via TTL + pull-to-refresh. Sign-out clears credits cache.
+
+**Next:** Merge PR → `eas update --branch day-test` with credits cache fix; reopen You tab on device — no “Checking your balance…” flash.
+
+**Evidence:** `/tmp/mirra-qa/credits-no-flash/RESULT.txt`
+
 ## 2026-11-01 — User data sync/cache doc + main #38–#40
 
 **Done:** Architecture note `docs/03-engineering/user-data-sync-cache.md` (D1/R2 SoT, SQLite mirror, me-store SecureStore TTL, `GET /v1/credits`, progress photos API sync, week plan persist until explicit regenerate). `main` at #40 merge (week plan stable).

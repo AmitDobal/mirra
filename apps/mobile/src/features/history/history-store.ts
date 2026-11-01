@@ -12,6 +12,12 @@ import {
 import { errorMessage, logger } from "@/lib/logger";
 
 import {
+  historyCacheKey,
+  isFresh,
+  isUsableEntry,
+  type HistoryCacheEntry,
+} from "./history-cache";
+import {
   computeKpis,
   fromRollups,
   hasAnyData,
@@ -30,6 +36,8 @@ import {
 const MEALS_PAGE = 5;
 const MEALS_EXPANDED_PAGE = 20;
 
+type LoadOptions = { readonly force?: boolean };
+
 type HistoryState = {
   readonly range: HistoryRange;
   readonly anchor: string;
@@ -45,10 +53,19 @@ type HistoryState = {
   readonly meals: readonly Meal[];
   readonly mealsCursor: string | null;
   readonly mealsExpanded: boolean;
+  /** Epoch ms of the last successful summary fetch (any window). */
+  readonly lastSuccessfulFetchAt: number | null;
+  /** Epoch ms of the last successful recent-meals fetch. */
+  readonly mealsFetchedAt: number | null;
+  /** In-memory API cache keyed by `range|anchor`; entries live for HISTORY_TTL_MS. */
+  readonly cacheByKey: Readonly<Record<string, HistoryCacheEntry>>;
   readonly setRange: (range: HistoryRange) => Promise<void>;
   readonly shift: (dir: -1 | 1) => Promise<void>;
-  readonly load: () => Promise<void>;
-  readonly loadMeals: () => Promise<void>;
+  /** `force` skips the 1h TTL (pull-to-refresh). */
+  readonly load: (opts?: LoadOptions) => Promise<void>;
+  readonly loadMeals: (opts?: LoadOptions) => Promise<void>;
+  /** Drop cached API data so the next load hits the network (e.g. after logging a meal). */
+  readonly invalidate: () => void;
   readonly expandMeals: () => Promise<void>;
 };
 
@@ -83,6 +100,11 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   meals: [],
   mealsCursor: null,
   mealsExpanded: false,
+  lastSuccessfulFetchAt: null,
+  mealsFetchedAt: null,
+  cacheByKey: {},
+
+  invalidate: () => set({ cacheByKey: {}, lastSuccessfulFetchAt: null, mealsFetchedAt: null }),
 
   setRange: async (range) => {
     if (range === get().range) return;
@@ -97,10 +119,28 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     await get().load();
   },
 
-  load: async () => {
+  load: async (opts) => {
     const seq = ++requestSeq;
     const { range, anchor } = get();
     const w = historyWindow(range, anchor);
+    const key = historyCacheKey(range, anchor);
+
+    // 0) TTL gate: fresh data for this exact range + anchor → no network.
+    const entry = get().cacheByKey[key];
+    if (!opts?.force && isUsableEntry(entry)) {
+      set({
+        ...derive(range, anchor, entry.days, entry.workouts),
+        source: "live",
+        loading: false,
+        error: null,
+      });
+      logger.info("history.cache.hit", { key, ageMs: Date.now() - entry.fetchedAt });
+      return;
+    }
+    logger.info("history.cache.miss", {
+      key,
+      reason: opts?.force ? "force" : entry ? "stale" : "empty",
+    });
     set({ loading: true, error: null });
 
     // 1) Instant paint from the SQLite rollup cache.
@@ -124,7 +164,14 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       ]);
       if (seq !== requestSeq) return;
       const days = mergeSummaries(w, nutrition, workouts);
-      set({ ...derive(range, anchor, days, workouts), source: "live", loading: false });
+      const fetchedAt = Date.now();
+      set({
+        ...derive(range, anchor, days, workouts),
+        source: "live",
+        loading: false,
+        lastSuccessfulFetchAt: fetchedAt,
+        cacheByKey: { ...get().cacheByKey, [key]: { days, workouts, fetchedAt } },
+      });
       void upsertRollupDays(toRollups(days)).catch((err: unknown) =>
         logger.warn("history.cache.write", { message: errorMessage(err) }),
       );
@@ -139,10 +186,20 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }
   },
 
-  loadMeals: async () => {
+  loadMeals: async (opts) => {
+    const { mealsFetchedAt, meals } = get();
+    if (!opts?.force && meals.length > 0 && isFresh(mealsFetchedAt)) {
+      logger.info("history.meals.cache.hit", { ageMs: Date.now() - (mealsFetchedAt ?? 0) });
+      return;
+    }
     try {
       const page = await listMealsApi(null, MEALS_PAGE);
-      set({ meals: page.items, mealsCursor: page.nextCursor, mealsExpanded: false });
+      set({
+        meals: page.items,
+        mealsCursor: page.nextCursor,
+        mealsExpanded: false,
+        mealsFetchedAt: Date.now(),
+      });
     } catch (err) {
       logger.warn("history.meals", { message: errorMessage(err) });
     }
@@ -151,7 +208,12 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   expandMeals: async () => {
     try {
       const page = await listMealsApi(null, MEALS_EXPANDED_PAGE);
-      set({ meals: page.items, mealsCursor: page.nextCursor, mealsExpanded: true });
+      set({
+        meals: page.items,
+        mealsCursor: page.nextCursor,
+        mealsExpanded: true,
+        mealsFetchedAt: Date.now(),
+      });
     } catch (err) {
       logger.warn("history.meals", { message: errorMessage(err) });
     }

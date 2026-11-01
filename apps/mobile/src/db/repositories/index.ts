@@ -1,5 +1,6 @@
 export {
   saveOnboarding,
+  markOnboardingComplete,
   getProfile,
   setLocalTrainerPersona,
   setLocalTrainingLocation,

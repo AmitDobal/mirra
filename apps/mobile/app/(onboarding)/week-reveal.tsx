@@ -16,8 +16,14 @@ import {
   splitTitleFromWorkouts,
 } from "@/features/onboarding/components/WeekRevealParts";
 import { loadWeekPlanFromDb } from "@/features/onboarding/services/plan-persist";
+import {
+  dayTag,
+  fromApiPlan,
+  goalLabel,
+} from "@/features/onboarding/services/week-reveal-map";
+import { handleWeekRevealStart } from "@/features/onboarding/services/week-reveal-nav";
 import type { OnboardingWeekPlan } from "@/features/onboarding/types";
-import { getCurrentPlan, type CurrentPlan, type PlanWorkout } from "@/lib/api";
+import { getCurrentPlan } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
 import { color } from "@/theme/tokens";
 import { Button } from "@/ui";
@@ -29,71 +35,6 @@ const WORKOUT_IMGS = [
   s12WeekReveal.barbellBentOverRow,
   s12WeekReveal.barbellBackSquat,
 ] as const;
-
-const goalLabel = (goal: string | null) => {
-  const map: Record<string, string> = {
-    lose_fat: "Lose fat",
-    build_muscle: "Build muscle",
-    recomp: "Recomp",
-    consistent: "Get consistent",
-    performance: "Performance",
-  };
-  return goal ? (map[goal] ?? "Build muscle") : "Build muscle";
-};
-
-const dayTag = (kind: string, hasWorkout: boolean) => {
-  if (kind === "lift" || hasWorkout) return "Lift";
-  if (kind === "fuel") return "Fuel";
-  return "Rest";
-};
-
-const toOnboardingWorkout = (
-  w: PlanWorkout,
-): OnboardingWeekPlan["workouts"][number] => ({
-  id: w.id,
-  title: w.title,
-  durationMin: w.durationMin,
-  focus: w.focus,
-  exercises: w.exercises.map((e) => ({
-    id: e.id,
-    name: e.name,
-    cue: e.cue,
-    targetSets: e.targetSets,
-    targetReps: e.targetReps,
-    restSec: e.restSec,
-  })),
-});
-
-const fromApiPlan = (raw: CurrentPlan): OnboardingWeekPlan => {
-  const workouts = raw.days
-    .map((d) => d.workout)
-    .filter((w): w is NonNullable<typeof w> => w != null)
-    .map(toOnboardingWorkout);
-  const seen = new Set<string>();
-  const unique = workouts.filter((w) => {
-    if (seen.has(w.id)) return false;
-    seen.add(w.id);
-    return true;
-  });
-  const summary = raw.summary as OnboardingWeekPlan["summary"] | undefined;
-  return {
-    id: raw.id,
-    version: raw.version,
-    status: raw.status,
-    weekStart: raw.weekStart,
-    summary,
-    days: raw.days.map((d) => ({
-      id: d.id,
-      dayIndex: d.dayIndex,
-      date: d.date,
-      kind: d.kind,
-      label: d.label,
-      workout: d.workout ? toOnboardingWorkout(d.workout) : null,
-    })),
-    workouts: unique,
-    source: "api",
-  };
-};
 
 /** S12 — Stitch week reveal + expandable exercises. */
 const WeekRevealScreen = () => {
@@ -179,53 +120,51 @@ const WeekRevealScreen = () => {
           lift: d.tag === "Lift",
         }));
 
-  const workouts =
-    plan?.workouts.length
-      ? plan.workouts.map((w, i) => {
-          const day = plan.days.find((d) => d.workout?.id === w.id);
-          const dayNum = day ? day.dayIndex + 1 : i + 1;
-          const focusRaw = w.focus?.trim() || "";
-          const fromTitle = w.title
-            .replace(/\s+(day|workout|strength|session)$/i, "")
-            .trim();
-          const dayFocus =
-            focusRaw && focusRaw.toLowerCase() !== "session"
-              ? focusRaw
-              : fromTitle || "Session";
-          // Stitch-style second chip: keep short; avoid duplicating the title
-          const focusTag =
-            focusRaw && focusRaw.toLowerCase() !== "session"
-              ? focusRaw
-              : fromTitle.split(/\s+/).slice(0, 2).join(" ") || "Training";
-          return {
-            id: w.id,
-            name: w.title,
-            mins: `${w.durationMin} min`,
-            focusTag,
-            exerciseCount: w.exercises.length,
-            dayLabel: `Day ${String(dayNum).padStart(2, "0")} · ${dayFocus.toUpperCase()}`,
-            exercises: w.exercises,
-          };
-        })
-      : c.workouts.map((w, i) => ({
-          id: `fallback-${i}`,
-          name: w.name,
-          mins: w.mins,
-          focusTag: w.meta.split("·")[0]?.trim() || "Session",
-          exerciseCount: Number.parseInt(w.meta, 10) || 0,
-          dayLabel: `Day ${String(i + 1).padStart(2, "0")}`,
-          exercises: [] as {
-            name: string;
-            targetSets: number;
-            targetReps: string;
-          }[],
-        }));
+  const workouts = plan?.workouts.length
+    ? plan.workouts.map((w, i) => {
+        const day = plan.days.find((d) => d.workout?.id === w.id);
+        const dayNum = day ? day.dayIndex + 1 : i + 1;
+        const focusRaw = w.focus?.trim() || "";
+        const fromTitle = w.title
+          .replace(/\s+(day|workout|strength|session)$/i, "")
+          .trim();
+        const dayFocus =
+          focusRaw && focusRaw.toLowerCase() !== "session"
+            ? focusRaw
+            : fromTitle || "Session";
+        const focusTag =
+          focusRaw && focusRaw.toLowerCase() !== "session"
+            ? focusRaw
+            : fromTitle.split(/\s+/).slice(0, 2).join(" ") || "Training";
+        return {
+          id: w.id,
+          name: w.title,
+          mins: `${w.durationMin} min`,
+          focusTag,
+          exerciseCount: w.exercises.length,
+          dayLabel: `Day ${String(dayNum).padStart(2, "0")} · ${dayFocus.toUpperCase()}`,
+          exercises: w.exercises,
+        };
+      })
+    : c.workouts.map((w, i) => ({
+        id: `fallback-${i}`,
+        name: w.name,
+        mins: w.mins,
+        focusTag: w.meta.split("·")[0]?.trim() || "Session",
+        exerciseCount: Number.parseInt(w.meta, 10) || 0,
+        dayLabel: `Day ${String(i + 1).padStart(2, "0")}`,
+        exercises: [] as {
+          name: string;
+          targetSets: number;
+          targetReps: string;
+        }[],
+      }));
 
   return (
     <OnboardingShell
       footer={
         <>
-          <Button label={c.start} onPress={() => router.push("/(onboarding)/paywall")} />
+          <Button label={c.start} onPress={handleWeekRevealStart} />
           <Button
             label={c.edit}
             variant="ghost"

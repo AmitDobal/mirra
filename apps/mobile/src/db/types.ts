@@ -64,6 +64,7 @@ export type LocalProfile = {
   readonly goalWeightKg: number | null;
   readonly pace: string | null;
   readonly timezone: string;
+  readonly planGeneratedAt: number | null;
   readonly onboardingCompletedAt: number | null;
   readonly preferences: {
     readonly primaryGoal: string;

@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { ChevronLeft, Mail, Zap } from "lucide-react-native";
+import { useEffect, useRef } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
@@ -7,8 +8,11 @@ import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { AppleGlyph } from "@/features/onboarding/components/AuthGlyphs";
 import { AuthLegalLine } from "@/features/onboarding/components/AuthLegalLine";
 import { AuthPlanCard } from "@/features/onboarding/components/AuthPlanCard";
+import { completeOnboardingFunnel } from "@/features/onboarding/services/complete-funnel";
+import { syncPersonalizationAfterAuth } from "@/features/onboarding/services/secure-prefs";
 import {
   getBearerToken,
+  requireSignedInUser,
   setDevSession,
   setGoogleSession,
   takePostAuthIntent,
@@ -23,13 +27,13 @@ import { sx } from "@/theme/sx";
 
 const devAuthAllowed = __DEV__ || env.allowDevAuth;
 
-/** S14 — Auth. Google for Pro path; Dev Tester = free tabs only (day-test). */
+/** S14 — Soft Google save-plan → paywall. Dev Tester → skipable paywall. */
 const AuthScreen = () => {
   const c = onboardingCopy.auth;
-  const markCompleted = useOnboardingStore((s) => s.markCompleted);
   const goal = useOnboardingStore((s) => s.goal);
   const trainingDays = useOnboardingStore((s) => s.trainingDays);
   const kcalTarget = useOnboardingStore((s) => s.weekPlan?.summary?.kcalTarget);
+  const autoRan = useRef(false);
 
   const goalLabel = onboardingCopy.goal.options.find((o) => o.id === goal)?.label;
   const planTitle = goalLabel
@@ -42,26 +46,33 @@ const AuthScreen = () => {
   };
 
   const goTabsFree = () => {
-    markCompleted();
-    router.replace("/(tabs)/today");
+    void completeOnboardingFunnel().then(() => {
+      router.replace("/(tabs)/today");
+    });
   };
 
-  /** Google may return to paywall; Dev Tester never claims Pro. */
+  /** Google → paywall when intent set; Dev → paywall (soft-skippable). */
   const finishAfterAuth = (kind: "google" | "dev") => {
     const intent = takePostAuthIntent();
-    if (kind === "google" && intent === "paywall") {
+    if (kind === "dev" || intent === "paywall") {
       router.replace("/(onboarding)/paywall");
       return;
     }
     goTabsFree();
   };
 
+  useEffect(() => {
+    if (autoRan.current) return;
+    if (!requireSignedInUser()) return;
+    autoRan.current = true;
+    finishAfterAuth("google");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount when Google session exists
+  }, []);
+
   const handleDevTester = () => {
     void (async () => {
       await setDevSession();
-      // Consume paywall intent so QA lands on free tabs, not purchase.
-      takePostAuthIntent();
-      goTabsFree();
+      finishAfterAuth("dev");
     })();
   };
 
@@ -85,6 +96,7 @@ const AuthScreen = () => {
       } catch {
         /* stub/RC login optional; session still valid */
       }
+      await syncPersonalizationAfterAuth();
       logger.info("auth.google.session_ok");
       finishAfterAuth("google");
     })();

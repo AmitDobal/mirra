@@ -101,7 +101,7 @@ const tryApiGenerate = async (
 
 /**
  * PUT onboarding → POST generate → poll; local heuristic fallback.
- * Persists profile via `saveOnboarding` and plan via `savePlan`.
+ * Stamps `plan_generated_at` only — funnel complete waits for auth/paywall.
  */
 export const runOnboardingGenerate = async (
   answers: OnboardingAnswers,

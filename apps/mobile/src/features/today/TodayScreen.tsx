@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { CapsLabel } from "@/ui/CapsLabel";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -13,12 +13,13 @@ import { useWorkoutStore } from "@/features/workout/workout-store";
 import { type DailyGoal, type NextAction } from "@/lib/api";
 import { kcalStatus } from "@/lib/accountability";
 import { useAttendanceStore } from "./attendance-store";
+import { adjustedMinutes, useTodayAdjustStore } from "@/features/checkin/adjust-store";
 import { openCheckIn } from "@/features/checkin/open-check-in";
 import { GoalChecklist } from "./GoalChecklist";
 import { HeroNextCard } from "./HeroNextCard";
-import { KcalDonut } from "./KcalDonut";
 import { MacroStrip } from "./MacroStrip";
-import { RoutineCard } from "./RoutineCard";
+import { ExerciseTeaserRow } from "./ExerciseTeaserRow";
+import { TwinTargetCards } from "./TwinTargetCards";
 import { FuelPhotoRow } from "./FuelPhotoRow";
 import { TodayActionsPending } from "./TodayActionsPending";
 import { TodayBrief } from "./TodayBrief";
@@ -28,7 +29,6 @@ import { useTodayActions } from "./use-today-actions";
 import { useVoiceCueOnFocus } from "./use-voice-cue";
 import { useTodayInsights } from "./use-today-insights";
 import { useRoutineEdit } from "./use-routine-edit";
-import { CheckInRow } from "./CheckInRow";
 import { TodayHeader } from "./TodayHeader";
 import { TodayHeroCard } from "./TodayHeroCard";
 import { WeeklyMirrorChip } from "./WeeklyMirrorChip";
@@ -37,8 +37,8 @@ import { useTodayStore } from "./today-store";
 import { sx } from "@/theme/sx";
 
 /**
- * S15 Today home — local polish (brief / hero / goals / routine edit / voice)
- * plus main attendance (PresenceDot week strip + DayHistorySheet).
+ * S15c Today home, Focus-first: compact week → Focus hero → twin targets → routine teaser
+ * (→ Exercise tab) → fuel row → weekly mirror. Check-in is a small header pill when due.
  */
 export const TodayScreen = () => {
   const workout = useTodayStore((s) => s.workout);
@@ -54,12 +54,13 @@ export const TodayScreen = () => {
   const setNotice = useTodayStore((s) => s.setNotice);
   const meals = useFuelStore((s) => s.meals);
   const target = useFuelStore((s) => s.target);
+  const proteinTarget = useFuelStore((s) => s.proteinTarget);
+  const adjustment = useTodayAdjustStore((s) => s.adjustment);
   const hydrateFuel = useFuelStore((s) => s.hydrate);
   const hydratePlan = useMealPlanStore((s) => s.hydrate);
   const ensureAfterOnboarding = useMealPlanStore((s) => s.ensureAfterOnboarding);
   const hasOpenPlannedMeal = useMealPlanStore(selectHasOpenPlannedMeal);
   const startWorkout = useWorkoutStore((s) => s.start);
-  const openExercise = useWorkoutStore((s) => s.openExercise);
   const { actions, failed: actionsFailed, refetch: refetchActions } = useTodayActions();
   useVoiceCueOnFocus();
   const { insights, load: loadInsights } = useTodayInsights();
@@ -111,25 +112,14 @@ export const TodayScreen = () => {
   const title = workout?.title ?? "Rest / recovery";
   const activeDay = weekDays[dayIndex];
 
-  const monthLabel = useMemo(() => {
-    const iso = activeDay?.date ?? new Date().toISOString().slice(0, 10);
-    const d = new Date(`${iso}T12:00:00`);
-    return d.toLocaleString(undefined, { month: "long", year: "numeric" });
-  }, [activeDay?.date]);
-
-  const weekLabel = useMemo(() => {
-    const label = activeDay?.label ?? activeDay?.kind;
-    return label ? `Week · ${label}` : "This week";
-  }, [activeDay?.kind, activeDay?.label]);
+  const minutes = adjustedMinutes(adjustment, activeDay?.date ?? todayDate, workout?.durationMin ?? 0);
+  const totalSets = (workout?.exercises ?? []).reduce((n, e) => n + e.targetSets, 0);
 
   const routineEdit = useRoutineEdit(workout, hydrate, setNotice);
 
   const handleStart = () => {
     void startWorkout(workout).then(() => router.push("/workout/live"));
   };
-
-  const handleOpenExercise = (exerciseId: string) =>
-    void openExercise(workout, exerciseId).then(() => router.push("/workout/live"));
 
   const handleOpenRoute = (ctaRoute: string) => {
     const target = resolveGoalRoute(ctaRoute, hasOpenPlannedMeal);
@@ -141,7 +131,11 @@ export const TodayScreen = () => {
 
   return (
     <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
-      <TodayHeader onBell={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")} />
+      <TodayHeader
+        onBell={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")}
+        checkInDue={checkInDue}
+        onCheckIn={openCheckIn}
+      />
 
       {notice ? (
         <Pressable
@@ -156,8 +150,6 @@ export const TodayScreen = () => {
       <WeekStripCard
         weekDays={weekDays}
         dayIndex={dayIndex}
-        weekLabel={weekLabel}
-        monthLabel={monthLabel}
         attendance={attendance}
         today={todayDate}
         onPrev={() => shiftWeek(-1)}
@@ -166,58 +158,28 @@ export const TodayScreen = () => {
       />
       {dayHistorySheet}
 
-      <CheckInRow due={checkInDue} onPress={openCheckIn} />
-      <WeeklyMirrorChip todayDate={todayDate} />
-
-      <TodayHeroCard title={title} focus={workout?.focus ?? null} />
-
-      <View style={sx("mb-space-md flex-row gap-space-sm")}>
-        <View style={sx("min-h-[148px] flex-1 justify-between rounded-lg bg-secondary p-space-md")}>
-          <CapsLabel tone="dark">Fuel target</CapsLabel>
-          <View>
-            <Text style={sx("font-display text-display-metric text-on-secondary-fixed")}>
-              {fuelTarget || "—"}
-            </Text>
-            <Text style={sx("font-body text-body-sm text-on-secondary-fixed")}>kcal / day</Text>
-          </View>
-        </View>
-        <View
-          style={sx(
-            "min-h-[148px] flex-1 justify-between rounded-lg bg-surface-container-high p-space-md",
-          )}
-        >
-          <View style={sx("flex-row items-center justify-between")}>
-            <CapsLabel>Logged</CapsLabel>
-            <View style={sx("rounded-full bg-surface-container-highest px-2 py-0.5")}>
-              <CapsLabel tone="lime">Target</CapsLabel>
-            </View>
-          </View>
-          <View style={sx("flex-row items-center gap-space-sm")}>
-            <KcalDonut pct={kcal.pct} />
-            <View>
-              <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>
-                {logged}
-              </Text>
-              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
-                Active kcal
-              </Text>
-            </View>
-          </View>
-          <View style={sx("flex-row items-center gap-2")}>
-            <View style={sx("h-2 w-2 rounded-full bg-primary-fixed")} />
-            <CapsLabel>Calorie target</CapsLabel>
-          </View>
-        </View>
-      </View>
-
-      <RoutineCard
-        workout={workout}
+      <TodayHeroCard
+        title={title}
+        focus={workout?.focus ?? (workout ? `${workout.exercises.length} exercises` : null)}
+        minutes={minutes}
+        hasWorkout={Boolean(workout)}
         onStart={handleStart}
         onSwap={swapDay}
-        onOpenExercise={handleOpenExercise}
-        onAskCoach={() => router.push("/(tabs)/plan-chat")}
+      />
+
+      <TwinTargetCards
+        focus={workout?.focus ?? null}
+        minutes={minutes}
+        totalSets={totalSets}
+        workoutDone={totalSets > 0 && activeDay ? attendance[activeDay.date] === "active" : false}
+        fuelTarget={fuelTarget}
+        proteinTarget={proteinTarget}
+        fuelPct={kcal.pct}
+      />
+
+      <ExerciseTeaserRow
+        exercises={workout?.exercises ?? []}
         onLongPressExercise={routineEdit.openActions}
-        onAddExercise={routineEdit.openAdd}
       />
       {routineEdit.sheet}
 
@@ -229,6 +191,10 @@ export const TodayScreen = () => {
         overBy={kcal.overBy}
         onLog={() => router.push("/(tabs)/log-meal")}
       />
+
+      <View style={sx("mt-space-sm")}>
+        <WeeklyMirrorChip todayDate={todayDate} />
+      </View>
 
       {actions ? (
         <View style={sx("mt-space-md gap-space-sm")}>

@@ -2,7 +2,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 
 import type { AttendanceState, PlanDay } from "@/lib/api";
-import { CapsLabel } from "@/ui/CapsLabel";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 
@@ -42,8 +41,6 @@ const dayLabel = (
 type Props = {
   readonly weekDays: readonly PlanDay[];
   readonly dayIndex: number;
-  readonly weekLabel: string;
-  readonly monthLabel: string;
   /** Presence by date from `attendance-store`; dots fade in once loaded. */
   readonly attendance?: Readonly<Record<string, AttendanceState>>;
   /** Local today (`YYYY-MM-DD`); later days never get a dot. */
@@ -53,12 +50,10 @@ type Props = {
   readonly onSelectDay: (index: number) => void;
 };
 
-/** S15 Calendar & Week Strip — month header, chevrons, 7-day rail. */
+/** S15c compact week strip — one slim row (chevrons + 7 days), no month header. */
 export const WeekStripCard = ({
   weekDays,
   dayIndex,
-  weekLabel,
-  monthLabel,
   attendance = {},
   today = new Date().toISOString().slice(0, 10),
   onPrev,
@@ -84,57 +79,27 @@ export const WeekStripCard = ({
 
   return (
     <View
-      style={sx("mb-space-md rounded-lg bg-surface-container-low p-space-md")}
+      style={sx(
+        "mb-space-sm flex-row items-center rounded-full bg-surface-container-low px-1 py-1",
+      )}
     >
-      <View style={sx("mb-space-sm flex-row items-center justify-between")}>
-        <View>
-          <CapsLabel>{weekLabel}</CapsLabel>
-          <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>
-            {monthLabel}
-          </Text>
-        </View>
-        <View
-          style={sx(
-            "flex-row gap-1 rounded-full bg-surface-container-high p-1",
-          )}
-        >
-          <TodayIconBtn
-            label="Previous day"
-            Icon={ChevronLeft}
-            small
-            onPress={onPrev}
-          />
-          <TodayIconBtn
-            label="Next day"
-            Icon={ChevronRight}
-            small
-            onPress={onNext}
-          />
-        </View>
-      </View>
-      <View style={sx("flex-row justify-between")}>
+      <TodayIconBtn label="Previous day" Icon={ChevronLeft} small onPress={onPrev} />
+      <View style={sx("flex-1 flex-row justify-between")}>
         {strip.map((day) => {
           const presence = presenceFor(day.date, today, attendance);
           return (
             <Pressable
               key={`${day.dayNum}-${day.index}`}
               accessibilityRole="button"
-              accessibilityLabel={dayLabel(
-                day.letter,
-                day.dayNum,
-                day.date,
-                presence,
-              )}
+              accessibilityLabel={dayLabel(day.letter, day.dayNum, day.date, presence)}
               accessibilityState={{ selected: day.active }}
               onPress={() => onSelectDay(day.index)}
-              style={sx("items-center gap-1.5 py-1")}
+              style={sx("items-center gap-0.5 py-0.5")}
             >
               <Text
                 style={sx(
                   `font-label text-label-caps ${
-                    day.active
-                      ? "text-primary-fixed"
-                      : "text-on-surface-variant"
+                    day.active ? "text-primary-fixed" : "text-on-surface-variant"
                   }`,
                 )}
               >
@@ -143,7 +108,7 @@ export const WeekStripCard = ({
               <View
                 style={[
                   sx(
-                    `h-9 w-9 items-center justify-center rounded-full ${
+                    `h-8 w-8 items-center justify-center rounded-full ${
                       day.active ? "bg-primary-fixed" : ""
                     }`,
                   ),
@@ -159,7 +124,7 @@ export const WeekStripCard = ({
               >
                 <Text
                   style={sx(
-                    `font-headline-sm text-headline-sm ${
+                    `font-headline-sm text-label-md ${
                       day.active ? "text-on-primary-fixed" : "text-on-surface"
                     }`,
                   )}
@@ -172,6 +137,7 @@ export const WeekStripCard = ({
           );
         })}
       </View>
+      <TodayIconBtn label="Next day" Icon={ChevronRight} small onPress={onNext} />
     </View>
   );
 };

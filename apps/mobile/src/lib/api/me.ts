@@ -92,3 +92,7 @@ export const patchTrainingLocation = (trainingLocation: "gym" | "home" | "hotel"
     "/v1/me/preferences",
     { method: "PATCH", body: { trainingLocation } },
   );
+
+/** DELETE /v1/me — permanently removes the signed-in account + server data (D1, R2). */
+export const deleteMe = (): Promise<{ ok: true }> =>
+  apiFetch<{ ok: true }>("/v1/me", { method: "DELETE" });

@@ -1,5 +1,11 @@
 # Handoff
 
+## 2026-11-01 — Day-test runbook Live → 01a19599
+
+**Done:** `docs/09-runbooks/ios-day-test.md` Live table now points at post-#30 EAS update (was stale `01a1958d`). Smoke path `/tmp/mirra-qa/google-oauth-proxy-fix/`.
+**Manifest:** https://u.expo.dev/update/01a19599-0637-7472-8d78-8890a33bfb83
+**Dashboard:** https://expo.dev/accounts/amitdobal141/projects/mirra/updates/0019d75e-6dfc-468e-8c1e-2f3ff1d1d34d
+
 ## 2026-11-01 — Google OAuth Expo Go proxy PASS
 
 **Done:** Expo Go uses Web client + `auth.expo.io` proxy (no `host.exp.Exponent` iOS client). GCP branding App name → **Mirra** (was kalshi). EAS preview IOS env deleted. Merged #30.

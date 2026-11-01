@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { Image, StyleSheet, Text, View } from "react-native";
 
-import { s02WelcomeHook } from "../../assets/stitch";
+import { s02WelcomeHookV2 } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell } from "@/features/onboarding";
 import { finishAfterAuth } from "@/features/onboarding/services/post-auth-flow";
@@ -9,7 +9,7 @@ import { hasSession, setPostAuthIntent } from "@/lib/auth";
 import { color, font, radius, space, type } from "@/theme/tokens";
 import { Button, Card } from "@/ui";
 
-/** S02 — Mirror→Week hook. */
+/** S02 — Photo-forward welcome hook (Stitch v2). */
 const WelcomeScreen = () => {
   const c = onboardingCopy.welcome;
 
@@ -37,12 +37,28 @@ const WelcomeScreen = () => {
       }
     >
       <View style={styles.body}>
-        <Image
-          source={s02WelcomeHook.heroRunnerSilhouette}
-          accessibilityLabel="Athlete silhouette"
-          style={styles.hero}
-          resizeMode="cover"
-        />
+        <View style={styles.heroCollage}>
+          <Image
+            source={s02WelcomeHookV2.heroRunnerSilhouette}
+            accessibilityLabel="Athlete silhouette"
+            style={styles.heroMain}
+            resizeMode="cover"
+          />
+          <View style={styles.heroStack}>
+            <Image
+              source={s02WelcomeHookV2.portraitWomanAthlete}
+              accessibilityLabel="Athlete portrait"
+              style={styles.heroSide}
+              resizeMode="cover"
+            />
+            <Image
+              source={s02WelcomeHookV2.portraitMaleCrossfit}
+              accessibilityLabel="Athlete portrait"
+              style={styles.heroSide}
+              resizeMode="cover"
+            />
+          </View>
+        </View>
         <View style={styles.topRow}>
           <View style={styles.eyebrow}>
             <Text style={styles.eyebrowText}>{c.eyebrow}</Text>
@@ -57,21 +73,6 @@ const WelcomeScreen = () => {
         <Text style={styles.title}>{c.titleLine1}</Text>
         <Text style={styles.title}>{c.titleLine2}</Text>
         <Text style={styles.sub}>{c.sub}</Text>
-        <View style={styles.portraits}>
-          <Image
-            source={s02WelcomeHook.portraitWomanAthlete}
-            accessibilityLabel="Athlete portrait"
-            style={styles.portrait}
-            resizeMode="cover"
-          />
-          <Image
-            source={s02WelcomeHook.portraitMaleCrossfit}
-            accessibilityLabel="Athlete portrait"
-            style={styles.portrait}
-            resizeMode="cover"
-          />
-        </View>
-        <Text style={styles.motto}>{c.motto}</Text>
         <Card tone="lavender" style={styles.card}>
           {c.steps.map((step, index) => (
             <View key={step.num} style={styles.stepRow}>
@@ -87,7 +88,26 @@ const WelcomeScreen = () => {
               </View>
             </View>
           ))}
+          <Text style={styles.mottoInCard}>{c.motto}</Text>
         </Card>
+        <View style={styles.socialRow}>
+          <View style={styles.avatarStack}>
+            <Image
+              source={s02WelcomeHookV2.portraitWomanAthlete}
+              accessibilityLabel=""
+              style={[styles.socialAvatar, { zIndex: 2 }]}
+              resizeMode="cover"
+            />
+            <Image
+              source={s02WelcomeHookV2.portraitMaleCrossfit}
+              accessibilityLabel=""
+              style={[styles.socialAvatar, styles.socialAvatarOverlap, { zIndex: 1 }]}
+              resizeMode="cover"
+            />
+          </View>
+          <Text style={styles.socialCopy}>{c.socialProof}</Text>
+          <Text style={styles.rating}>{c.rating}</Text>
+        </View>
       </View>
     </OnboardingShell>
   );
@@ -95,13 +115,26 @@ const WelcomeScreen = () => {
 
 const styles = StyleSheet.create({
   body: {
-    paddingTop: space.xl,
+    paddingTop: space.sm,
   },
-  hero: {
-    width: "100%",
-    height: 180,
-    borderRadius: radius.DEFAULT,
+  heroCollage: {
+    flexDirection: "row",
+    gap: space.sm,
     marginBottom: space.md,
+    height: 168,
+  },
+  heroMain: {
+    flex: 1.35,
+    height: "100%",
+    borderRadius: radius.DEFAULT,
+  },
+  heroStack: {
+    flex: 1,
+    gap: space.sm,
+  },
+  heroSide: {
+    flex: 1,
+    borderRadius: 12,
   },
   topRow: {
     flexDirection: "row",
@@ -172,16 +205,6 @@ const styles = StyleSheet.create({
     lineHeight: type.bodyMd.line,
     color: color.onSurfaceVariant,
   },
-  portraits: {
-    marginTop: space.md,
-    flexDirection: "row",
-    gap: space.sm,
-  },
-  portrait: {
-    flex: 1,
-    height: 96,
-    borderRadius: 12,
-  },
   card: {
     marginTop: space.md,
     gap: 0,
@@ -244,14 +267,50 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     color: color.secondary,
   },
-  motto: {
+  mottoInCard: {
+    marginTop: space.sm,
+    paddingTop: space.sm,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(33,20,58,0.12)",
+    fontFamily: font.body,
+    fontSize: 12,
+    lineHeight: 16,
+    fontStyle: "italic",
+    color: color.onSecondaryContainer,
+  },
+  socialRow: {
     marginTop: space.md,
-    textAlign: "center",
-    fontFamily: font.label,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+  },
+  avatarStack: {
+    flexDirection: "row",
+    width: 40,
+  },
+  socialAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: color.surface,
+  },
+  socialAvatarOverlap: {
+    marginLeft: -8,
+  },
+  socialCopy: {
+    flex: 1,
+    fontFamily: font.body,
+    fontSize: 12,
+    lineHeight: 16,
+    color: color.onSurfaceVariant,
+  },
+  rating: {
+    fontFamily: font.labelBold,
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.4,
-    color: color.onSurfaceVariant,
+    color: color.primaryFixed,
   },
 });
 

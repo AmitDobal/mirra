@@ -2,7 +2,7 @@
 
 ## Desired product rules
 
-1. **No app tabs** until all of: **session** (Google or equivalent) · **onboarding funnel complete** · **entitled** (trial or paid). Soft-skip paywall is **dev-only**.
+1. **No app tabs** until all of: **session** (Google or equivalent) · **onboarding funnel complete** · **entitled** (trial or paid). Hard paywall: no **Continue without Pro** CTA. Day-test bypass = **Dev Tester** on auth only (`finishAfterAuth("dev")`).
 2. **Login with no prior account** (e.g. “I already have an account” → Google): create account, then run **full onboarding quiz → generate → week reveal → paywall**. Do **not** dump into Today.
 3. **Already signed in** during onboarding: **skip signup/auth screen**; advance to next incomplete step (generate / week reveal / paywall).
 4. **Server truth**: cold start and tab guards must consult `GET /v1/me` (`onboardingCompleted`, entitlement), not only local SQLite flags.
@@ -30,7 +30,7 @@
 - New or extend `finishAfterAuth`: branch new vs returning via `/v1/me` (no `onboardingCompleted` / no prefs → intent `onboarding`; else paywall or tabs).
 - Tab layout redirect guard (session + onboarded + entitled).
 - `week-reveal-nav` / `auth.tsx`: skip if session.
-- `canSoftSkipPaywall`: `__DEV__` only.
+- Paywall UI: never show soft-skip; X → auth (no session) or blocked alert (session). Dev soft-skip mark only via Dev Tester.
 - Exercise: ensure hydrate from `/v1/plans/current` after funnel; surface week days from plan; fix UTC `isToday` if broken.
 
 ## Tickets

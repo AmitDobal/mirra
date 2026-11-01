@@ -87,6 +87,7 @@ const BodyStatsScreen = () => {
       footer={
         <Button
           label={c.continue}
+          disabled={sex == null}
           onPress={() => router.push("/(onboarding)/target")}
         />
       }

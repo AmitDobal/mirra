@@ -2,9 +2,9 @@ import { Heart, SlidersHorizontal, Zap } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 
-import { s11GeneratingWeek } from "../../../../assets/stitch";
 import { color, font, radius } from "@/theme/tokens";
 
+import { useOnboardingImagery } from "../imagery";
 import { GeneratingShimmerBar } from "./GeneratingShimmerBar";
 
 type SplitCard = {
@@ -21,10 +21,14 @@ type SplitCard = {
 
 const ICON = 15;
 
-const CARDS: readonly SplitCard[] = [
+const buildCards = (images: {
+  athleteSquatBw: number;
+  sprinterKneelingBw: number;
+  athleteBarbellBw: number;
+}): readonly SplitCard[] => [
   {
     key: "lead",
-    image: s11GeneratingWeek.athleteSquatBw,
+    image: images.athleteSquatBw,
     imageOpacity: 0.9,
     tint: `${color.primaryFixed}33`,
     titleBar: {
@@ -45,7 +49,7 @@ const CARDS: readonly SplitCard[] = [
   },
   {
     key: "recovery",
-    image: s11GeneratingWeek.sprinterKneelingBw,
+    image: images.sprinterKneelingBw,
     imageOpacity: 0.85,
     tint: `${color.secondary}4D`,
     titleBar: {
@@ -66,7 +70,7 @@ const CARDS: readonly SplitCard[] = [
   },
   {
     key: "hypertrophy",
-    image: s11GeneratingWeek.athleteBarbellBw,
+    image: images.athleteBarbellBw,
     imageOpacity: 0.75,
     tint: null,
     titleBar: {
@@ -142,13 +146,17 @@ const Row = ({ card }: { card: SplitCard }) => (
 );
 
 /** Three skeleton split cards with athlete cutouts + shimmer bars (Stitch S11). */
-export const GeneratingSplitCards = () => (
-  <View style={styles.stack}>
-    {CARDS.map((card) => (
-      <Row key={card.key} card={card} />
-    ))}
-  </View>
-);
+export const GeneratingSplitCards = () => {
+  const { generating } = useOnboardingImagery();
+  const cards = buildCards(generating);
+  return (
+    <View style={styles.stack}>
+      {cards.map((card) => (
+        <Row key={card.key} card={card} />
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   stack: {

@@ -5,7 +5,11 @@ export type TrainerPersonaOption = {
   readonly id: TrainerPersonaId;
   readonly name: string;
   readonly tagline: string;
-  /** Accent dot on S09B cards (hex from Stitch Kinetic). */
+  /** S09B demeanor pill (Stitch redesign). */
+  readonly demeanor: string;
+  /** One-line card subtitle under the name. */
+  readonly shortTagline: string;
+  /** Accent dot on compact chips (hex from Stitch Kinetic). */
   readonly accent: string;
   /** One-line coach sample for the voice preview strip. */
   readonly sampleLine: string;
@@ -20,6 +24,8 @@ export const TRAINER_PERSONA_OPTIONS: readonly TrainerPersonaOption[] = [
     id: "drill",
     name: "Drill Sergeant",
     tagline: "Rude, loud, relentless. Pushes your limits.",
+    demeanor: "Relentless",
+    shortTagline: "Pushes your absolute limits",
     accent: "#EF4444",
     sampleLine: "Drop and give me twenty. Now.",
     emoji: "🪖",
@@ -28,6 +34,8 @@ export const TRAINER_PERSONA_OPTIONS: readonly TrainerPersonaOption[] = [
     id: "honey",
     name: "Sweet Spot",
     tagline: "Warm, gentle, always in your corner.",
+    demeanor: "Encouraging",
+    shortTagline: "Always in your corner",
     accent: "#22C55E",
     sampleLine: "You're doing great. One more set, softly.",
     emoji: "🍯",
@@ -36,6 +44,8 @@ export const TRAINER_PERSONA_OPTIONS: readonly TrainerPersonaOption[] = [
     id: "wit",
     name: "Side-Eye",
     tagline: "Dry, sarcastic, annoyingly accurate.",
+    demeanor: "Sarcastic",
+    shortTagline: "Annoyingly accurate",
     accent: "#EAB308",
     sampleLine: "You're really resting that long? Okay.",
     emoji: "😏",
@@ -44,6 +54,8 @@ export const TRAINER_PERSONA_OPTIONS: readonly TrainerPersonaOption[] = [
     id: "spark",
     name: "Spark",
     tagline: "Playful, funny, still keeps you honest.",
+    demeanor: "High Energy",
+    shortTagline: "Laughs through the burn",
     accent: "#F97316",
     sampleLine: "Plot twist: that was the warm-up. Let's go!",
     emoji: "⚡",
@@ -52,6 +64,8 @@ export const TRAINER_PERSONA_OPTIONS: readonly TrainerPersonaOption[] = [
     id: "zen",
     name: "Steady",
     tagline: "Calm mentor. Short, grounded cues.",
+    demeanor: "Grounded",
+    shortTagline: "Calm, precision tempo",
     accent: "#3B82F6",
     sampleLine: "Breathe. Plant your feet. Move with intent.",
     emoji: "🌿",
@@ -60,6 +74,8 @@ export const TRAINER_PERSONA_OPTIONS: readonly TrainerPersonaOption[] = [
     id: "rival",
     name: "Rival",
     tagline: "Peer energy. Beat yesterday.",
+    demeanor: "Competitive",
+    shortTagline: "Beat yesterday's score",
     accent: "#A855F7",
     sampleLine: "Yesterday's you would already be finished.",
     emoji: "🏁",

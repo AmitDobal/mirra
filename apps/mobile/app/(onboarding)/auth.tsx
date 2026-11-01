@@ -18,6 +18,7 @@ import {
 } from "@/lib/auth";
 import { GoogleSignInButton } from "@/lib/auth/GoogleSignInButton";
 import { devTesterAllowed } from "@/lib/auth/dev-tester";
+import { isGoogleAuthHandoff } from "@/lib/auth/funnel-nav";
 import { logger } from "@/lib/logger";
 import { getPurchases } from "@/lib/purchases";
 import { Button } from "@/ui";
@@ -33,6 +34,8 @@ const AuthScreen = () => {
   const trainingDays = useOnboardingStore((s) => s.trainingDays);
   const kcalTarget = useOnboardingStore((s) => s.weekPlan?.summary?.kcalTarget);
   const autoRan = useRef(false);
+  /** Capture at mount so Google callback setting session does not race auto-finish. */
+  const hadSessionOnMount = useRef(hasSession());
   const paywallIntent = peekPostAuthIntent() === "paywall";
 
   const goalLabel = onboardingCopy.goal.options.find((o) => o.id === goal)?.label;
@@ -45,10 +48,14 @@ const AuthScreen = () => {
     if (router.canGoBack()) router.back();
   };
 
-  /** Session already exists (back-nav / deep link): skip auth UI, route from /v1/me. */
+  /**
+   * Session already existed on mount (skip signup / deep link): route from /v1/me.
+   * Skip when Google OAuth handoff is in flight — `onSignedIn` owns that path.
+   */
   useEffect(() => {
     if (autoRan.current) return;
-    if (!hasSession()) return;
+    if (!hadSessionOnMount.current) return;
+    if (isGoogleAuthHandoff()) return;
     autoRan.current = true;
     void finishAfterAuth("existing");
   }, []);

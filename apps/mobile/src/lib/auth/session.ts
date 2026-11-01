@@ -65,8 +65,9 @@ export const requireSignedInUser = (): boolean =>
   cachedMode === "google" && cachedUserId !== null;
 
 /**
- * Soft-skip paywall → tabs without entitlement. Dev / day-test only
- * (`devTesterAllowed`), with a session. App Store builds must trial/purchase.
+ * Whether a soft-skip *could* be allowed (dev/day-test + session).
+ * Must NOT drive a "Continue without Pro" CTA on paywall — bypass is
+ * Dev Tester on auth only (`finishAfterAuth("dev")` → `markPaywallSoftSkipped`).
  */
 export const canSoftSkipPaywall = (): boolean =>
   devTesterAllowed() && cachedUserId !== null;

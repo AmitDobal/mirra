@@ -1,7 +1,7 @@
 import { router } from "expo-router";
-import { LogOut } from "lucide-react-native";
+import { RefreshCw } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Linking, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Linking, Pressable, Text, View } from "react-native";
 
 import type { TrainerPersonaId } from "@/content/trainer-personas";
 import { getCurrentPlan, getProfile, type LocalPlan, type LocalProfile } from "@/db";
@@ -9,6 +9,7 @@ import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useOnboardingStore } from "@/features/onboarding";
 import { PersonaGrid, usePersonaStore } from "@/features/trainer";
+import { creditsPool } from "@/lib/api/credits";
 import type { MeEntitlement, MeUser } from "@/lib/api/me";
 import { clearSession } from "@/lib/auth";
 import { authClient } from "@/lib/auth/auth-client";
@@ -26,16 +27,22 @@ import { CreditsMeter } from "./CreditsMeter";
 import { connectedAccountLabels, experienceLabel } from "./profile-display";
 import { ProfileHero } from "./ProfileHero";
 import { SpeakCuesToggle } from "./SpeakCuesToggle";
-import { YouTrainingCard } from "./YouTrainingCard";
-import { Divider, Group, Row, StatusRow, ToggleRow } from "./you-settings";
+import {
+  formatCreditsRefreshed,
+  persistTrainingLocation,
+  toTrainingLocationId,
+} from "./training-location";
+import { YouFooterGroups } from "./YouFooterGroups";
+import { YouTrainingCard, type TrainingLocationId } from "./YouTrainingCard";
+import { Divider, Group, Row, ToggleRow } from "./you-settings";
 
 const PRIVACY_URL = "https://adtechservices.in/privacy";
 const TERMS_URL = "https://adtechservices.in/terms";
 
 /** S24 You — cached identity hero, credits meter, horizontal trainers. */
 export const YouScreen = () => {
-  const [rebuildOn, setRebuildOn] = useState(true);
-  const [locationId, setLocationId] = useState("gym");
+  const [locationId, setLocationId] = useState<TrainingLocationId>("gym");
+  const [locationSaving, setLocationSaving] = useState(false);
   const [subNote, setSubNote] = useState<string | null>(null);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
   const [plan, setPlan] = useState<LocalPlan | null>(null);
@@ -53,11 +60,11 @@ export const YouScreen = () => {
 
   const credits = useCreditsStore((s) => s.credits);
   const cachedCredits = useCreditsStore((s) => s.cachedCredits);
+  const creditsFetchedAt = useCreditsStore((s) => s.fetchedAt);
   const hydrateCredits = useCreditsStore((s) => s.hydrate);
   const ensureCredits = useCreditsStore((s) => s.ensureCredits);
   const refreshCredits = useCreditsStore((s) => s.refreshInBackground);
   const clearCredits = useCreditsStore((s) => s.clear);
-
   const creditsMeter = credits ?? cachedCredits;
 
   const resetOnboarding = useOnboardingStore((s) => s.reset);
@@ -76,7 +83,10 @@ export const YouScreen = () => {
     const [p, pl] = await Promise.all([getProfile(), getCurrentPlan()]);
     setProfile(p);
     setPlan(pl);
-  }, []);
+    setLocationId(
+      toTrainingLocationId(p?.preferences?.trainingLocation ?? me?.preferences?.trainingLocation),
+    );
+  }, [me?.preferences?.trainingLocation]);
 
   useEffect(() => {
     void (async () => {
@@ -87,24 +97,18 @@ export const YouScreen = () => {
       void ensureMe().catch(() => undefined);
       void ensureCredits().catch(() => undefined);
     })();
-  }, [
-    ensureCredits,
-    ensureMe,
-    hydrateCredits,
-    hydrateMe,
-    refreshCredits,
-    refreshMe,
-    reloadLocal,
-  ]);
+  }, [ensureCredits, ensureMe, hydrateCredits, hydrateMe, refreshCredits, refreshMe, reloadLocal]);
+
+  useEffect(() => {
+    if (me?.preferences?.trainingLocation) {
+      setLocationId(toTrainingLocationId(me.preferences.trainingLocation));
+    }
+  }, [me?.preferences?.trainingLocation]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([
-        reloadLocal(),
-        ensureMe({ force: true }),
-        ensureCredits({ force: true }),
-      ]);
+      await Promise.all([reloadLocal(), ensureMe({ force: true }), ensureCredits({ force: true })]);
     } catch {
       /* keep cache */
     } finally {
@@ -114,8 +118,7 @@ export const YouScreen = () => {
 
   const prefs = profile?.preferences;
   const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
-  const fallbackName =
-    profile?.sex != null ? `Athlete · ${goalNice}` : "Mirra athlete";
+  const fallbackName = profile?.sex != null ? `Athlete · ${goalNice}` : "Mirra athlete";
   const fallbackMeta = profile
     ? `${experienceLabel(prefs?.experience)} · ${prefs?.sessionMinutes ?? 45} min sessions`
     : "Complete onboarding for profile";
@@ -131,9 +134,7 @@ export const YouScreen = () => {
     if (restored.ok) {
       setSubNote("Restored purchases");
       Alert.alert("Subscription", "Purchases restored.");
-    } else {
-      setSubNote(restored.error.message);
-    }
+    } else setSubNote(restored.error.message);
     router.push("/(onboarding)/paywall");
   };
 
@@ -151,8 +152,39 @@ export const YouScreen = () => {
     if (!(await choosePersona(id))) Alert.alert("Trainer", "Couldn't switch trainer. Try again.");
   };
 
+  const handleLocation = async (id: TrainingLocationId) => {
+    if (id === locationId || locationSaving) return;
+    const prev = locationId;
+    setLocationId(id);
+    setLocationSaving(true);
+    try {
+      await persistTrainingLocation(id);
+      void ensureMe({ force: true }).catch(() => undefined);
+    } catch {
+      setLocationId(prev);
+      Alert.alert("Training location", "Couldn't save. Try again.");
+    } finally {
+      setLocationSaving(false);
+    }
+  };
+
   const handleCreditsPress = () => {
-    if (creditsMeter && creditsMeter.remaining <= 0) openAiLimitSheet(creditsMeter.resetsAt);
+    if (creditsMeter && creditsMeter.remaining <= 0) {
+      openAiLimitSheet(creditsMeter.resetsAt);
+      return;
+    }
+    const pool = creditsMeter ? creditsPool(creditsMeter) : 0;
+    const left = creditsMeter?.remaining ?? 0;
+    Alert.alert(
+      "AI credits",
+      creditsMeter
+        ? `${left} of ${pool} left\nLast refreshed ${formatCreditsRefreshed(creditsFetchedAt)}`
+        : "Balance not loaded yet.",
+      [
+        { text: "Close", style: "cancel" },
+        { text: "Refresh", onPress: () => void handleRefresh() },
+      ],
+    );
   };
 
   const handleSignOut = () => {
@@ -160,7 +192,7 @@ export const YouScreen = () => {
       try {
         await authClient.signOut();
       } catch {
-        /* still clear local session */
+        /* still clear local */
       }
       await clearMe();
       await clearCredits();
@@ -173,6 +205,24 @@ export const YouScreen = () => {
 
   return (
     <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
+      <View style={sx("mb-space-sm flex-row items-center justify-end")}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh profile and credits"
+          accessibilityState={{ busy: refreshing }}
+          disabled={refreshing}
+          onPress={() => void handleRefresh()}
+          hitSlop={12}
+          style={sx("h-11 w-11 items-center justify-center rounded-full")}
+        >
+          {refreshing ? (
+            <ActivityIndicator size="small" color={color.primaryFixed} />
+          ) : (
+            <RefreshCw size={20} color={color.onSurfaceVariant} />
+          )}
+        </Pressable>
+      </View>
+
       <ProfileHero
         user={meUser}
         entitlement={entitlement}
@@ -200,7 +250,8 @@ export const YouScreen = () => {
       <YouTrainingCard
         plan={plan}
         locationId={locationId}
-        onLocation={setLocationId}
+        locationSaving={locationSaving}
+        onLocation={(id) => void handleLocation(id)}
         onFoodPrefs={() => setPrefsOpen(true)}
       />
 
@@ -209,9 +260,10 @@ export const YouScreen = () => {
         <Divider />
         <ToggleRow
           title="Adaptive rebuild"
-          detail="Redistributes missed sets"
-          value={rebuildOn}
-          onChange={setRebuildOn}
+          detail="Coming soon — redistributes missed sets after check-in"
+          value={false}
+          disabled
+          onChange={() => undefined}
         />
       </Group>
 
@@ -223,42 +275,12 @@ export const YouScreen = () => {
         />
       </Group>
 
-      <Group title="Connected accounts">
-        {accountLabels.length > 0 ? (
-          accountLabels.map((label, i) => (
-            <View key={label}>
-              {i > 0 ? <Divider /> : null}
-              <StatusRow title={label} meta="Connected" />
-            </View>
-          ))
-        ) : (
-          <StatusRow title="No linked accounts" meta="None" />
-        )}
-      </Group>
-
-      <Group title="Connected">
-        <StatusRow title="Apple Health / Watch" meta="Not connected" />
-        <Divider />
-        <StatusRow title="Withings Body Scan" meta="Not connected" />
-        <Divider />
-        <StatusRow title="USDA & Vision Scanner" meta="Ready" />
-      </Group>
-
-      <Group title="Legal">
-        <Row title="Privacy Policy" meta="Open in browser" onPress={() => void openUrl(PRIVACY_URL)} />
-        <Divider />
-        <Row title="Terms of Use" meta="Open in browser" onPress={() => void openUrl(TERMS_URL)} />
-      </Group>
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Log out"
-        onPress={handleSignOut}
-        style={sx("mt-space-md flex-row items-center justify-center gap-space-sm py-space-md")}
-      >
-        <LogOut size={16} color={color.error} />
-        <Text style={sx("font-label-bold text-label-lg text-error")}>Sign out</Text>
-      </Pressable>
+      <YouFooterGroups
+        accountLabels={accountLabels}
+        onPrivacy={() => void openUrl(PRIVACY_URL)}
+        onTerms={() => void openUrl(TERMS_URL)}
+        onSignOut={handleSignOut}
+      />
 
       <DietPrefsSheet
         visible={prefsOpen}

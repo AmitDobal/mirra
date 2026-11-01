@@ -1,9 +1,20 @@
-import { toTrainerPersonaId, type OnboardingPreferences } from "@mirra/contracts";
+import {
+  TrainingLocationSchema,
+  toTrainerPersonaId,
+  type OnboardingPreferences,
+} from "@mirra/contracts";
 
 import type { preferences } from "../db/schema";
 import { parseJson } from "./json";
 
 type PrefsRow = typeof preferences.$inferSelect;
+
+const toTrainingLocation = (
+  value: string | null | undefined,
+): OnboardingPreferences["trainingLocation"] => {
+  const parsed = TrainingLocationSchema.safeParse(value ?? "gym");
+  return parsed.success ? parsed.data : "gym";
+};
 
 /** DB preferences row → API shape (shared by GET /v1/me and PATCH /v1/me/preferences). */
 export const toPreferencesOut = (prefs: PrefsRow): OnboardingPreferences => ({
@@ -19,4 +30,5 @@ export const toPreferencesOut = (prefs: PrefsRow): OnboardingPreferences => ({
   trainerPersona: toTrainerPersonaId(prefs.trainerPersona),
   physiqueTarget: (prefs.physiqueTarget as OnboardingPreferences["physiqueTarget"]) ?? null,
   lifestyleNotes: prefs.lifestyleNotes ?? null,
+  trainingLocation: toTrainingLocation(prefs.trainingLocation),
 });

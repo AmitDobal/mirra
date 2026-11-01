@@ -32,6 +32,12 @@ type PrefsRow = {
   cuisine_json: string | null;
   physique_target: string | null;
   lifestyle_notes: string | null;
+  training_location: string | null;
+};
+
+const toTrainingLocation = (value: string | null | undefined): "gym" | "home" | "hotel" => {
+  if (value === "home" || value === "hotel" || value === "gym") return value;
+  return "gym";
 };
 
 export const saveOnboarding = async (input: OnboardingInput): Promise<string> => {
@@ -111,6 +117,20 @@ export const setLocalTrainerPersona = async (
   );
 };
 
+/** Persist training location locally (mirrors PATCH /v1/me/preferences). */
+export const setLocalTrainingLocation = async (
+  location: "gym" | "home" | "hotel",
+  userId: string = getLocalUserId(),
+): Promise<void> => {
+  const db = await getDb();
+  await db.runAsync(
+    "UPDATE preferences SET training_location = ?, updated_at = ? WHERE user_id = ?",
+    location,
+    nowMs(),
+    userId,
+  );
+};
+
 export const getProfile = async (
   userId: string = getLocalUserId(),
 ): Promise<LocalProfile | null> => {
@@ -150,6 +170,7 @@ export const getProfile = async (
           cuisineStyles: parseJson(prefs.cuisine_json, [] as string[]),
           physiqueTarget: prefs.physique_target,
           lifestyleNotes: prefs.lifestyle_notes,
+          trainingLocation: toTrainingLocation(prefs.training_location),
         }
       : null,
   };

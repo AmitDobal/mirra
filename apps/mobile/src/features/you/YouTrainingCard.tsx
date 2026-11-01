@@ -1,27 +1,38 @@
 import { router } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import type { LocalPlan } from "@/db";
+import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { sx } from "@/theme/sx";
 
+import type { TrainingLocationId } from "./training-location";
 import { Divider, Group, Row } from "./you-settings";
 
-const LOCATIONS = [
+const LOCATIONS: readonly { id: TrainingLocationId; label: string }[] = [
   { id: "gym", label: "Primary kit" },
   { id: "home", label: "Home" },
   { id: "hotel", label: "Hotel" },
-] as const;
+];
+
+export type { TrainingLocationId };
 
 type Props = {
   readonly plan: LocalPlan | null;
-  readonly locationId: string;
-  readonly onLocation: (id: string) => void;
+  readonly locationId: TrainingLocationId;
+  readonly locationSaving?: boolean;
+  readonly onLocation: (id: TrainingLocationId) => void;
   readonly onFoodPrefs: () => void;
 };
 
 /** Active plan + locations + food prefs row. */
-export const YouTrainingCard = ({ plan, locationId, onLocation, onFoodPrefs }: Props) => {
+export const YouTrainingCard = ({
+  plan,
+  locationId,
+  locationSaving = false,
+  onLocation,
+  onFoodPrefs,
+}: Props) => {
   const protocolTitle = plan?.days.find((d) => d.workout)?.workout?.title ?? "No active plan";
   const protocolBody =
     plan?.summary.outcomeLine ||
@@ -51,7 +62,15 @@ export const YouTrainingCard = ({ plan, locationId, onLocation, onFoodPrefs }: P
       </View>
       <Divider />
       <View style={sx("px-space-md py-space-sm")}>
-        <CapsLabel style={sx("mb-space-sm")}>Training locations</CapsLabel>
+        <View style={sx("mb-space-sm flex-row items-center justify-between gap-space-sm")}>
+          <CapsLabel>Training locations</CapsLabel>
+          {locationSaving ? (
+            <ActivityIndicator size="small" color={color.primaryFixed} />
+          ) : null}
+        </View>
+        <Text style={sx("mb-space-sm font-body text-[11px] text-on-surface-variant")}>
+          Filters kit for coach and plan rebuilds
+        </Text>
         <View style={sx("flex-row flex-wrap gap-space-sm")}>
           {LOCATIONS.map((loc) => {
             const active = locationId === loc.id;
@@ -59,7 +78,8 @@ export const YouTrainingCard = ({ plan, locationId, onLocation, onFoodPrefs }: P
               <Pressable
                 key={loc.id}
                 accessibilityRole="button"
-                accessibilityState={{ selected: active }}
+                accessibilityState={{ selected: active, disabled: locationSaving }}
+                disabled={locationSaving}
                 onPress={() => onLocation(loc.id)}
                 style={sx(
                   `rounded-full px-3 py-2 ${

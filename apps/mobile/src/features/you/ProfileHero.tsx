@@ -13,7 +13,9 @@ type Props = {
   readonly fallbackMeta: string;
 };
 
-/** S24 compact identity row — real me user when present. */
+const AVATAR = { width: 64, height: 64, borderRadius: 32 } as const;
+
+/** S24 compact identity row — 64px circle avatar (image / initials / placeholder). */
 export const ProfileHero = ({ user, entitlement, fallbackName, fallbackMeta }: Props) => {
   const name = displayName(user, fallbackName);
   const meta = displaySubtitle(user, fallbackMeta);
@@ -27,15 +29,16 @@ export const ProfileHero = ({ user, entitlement, fallbackName, fallbackMeta }: P
         <Image
           source={{ uri: imageUri }}
           accessibilityLabel="Profile avatar"
-          style={{ width: 56, height: 56, borderRadius: 28 }}
+          style={AVATAR}
           resizeMode="cover"
         />
       ) : initials ? (
         <View
           accessibilityLabel={`Avatar initials ${initials}`}
-          style={sx(
-            "h-14 w-14 items-center justify-center rounded-full bg-surface-container-highest",
-          )}
+          style={[
+            AVATAR,
+            sx("items-center justify-center bg-surface-container-highest"),
+          ]}
         >
           <Text style={sx("font-headline text-headline-sm text-on-surface")}>{initials}</Text>
         </View>
@@ -43,7 +46,7 @@ export const ProfileHero = ({ user, entitlement, fallbackName, fallbackMeta }: P
         <Image
           source={s24ProfileSettings.avatarAlexChen}
           accessibilityLabel="Profile avatar placeholder"
-          style={{ width: 56, height: 56, borderRadius: 28 }}
+          style={AVATAR}
           resizeMode="cover"
         />
       )}

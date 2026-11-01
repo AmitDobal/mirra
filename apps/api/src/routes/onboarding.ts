@@ -65,6 +65,7 @@ onboardingRoutes.put("/v1/onboarding", requireAuth, async (c) => {
       trainerPersona: body.preferences.trainerPersona,
       physiqueTarget: body.preferences.physiqueTarget ?? null,
       lifestyleNotes: body.preferences.lifestyleNotes?.trim() || null,
+      trainingLocation: body.preferences.trainingLocation ?? "gym",
       updatedAt: now,
     })
     .onConflictDoUpdate({
@@ -82,6 +83,7 @@ onboardingRoutes.put("/v1/onboarding", requireAuth, async (c) => {
         trainerPersona: body.preferences.trainerPersona,
         physiqueTarget: body.preferences.physiqueTarget ?? null,
         lifestyleNotes: body.preferences.lifestyleNotes?.trim() || null,
+        trainingLocation: body.preferences.trainingLocation ?? "gym",
         updatedAt: now,
       },
     });

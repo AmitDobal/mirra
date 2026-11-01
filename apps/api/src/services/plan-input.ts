@@ -26,6 +26,8 @@ export const buildPlanPrefsJson = (prefs: PrefsRow, overrides: PrefsOverrides = 
     trainerPersona: prefs.trainerPersona,
     physiqueTarget: prefs.physiqueTarget,
     lifestyleNotes: prefs.lifestyleNotes,
+    /** Active site (gym/home/hotel) — generators bias kit/equipment to this context. */
+    trainingLocation: prefs.trainingLocation ?? "gym",
     variant: overrides.variant ?? "recommended",
   });
 

@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** API **`141fd02`** (#49 auth-harden) on Worker; EAS **`01a1963b`** (#47+#48). Phone: https://u.expo.dev/update/01a1963b-801d-7e46-b723-4dbc7cd1c2a0. Prod curl verify + matrix `/tmp/mirra-qa/prod-smoke-matrix/RESULT.md`.
+**Latest:** EAS **`01a1966b`** (#53 funnel + #54 shimmer @ `a980767`). Phone: https://u.expo.dev/update/01a1966b-ae02-70fd-9cdd-9f8ef7459c0f. Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md`. API still **`141fd02`**.
 
 | | |
 | --- | --- |
@@ -9,8 +9,8 @@
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
 | API | https://mirra-api.amit-dobalwork.workers.dev — **`141fd02` (#49) deployed** |
-| Mobile | Expo SDK **58** — EAS **`01a1963b`** (#47+#48) |
-| Mobile day-test | https://u.expo.dev/update/01a1963b-801d-7e46-b723-4dbc7cd1c2a0 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| Mobile | Expo SDK **58** — EAS **`01a1966b`** (#53+#54) |
+| Mobile day-test | https://u.expo.dev/update/01a1966b-ae02-70fd-9cdd-9f8ef7459c0f · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

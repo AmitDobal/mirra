@@ -16,17 +16,17 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | **#51** Google static web-browser (fixes Expo Go “not installed” alert) |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/09b1ef59-46f0-4dea-a213-d7ee681dac4d |
-| iOS update ID | `01a19656-aa25-7ab7-9222-94b3ec2c34d3` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19656-aa25-7ab7-9222-94b3ec2c34d3 |
+| Mobile bundle | **#53** auth-before-paywall + **#54** generating shimmer |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/89e9fb76-3ae3-410e-a9e2-f63e1614a0c5 |
+| iOS update ID | `01a1966b-ae02-70fd-9cdd-9f8ef7459c0f` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1966b-ae02-70fd-9cdd-9f8ef7459c0f |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `fix google static expo-web-browser #51` |
-| Smoke shots | `/tmp/mirra-qa/google-webview-fix/` |
-| Bundle prove | Commit `11076d8` (#51); `disableRedirect` + static `openAuthSessionAsync` via Expo proxy |
+| Message | `onboarding auth-before-paywall #53 + generating shimmer #54 (a980767)` |
+| Smoke shots | `/tmp/mirra-qa/onboarding-conversion-smoke/` |
+| Bundle prove | Commit `a980767` (#54) after `c705fd9` (#53); week-reveal → auth → paywall |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
-| Smoke note | **PASS** authorize URL → Google chooser for workers.dev (no module alert); see `/tmp/mirra-qa/google-webview-fix/RESULT.txt` |
+| Smoke note | Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md` |
 
 ### Open on phone (laptop can be off)
 

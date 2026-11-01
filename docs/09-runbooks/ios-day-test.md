@@ -17,12 +17,12 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
 | Mobile bundle | Local meal times + logged meal detail (AMI-137) + History 1h cache/PTR (AMI-138) on top of delete-account wave (mobile-only; API unchanged) |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ba285788-777a-4b73-8bbb-09dd91cb12ad |
-| iOS update ID | `01a1986b-3a2b-76c2-9aee-f6cf8fe77073` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1986b-3a2b-76c2-9aee-f6cf8fe77073 |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/109aabd7-b87b-48b3-a885-6ce18621e63b |
+| iOS update ID | `01a1986d-4a82-77b0-be42-763abfe2a010` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1986d-4a82-77b0-be42-763abfe2a010 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `meal local time + detail + history cache 02a4aad` |
+| Message | `meal local time + detail + history 1h cache + invalidate efff51a` |
 | Smoke shots | `/tmp/mirra-qa/meal-history-ux/` (RESULT.md; boot only, UI flow not driven) |
 | Bundle prove | Commit `02a4aad` (AMI-137/138 merged) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |

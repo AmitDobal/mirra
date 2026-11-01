@@ -21,6 +21,7 @@ import { mealPlanRoutes } from "./routes/meal-plan";
 import { meRoutes } from "./routes/me";
 import { onboardingRoutes } from "./routes/onboarding";
 import { planRoutes } from "./routes/plans";
+import { progressRoutes } from "./routes/progress";
 import { recipeRoutes } from "./routes/recipe";
 import { todayActionsRoutes } from "./routes/today-actions";
 import { todayRoutes } from "./routes/today";
@@ -69,6 +70,7 @@ export const createApp = () => {
   app.route("/", recipeRoutes);
   app.route("/", workoutRoutes);
   app.route("/", weightRoutes);
+  app.route("/", progressRoutes);
   app.route("/", insightsRoutes);
   app.route("/", aiRoutes);
   app.route("/", creditsRoutes);

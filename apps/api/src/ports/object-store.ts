@@ -1,4 +1,4 @@
-/** R2 object storage port — stub until signed upload adapter lands. */
+/** Object storage port — R2 adapter or stub. */
 
 export type MediaKind = "mirror" | "progress" | "meal";
 
@@ -23,8 +23,22 @@ export type ObjectHead = {
   contentType: string | null;
 };
 
+export type ObjectPutRequest = {
+  r2Key: string;
+  body: ArrayBuffer | Uint8Array | string;
+  contentType: string;
+};
+
+export type ObjectGetResult = {
+  body: ArrayBuffer;
+  contentType: string | null;
+  bytes: number;
+};
+
 export type ObjectStore = {
   createUploadUrl: (req: UploadUrlRequest) => Promise<UploadUrlResult>;
+  put: (req: ObjectPutRequest) => Promise<{ bytes: number }>;
+  get: (r2Key: string) => Promise<ObjectGetResult | null>;
   head: (r2Key: string) => Promise<ObjectHead>;
   deletePrefix: (prefix: string) => Promise<void>;
 };
@@ -33,6 +47,10 @@ export const stubObjectStore: ObjectStore = {
   createUploadUrl: async () => {
     throw new Error("ObjectStore not configured");
   },
+  put: async () => {
+    throw new Error("ObjectStore not configured");
+  },
+  get: async () => null,
   head: async () => ({ exists: false, bytes: null, contentType: null }),
   deletePrefix: async () => {
     throw new Error("ObjectStore not configured");

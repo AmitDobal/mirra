@@ -4,6 +4,8 @@ import { Image, StyleSheet, Text, View } from "react-native";
 import { s02WelcomeHook } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell } from "@/features/onboarding";
+import { finishAfterAuth } from "@/features/onboarding/services/post-auth-flow";
+import { hasSession, setPostAuthIntent } from "@/lib/auth";
 import { color, font, radius, space, type } from "@/theme/tokens";
 import { Button, Card } from "@/ui";
 
@@ -12,7 +14,14 @@ const WelcomeScreen = () => {
   const c = onboardingCopy.welcome;
 
   const handleContinue = () => router.push("/(onboarding)/goal");
-  const handleAccount = () => router.push("/(onboarding)/auth");
+  const handleAccount = () => {
+    setPostAuthIntent("signin");
+    if (hasSession()) {
+      void finishAfterAuth("existing");
+      return;
+    }
+    router.push("/(onboarding)/auth");
+  };
 
   return (
     <OnboardingShell

@@ -14,5 +14,5 @@
     "nativewind-env.d.ts",
     "css-modules.d.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/**/*.test.ts"]
 }

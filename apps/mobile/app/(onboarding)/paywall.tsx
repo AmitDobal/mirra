@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { ArrowRight, X, Zap } from "lucide-react-native";
 import { useEffect } from "react";
-import { Linking, Pressable, Text, View } from "react-native";
+import { Alert, Linking, Pressable, Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
@@ -11,6 +11,8 @@ import { PaywallPlanCard } from "@/features/onboarding/components/PaywallPlanCar
 import { completeOnboardingFunnel } from "@/features/onboarding/services/complete-funnel";
 import {
   canSoftSkipPaywall,
+  hasSession,
+  markPaywallSoftSkipped,
   requireSignedInUser,
   setPostAuthIntent,
 } from "@/lib/auth";
@@ -68,13 +70,21 @@ const PaywallScreen = () => {
     if (result?.ok) finishFree();
   };
 
+  /** Prod: no entitlement → stay. Only `__DEV__` may skip into tabs. */
   const handleCloseOrSkip = () => {
     if (canSoftSkipPaywall()) {
+      markPaywallSoftSkipped();
       finishFree();
       return;
     }
-    goAuth("tabs");
+    if (!hasSession()) {
+      goAuth("paywall");
+      return;
+    }
+    Alert.alert(c.blockedTitle, c.blockedBody);
   };
+
+  const showSkip = canSoftSkipPaywall();
 
   const handleTerms = () => {
     void Linking.openURL(onboardingCopy.auth.termsUrl);
@@ -134,17 +144,19 @@ const PaywallScreen = () => {
               </Text>
             </Pressable>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={c.continueWithoutPro}
-            onPress={handleCloseOrSkip}
-            hitSlop={8}
-            style={sx("px-space-md py-space-xs")}
-          >
-            <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
-              {c.continueWithoutPro}
-            </Text>
-          </Pressable>
+          {showSkip ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={c.continueWithoutPro}
+              onPress={handleCloseOrSkip}
+              hitSlop={8}
+              style={sx("px-space-md py-space-xs")}
+            >
+              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
+                {c.continueWithoutPro}
+              </Text>
+            </Pressable>
+          ) : null}
           <Text
             style={sx("max-w-xs text-center font-body text-body-sm text-on-surface-variant leading-tight")}
           >

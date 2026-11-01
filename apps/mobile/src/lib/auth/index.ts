@@ -19,3 +19,8 @@ export {
   takePostAuthIntent,
 } from "./post-auth-intent";
 export type { PostAuthIntent } from "./post-auth-intent";
+export {
+  isPaywallSoftSkipped,
+  markPaywallSoftSkipped,
+  resetPaywallSoftSkip,
+} from "./paywall-skip";

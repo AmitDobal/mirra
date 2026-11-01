@@ -1,0 +1,22 @@
+(node:4173) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/vasusethia/Documents/projects/mirra-wt-ami-143/apps/mobile/src/lib/auth/cold-start-route.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/vasusethia/Documents/projects/mirra-wt-ami-143/apps/mobile/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ A: guest with plan resumes week-reveal; after auth + reveal → paywall (0.376875ms)
+✔ B: new Google user via welcome → onboarding start, never tabs (0.051667ms)
+✔ C/F: returning onboarded + entitled → today (0.04525ms)
+✔ D: returning onboarded, not entitled → paywall (0.038ms)
+✔ E: session, not onboarded → resume quiz (welcome), skip auth (0.043583ms)
+✔ G: session + plan generated, funnel not complete → week-reveal (0.114083ms)
+✔ offline (me unknown): local completed + entitled cache → today; else gate (0.074459ms)
+✔ I: after delete (wiped, no session) → splash (0.0465ms)
+✔ H + tab guard: blocks without session / onboarding / entitlement (0.093708ms)
+✔ trial counts as entitled (0.1015ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93.107291

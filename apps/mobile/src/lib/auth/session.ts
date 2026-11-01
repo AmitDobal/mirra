@@ -4,6 +4,8 @@ import { getLocalUserId, reassignLocalUser, setLocalUserId } from "@/db";
 import { env } from "@/lib/config/env";
 import { errorMessage, logger } from "@/lib/logger";
 
+import { resetPaywallSoftSkip } from "./paywall-skip";
+
 export type AuthMode = "dev" | "google";
 
 const USER_ID_KEY = "mirra.userId";
@@ -62,14 +64,11 @@ export const requireSignedInUser = (): boolean =>
   cachedMode === "google" && cachedUserId !== null;
 
 /**
- * Soft-skip paywall → free tabs (no Pro claim).
- * Google signed-in, or day-test Dev Tester when ALLOW_DEV_AUTH / __DEV__.
+ * Soft-skip paywall → tabs without entitlement. `__DEV__` only, with a session.
+ * Production builds must trial/purchase (or be entitled server-side).
  */
-export const canSoftSkipPaywall = (): boolean => {
-  if (requireSignedInUser()) return true;
-  if (!(__DEV__ || env.allowDevAuth)) return false;
-  return cachedMode === "dev" && cachedUserId !== null;
-};
+export const canSoftSkipPaywall = (): boolean =>
+  __DEV__ && cachedUserId !== null;
 
 /** Point SQLite at the active identity, moving rows from the previous owner. */
 const syncLocalUser = async (nextUserId: string): Promise<void> => {
@@ -138,6 +137,7 @@ export const setGoogleSession = (
 ): Promise<void> => setSession(userId, "google", bearerToken);
 
 export const clearSession = async (): Promise<void> => {
+  resetPaywallSoftSkip();
   cachedUserId = null;
   cachedMode = null;
   cachedBearerToken = null;

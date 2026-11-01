@@ -1,22 +1,15 @@
 import { router } from "expo-router";
 
-import { requireSignedInUser, setPostAuthIntent } from "@/lib/auth";
-import { useEntitlementStore } from "@/stores/entitlement-store";
+import { hasSession, setPostAuthIntent } from "@/lib/auth";
 
-import { completeOnboardingFunnel } from "./complete-funnel";
+import { finishAfterAuth } from "./post-auth-flow";
 
-/** Primary CTA: auth → paywall (skip auth if already Google). */
+/** Primary CTA: skip auth when a session exists (→ paywall/tabs via /v1/me), else auth. */
 export const handleWeekRevealStart = (): void => {
   setPostAuthIntent("paywall");
 
-  if (requireSignedInUser()) {
-    if (useEntitlementStore.getState().isPro) {
-      void completeOnboardingFunnel().then(() => {
-        router.replace("/(tabs)/today");
-      });
-      return;
-    }
-    router.push("/(onboarding)/paywall");
+  if (hasSession()) {
+    void finishAfterAuth("existing");
     return;
   }
 

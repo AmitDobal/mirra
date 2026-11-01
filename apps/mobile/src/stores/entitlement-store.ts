@@ -23,8 +23,9 @@ type EntitlementState = {
   readonly reset: () => void;
 };
 
+/** Unknown until /v1/me, RevenueCat, or a purchase says otherwise — never assume trial. */
 const initial = {
-  status: "trial" as const,
+  status: "none" as const,
   isPro: false,
   productId: null,
   expiresAt: null,

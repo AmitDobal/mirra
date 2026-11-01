@@ -8,15 +8,13 @@ import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { AppleGlyph } from "@/features/onboarding/components/AuthGlyphs";
 import { AuthLegalLine } from "@/features/onboarding/components/AuthLegalLine";
 import { AuthPlanCard } from "@/features/onboarding/components/AuthPlanCard";
-import { completeOnboardingFunnel } from "@/features/onboarding/services/complete-funnel";
-import { syncPersonalizationAfterAuth } from "@/features/onboarding/services/secure-prefs";
+import { finishAfterAuth } from "@/features/onboarding/services/post-auth-flow";
 import {
   getBearerToken,
+  hasSession,
   peekPostAuthIntent,
-  requireSignedInUser,
   setDevSession,
   setGoogleSession,
-  takePostAuthIntent,
 } from "@/lib/auth";
 import { GoogleSignInButton } from "@/lib/auth/GoogleSignInButton";
 import { env } from "@/lib/config/env";
@@ -28,7 +26,7 @@ import { sx } from "@/theme/sx";
 
 const devAuthAllowed = __DEV__ || env.allowDevAuth;
 
-/** S14 — Soft Google save-plan → paywall. Dev Tester → free tabs (day-test). */
+/** S14 — Google save-plan. Routing after sign-in comes from /v1/me (`finishAfterAuth`). */
 const AuthScreen = () => {
   const c = onboardingCopy.auth;
   const goal = useOnboardingStore((s) => s.goal);
@@ -47,37 +45,18 @@ const AuthScreen = () => {
     if (router.canGoBack()) router.back();
   };
 
-  const goTabsFree = () => {
-    void completeOnboardingFunnel().then(() => {
-      router.replace("/(tabs)/today");
-    });
-  };
-
-  /**
-   * Paywall intent: only Google continues to paywall.
-   * Dev Tester always lands free tabs (never paywall) for day-test.
-   */
-  const finishAfterAuth = (kind: "google" | "dev") => {
-    const intent = takePostAuthIntent();
-    if (kind === "google" && intent === "paywall") {
-      router.replace("/(onboarding)/paywall");
-      return;
-    }
-    goTabsFree();
-  };
-
+  /** Session already exists (back-nav / deep link): skip auth UI, route from /v1/me. */
   useEffect(() => {
     if (autoRan.current) return;
-    if (!requireSignedInUser()) return;
+    if (!hasSession()) return;
     autoRan.current = true;
-    finishAfterAuth("google");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount when Google session exists
+    void finishAfterAuth("existing");
   }, []);
 
   const handleDevTester = () => {
     void (async () => {
       await setDevSession();
-      finishAfterAuth("dev");
+      await finishAfterAuth("dev");
     })();
   };
 
@@ -98,9 +77,8 @@ const AuthScreen = () => {
       } catch {
         /* stub/RC login optional; session still valid */
       }
-      await syncPersonalizationAfterAuth();
       logger.info("auth.google.session_ok");
-      finishAfterAuth("google");
+      await finishAfterAuth("google");
     })();
   };
 

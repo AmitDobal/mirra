@@ -309,6 +309,8 @@ export const onboardingCopy = {
     legal:
       "Renews automatically at chosen plan after 7-day trial. Cancel anytime in Apple ID settings. Sign in with Google required before purchase.",
     closeLabel: "Close paywall",
+    blockedTitle: "Start your trial to continue",
+    blockedBody: "Mirra needs an active trial or plan to open your week. Start the free trial or restore a purchase.",
   },
   auth: {
     wordmark: "Mirra",

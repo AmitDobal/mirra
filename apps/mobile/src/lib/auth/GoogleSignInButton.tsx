@@ -1,4 +1,3 @@
-import { makeRedirectUri } from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect } from "react";
@@ -19,16 +18,23 @@ type Props = {
 /**
  * Google ID token via expo-auth-session. Only mount when
  * `env.googleWebClientId` is set (the provider hook throws without client ids).
- * Caller exchanges the token with Better Auth (`authClient.signIn.social`)
- * and persists via `setGoogleSession`.
+ *
+ * Do not force `mirra://` as redirectUri: Web clients reject custom schemes
+ * (invalid_request). With an iOS client id, the Google provider uses the
+ * native redirect (`host.exp.Exponent:/oauthredirect` in Expo Go,
+ * `ai.mirra.app:/oauthredirect` in a standalone build).
  */
 export const GoogleSignInButton = ({ label, onIdToken }: Props) => {
   const webClientId = env.googleWebClientId;
+  const iosClientId = env.googleIosClientId;
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     webClientId,
-    iosClientId: env.googleIosClientId || webClientId,
-    androidClientId: env.googleAndroidClientId || webClientId,
-    redirectUri: makeRedirectUri({ scheme: env.appScheme }),
+    // Never fall back to the Web client id on iOS — that pairs a web client
+    // with a native redirect and Google returns invalid_request.
+    ...(iosClientId ? { iosClientId } : {}),
+    ...(env.googleAndroidClientId
+      ? { androidClientId: env.googleAndroidClientId }
+      : {}),
   });
 
   useEffect(() => {

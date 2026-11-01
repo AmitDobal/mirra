@@ -1,6 +1,7 @@
 import { router, type Href } from "expo-router";
 
 import { takePostAuthIntent } from "@/lib/auth";
+import { devTesterAllowed } from "@/lib/auth/dev-tester";
 import { markPaywallSoftSkipped } from "@/lib/auth/paywall-skip";
 import { errorMessage, logger } from "@/lib/logger";
 
@@ -23,7 +24,7 @@ export type PostAuthKind = "google" | "dev" | "existing";
 export const finishAfterAuth = async (kind: PostAuthKind): Promise<void> => {
   const intent = takePostAuthIntent();
   try {
-    if (kind === "dev" && __DEV__) {
+    if (kind === "dev" && devTesterAllowed()) {
       markPaywallSoftSkipped();
       await completeOnboardingFunnel();
       router.replace("/(tabs)/today");

@@ -4,6 +4,7 @@ import { getLocalUserId, reassignLocalUser, setLocalUserId } from "@/db";
 import { env } from "@/lib/config/env";
 import { errorMessage, logger } from "@/lib/logger";
 
+import { devTesterAllowed } from "./dev-tester";
 import { resetPaywallSoftSkip } from "./paywall-skip";
 
 export type AuthMode = "dev" | "google";
@@ -64,11 +65,11 @@ export const requireSignedInUser = (): boolean =>
   cachedMode === "google" && cachedUserId !== null;
 
 /**
- * Soft-skip paywall → tabs without entitlement. `__DEV__` only, with a session.
- * Production builds must trial/purchase (or be entitled server-side).
+ * Soft-skip paywall → tabs without entitlement. Dev / day-test only
+ * (`devTesterAllowed`), with a session. App Store builds must trial/purchase.
  */
 export const canSoftSkipPaywall = (): boolean =>
-  __DEV__ && cachedUserId !== null;
+  devTesterAllowed() && cachedUserId !== null;
 
 /** Point SQLite at the active identity, moving rows from the previous owner. */
 const syncLocalUser = async (nextUserId: string): Promise<void> => {

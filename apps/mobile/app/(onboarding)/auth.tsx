@@ -17,14 +17,14 @@ import {
   setGoogleSession,
 } from "@/lib/auth";
 import { GoogleSignInButton } from "@/lib/auth/GoogleSignInButton";
-import { env } from "@/lib/config/env";
+import { devTesterAllowed } from "@/lib/auth/dev-tester";
 import { logger } from "@/lib/logger";
 import { getPurchases } from "@/lib/purchases";
 import { Button } from "@/ui";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 
-const devAuthAllowed = __DEV__ || env.allowDevAuth;
+const devAuthAllowed = devTesterAllowed();
 
 /** S14 — Google save-plan. Routing after sign-in comes from /v1/me (`finishAfterAuth`). */
 const AuthScreen = () => {

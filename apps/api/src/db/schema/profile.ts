@@ -37,5 +37,7 @@ export const preferences = sqliteTable("preferences", {
   trainerPersona: text("trainer_persona").notNull().default("drill"),
   physiqueTarget: text("physique_target"),
   lifestyleNotes: text("lifestyle_notes"),
+  /** gym | home | hotel — filters kit for coach/plan. */
+  trainingLocation: text("training_location").notNull().default("gym"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 });

@@ -18,13 +18,23 @@ const formatReset = (iso: string): string => {
 /** Clear English AI credit meter for You — no eng jargon. */
 export const CreditsMeter = ({ credits, onPress }: Props) => {
   if (!credits) {
-    return (
+    const loading = (
       <View style={sx("p-space-md")}>
         <CapsLabel>AI credits</CapsLabel>
         <Text style={sx("mt-1 font-body text-body-sm text-on-surface-variant")}>
           Checking your balance…
         </Text>
       </View>
+    );
+    if (!onPress) return loading;
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Refresh AI credits"
+        onPress={onPress}
+      >
+        {loading}
+      </Pressable>
     );
   }
   const pool = creditsPool(credits);
@@ -68,12 +78,7 @@ export const CreditsMeter = ({ credits, onPress }: Props) => {
   if (!onPress) return content;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={body}
-      onPress={onPress}
-      style={sx(exhausted || low ? "opacity-100" : "")}
-    >
+    <Pressable accessibilityRole="button" accessibilityLabel={body} onPress={onPress}>
       {content}
     </Pressable>
   );

@@ -1,4 +1,9 @@
-export { saveOnboarding, getProfile, setLocalTrainerPersona } from "./profile";
+export {
+  saveOnboarding,
+  getProfile,
+  setLocalTrainerPersona,
+  setLocalTrainingLocation,
+} from "./profile";
 export { savePlan, getCurrentPlan, getToday } from "./plans";
 export type { SavePlanInput } from "./plans";
 export { deleteLocalMeal, logMeal, getFuelToday, updateLocalMeal } from "./meals";

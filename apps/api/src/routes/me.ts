@@ -90,6 +90,7 @@ meRoutes.patch("/v1/me/preferences", requireAuth, async (c) => {
       cuisineJson: JSON.stringify([...new Set(body.cuisineStyles)]),
     }),
     ...(body.trainerPersona !== undefined && { trainerPersona: body.trainerPersona }),
+    ...(body.trainingLocation !== undefined && { trainingLocation: body.trainingLocation }),
     updatedAt: new Date(),
   };
 

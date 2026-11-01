@@ -45,6 +45,10 @@ export const PHYSIQUE_TARGET_IDS = [
 ] as const;
 export const PhysiqueTargetSchema = z.enum(PHYSIQUE_TARGET_IDS);
 
+/** Where the athlete trains this week — filters kit for coach/plan. */
+export const TRAINING_LOCATION_IDS = ["gym", "home", "hotel"] as const;
+export const TrainingLocationSchema = z.enum(TRAINING_LOCATION_IDS);
+
 export const OnboardingPreferencesSchema = z.object({
   primaryGoal: PrimaryGoalSchema,
   experience: ExperienceSchema,
@@ -61,6 +65,8 @@ export const OnboardingPreferencesSchema = z.object({
   physiqueTarget: PhysiqueTargetSchema.nullable().optional(),
   /** Free-text daily routine / likes / constraints for the coach. Max 2000. */
   lifestyleNotes: z.string().max(2000).nullable().optional(),
+  /** Active training site; defaults to gym when unset. */
+  trainingLocation: TrainingLocationSchema.default("gym"),
 });
 
 export const OnboardingProfileSchema = z.object({
@@ -89,6 +95,7 @@ export type PrimaryGoal = z.infer<typeof PrimaryGoalSchema>;
 export type Experience = z.infer<typeof ExperienceSchema>;
 export type CuisineStyle = z.infer<typeof CuisineStyleSchema>;
 export type PhysiqueTarget = z.infer<typeof PhysiqueTargetSchema>;
+export type TrainingLocation = z.infer<typeof TrainingLocationSchema>;
 export type Units = z.infer<typeof UnitsSchema>;
 export type OnboardingPreferences = z.infer<typeof OnboardingPreferencesSchema>;
 export type OnboardingProfile = z.infer<typeof OnboardingProfileSchema>;

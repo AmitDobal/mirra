@@ -28,6 +28,7 @@ export type MeResponse = {
     readonly primaryGoal?: string;
     readonly experience?: string;
     readonly sessionMinutes?: number;
+    readonly trainingLocation?: "gym" | "home" | "hotel";
   } | null;
   readonly entitlement: MeEntitlement;
   readonly onboardingCompleted: boolean;
@@ -84,3 +85,10 @@ export const patchTrainerPersona = (trainerPersona: string) =>
 /** PATCH /v1/me/preferences — meal plans read these from the DB on every generate. */
 export const patchFoodPrefs = (body: UpdateFoodPrefsBody) =>
   apiFetch<{ preferences: FoodPrefs }>("/v1/me/preferences", { method: "PATCH", body });
+
+/** PATCH /v1/me/preferences — gym / home / hotel kit context for coach + plan. */
+export const patchTrainingLocation = (trainingLocation: "gym" | "home" | "hotel") =>
+  apiFetch<{ preferences: { trainingLocation: "gym" | "home" | "hotel" } }>(
+    "/v1/me/preferences",
+    { method: "PATCH", body: { trainingLocation } },
+  );

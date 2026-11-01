@@ -78,6 +78,7 @@ export type LocalProfile = {
     readonly cuisineStyles: string[];
     readonly physiqueTarget: string | null;
     readonly lifestyleNotes: string | null;
+    readonly trainingLocation: "gym" | "home" | "hotel";
   } | null;
 };
 

@@ -12,11 +12,13 @@ import { eq, inArray } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { mealPlanDays, mealPlanItems } from "../db/schema";
+import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { todayUtc } from "../lib/dates";
 import { conflict, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { SLOT_ORDER, subtractMacros, sumMacros } from "../lib/meal-macros";
 import { MIN_REPLAN_KCAL, pickSlotsToPlan } from "../lib/meal-slots";
+import { withAiCredits } from "./credits-gate";
 import {
   assertRateLimit,
   type Drafted,
@@ -109,19 +111,28 @@ export const generatePlan = async (
 
   const { meals, source } =
     slots.length > 0
-      ? await materializeDrafts(
-          {
-            userId: ctx.userId,
-            date,
-            targets,
-            remaining,
-            slots: [...slots],
-            catalog,
-            avoidFoodIds: [],
-            recentFoodIds: await recentFoodIds(ctx.db, ctx.userId, date),
-            seed: body.force ? String(Date.now()) : undefined,
-          },
+      ? await withAiCredits(
           ctx,
+          {
+            feature: "meal_plan",
+            paid: resolveAiProvider(ctx.env) === "openai",
+            wasPaid: (r) => r.source === "openai",
+          },
+          async () =>
+            materializeDrafts(
+              {
+                userId: ctx.userId,
+                date,
+                targets,
+                remaining,
+                slots: [...slots],
+                catalog,
+                avoidFoodIds: [],
+                recentFoodIds: await recentFoodIds(ctx.db, ctx.userId, date),
+                seed: body.force ? String(Date.now()) : undefined,
+              },
+              ctx,
+            ),
         )
       : { meals: new Map<MealSlot, Drafted>(), source: "heuristic" as const };
 
@@ -241,17 +252,24 @@ export const swapPlannedMeal = async (
     carbsG: item.carbsG,
     fatG: item.fatG,
   };
-  const { meals } = await materializeDrafts({
-    userId: ctx.userId,
-    date: day.localDate,
-    targets: targetsOf(day),
-    remaining: budget,
-    slots: [slot],
-    catalog: await loadCatalog(ctx),
-    avoidFoodIds: current,
-    recentFoodIds: [],
-    seed: `${item.id}|${current.join(",")}`,
-  });
+  // Swap stays heuristic-only (paid:false); wrap keeps ledger shape consistent.
+  const catalog = await loadCatalog(ctx);
+  const { meals } = await withAiCredits(
+    ctx,
+    { feature: "meal_plan", paid: false, wasPaid: () => false },
+    () =>
+      materializeDrafts({
+        userId: ctx.userId,
+        date: day.localDate,
+        targets: targetsOf(day),
+        remaining: budget,
+        slots: [slot],
+        catalog,
+        avoidFoodIds: current,
+        recentFoodIds: [],
+        seed: `${item.id}|${current.join(",")}`,
+      }),
+  );
   const drafted = meals.get(slot);
   if (!drafted) throw conflict("No alternative found for this meal");
 
@@ -279,19 +297,33 @@ export const rebalancePlan = async (
     await skipItems(ctx.db, planned);
   } else {
     const loggedFoods = rows.filter((r) => r.status === "logged").flatMap(foodIdsOf);
-    const { meals, source } = await materializeDrafts(
-      {
-        userId: ctx.userId,
-        date: day.localDate,
-        targets,
-        remaining,
-        slots: planned.map((r) => r.slot as MealSlot),
-        catalog: await loadCatalog(ctx),
-        avoidFoodIds: [],
-        recentFoodIds: [...(await recentFoodIds(ctx.db, ctx.userId, day.localDate)), ...loggedFoods],
-        seed: `rebalance|${now.getTime()}`,
-      },
+    const catalog = await loadCatalog(ctx);
+    const recent = [
+      ...(await recentFoodIds(ctx.db, ctx.userId, day.localDate)),
+      ...loggedFoods,
+    ];
+    const { meals, source } = await withAiCredits(
       ctx,
+      {
+        feature: "meal_plan",
+        paid: resolveAiProvider(ctx.env) === "openai",
+        wasPaid: (r) => r.source === "openai",
+      },
+      () =>
+        materializeDrafts(
+          {
+            userId: ctx.userId,
+            date: day.localDate,
+            targets,
+            remaining,
+            slots: planned.map((r) => r.slot as MealSlot),
+            catalog,
+            avoidFoodIds: [],
+            recentFoodIds: recent,
+            seed: `rebalance|${now.getTime()}`,
+          },
+          ctx,
+        ),
     );
     for (const row of planned) {
       const drafted = meals.get(row.slot as MealSlot);

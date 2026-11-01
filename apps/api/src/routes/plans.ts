@@ -11,6 +11,7 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import { planJobs } from "../db/schema";
 import type { MirraEnv } from "../env";
+import { requirePro } from "../lib/entitlement";
 import { notFound } from "../lib/errors";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
@@ -71,6 +72,8 @@ planRoutes.post("/v1/plans/rebuild/preview", requireAuth, async (c) => {
 planRoutes.post("/v1/plans/rebuild/apply", requireAuth, async (c) => {
   const body = parseBody(PlanRebuildApplyBodySchema, await c.req.json());
   const db = createDb(c.env.DB);
-  const plan = await applyRebuild(db, c.get("userId"), body.previewToken);
+  const userId = c.get("userId");
+  await requirePro(db, userId);
+  const plan = await applyRebuild(db, userId, body.previewToken);
   return c.json(plan);
 });

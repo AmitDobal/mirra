@@ -12,7 +12,7 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | --- | --- |
 | API | https://mirra-api.amit-dobalwork.workers.dev |
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
-| Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
+| Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth browser social → accounts.google.com (see `mirra-google-oauth.md`); **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
 | Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/2f7fae30-23f7-4184-afc8-e09289cf7555 |
@@ -73,4 +73,6 @@ npx eas-cli update --branch day-test --environment preview --platform ios --mess
 - Without deployed API, coach/plan AI will fail when laptop is off
 - Expo Go only includes Expo-compatible native modules (OK for current Mirra stack with RC stubbed)
 - `ALLOW_DEV_USER_HEADER` must be off before any real prod launch
+- **Fail-closed:** even if the flag stays `true`, set `MIRRA_ENV=production` (or `APP_ENV` / `ENVIRONMENT`) and the Worker will **never** honor `x-mirra-user-id` or mint `/v1/dev/session` (401). Prefer both: flag off + `MIRRA_ENV=production`.
+- Full matrix: `docs/03-engineering/api-auth-matrix.md`
 - Cloudflare resources: D1 `mirra-db` (`853253fb-289b-4ef1-a2b8-5f0b17f415e8`), R2 `mirra-media`

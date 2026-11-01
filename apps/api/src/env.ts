@@ -5,11 +5,19 @@ export type MirraEnv = {
   APP_NAME: string;
   APP_VERSION: string;
   /**
-   * DEV ONLY — set `"true"` in wrangler vars for local/smoke.
+   * DEV ONLY — set `"true"` in wrangler vars for local/smoke / day-test.
    * When enabled, `x-mirra-user-id` (alias `x-user-id`) bypasses session auth
-   * and upserts an ephemeral users row. Never enable in production.
+   * and upserts an ephemeral users row. Ignored when any of MIRRA_ENV / APP_ENV /
+   * ENVIRONMENT is `production` (fail-closed).
    */
   ALLOW_DEV_USER_HEADER?: string;
+  /**
+   * Runtime marker. Prefer `MIRRA_ENV=production` for real prod Workers.
+   * Also honors `APP_ENV` / `ENVIRONMENT` = `production` for fail-closed checks.
+   */
+  MIRRA_ENV?: string;
+  APP_ENV?: string;
+  ENVIRONMENT?: string;
   /** Better Auth base URL (e.g. http://127.0.0.1:8787 or workers.dev). */
   APP_URL?: string;
   /** Better Auth signing secret — set via wrangler secret / .dev.vars. */

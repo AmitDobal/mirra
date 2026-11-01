@@ -13,15 +13,8 @@ export const authRoutes = new Hono<{
   Variables: RequestIdVars;
 }>();
 
-/** Lightweight mount probe (not a Better Auth built-in). */
-authRoutes.get("/api/auth/ok", (c) =>
-  c.json({
-    ok: true,
-    google:
-      Boolean(c.env.GOOGLE_CLIENT_ID?.trim()) &&
-      Boolean(c.env.GOOGLE_CLIENT_SECRET?.trim()),
-  }),
-);
+/** Lightweight mount probe (not a Better Auth built-in). No secret/config flags. */
+authRoutes.get("/api/auth/ok", (c) => c.json({ ok: true }));
 
 authRoutes.on(
   ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

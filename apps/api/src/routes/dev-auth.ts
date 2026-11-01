@@ -7,6 +7,7 @@ import { users } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { createAuth } from "../lib/auth";
 import { badRequest, unauthorized } from "../lib/errors";
+import { isDevUserHeaderAllowed } from "../lib/runtime-env";
 import type { RequestIdVars } from "../middleware/request-id";
 
 const BodySchema = z.object({
@@ -24,7 +25,8 @@ export const devAuthRoutes = new Hono<{
 }>();
 
 devAuthRoutes.post("/v1/dev/session", async (c) => {
-  if (c.env.ALLOW_DEV_USER_HEADER !== "true") {
+  // Fail-closed in production even if ALLOW_DEV_USER_HEADER was left true.
+  if (!isDevUserHeaderAllowed(c.env)) {
     throw unauthorized("Dev session minting disabled");
   }
 

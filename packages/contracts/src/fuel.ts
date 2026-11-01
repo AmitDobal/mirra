@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { MealAnalysisBodyShape, MealAnalysisResponseShape, MealAnalysisSourceSchema, MealIngredientSchema } from "./meal-analysis";
 import { HydrationSchema } from "./today-actions";
 
 export const MealSlotSchema = z.enum(["breakfast", "lunch", "dinner", "snack"]);
@@ -13,6 +14,9 @@ export const MealBodySchema = z.object({
   fatG: z.number().min(0).max(1000).default(0),
   eatenAt: z.number().int().optional(),
   mediaId: z.string().nullable().optional(),
+  ...MealAnalysisBodyShape,
+  /** Queue a `meal_analysis_jobs` row for this meal (retry / offline flush). */
+  analyzeAsync: z.boolean().optional(),
 });
 
 /** Partial meal edit. `slot` is accepted as an alias of `mealSlot`. */
@@ -26,6 +30,7 @@ export const MealPatchBodySchema = z
     carbsG: z.number().min(0).max(1000).optional(),
     fatG: z.number().min(0).max(1000).optional(),
     eatenAt: z.number().int().optional(),
+    ...MealAnalysisBodyShape,
   })
   .refine((b) => Object.values(b).some((v) => v !== undefined), {
     message: "Provide at least one field to update",
@@ -44,6 +49,7 @@ export const MealResponseSchema = z.object({
   eatenAt: z.number().int(),
   mediaId: z.string().nullable(),
   createdAt: z.number().int(),
+  ...MealAnalysisResponseShape,
 });
 
 export const FuelTodayResponseSchema = z.object({
@@ -89,7 +95,13 @@ export const MealEstimateResponseSchema = z.object({
   fatG: z.number(),
   confidence: z.number(),
   notes: z.string().optional(),
-  source: z.enum(["openai", "heuristic"]),
+  source: MealAnalysisSourceSchema,
+  /** v2 additions: optional so v1 clients/estimators stay valid. */
+  fiberG: z.number().optional(),
+  sugarG: z.number().optional(),
+  sodiumMg: z.number().optional(),
+  ingredients: z.array(MealIngredientSchema).optional(),
+  warnings: z.array(z.string()).optional(),
 });
 
 export type MealBody = z.infer<typeof MealBodySchema>;

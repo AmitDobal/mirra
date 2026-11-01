@@ -189,8 +189,20 @@ Standard Better Auth tables (id, user_id, token, expires_at, provider_id, …). 
 | fat_g | real | |
 | media_id | text null | R2 meal snap |
 | created_at | integer | |
+| fiber_g / sugar_g / sodium_mg | integer null | micros (0012) |
+| ingredients_json | text null | `[{name, grams?, kcal?, proteinG?, carbsG?, fatG?, confidence?}]` |
+| warnings_json | text null | string[] wellness notes |
+| analysis_status | text | `none`/`pending`/`ready`/`failed`, default `none` |
+| analysis_source | text null | `openai`/`anthropic`/`heuristic` |
+| estimate_confidence | real null | 0–1 |
 
 Daily targets live on `plans.summary_json` (or denorm `daily_targets` later if needed).
+
+### `nutrition_day_rollup` (0012)
+PK `(user_id, local_date)`. `kcal_in`, `protein_g`, `carbs_g`, `fat_g` (sums of meals), `kcal_target` null, `workout_minutes`, `sets_completed`, `updated_at`. Rebuilt on meal/workout write so history charts stay cheap. Mirrored in mobile SQLite 007.
+
+### `meal_analysis_jobs` (0012)
+`id` PK · `user_id` FK · `meal_id` null · `media_id` null · `status` (`queued`/`running`/`done`/`failed`) · `input_json` · `result_json` null (MealEstimateResultV2) · `error` null · `created_at` · `finished_at` null. Same pattern as `plan_jobs`. Spec: `calorie-history-meal-vision.md`.
 
 ---
 
@@ -285,6 +297,8 @@ id · user_id null · action · meta_json · created_at
 - `plan_days(plan_id, day_index)`
 - `workout_sessions(user_id, started_at DESC)`
 - `meals(user_id, eaten_at DESC)`
+- `nutrition_day_rollup(user_id, local_date)` PK + index
+- `meal_analysis_jobs(user_id)`, `(status, created_at)`
 - `check_ins(user_id, local_date)` UNIQUE
 - `progress_photos(user_id, taken_at DESC)`
 - `payment_events(id)` PK = idempotency

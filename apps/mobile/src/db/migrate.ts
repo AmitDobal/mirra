@@ -6,9 +6,10 @@ import { MIGRATION_003 } from "./migrations/sql-003";
 import { MIGRATION_004 } from "./migrations/sql-004";
 import { MIGRATION_005 } from "./migrations/sql-005";
 import { MIGRATION_006 } from "./migrations/sql-006";
+import { MIGRATION_007 } from "./migrations/sql-007";
 import { nowMs } from "./ids";
 
-const TARGET = 6;
+const TARGET = 7;
 
 const statements = (sql: string): string[] =>
   sql
@@ -47,4 +48,5 @@ export const migrate = async (db: SQLiteDatabase): Promise<void> => {
   if (current < 4) await apply(db, 4, MIGRATION_004);
   if (current < 5) await apply(db, 5, MIGRATION_005);
   if (current < 6) await apply(db, 6, MIGRATION_006);
+  if (current < 7) await apply(db, 7, MIGRATION_007);
 };

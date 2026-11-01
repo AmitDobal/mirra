@@ -18,6 +18,8 @@ export type ChatCompletionOpts = {
   model: string;
   messages: ChatMessage[];
   jsonMode?: boolean;
+  /** Strict structured output (takes precedence over `jsonMode`). */
+  jsonSchema?: { name: string; schema: Record<string, unknown> };
   temperature?: number;
   /** Caps completion tokens (cheap replies). */
   maxTokens?: number;
@@ -66,7 +68,16 @@ export const chatCompletion = async (
       messages: opts.messages,
       temperature: opts.temperature ?? 0.4,
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-      ...(opts.jsonMode ? { response_format: { type: "json_object" } } : {}),
+      ...(opts.jsonSchema
+        ? {
+            response_format: {
+              type: "json_schema",
+              json_schema: { name: opts.jsonSchema.name, strict: true, schema: opts.jsonSchema.schema },
+            },
+          }
+        : opts.jsonMode
+          ? { response_format: { type: "json_object" } }
+          : {}),
     }),
   });
 

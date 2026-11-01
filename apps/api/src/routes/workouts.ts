@@ -1,5 +1,9 @@
 import {
   CompleteSessionBodySchema,
+  HistoryQuerySchema,
+  WorkoutHistoryQuerySchema,
+  type WorkoutHistoryListResponse,
+  type WorkoutSummaryResponse,
   CreateWorkoutSessionBodySchema,
   LogSetBodySchema,
   type SetLogResponse,
@@ -11,14 +15,16 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import { setLogs, workoutSessions, workouts } from "../db/schema";
 import type { MirraEnv } from "../env";
-import { msToUnix } from "../lib/dates";
+import { msToUnix, todayUtc } from "../lib/dates";
 import { badRequest, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { recordAttendanceSafe } from "../services/attendance";
+import { rebuildDaysSafe } from "../services/nutrition-rollup";
 import { loadCurrentPlan } from "../services/plan-loaders";
+import { loadWorkoutHistory, loadWorkoutSummary } from "../services/workout-summary";
 
 export const workoutRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -137,6 +143,7 @@ workoutRoutes.post("/v1/workouts/sessions/:id/complete", requireAuth, async (c) 
     })
     .where(eq(workoutSessions.id, sessionId));
   await recordAttendanceSafe(db, userId, "workoutDone");
+  await rebuildDaysSafe(db, userId, [session.startedAt]);
 
   return c.json(
     toSession({
@@ -146,4 +153,28 @@ workoutRoutes.post("/v1/workouts/sessions/:id/complete", requireAuth, async (c) 
       notes: body.notes ?? null,
     }),
   );
+});
+
+/** Session history list (`from` / `to` are YYYY-MM-DD, default last 30 days). */
+workoutRoutes.get("/v1/workouts/sessions", requireAuth, async (c) => {
+  const q = parseBody(WorkoutHistoryQuerySchema, c.req.query());
+  const body: WorkoutHistoryListResponse = await loadWorkoutHistory(
+    createDb(c.env.DB),
+    c.get("userId"),
+    todayUtc(),
+    q,
+  );
+  return c.json(body);
+});
+
+/** Minutes / sets / volume series for day | week | month charts. */
+workoutRoutes.get("/v1/workouts/summary", requireAuth, async (c) => {
+  const q = parseBody(HistoryQuerySchema, c.req.query());
+  const body: WorkoutSummaryResponse = await loadWorkoutSummary(
+    createDb(c.env.DB),
+    c.get("userId"),
+    q.range,
+    q.anchor ?? todayUtc(),
+  );
+  return c.json(body);
 });

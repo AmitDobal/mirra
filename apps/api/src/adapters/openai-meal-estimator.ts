@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
 import { logAiUsage } from "../lib/ai-usage";
@@ -10,22 +8,18 @@ import type {
   MealEstimator,
 } from "../ports/meal-estimator";
 import { heuristicMealEstimator } from "./heuristic-meal-estimator";
+import {
+  MEAL_JSON_SCHEMA,
+  MealModelOutputSchema,
+  toMealEstimateResult,
+} from "./meal-estimate-schema";
 import { chatCompletion, type ChatMessage } from "./openai-client";
 
-const EstimateSchema = z.object({
-  name: z.string().min(1).max(120),
-  kcal: z.number().int().min(0).max(5000),
-  proteinG: z.number().min(0).max(400),
-  carbsG: z.number().min(0).max(600),
-  fatG: z.number().min(0).max(300),
-  confidence: z.number().min(0).max(1),
-  notes: z.string().max(400).optional(),
-});
-
-const SYSTEM = `You are Mirra Fuel — estimate a single meal from a photo and/or description.
-Reply STRICT JSON:
-{"name":string,"kcal":number,"proteinG":number,"carbsG":number,"fatG":number,"confidence":0-1,"notes"?:string}
-Be realistic. Prefer underestimating oils you cannot see. confidence <0.5 if uncertain.
+const SYSTEM = `You are Mirra Fuel. Estimate a single meal from a photo and/or description.
+Break the meal into ingredients with grams. Totals must equal the sum of the ingredients.
+Give fiberG, sugarG and sodiumMg when you can judge them, otherwise null.
+warnings are short wellness notes (for example "High in sodium"). Never diagnose or give medical advice.
+Be realistic. Prefer underestimating oils you cannot see. Set confidence below 0.5 if uncertain.
 Never use em dashes or semicolons. Prefer short sentences.`;
 
 /** OpenAI vision meal estimator (Cal AI–style). Falls back to heuristic. */
@@ -48,7 +42,7 @@ export const createOpenAiMealEstimator = (
     const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
     const userContent: ChatMessage["content"] = [];
     const prompt = [
-      "Estimate calories and macros for this meal.",
+      "Estimate calories, macros, micros and ingredients for this meal.",
       input.description?.trim()
         ? `User description: ${input.description.trim()}`
         : null,
@@ -68,8 +62,9 @@ export const createOpenAiMealEstimator = (
       const completion = await chatCompletion({
         apiKey,
         model,
-        jsonMode: true,
-        temperature: 0.2,
+        jsonSchema: { name: "meal_estimate", schema: MEAL_JSON_SCHEMA },
+        temperature: 0,
+        baseUrl: env.OPENAI_BASE_URL,
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: userContent },
@@ -85,12 +80,12 @@ export const createOpenAiMealEstimator = (
         usage: completion.usage,
       });
 
-      const parsed = EstimateSchema.safeParse(JSON.parse(completion.content));
+      const parsed = MealModelOutputSchema.safeParse(JSON.parse(completion.content));
       if (!parsed.success) {
         console.warn("[openai-meal] schema fail → heuristic");
         return heuristicMealEstimator.estimate(input);
       }
-      return { ...parsed.data, source: "openai" };
+      return toMealEstimateResult(parsed.data);
     } catch (err) {
       console.warn(
         "[openai-meal] error → heuristic",

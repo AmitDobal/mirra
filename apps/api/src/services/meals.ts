@@ -1,12 +1,21 @@
-import type { MealBody, MealPatchBody, MealResponse, MealSlot } from "@mirra/contracts";
+import type {
+  MealAnalysisStatus,
+  MealBody,
+  MealIngredient,
+  MealPatchBody,
+  MealResponse,
+  MealSlot,
+} from "@mirra/contracts";
 import { and, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { mealPlanItems, meals } from "../db/schema";
 import { dayBoundsMs, msToUnix } from "../lib/dates";
+import { parseJsonColumn } from "../lib/json";
 import { notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { recordAttendanceSafe } from "./attendance";
+import { rebuildDaysSafe } from "./nutrition-rollup";
 
 export const toMealResponse = (m: typeof meals.$inferSelect): MealResponse => ({
   id: m.id,
@@ -19,7 +28,18 @@ export const toMealResponse = (m: typeof meals.$inferSelect): MealResponse => ({
   eatenAt: msToUnix(m.eatenAt) ?? 0,
   mediaId: m.mediaId,
   createdAt: msToUnix(m.createdAt) ?? 0,
+  fiberG: m.fiberG,
+  sugarG: m.sugarG,
+  sodiumMg: m.sodiumMg,
+  ingredients: parseJsonColumn<MealIngredient[]>(m.ingredientsJson, []),
+  warnings: parseJsonColumn<string[]>(m.warningsJson, []),
+  analysisStatus: (m.analysisStatus as MealAnalysisStatus) ?? "none",
+  analysisSource: (m.analysisSource as MealResponse["analysisSource"]) ?? null,
+  estimateConfidence: m.estimateConfidence,
 });
+
+const jsonOrNull = (v: unknown[] | undefined): string | null =>
+  v && v.length > 0 ? JSON.stringify(v) : null;
 
 export type MealInput = Omit<MealBody, "proteinG" | "carbsG" | "fatG"> &
   Partial<Pick<MealBody, "proteinG" | "carbsG" | "fatG">>;
@@ -47,10 +67,19 @@ export const insertMeal = async (
     carbsG: body.carbsG ?? 0,
     fatG: body.fatG ?? 0,
     mediaId: body.mediaId ?? null,
+    fiberG: body.fiberG ?? null,
+    sugarG: body.sugarG ?? null,
+    sodiumMg: body.sodiumMg ?? null,
+    ingredientsJson: jsonOrNull(body.ingredients),
+    warningsJson: jsonOrNull(body.warnings),
+    analysisStatus: body.analysisStatus ?? "none",
+    analysisSource: body.analysisSource ?? null,
+    estimateConfidence: body.estimateConfidence ?? null,
     createdAt: now,
   };
   await db.insert(meals).values(row);
   await recordAttendanceSafe(db, userId, "mealLogged");
+  await rebuildDaysSafe(db, userId, [eatenAt]);
   return toMealResponse({ ...row, createdAt: now } as typeof meals.$inferSelect);
 };
 
@@ -103,13 +132,27 @@ export const updateMeal = async (
   if (patch.carbsG !== undefined) set.carbsG = patch.carbsG;
   if (patch.fatG !== undefined) set.fatG = patch.fatG;
   if (patch.eatenAt !== undefined) set.eatenAt = new Date(patch.eatenAt);
+  if (patch.fiberG !== undefined) set.fiberG = patch.fiberG;
+  if (patch.sugarG !== undefined) set.sugarG = patch.sugarG;
+  if (patch.sodiumMg !== undefined) set.sodiumMg = patch.sodiumMg;
+  if (patch.ingredients !== undefined) set.ingredientsJson = jsonOrNull(patch.ingredients);
+  if (patch.warnings !== undefined) set.warningsJson = jsonOrNull(patch.warnings);
+  if (patch.analysisStatus !== undefined) set.analysisStatus = patch.analysisStatus;
+  if (patch.analysisSource !== undefined) set.analysisSource = patch.analysisSource;
+  if (patch.estimateConfidence !== undefined) set.estimateConfidence = patch.estimateConfidence;
 
+  const [before] = await db
+    .select({ eatenAt: meals.eatenAt })
+    .from(meals)
+    .where(and(eq(meals.id, mealId), eq(meals.userId, userId)))
+    .limit(1);
   const [row] = await db
     .update(meals)
     .set(set)
     .where(and(eq(meals.id, mealId), eq(meals.userId, userId)))
     .returning();
   if (!row) throw notFound("Meal not found");
+  await rebuildDaysSafe(db, userId, before ? [before.eatenAt, row.eatenAt] : [row.eatenAt]);
   return toMealResponse(row);
 };
 
@@ -121,8 +164,9 @@ export const deleteMeal = async (db: AppDB, userId: string, mealId: string): Pro
   const deleted = await db
     .delete(meals)
     .where(and(eq(meals.id, mealId), eq(meals.userId, userId)))
-    .returning({ id: meals.id });
+    .returning({ id: meals.id, eatenAt: meals.eatenAt });
   if (deleted.length === 0) throw notFound("Meal not found");
+  await rebuildDaysSafe(db, userId, [deleted[0].eatenAt]);
   await db
     .update(mealPlanItems)
     .set({ status: "planned", loggedMealId: null, updatedAt: new Date() })

@@ -14,6 +14,7 @@ import { createDb } from "../db";
 import { meals } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { sanitizeAiCopy } from "../lib/ai-copy";
+import { notFound } from "../lib/errors";
 import { dayBoundsMs, todayUtc } from "../lib/dates";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { getMealEstimator } from "../lib/meal-estimator";
@@ -23,6 +24,7 @@ import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { withAiCredits } from "../services/credits-gate";
 import { loadHydration } from "../services/hydration";
+import { enqueueMealAnalysis, findMealAnalysisJob } from "../services/meal-analysis-jobs";
 import { deleteMeal, insertMeal, toMealResponse, updateMeal } from "../services/meals";
 import { defaultFuelTargets, loadCurrentPlan } from "../services/plan-loaders";
 
@@ -112,6 +114,11 @@ fuelRoutes.post("/v1/meals/estimate", requireAuth, async (c) => {
     confidence: result.confidence,
     notes: result.notes ? sanitizeAiCopy(result.notes) : result.notes,
     source: result.source,
+    fiberG: result.fiberG,
+    sugarG: result.sugarG,
+    sodiumMg: result.sodiumMg,
+    ingredients: result.ingredients.map((i) => ({ ...i, name: sanitizeAiCopy(i.name) || i.name })),
+    warnings: result.warnings.map((w) => sanitizeAiCopy(w) || w),
   };
   return c.json(response);
 });
@@ -119,7 +126,28 @@ fuelRoutes.post("/v1/meals/estimate", requireAuth, async (c) => {
 fuelRoutes.post("/v1/meals", requireAuth, async (c) => {
   const body = parseBody(MealBodySchema, await c.req.json());
   const db = createDb(c.env.DB);
-  return c.json(await insertMeal(db, c.get("userId"), body), 201);
+  const userId = c.get("userId");
+  const { analyzeAsync, ...mealBody } = body;
+  const meal = await insertMeal(
+    db,
+    userId,
+    analyzeAsync ? { ...mealBody, analysisStatus: "pending" } : mealBody,
+  );
+  if (analyzeAsync) {
+    await enqueueMealAnalysis(db, userId, {
+      mealId: meal.id,
+      mediaId: meal.mediaId,
+      description: meal.name,
+    });
+  }
+  return c.json(meal, 201);
+});
+
+fuelRoutes.get("/v1/meals/analysis-jobs/:id", requireAuth, async (c) => {
+  const db = createDb(c.env.DB);
+  const job = await findMealAnalysisJob(db, c.get("userId"), c.req.param("id"));
+  if (!job) throw notFound("Analysis job not found");
+  return c.json(job);
 });
 
 fuelRoutes.patch("/v1/meals/:id", requireAuth, async (c) => {

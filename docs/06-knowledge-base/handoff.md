@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — Ship gate: check-in S20b + Today S15b (60a5f0a)
+
+**Done:** `origin/main` `60a5f0a` == local HEAD, tracked tree clean. `tsc --noEmit` PASS in `apps/mobile`. EAS `day-test` iOS update `01a1989c-87e3-7f14-948b-359d87fe0f1b`, group `5e2f916b-e4cb-47fb-b72a-5a7dabff06da`, published from the clean tip (message "AMI-139/140 check-in S20b + Today S15b"). Mobile-only; API unchanged. Worktrees `mirra-wt-ami-139/140` removed (branches on origin).
+
+**Phone:** https://u.expo.dev/update/01a1989c-87e3-7f14-948b-359d87fe0f1b
+
+**Smoke:** Simulator (Expo Go 58) boots the tip and renders onboarding. Today How-are-you + fuel photo rows, S20b open, and S20c/rest-day submit were NOT driven (sim taps unavailable; Auth needed Dev Tester tap). Builder S20b/S20c shots in `smoke/ami-139/`. Verify on phone.
+
+**Watch out:** Sim SQLite for `day-test-1` was seeded with a profile row; session lives in Keychain so cold start still lands on week-reveal until Dev Tester is tapped.
+
 ## 2026-11-02 — Check-in/Today Stitch + gitignore (in progress)
 
 **Done:** `.gitignore` ignores Expo-Go `*.tar.app`, dist, native build junk (`12ede1c`). Research: daily recalibration vector picker is out — 3 taps + AI Adjust today. Stitch generated + exported S20b/S20c/S15b under `stitch_mirra_ai_personal_trainer/` + `docs/03-engineering/checkin-today-ux.md`. Linear AMI-139 (check-in) + AMI-140 (Today).

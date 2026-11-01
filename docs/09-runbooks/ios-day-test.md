@@ -6,7 +6,7 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 2. **JS app hosted** (EAS Update) opened in **Expo Go** on the phone  
    — or a full **EAS Build** IPA (needs Apple Developer Program) if you outgrow Expo Go
 
-## Live right now (2026-11-01)
+## Live right now (2026-11-02)
 
 | Piece | Value |
 | --- | --- |
@@ -16,15 +16,15 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | Local meal times + logged meal detail (AMI-137) + History 1h cache/PTR (AMI-138) on top of delete-account wave (mobile-only; API unchanged) |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/109aabd7-b87b-48b3-a885-6ce18621e63b |
-| iOS update ID | `01a1986d-4a82-77b0-be42-763abfe2a010` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1986d-4a82-77b0-be42-763abfe2a010 |
+| Mobile bundle | Check-in S20b tap flow + S20c result (AMI-139) + Today S15b check-in/fuel photo rows (AMI-140) on top of AMI-137/138 (mobile-only; API unchanged) |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/5e2f916b-e4cb-47fb-b72a-5a7dabff06da |
+| iOS update ID | `01a1989c-87e3-7f14-948b-359d87fe0f1b` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1989c-87e3-7f14-948b-359d87fe0f1b |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `meal local time + detail + history 1h cache + invalidate efff51a` |
-| Smoke shots | `/tmp/mirra-qa/meal-history-ux/` (RESULT.md; boot only, UI flow not driven) |
-| Bundle prove | Commit `02a4aad` (AMI-137/138 merged) |
+| Message | `AMI-139/140 check-in S20b + Today S15b` |
+| Smoke shots | `docs/05-project-management/smoke/ami-139/` (builder S20b/S20c). Ship gate: tsc clean on tip, sim boot OK; Today/check-in UI not driven (no input automation) |
+| Bundle prove | Commit `60a5f0a` (EAS reports clean tree) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
 | Smoke note | Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md` |
 

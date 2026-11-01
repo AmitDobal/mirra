@@ -15,16 +15,16 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
 | Google OAuth | Better Auth browser social → accounts.google.com (see `mirra-google-oauth.md`); **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/64a38f07-8173-433d-9fb6-dafc30072add |
-| iOS update ID | `01a195bd-58de-73a6-9e7d-5c25cf639aab` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/727a28fb-4bc1-42df-9b44-9cc472a68305 |
+| iOS update ID | `01a195ea-b64c-7c73-a1f6-2bc9f90d9e99` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a195ea-b64c-7c73-a1f6-2bc9f90d9e99 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `session restore + You profile real user` |
-| Smoke shots | `/tmp/mirra-qa/user-base-e2e/` |
-| Bundle prove | Commit `b075860` (#34+#35); cold-start → today; You from `GET /v1/me` |
-| API prove | `GET /v1/me` includes `user` + `accounts` (google-linked user has providerId google) |
-| Smoke note | **PASS** (logic+API) — device deep-link not re-proven; see `RESULT.txt` |
+| Message | `me cache+credits+H-trainers (#38), progress API (#39), today week plan (#40)` |
+| Smoke shots | `/tmp/mirra-qa/polish-goal-e2e/` |
+| Bundle prove | Commit `23db13b` (#38+#39+#40); You cache/credits/trainers; Progress gallery; Today 7-day week strip |
+| API prove | `GET /v1/me` cached; progress photos API; week plan D1 persist |
+| Smoke note | See `/tmp/mirra-qa/polish-goal-e2e/RESULT.txt` |
 
 ### Open on phone (laptop can be off)
 

@@ -9,6 +9,13 @@ export const s02WelcomeHook = {
   portraitMaleCrossfit: require("./s02_welcome_hook/portrait-male-crossfit.jpg"),
 } as const;
 
+/** S02 welcome v2 — richer photo collage assets. */
+export const s02WelcomeHookV2 = {
+  heroRunnerSilhouette: require("./s02_welcome_hook_v2/hero-runner-silhouette.jpg"),
+  portraitWomanAthlete: require("./s02_welcome_hook_v2/portrait-woman-athlete.jpg"),
+  portraitMaleCrossfit: require("./s02_welcome_hook_v2/portrait-male-crossfit.jpg"),
+} as const;
+
 export const s06Target = {
   athleteTyingShoes: require("./s06_target/athlete-tying-shoes.jpg"),
 } as const;
@@ -31,6 +38,11 @@ export const s12WeekReveal = {
 
 export const s13Paywall = {
   coachCutout: require("./s13_paywall/coach-cutout.jpg"),
+} as const;
+
+/** S13 hard paywall — athlete tile from Stitch redesign. */
+export const s13PaywallHard = {
+  coachAthlete: require("./s13_paywall_hard/coach-athlete.jpg"),
 } as const;
 
 /** S09B — Stitch-generated trainer character portraits (Kinetic Performance). */
@@ -124,11 +136,13 @@ export const s27ExerciseSwapAdd = {
 
 export const stitchAssets = {
   s02WelcomeHook,
+  s02WelcomeHookV2,
   s06Target,
   s09bTrainers,
   s11GeneratingWeek,
   s12WeekReveal,
   s13Paywall,
+  s13PaywallHard,
   s15Today,
   s15bTodayCheckinInline,
   s16LiveWorkoutHud,

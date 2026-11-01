@@ -10,9 +10,7 @@ import { PaywallHero } from "@/features/onboarding/components/PaywallHero";
 import { PaywallPlanCard } from "@/features/onboarding/components/PaywallPlanCard";
 import { completeOnboardingFunnel } from "@/features/onboarding/services/complete-funnel";
 import {
-  canSoftSkipPaywall,
   hasSession,
-  markPaywallSoftSkipped,
   requireSignedInUser,
   setPostAuthIntent,
 } from "@/lib/auth";
@@ -21,7 +19,7 @@ import { color } from "@/theme/tokens";
 import { LimeCta } from "@/ui";
 import { sx } from "@/theme/sx";
 
-/** S13 — Soft paywall. Purchase/restore require Google; close never grants Pro. */
+/** S13 — Hard paywall. Trial / restore / terms only. No continue without Pro. */
 const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
@@ -32,7 +30,7 @@ const PaywallScreen = () => {
     void loadOfferings();
   }, [loadOfferings]);
 
-  const finishFree = () => {
+  const finishPro = () => {
     void completeOnboardingFunnel().then(() => {
       router.replace("/(tabs)/today");
     });
@@ -61,22 +59,17 @@ const PaywallScreen = () => {
   const handleTrial = async () => {
     if (!ensureGoogleForPurchase()) return;
     const result = await purchase(packageId);
-    if (result?.ok) finishFree();
+    if (result?.ok) finishPro();
   };
 
   const handleRestore = async () => {
     if (!ensureGoogleForPurchase()) return;
     const result = await restore();
-    if (result?.ok) finishFree();
+    if (result?.ok) finishPro();
   };
 
-  /** Prod: no entitlement → stay. Only `__DEV__` may skip into tabs. */
-  const handleCloseOrSkip = () => {
-    if (canSoftSkipPaywall()) {
-      markPaywallSoftSkipped();
-      finishFree();
-      return;
-    }
+  /** Close never grants Pro (AMI-145 / hard paywall). */
+  const handleClose = () => {
     if (!hasSession()) {
       goAuth("paywall");
       return;
@@ -84,10 +77,12 @@ const PaywallScreen = () => {
     Alert.alert(c.blockedTitle, c.blockedBody);
   };
 
-  const showSkip = canSoftSkipPaywall();
-
   const handleTerms = () => {
     void Linking.openURL(onboardingCopy.auth.termsUrl);
+  };
+
+  const handlePrivacy = () => {
+    void Linking.openURL(onboardingCopy.auth.privacyUrl);
   };
 
   return (
@@ -95,7 +90,9 @@ const PaywallScreen = () => {
       header={
         <View style={sx("flex-row items-center justify-between pb-space-md")}>
           <View
-            style={sx("flex-row items-center gap-space-xs rounded-full bg-primary-container px-space-md py-space-xs")}
+            style={sx(
+              "flex-row items-center gap-space-xs rounded-full bg-primary-container px-space-md py-space-xs",
+            )}
           >
             <Zap color={color.onPrimaryFixed} fill={color.onPrimaryFixed} size={14} />
             <Text style={sx("font-label-bold text-label-caps uppercase text-on-primary-fixed")}>
@@ -105,7 +102,7 @@ const PaywallScreen = () => {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={c.closeLabel}
-            onPress={handleCloseOrSkip}
+            onPress={handleClose}
             hitSlop={8}
             style={sx("h-9 w-9 items-center justify-center rounded-full bg-surface-container-high")}
           >
@@ -143,22 +140,22 @@ const PaywallScreen = () => {
                 {c.termsLink}
               </Text>
             </Pressable>
-          </View>
-          {showSkip ? (
+            <Text style={sx("font-body text-body-sm text-surface-container-highest")}>•</Text>
             <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={c.continueWithoutPro}
-              onPress={handleCloseOrSkip}
+              accessibilityRole="link"
+              accessibilityLabel={c.privacyLink}
+              onPress={handlePrivacy}
               hitSlop={8}
-              style={sx("px-space-md py-space-xs")}
             >
-              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
-                {c.continueWithoutPro}
+              <Text style={sx("font-label text-label-md text-on-surface-variant")}>
+                {c.privacyLink}
               </Text>
             </Pressable>
-          ) : null}
+          </View>
           <Text
-            style={sx("max-w-xs text-center font-body text-body-sm text-on-surface-variant leading-tight")}
+            style={sx(
+              "max-w-xs text-center font-body text-[10px] leading-tight text-on-surface-variant",
+            )}
           >
             {c.legal}
           </Text>

@@ -10,6 +10,8 @@ import {
 } from "@/lib/api";
 import { errorMessage, logger } from "@/lib/logger";
 import { formatLocalTime } from "@/lib/datetime";
+import { useHistoryStore } from "@/features/history/history-store";
+
 import { buildLocalMeal, slotKey, tipAfterLog, todayIso } from "./fuel-helpers";
 
 export type LocalMeal = {
@@ -226,6 +228,7 @@ export const useFuelStore = create<FuelState>((set, get) => ({
         tip: tipAfterLog(s.target, s.proteinTarget, meals),
       };
     });
+    useHistoryStore.getState().invalidate();
     try {
       const remote = await createMeal(
         {

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Mirra — Daily Check-in</title>
+<!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "outline": "#8f937c",
+            "on-tertiary-fixed-variant": "#8c1037",
+            "outline-variant": "#454936",
+            "surface-tint": "#b0d434",
+            "surface-variant": "#353534",
+            "surface-container-low": "#1c1b1b",
+            "tertiary-fixed-dim": "#ffb2bd",
+            "on-primary": "#293500",
+            "secondary-fixed": "#ebdcff",
+            "secondary": "#d1beef",
+            "primary-container": "#cbf150",
+            "primary-fixed": "#cbf150",
+            "on-error": "#690005",
+            "on-tertiary": "#670024",
+            "on-surface-variant": "#c5c9b0",
+            "on-primary-fixed-variant": "#3c4d00",
+            "tertiary": "#ffffff",
+            "error": "#ffb4ab",
+            "inverse-primary": "#516600",
+            "inverse-surface": "#e5e2e1",
+            "on-secondary-fixed": "#21143a",
+            "surface-container-lowest": "#0e0e0e",
+            "background": "#131313",
+            "surface-container-highest": "#353534",
+            "surface-dim": "#131313",
+            "on-primary-container": "#566c00",
+            "error-container": "#93000a",
+            "on-background": "#e5e2e1",
+            "primary-fixed-dim": "#b0d434",
+            "on-primary-fixed": "#161e00",
+            "on-tertiary-fixed": "#400013",
+            "inverse-on-surface": "#313030",
+            "secondary-fixed-dim": "#d1beef",
+            "tertiary-fixed": "#ffd9dd",
+            "surface-container": "#201f1f",
+            "surface-container-high": "#2a2a2a",
+            "on-secondary": "#372950",
+            "on-tertiary-container": "#b53354",
+            "on-surface": "#e5e2e1",
+            "surface-bright": "#393939",
+            "surface": "#131313",
+            "tertiary-container": "#ffd9dd",
+            "on-secondary-container": "#c2b0e0",
+            "primary": "#ffffff",
+            "on-secondary-fixed-variant": "#4e4068",
+            "secondary-container": "#50426b",
+            "on-error-container": "#ffdad6"
+          },
+          "borderRadius": {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "1.25rem",
+            "space-xs": "0.25rem",
+            "space-xl": "1.75rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.25rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "display-lg": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "display-metric": ["Space Grotesk"],
+            "label-md": ["Space Grotesk"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "headline-md": ["Space Grotesk"],
+            "body-md": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "headline-lg": ["Space Grotesk"],
+            "label-lg": ["Space Grotesk"],
+            "label-caps": ["Space Grotesk"]
+          },
+          "fontSize": {
+            "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Mobile app viewport simulation */
+    body {
+      background-color: #0e0e0e;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body class="flex justify-center items-start min-h-screen sm:py-6">
+<!-- iPhone Screen Shell (390px native width) -->
+<main class="w-full max-w-[390px] min-h-screen bg-background text-on-background relative flex flex-col overflow-x-hidden shadow-2xl sm:rounded-[44px] sm:border sm:border-surface-container-high pb-10">
+<!-- Top iOS Status & App Header (Focused Task Journey - Close action present, suppress global nav) -->
+<header class="w-full pt-4 pb-2 px-margin flex items-center justify-between z-20">
+<!-- Brand Anchor -->
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm tracking-wider font-bold text-on-surface">MIRRA</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container inline-block"></span>
+</div>
+<!-- Frosted Close Button -->
+<button aria-label="Close check-in" class="w-10 h-10 rounded-full bg-surface-container-high/70 backdrop-blur-md border border-surface-container-highest flex items-center justify-center text-on-surface active:scale-95 transition-transform duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</header>
+<!-- Main Scrollable Canvas -->
+<div class="flex-1 px-margin flex flex-col gap-4">
+<!-- Dominant Hero Photo Card -->
+<section class="relative w-full h-[280px] rounded-[28px] overflow-hidden bg-surface-container-low border border-surface-container-high flex flex-col justify-end p-5">
+<!-- Cinematic Athlete Image -->
+<img alt="Athlete focused breathing in serene morning dawn" class="absolute inset-0 w-full h-full object-cover object-center" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClgqyDZ141m1I0j7hnZYOtdl2Z_FY_bTQT-kLuGG8CL4MSqRA508cltXmaihIZUlJz9HDVAjnIBjVlhJcvLb-Z7cl1oTtAGWvEo2w24PXAiEbWops-rWGK9D2Fn-uHb9jQgNV9QONbxH_5Snv9g5GwK8qKXGgGoDRvu4L7p15rbrMlpdTr_93efsrK_kVRlMXMog71Pg_em4xa8gwdrmtFeBPCLeR-M-Gc21NkMgogFDIvWhaQFx1mXYv7YiGToZnvbff5yOSB3xu_"/>
+<!-- Gradients for contrast and minimal typography legibility -->
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-transparent"></div>
+<!-- Hero Typography: Clean Space Grotesk -->
+<div class="relative z-10 space-y-1">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold">
+            How are you today?
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant font-medium">
+            3 taps. We adjust the plan.
+          </p>
+</div>
+</section>
+<!-- Lower Stack / Touch-First Input Section -->
+<section class="w-full bg-surface-container-low rounded-3xl p-5 border border-surface-container-high flex flex-col gap-5">
+<!-- ROW 1: ENERGY -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-primary-container">bolt</span>
+<span class="font-label-caps text-label-caps tracking-widest text-on-surface uppercase">ENERGY</span>
+</div>
+<span class="font-label-md text-label-md text-primary-container font-semibold">High Voltage</span>
+</div>
+<!-- 5 Large Pill Segments (min-height 52px) -->
+<div class="grid grid-cols-5 gap-2 w-full">
+<button class="h-14 rounded-2xl bg-surface-container border border-surface-container-high text-on-surface font-display-metric text-headline-sm flex items-center justify-center active:scale-95 transition-all" type="button">
+              1
+            </button>
+<button class="h-14 rounded-2xl bg-surface-container border border-surface-container-high text-on-surface font-display-metric text-headline-sm flex items-center justify-center active:scale-95 transition-all" type="button">
+              2
+            </button>
+<button class="h-14 rounded-2xl bg-surface-container border border-surface-container-high text-on-surface font-display-metric text-headline-sm flex items-center justify-center active:scale-95 transition-all" type="button">
+              3
+            </button>
+<!-- Active 4: High-Contrast Electric Lime -->
+<button class="h-14 rounded-2xl bg-primary-container text-on-primary-fixed font-display-metric text-headline-sm font-bold flex items-center justify-center shadow-lg shadow-primary-container/20 scale-[1.02] border-2 border-primary-container active:scale-95 transition-all" type="button">
+              4
+            </button>
+<button class="h-14 rounded-2xl bg-surface-container border border-surface-container-high text-on-surface font-display-metric text-headline-sm flex items-center justify-center active:scale-95 transition-all" type="button">
+              5
+            </button>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container-high"></div>
+<!-- ROW 2: SLEEP -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">bedtime</span>
+<span class="font-label-caps text-label-caps tracking-widest text-on-surface uppercase">SLEEP</span>
+</div>
+<span class="font-label-md text-label-md text-secondary font-semibold">8h 15m logged</span>
+</div>
+<!-- Segmented Control: Poor, OK, Great -->
+<div class="grid grid-cols-3 gap-2 w-full p-1 bg-surface-container rounded-2xl border border-surface-container-high">
+<button class="h-12 rounded-xl text-on-surface-variant font-label-lg text-label-lg flex items-center justify-center active:scale-95 transition-all" type="button">
+              Poor
+            </button>
+<button class="h-12 rounded-xl text-on-surface-variant font-label-lg text-label-lg flex items-center justify-center active:scale-95 transition-all" type="button">
+              OK
+            </button>
+<!-- Selected 'Great' in Soft Lavender Accent -->
+<button class="h-12 rounded-xl bg-secondary text-on-secondary-fixed font-label-lg text-label-lg font-bold flex items-center justify-center shadow-md active:scale-95 transition-all" type="button">
+              Great
+            </button>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container-high"></div>
+<!-- ROW 3: SORENESS -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-on-surface">fitness_center</span>
+<span class="font-label-caps text-label-caps tracking-widest text-on-surface uppercase">SORENESS</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Legs targeted</span>
+</div>
+<!-- Segmented Control: None, Some, Very -->
+<div class="grid grid-cols-3 gap-2 w-full p-1 bg-surface-container rounded-2xl border border-surface-container-high">
+<button class="h-12 rounded-xl text-on-surface-variant font-label-lg text-label-lg flex items-center justify-center active:scale-95 transition-all" type="button">
+              None
+            </button>
+<!-- Selected 'Some' -->
+<button class="h-12 rounded-xl bg-surface-bright text-on-surface font-label-lg text-label-lg font-bold border border-outline-variant flex items-center justify-center active:scale-95 transition-all" type="button">
+              Some
+            </button>
+<button class="h-12 rounded-xl text-on-surface-variant font-label-lg text-label-lg flex items-center justify-center active:scale-95 transition-all" type="button">
+              Very
+            </button>
+</div>
+<!-- Contextual Sub-row: Body Area Chips -->
+<div class="pt-1 flex items-center gap-2 overflow-x-auto no-scrollbar">
+<button class="px-3.5 py-2 rounded-full bg-surface-container border border-surface-container-high text-on-surface-variant font-body-sm text-body-sm flex items-center gap-1.5 active:scale-95 transition-all" type="button">
+<span>Shoulders</span>
+</button>
+<!-- Selected 'Legs' with electric lime dot/outline -->
+<button class="px-3.5 py-2 rounded-full bg-surface-container border-2 border-primary-container text-on-surface font-body-sm text-body-sm font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span>Legs</span>
+</button>
+<button class="px-3.5 py-2 rounded-full bg-surface-container border border-surface-container-high text-on-surface-variant font-body-sm text-body-sm flex items-center gap-1.5 active:scale-95 transition-all" type="button">
+<span>Back</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Secondary Action Row: Note & Photo Chips -->
+<div class="grid grid-cols-2 gap-3 w-full">
+<!-- + Add note -->
+<button class="h-12 px-4 rounded-full bg-surface-container border border-surface-container-high text-on-surface font-body-md text-body-md flex items-center justify-center gap-2 hover:bg-surface-bright active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">edit_note</span>
+<span>Add note</span>
+</button>
+<!-- + Add photo (Optional) -->
+<button class="h-12 px-4 rounded-full bg-surface-container border border-surface-container-high text-on-surface font-body-md text-body-md flex items-center justify-center gap-1.5 hover:bg-surface-bright active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">photo_camera</span>
+<span>Add photo</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant/70 text-[11px]">(Opt)</span>
+</button>
+</div>
+<!-- Primary Kinetic Action CTA -->
+<button class="w-full h-14 rounded-full bg-primary-container text-on-primary-fixed font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary-container/20 active:scale-[0.98] transition-transform duration-150" type="button">
+<span>Update my day</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<!-- Secondary Skip Action & Reassurance -->
+<div class="flex flex-col items-center gap-2 pt-1 pb-4">
+<button class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors py-1" type="button">
+          Skip — rest counts
+        </button>
+<p class="font-body-sm text-body-sm text-outline tracking-normal text-center">
+          Rest counts. No fallen streaks.
+        </p>
+</div>
+</div>
+</main>
+</body></html>

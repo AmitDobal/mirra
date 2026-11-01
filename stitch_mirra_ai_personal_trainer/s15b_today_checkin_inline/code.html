@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mirra AI — Today Check-In</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#131313",
+            "background": "#131313",
+            "on-primary-container": "#566c00",
+            "tertiary-container": "#ffd9dd",
+            "on-error": "#690005",
+            "on-secondary": "#372950",
+            "on-primary-fixed": "#161e00",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#ffb2bd",
+            "surface-container-highest": "#353534",
+            "surface": "#131313",
+            "primary-container": "#cbf150",
+            "on-tertiary-fixed-variant": "#8c1037",
+            "on-secondary-fixed": "#21143a",
+            "surface-bright": "#393939",
+            "inverse-surface": "#e5e2e1",
+            "surface-variant": "#353534",
+            "primary-fixed": "#cbf150",
+            "inverse-primary": "#516600",
+            "secondary": "#d1beef",
+            "on-surface-variant": "#c5c9b0",
+            "on-secondary-container": "#c2b0e0",
+            "on-background": "#e5e2e1",
+            "outline-variant": "#454936",
+            "on-tertiary": "#670024",
+            "surface-container-high": "#2a2a2a",
+            "secondary-fixed-dim": "#d1beef",
+            "secondary-fixed": "#ebdcff",
+            "on-surface": "#e5e2e1",
+            "primary-fixed-dim": "#b0d434",
+            "on-primary": "#293500",
+            "inverse-on-surface": "#313030",
+            "tertiary": "#ffffff",
+            "on-tertiary-fixed": "#400013",
+            "on-tertiary-container": "#b53354",
+            "tertiary-fixed": "#ffd9dd",
+            "surface-container-lowest": "#0e0e0e",
+            "surface-tint": "#b0d434",
+            "outline": "#8f937c",
+            "on-secondary-fixed-variant": "#4e4068",
+            "secondary-container": "#50426b",
+            "error": "#ffb4ab",
+            "error-container": "#93000a",
+            "surface-container": "#201f1f",
+            "surface-container-low": "#1c1b1b",
+            "primary": "#ffffff",
+            "on-primary-fixed-variant": "#3c4d00"
+          },
+          "borderRadius": {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-lg": "1.25rem",
+            "gutter": "1rem",
+            "space-xl": "1.75rem",
+            "margin": "1.25rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Space Grotesk"],
+            "label-caps": ["Space Grotesk"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "label-lg": ["Space Grotesk"],
+            "display-lg": ["Space Grotesk"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "display-metric": ["Space Grotesk"],
+            "label-md": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "body-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Space Grotesk"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+    }
+    .contour-pattern {
+      background-image: radial-gradient(circle at 85% 35%, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.08) 25%, transparent 26%),
+                        radial-gradient(circle at 85% 35%, rgba(0, 0, 0, 0.07) 38%, transparent 39%),
+                        radial-gradient(circle at 85% 35%, rgba(0, 0, 0, 0.06) 52%, transparent 53%),
+                        radial-gradient(circle at 85% 35%, rgba(0, 0, 0, 0.05) 68%, transparent 69%),
+                        radial-gradient(circle at 85% 35%, rgba(0, 0, 0, 0.04) 84%, transparent 85%);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex justify-center selection:bg-primary-container selection:text-on-primary-container">
+<!-- iPhone Max Canvas Shell -->
+<div class="relative w-full max-w-md min-h-screen bg-surface-dim flex flex-col pb-32">
+<!-- Top Safe Area Header -->
+<header class="w-full px-space-margin pt-6 pb-space-sm flex flex-col gap-3">
+<!-- Status pill and user bar -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-surface-container-high">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-on-surface tracking-wider">TODAY</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Rest counts. 100% active</span>
+</div>
+<div class="flex items-center gap-2.5">
+<button class="w-9 h-9 rounded-full bg-surface-container border border-surface-container-high flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[19px]">notifications</span>
+</button>
+<div class="relative w-9 h-9 rounded-full overflow-hidden border-2 border-primary-container/40 p-0.5">
+<img alt="Athlete profile" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXVc3GF1yc5VsVjWp9vqq8IJCmQ5bQ4oD9NW9_DZRWRfzS_PSMCIFMIHYgJ1ICNhFJUJfHVfWmIVgtn1kFfEvUfpSTgs8YAvG-J5yaIuiInAT6JbyZtCGyQX1Y-AKXy53fJZ3pQLV7iW1gCzYpzDzoifw5vwqSg-CReS9vY2lo5gf93Wi8BpxTN_JCGMFAIHYUWtUSTzoPpvHO9O5W6go-xEnOznlcFxVQoQmCUIDRPrCMQsOzDY1NwnaEmYjf7Rt5AnH81DpKafq2"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Week Day Calendar Strip -->
+<section class="px-space-margin pt-1 pb-space-md">
+<div class="flex items-center justify-between mb-3">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">WEEK 12 · PHASE 1</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">May 2024</h2>
+</div>
+<div class="flex items-center gap-1 bg-surface-container rounded-full p-1 border border-surface-container-high">
+<button class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-highest active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-highest active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- 7-day pill rail -->
+<div class="grid grid-cols-7 gap-1.5 p-1.5 rounded-2xl bg-surface-container border border-surface-container-high">
+<!-- Mon 16 -->
+<div class="flex flex-col items-center py-2 rounded-xl text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-70">M</span>
+<span class="font-label-lg text-label-lg mt-1 text-on-surface">16</span>
+</div>
+<!-- Tue 17 -->
+<div class="flex flex-col items-center py-2 rounded-xl text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-70">T</span>
+<span class="font-label-lg text-label-lg mt-1 text-on-surface">17</span>
+</div>
+<!-- Wed 18 (Active) -->
+<div class="flex flex-col items-center py-2 rounded-xl bg-primary-container text-on-primary-container shadow-md">
+<span class="font-label-caps text-label-caps font-bold">W</span>
+<span class="font-label-lg text-label-lg font-bold mt-1">18</span>
+</div>
+<!-- Thu 19 -->
+<div class="flex flex-col items-center py-2 rounded-xl text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-70">T</span>
+<span class="font-label-lg text-label-lg mt-1 text-on-surface">19</span>
+</div>
+<!-- Fri 20 -->
+<div class="flex flex-col items-center py-2 rounded-xl text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-70">F</span>
+<span class="font-label-lg text-label-lg mt-1 text-on-surface">20</span>
+</div>
+<!-- Sat 21 -->
+<div class="flex flex-col items-center py-2 rounded-xl text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-70">S</span>
+<span class="font-label-lg text-label-lg mt-1 text-on-surface">21</span>
+</div>
+<!-- Sun 22 -->
+<div class="flex flex-col items-center py-2 rounded-xl text-on-surface-variant">
+<span class="font-label-caps text-label-caps opacity-70">S</span>
+<span class="font-label-lg text-label-lg mt-1 text-on-surface">22</span>
+</div>
+</div>
+</section>
+<!-- Main Dynamic Feed -->
+<main class="px-space-margin flex flex-col gap-space-lg">
+<!-- IMPROVEMENT 1: IMAGE-FORWARD "How are you today?" Check-in Row -->
+<section class="w-full p-3.5 rounded-2xl bg-surface-container border border-surface-container-high flex items-center justify-between gap-3 hover:border-outline-variant transition-all cursor-pointer active:scale-[0.99]">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary-container shrink-0">
+<img alt="Athlete check-in portrait" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXVc3GF1yc5VsVjWp9vqq8IJCmQ5bQ4oD9NW9_DZRWRfzS_PSMCIFMIHYgJ1ICNhFJUJfHVfWmIVgtn1kFfEvUfpSTgs8YAvG-J5yaIuiInAT6JbyZtCGyQX1Y-AKXy53fJZ3pQLV7iW1gCzYpzDzoifw5vwqSg-CReS9vY2lo5gf93Wi8BpxTN_JCGMFAIHYUWtUSTzoPpvHO9O5W6go-xEnOznlcFxVQoQmCUIDRPrCMQsOzDY1NwnaEmYjf7Rt5AnH81DpKafq2"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-primary-container border-2 border-surface-container"></div>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-[16px] leading-5 text-on-surface font-semibold">How are you today?</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Energy · Sleep · Soreness</span>
+</div>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md shrink-0 shadow-sm">
+<span>3 taps</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</div>
+</section>
+<!-- IMPROVEMENT 4: Weekly Mirror Progress Thumbnail Chip -->
+<section class="w-full px-3.5 py-2.5 rounded-2xl bg-surface-container-low border border-surface-container-high flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<img alt="Weekly physique progress" class="w-10 h-10 rounded-lg object-cover border border-surface-container-high" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP06Yp2wQpv9-zPLy0-UyeRubLNAASqXRK9P_2T5bV0RaCwqjmUTq_kgq5-lok8gPPRSgUb_l8F7yQF0eiir0UifzJbuuwKOFF0vv5V4aUG8Hwtn8zoT6ATftMvjlcjufeNsTh9eFZ1TJ5J41lcDUqFcTKkmnFHoHNl5i2GW_YMwUqEtvORJcVVte8TRXWi3uujxBqnL6AtPL6jjA5UU67NBd8svWjnsFOITO1zhgGke3tQDT_yJirmuGB3uoB9QeyXgNS8oGWQNtC"/>
+<div class="flex flex-col">
+<span class="font-label-lg text-[13px] leading-4 text-on-surface font-semibold">Weekly Shape Check-in</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Due Sunday</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-secondary text-on-secondary font-label-caps text-label-caps font-bold">Ready</span>
+</section>
+<!-- Athlete Hero Workout Card (KEEP & TIGHTEN) -->
+<section class="relative overflow-hidden rounded-3xl bg-primary-container text-surface-container-lowest p-5 contour-pattern flex flex-col justify-between min-h-[220px]">
+<!-- Subtle Background Glow / Athlete Silhouette Positioning -->
+<div class="absolute -right-6 -bottom-6 w-44 h-44 opacity-20 pointer-events-none rounded-full border-[18px] border-surface-container-lowest"></div>
+<div>
+<!-- Focus Pill & AI Trigger -->
+<div class="flex items-center justify-between mb-3">
+<span class="px-3 py-1 rounded-full bg-surface-container-lowest text-primary-container font-label-caps text-label-caps tracking-wider font-bold">
+              ⚡ TODAY'S FOCUS
+            </span>
+<button class="inline-flex items-center gap-1 font-label-md text-label-md text-surface-container-lowest font-semibold opacity-85 hover:opacity-100">
+              Why? AI rationale <span class="material-symbols-outlined text-[14px]">north_east</span>
+</button>
+</div>
+<!-- Main Title & Single-line Subtitle -->
+<h2 class="font-headline-lg text-headline-lg text-surface-container-lowest font-extrabold tracking-tight">Upper Strength</h2>
+<p class="font-body-md text-body-md text-surface-container-lowest/80 mt-1 max-w-[270px]">
+            Targeting chest &amp; overhead press cadence.
+          </p>
+</div>
+<!-- Hero Actions Bar -->
+<div class="flex items-center gap-2.5 mt-5 pt-1">
+<button class="flex-1 h-12 rounded-full bg-surface-container-lowest text-tertiary flex items-center justify-center gap-2 font-label-lg text-label-lg active:scale-95 transition-transform">
+<span>Start Workout</span>
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+<button class="h-12 px-4 rounded-full bg-surface-container-lowest/15 hover:bg-surface-container-lowest/25 text-surface-container-lowest flex items-center justify-center font-label-lg text-label-lg active:scale-95 transition-transform">
+<span>Swap</span>
+</button>
+</div>
+</section>
+<!-- Quick Stats 2-Up Tiles -->
+<section class="grid grid-cols-2 gap-3">
+<!-- Daily Motion Tile -->
+<div class="p-4 rounded-2xl bg-secondary text-on-secondary flex flex-col justify-between min-h-[128px]">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-secondary font-bold">DAILY MOTION</span>
+<span class="material-symbols-outlined text-[18px]">footprint</span>
+</div>
+<div>
+<div class="font-display-metric text-[30px] leading-8 font-bold text-on-secondary">1,840</div>
+<div class="font-body-sm text-body-sm text-on-secondary/80 mt-0.5">steps · +14% vs avg</div>
+</div>
+</div>
+<!-- Target Pace & Energy Tile -->
+<div class="p-4 rounded-2xl bg-surface-container border border-surface-container-high flex flex-col justify-between min-h-[128px]">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant font-bold">TARGET PACE</span>
+<span class="font-label-caps text-label-caps text-primary-container px-2 py-0.5 rounded-full bg-primary-container/15">72%</span>
+</div>
+<div>
+<div class="font-display-metric text-[30px] leading-8 font-bold text-on-surface">538</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Active kcal burn</div>
+</div>
+</div>
+</section>
+<!-- IMPROVEMENT 3: Image Anchor Row for Fuel / Meals -->
+<section class="w-full p-3.5 rounded-2xl bg-surface-container border border-surface-container-high flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<img alt="Healthy high protein post-workout fuel" class="w-14 h-14 rounded-2xl object-cover border border-surface-container-high shrink-0 shadow-sm" src="https://lh3.googleusercontent.com/aida/AEtjO1Ur_uooWEOSFbFTtwlzv3J18OnutHRMcM5Z6xQupAC6temHEHgd4veQiUOhweRgnos7-QvO9qRrfsTf6fbWikbHFi17y2qJIVT10dSUiru2Jopd8ieSTpdbLQKZrv_J7fQDRU7Po2BfJlZoUUj9c59SCzgyhV-YhHvJEGVC4iOwONrJPn-gdrzyKWEsVqb5nj4x1xOmkD8WQpy5oOJk3Wlm1sQFpI6-7AceyXc8obnuzderuFa-wm_Khzog"/>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-[15px] font-semibold text-on-surface">Fuel</span>
+<span class="text-on-surface-variant text-xs font-mono">· 1,820 / 2,400 kcal</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Post-workout macros loaded</span>
+</div>
+</div>
+<button class="px-3.5 py-2 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold inline-flex items-center gap-1 active:scale-95 transition-transform shadow-sm">
+<span>+ Log fuel</span>
+</button>
+</section>
+</main>
+<!-- Persistent Bottom Navigation Bar (5 tabs matching Kinetic Performance) -->
+<!-- Destination count: Today (Active), Fuel, Coach, Progress, You -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center w-80 h-16 mx-auto mb-6 px-3 rounded-full bg-primary shadow-2xl">
+<!-- Tab 1: Today (Active) -->
+<button aria-label="Today" class="flex items-center justify-center bg-primary-container text-on-primary-container rounded-full w-11 h-11 transition-all active:scale-95">
+<span class="material-symbols-outlined text-[22px]">fitness_center</span>
+</button>
+<!-- Tab 2: Fuel -->
+<button aria-label="Fuel" class="flex items-center justify-center text-surface-dim hover:opacity-80 transition-opacity w-10 h-10 active:scale-95">
+<span class="material-symbols-outlined text-[22px]">restaurant</span>
+</button>
+<!-- Tab 3: Coach -->
+<button aria-label="Coach" class="flex items-center justify-center text-surface-dim hover:opacity-80 transition-opacity w-10 h-10 active:scale-95">
+<span class="material-symbols-outlined text-[22px]">bolt</span>
+</button>
+<!-- Tab 4: Progress -->
+<button aria-label="Progress" class="flex items-center justify-center text-surface-dim hover:opacity-80 transition-opacity w-10 h-10 active:scale-95">
+<span class="material-symbols-outlined text-[22px]">insights</span>
+</button>
+<!-- Tab 5: You -->
+<button aria-label="You" class="flex items-center justify-center text-surface-dim hover:opacity-80 transition-opacity w-10 h-10 active:scale-95">
+<span class="material-symbols-outlined text-[22px]">person</span>
+</button>
+</nav>
+</div>
+</body></html>

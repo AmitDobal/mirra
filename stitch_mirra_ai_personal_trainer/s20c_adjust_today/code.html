@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Mirra Kinetic Performance — Adjust Today</title>
+<!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-highest": "#353534",
+            "inverse-on-surface": "#313030",
+            "on-tertiary-fixed-variant": "#8c1037",
+            "tertiary-fixed-dim": "#ffb2bd",
+            "secondary-fixed-dim": "#d1beef",
+            "on-primary-fixed-variant": "#3c4d00",
+            "on-background": "#e5e2e1",
+            "on-tertiary-container": "#b53354",
+            "on-surface": "#e5e2e1",
+            "on-primary": "#293500",
+            "error": "#ffb4ab",
+            "secondary-container": "#50426b",
+            "tertiary-fixed": "#ffd9dd",
+            "error-container": "#93000a",
+            "on-secondary-container": "#c2b0e0",
+            "inverse-primary": "#516600",
+            "outline-variant": "#454936",
+            "on-tertiary": "#670024",
+            "background": "#131313",
+            "on-secondary-fixed-variant": "#4e4068",
+            "primary-fixed": "#cbf150",
+            "on-error-container": "#ffdad6",
+            "surface-container-lowest": "#0e0e0e",
+            "surface-container-low": "#1c1b1b",
+            "outline": "#8f937c",
+            "on-surface-variant": "#c5c9b0",
+            "secondary": "#d1beef",
+            "on-primary-fixed": "#161e00",
+            "primary": "#ffffff",
+            "inverse-surface": "#e5e2e1",
+            "on-primary-container": "#566c00",
+            "surface-bright": "#393939",
+            "secondary-fixed": "#ebdcff",
+            "surface-dim": "#131313",
+            "primary-fixed-dim": "#b0d434",
+            "primary-container": "#cbf150",
+            "surface-tint": "#b0d434",
+            "surface-container-high": "#2a2a2a",
+            "tertiary": "#ffffff",
+            "on-secondary": "#372950",
+            "surface-variant": "#353534",
+            "surface": "#131313",
+            "on-error": "#690005",
+            "tertiary-container": "#ffd9dd",
+            "surface-container": "#201f1f",
+            "on-secondary-fixed": "#21143a",
+            "on-tertiary-fixed": "#400013"
+          },
+          "borderRadius": {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter": "1rem",
+            "space-xl": "1.75rem",
+            "space-md": "1rem",
+            "margin": "1.25rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.25rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Space Grotesk"],
+            "label-lg": ["Space Grotesk"],
+            "label-md": ["Space Grotesk"],
+            "label-caps": ["Space Grotesk"],
+            "display-lg": ["Space Grotesk"],
+            "headline-md": ["Space Grotesk"],
+            "headline-lg": ["Space Grotesk"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "display-metric": ["Space Grotesk"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .safe-top {
+      padding-top: env(safe-area-inset-top, 16px);
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 24px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-surface flex justify-center selection:bg-primary-container selection:text-on-primary">
+<!-- Mobile Canvas Frame -->
+<main class="relative w-full max-w-md min-h-screen bg-surface flex flex-col justify-between overflow-x-hidden border-x border-surface-container-high/40 pb-28">
+<!-- Top Floating Scrim & Header -->
+<header class="relative z-20 w-full px-space-margin pt-4 pb-2 flex items-center justify-between">
+<!-- Close 'X' Button -->
+<button aria-label="Close" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-colors active:scale-95 duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+<!-- Brand Chip with Glowing Lime Indicator -->
+<div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container border border-surface-container-high">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+</span>
+<span class="font-label-caps text-label-caps tracking-widest text-on-surface uppercase">MIRRA COACH · TODAY ADJUSTED</span>
+</div>
+<!-- Avatar / Status Badge -->
+<div class="relative w-10 h-10 rounded-full overflow-hidden border border-surface-container-high bg-surface-container flex items-center justify-center">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1U0jMLYzoNFY-E0-s8MiuKyWjsDEGKjby4wLQwH77M4phpCWY7AXAYh7Mpu_5_DKSNafRAr60R3EkddyLqnr-xSi6N0Mpw7wR_vl0M_HhLyj4sZjKpj5AR9n3PN01XyP2KFQYnkbCXPkckiFjffSd1J-HzBH5HMSaCAToZxE_m8cLEtkyXuul4ftOWDT6sOx_0uwc-QYRcu0BGjbgDNkeelVylvAH9EIya1ysN4hmolUamSnZRDQRpQ1dMP"/>
+</div>
+</header>
+<!-- Scrollable Content Canvas -->
+<div class="flex-1 flex flex-col px-space-margin z-10">
+<!-- Photographic Hero Section with Gradient Fade -->
+<section class="relative w-full h-44 rounded-2xl overflow-hidden mt-2 mb-4 border border-surface-container-high/60 group">
+<img class="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.78] contrast-[1.08] transition-transform duration-700 group-hover:scale-105" data-alt="A cinematic low-key portrait of a focused female athlete catching her breath inside a moody dark training gym with warm atmospheric backlight and soft rim lighting. The aesthetic uses rich deep charcoal tones, subtle skin sweat gloss, and high-performance athletic concentration." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANwZXGnczxjPa4BoSjXCCiIr4OmNB5B--lIJAD_yV_7uvYKt-UldA8idSHeXVTVBTzoKQkYqXSRKsbIhpr9hzVnazP1PYhzRD5ErXZwypcDGLnkjWM7dWYGDZdFqMMrKisgas7FW8JrfrElvREA-hYoCnFc7f6w1yWup0h70roq6TJzbnJbWEkU05K1HkUcs9eEHGg_fjgo95Fxn5Mul0EnvRAs-5QrO9lVw75DKg5f09LYyCWIdwhYKaqzyLigzf3I-xvBZ8cnUdA"/>
+<!-- Gradient overlays -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+<div class="absolute inset-0 bg-radial from-transparent via-transparent to-surface/80"></div>
+<!-- Ambient status overlay tags inside photo -->
+<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/80 backdrop-blur-md border border-white/10 font-label-caps text-label-caps text-primary-container">
+            CALIBRATION ENGINE · REALTIME
+          </span>
+<span class="flex items-center gap-1 font-label-md text-label-md text-on-surface-variant backdrop-blur-md bg-surface-container-lowest/60 px-2 py-0.5 rounded-full border border-white/5">
+<span class="material-symbols-outlined text-[14px] text-secondary">tune</span> Dynamic Plan
+          </span>
+</div>
+</section>
+<!-- Soft Result Card -->
+<section class="w-full bg-surface-container rounded-2xl p-4 border border-surface-container-high mb-3.5">
+<div class="flex items-center justify-between mb-2">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">We adjusted today</h1>
+<span class="w-7 h-7 rounded-full bg-primary-container/15 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</span>
+</div>
+<!-- Biometric Summary Single Line / Pill Row -->
+<div class="flex items-center flex-wrap gap-2 pt-1 pb-0.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low border border-surface-container-high text-on-surface-variant font-label-md text-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span>Energy <strong class="text-on-surface font-semibold">4/5</strong></span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low border border-surface-container-high text-on-surface-variant font-label-md text-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Sleep <strong class="text-on-surface font-semibold">Great</strong></span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low border border-surface-container-high text-on-surface-variant font-label-md text-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim"></span>
+<span>Some soreness <strong class="text-secondary font-medium">(Legs)</strong></span>
+</div>
+</div>
+</section>
+<!-- Compact Proposal Pill Row -->
+<section class="w-full mb-3.5">
+<div class="flex items-center justify-between mb-2 px-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-wider uppercase">MIRRA PROPOSAL · TAP TO OVERRIDE</span>
+<span class="font-label-caps text-label-caps text-primary-container/80 tracking-wide">AUTO-APPLIED</span>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<!-- Pill 1: Selected by Mirra (Electric Lime) -->
+<button class="flex items-center justify-center gap-1 py-2.5 px-2 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg shadow-sm active:scale-95 transition-transform duration-150" type="button">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+<span class="truncate">Lighter session</span>
+</button>
+<!-- Pill 2: Secondary / Muted (Keep plan) -->
+<button class="flex items-center justify-center py-2.5 px-2 rounded-full bg-surface-container border border-surface-container-high text-on-surface-variant hover:text-on-surface font-label-md text-label-md active:scale-95 transition-all duration-150" type="button">
+<span class="truncate">Keep plan</span>
+</button>
+<!-- Pill 3: Secondary / Muted (20-min short) -->
+<button class="flex items-center justify-center py-2.5 px-2 rounded-full bg-surface-container border border-surface-container-high text-on-surface-variant hover:text-on-surface font-label-md text-label-md active:scale-95 transition-all duration-150" type="button">
+<span class="truncate">20-min short</span>
+</button>
+</div>
+</section>
+<!-- Before → After Workout Diff Card -->
+<section class="w-full bg-surface-container rounded-2xl p-4 border border-surface-container-high mb-3 relative overflow-hidden">
+<div class="flex items-center gap-3">
+<!-- Athlete Thumbnail Mini Visual -->
+<div class="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-surface-container-highest relative bg-surface-container-low">
+<img alt="Athlete training preview" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1U0jMLYzoNFY-E0-s8MiuKyWjsDEGKjby4wLQwH77M4phpCWY7AXAYh7Mpu_5_DKSNafRAr60R3EkddyLqnr-xSi6N0Mpw7wR_vl0M_HhLyj4sZjKpj5AR9n3PN01XyP2KFQYnkbCXPkckiFjffSd1J-HzBH5HMSaCAToZxE_m8cLEtkyXuul4ftOWDT6sOx_0uwc-QYRcu0BGjbgDNkeelVylvAH9EIya1ysN4hmolUamSnZRDQRpQ1dMP"/>
+<div class="absolute inset-0 bg-primary-container/10 mix-blend-overlay"></div>
+</div>
+<!-- Concise Diff Information (Max 2 lines, clean, zero jargon) -->
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline gap-1.5 font-headline-sm text-headline-sm text-on-surface truncate">
+<span>Upper Strength</span>
+<span class="line-through text-on-surface-variant font-normal text-sm">48m</span>
+<span class="text-on-surface-variant text-sm">→</span>
+<span class="text-primary-container font-bold text-base">32m</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 line-clamp-1">
+              Dropped 2 heavy pressing sets · Protected recovery window
+            </p>
+</div>
+</div>
+</section>
+<!-- Calibrated Impact Preview Chips (Bento micro pair) -->
+<section class="grid grid-cols-2 gap-2 mb-2">
+<div class="bg-surface-container rounded-xl p-3 border border-surface-container-high flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Volume match</span>
+<span class="font-headline-md text-headline-md text-on-surface mt-0.5">88%</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-low border border-surface-container-highest flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[18px]">equalizer</span>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-3 border border-surface-container-high flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Fatigue index</span>
+<span class="font-headline-md text-headline-md text-secondary mt-0.5">-24%</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-low border border-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">trending_down</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Sticky Actions Dock -->
+<footer class="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-surface via-surface/95 to-transparent pt-6 pb-6 px-space-margin max-w-md mx-auto">
+<div class="flex flex-col gap-2.5">
+<!-- Primary Action CTA Button -->
+<button class="w-full h-14 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-lg shadow-primary-container/10 active:scale-[0.98] transition-transform duration-150" type="button">
+<span>Looks good</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<!-- Secondary Action CTA Text Button -->
+<button class="w-full py-2 rounded-full text-center text-on-surface-variant hover:text-on-surface font-label-md text-label-md active:scale-98 transition-colors duration-150" type="button">
+          Keep original plan
+        </button>
+</div>
+</footer>
+</main>
+</body></html>

@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** Credits meter SecureStore cache (no “Checking…” flash on relaunch). Polish **#38–#40** on `main`. Day-test iOS manifest: https://u.expo.dev/update/01a195ea-b64c-7c73-a1f6-2bc9f90d9e99. Evidence `/tmp/mirra-qa/credits-no-flash/`.
+**Latest:** Day-test EAS republished from `8054d0a` (#44 credits-store + #38–#40). iOS manifest: https://u.expo.dev/update/01a195f8-d00b-7be5-99af-c925e5efcb34. Evidence `/tmp/mirra-qa/credits-no-flash-device/`.
 
 | | |
 | --- | --- |

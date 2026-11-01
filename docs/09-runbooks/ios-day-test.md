@@ -16,15 +16,15 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | **#53** auth-before-paywall + **#54** generating shimmer |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/89e9fb76-3ae3-410e-a9e2-f63e1614a0c5 |
-| iOS update ID | `01a1966b-ae02-70fd-9cdd-9f8ef7459c0f` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1966b-ae02-70fd-9cdd-9f8ef7459c0f |
+| Mobile bundle | **#56** mandatory signup + meal teaser (on #53/#54 funnel) |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/eae8d851-873e-4d04-ba9a-682f3235d7be |
+| iOS update ID | `01a196c3-a13f-7601-8b3f-86bfeedb7b7c` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a196c3-a13f-7601-8b3f-86bfeedb7b7c |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `onboarding auth-before-paywall #53 + generating shimmer #54 (a980767)` |
-| Smoke shots | `/tmp/mirra-qa/onboarding-conversion-smoke/` |
-| Bundle prove | Commit `a980767` (#54) after `c705fd9` (#53); week-reveal → auth → paywall |
+| Message | `mandatory signup + meal teaser #56 (bf47eac)` |
+| Smoke shots | `/tmp/mirra-qa/mandatory-signup-meal-teaser/` |
+| Bundle prove | Commit `bf47eac` (#56); Not now alert; meal teaser; meal generate deferred |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
 | Smoke note | Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md` |
 

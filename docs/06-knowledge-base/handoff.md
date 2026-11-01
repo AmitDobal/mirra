@@ -1,5 +1,12 @@
 # Handoff
 
+## 2026-11-01 — Google OAuth Expo Go proxy PASS
+
+**Done:** Expo Go uses Web client + `auth.expo.io` proxy (no `host.exp.Exponent` iOS client). GCP branding App name → **Mirra** (was kalshi). EAS preview IOS env deleted. Merged #30.
+**Manifest:** https://u.expo.dev/update/01a19599-0637-7472-8d78-8890a33bfb83
+**Prove:** authorize Web+proxy → account chooser → consent (no invalid_request/kalshi). Bundle WEB hits=1, auth.expo.io=1, host.exp=0. Shots `/tmp/mirra-qa/google-oauth-proxy-fix/`.
+**Watch:** Consent chrome may say **expo.io** (proxy domain). Standalone later = iOS client `ai.mirra.app` only.
+
 ## 2026-11-01 — Google OAuth EAS env fix PASS
 
 **Done:** Root cause was Metro not inlining dynamic `process.env[key]` (plus empty EAS preview env). Fixed static `EXPO_PUBLIC_GOOGLE_*` in `env.ts`, `app.config.ts` extra, `eas env:set` for preview. Merged #28 (`19383d6`).

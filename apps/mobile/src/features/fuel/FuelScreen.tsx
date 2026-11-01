@@ -15,6 +15,8 @@ import { CalorieDonut } from "./CalorieDonut";
 import { HydrationCard } from "./HydrationCard";
 import { MacroMeters } from "./MacroMeters";
 import { useMealEditor } from "./MealEditor";
+import { useMealLogDetail } from "./MealLogDetail";
+import { mealOf } from "./meal-log-detail-model";
 import { MealPlanSection } from "./MealPlanSection";
 import { useMealPlanStore } from "./meal-plan-store";
 import { selectLoggedKcal, useFuelStore } from "./fuel-store";
@@ -53,6 +55,7 @@ export const FuelScreen = () => {
 
   const [refreshing, setRefreshing] = useState(false);
   const mealEditor = useMealEditor();
+  const mealDetail = useMealLogDetail();
 
   const scrollToPlan = useCallback(() => {
     if (section !== "plan" || planY.current === null) return;
@@ -206,7 +209,8 @@ export const FuelScreen = () => {
           <Pressable
             key={meal.id}
             accessibilityRole="button"
-            accessibilityLabel={`${meal.name}. Long press to edit or delete`}
+            accessibilityLabel={`${meal.name}. Tap for details, long press to edit or delete`}
+            onPress={() => mealDetail.open(mealOf(meal))}
             accessibilityActions={[{ name: "longpress", label: "Edit or delete" }]}
             onAccessibilityAction={() => mealEditor.openActions(meal)}
             onLongPress={() => mealEditor.openActions(meal)}
@@ -235,6 +239,7 @@ export const FuelScreen = () => {
       )}
 
       {mealEditor.sheet}
+      {mealDetail.sheet}
     </ScreenScroll>
   );
 };

@@ -1,6 +1,11 @@
 import { errorMessage, logger } from "@/lib/logger";
 
+import { File, Paths } from "expo-file-system";
+
+import { env } from "@/lib/config/env";
+
 import { apiFetch, MirraApiError } from "./client";
+import { mediaAuthHeaders } from "./progress";
 
 /** Mirrors `packages/contracts/src/media.ts` (mobile does not depend on contracts). */
 export type MediaKind = "meal" | "mirror" | "progress";
@@ -86,3 +91,17 @@ export const uploadMedia = async (
 /** Meal photo → `mediaId` (kind `meal`). */
 export const uploadMealPhoto = (uri: string, mime?: string | null) =>
   uploadMedia("meal", uri, mime);
+
+/** Download an owned media object (`GET /v1/media/:id/content`) into cache; returns a file URI or null. */
+export const cacheMediaContent = async (mediaId: string): Promise<string | null> => {
+  const base = env.apiBaseUrl.replace(/\/$/, "");
+  const res = await fetch(`${base}/v1/media/${encodeURIComponent(mediaId)}/content`, {
+    headers: await mediaAuthHeaders(),
+  });
+  if (!res.ok) return null;
+  const buf = new Uint8Array(await res.arrayBuffer());
+  if (buf.byteLength === 0) return null;
+  const file = new File(Paths.cache, `media-${mediaId}.jpg`);
+  file.write(buf);
+  return file.uri;
+};

@@ -1,15 +1,9 @@
 import { overKcalTip } from "@/lib/accountability";
-import type { MealSlot } from "@/lib/api";
+import type { Meal, MealAnalysisFields, MealSlot } from "@/lib/api";
 
 import type { LocalMeal } from "./fuel-store";
 
 export const todayIso = () => new Date().toISOString().slice(0, 10);
-
-export const formatTime = (ms?: number) =>
-  new Date(ms ?? Date.now()).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
 export const slotKey = (slot: string): MealSlot => {
   const s = slot.toLowerCase();
@@ -62,3 +56,29 @@ export const tipAfterLog = (
   }
   return "Meal saved. Mirra adjusted your remaining fuel.";
 };
+
+/** Local-only `Meal` (offline fallback / optimistic save) so detail can render the same shape as the API. */
+export const buildLocalMeal = (m: {
+  id: string;
+  name: string;
+  slot: string;
+  kcal: number;
+  proteinG: number;
+  carbsG?: number;
+  fatG?: number;
+  eatenAt: number;
+  mediaId?: string | null;
+  analysis?: MealAnalysisFields;
+}): Meal => ({
+  id: m.id,
+  name: m.name,
+  mealSlot: slotKey(m.slot),
+  kcal: m.kcal,
+  proteinG: m.proteinG,
+  carbsG: m.carbsG ?? 0,
+  fatG: m.fatG ?? 0,
+  eatenAt: m.eatenAt,
+  mediaId: m.mediaId ?? null,
+  createdAt: m.eatenAt,
+  ...m.analysis,
+});

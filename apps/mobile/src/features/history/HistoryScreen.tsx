@@ -14,6 +14,7 @@ import { useHistoryStore } from "./history-store";
 import { KpiRow } from "./KpiRow";
 import { MacroAdherence } from "./MacroAdherence";
 import { RangeSegmented, WindowNav } from "./RangeControls";
+import { useMealLogDetail } from "@/features/fuel/MealLogDetail";
 import { RecentMeals } from "./RecentMeals";
 
 const handleBack = () => {
@@ -47,6 +48,7 @@ export const HistoryScreen = () => {
   const hydrateFuel = useFuelStore((s) => s.hydrate);
 
   const [refreshing, setRefreshing] = useState(false);
+  const mealDetail = useMealLogDetail();
 
   useEffect(() => {
     void load();
@@ -128,7 +130,9 @@ export const HistoryScreen = () => {
         expanded={mealsExpanded}
         hasMore={mealsCursor !== null}
         onSeeAll={() => void expandMeals()}
+        onPressMeal={mealDetail.open}
       />
+      {mealDetail.sheet}
     </ScreenScroll>
   );
 };

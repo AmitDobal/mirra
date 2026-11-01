@@ -5,10 +5,12 @@ import {
   createMeal,
   getFuelToday as getApiFuel,
   logWater,
+  type Meal,
   type MealAnalysisFields,
 } from "@/lib/api";
 import { errorMessage, logger } from "@/lib/logger";
-import { formatTime, slotKey, tipAfterLog, todayIso } from "./fuel-helpers";
+import { formatLocalTime } from "@/lib/datetime";
+import { buildLocalMeal, slotKey, tipAfterLog, todayIso } from "./fuel-helpers";
 
 export type LocalMeal = {
   readonly id: string;
@@ -20,6 +22,8 @@ export type LocalMeal = {
   readonly time: string;
   /** Unix ms; absent on optimistic rows. */
   readonly eatenAt?: number;
+  /** Full meal (macros, micros, ingredients, media) for the detail sheet. */
+  readonly detail?: Meal;
   readonly source: "manual" | "snap" | "api" | "describe";
 };
 
@@ -49,6 +53,8 @@ type FuelState = {
     mediaId?: string | null;
     /** Vision analysis (ingredients, micros, warnings) saved with the meal. */
     analysis?: MealAnalysisFields;
+    /** UTC epoch ms; defaults to now when the user doesn't pick a custom time. */
+    eatenAt?: number;
   }) => Promise<LocalMeal>;
   readonly clearTip: () => void;
   /** Optimistic `+ml`, persisted via `POST /v1/water`; reverts on failure. */
@@ -103,8 +109,9 @@ export const useFuelStore = create<FuelState>((set, get) => ({
         proteinG: m.proteinG,
         localDate: fuel.date,
         slot: m.mealSlot,
-        time: formatTime(m.eatenAt),
+        time: formatLocalTime(m.eatenAt),
         eatenAt: m.eatenAt,
+        detail: m,
         source: "api" as const,
       }));
       set({
@@ -138,8 +145,18 @@ export const useFuelStore = create<FuelState>((set, get) => ({
         proteinG: m.proteinG,
         localDate: fuel.date,
         slot: m.mealSlot,
-        time: formatTime(m.eatenAt),
+        time: formatLocalTime(m.eatenAt),
         eatenAt: m.eatenAt,
+        detail: buildLocalMeal({
+          id: m.id,
+          name: m.name,
+          slot: m.mealSlot,
+          kcal: m.kcal,
+          proteinG: m.proteinG,
+          carbsG: m.carbsG,
+          fatG: m.fatG,
+          eatenAt: m.eatenAt,
+        }),
         source: "manual" as const,
       }));
       set({
@@ -165,9 +182,11 @@ export const useFuelStore = create<FuelState>((set, get) => ({
     fatG,
     mediaId,
     analysis,
+    eatenAt = Date.now(),
   }) => {
     const localDate = todayIso();
     const saved = await logMeal({
+      eatenAt,
       name,
       kcal: calories,
       proteinG,
@@ -181,8 +200,20 @@ export const useFuelStore = create<FuelState>((set, get) => ({
       proteinG: saved.proteinG,
       localDate,
       slot,
-      time: formatTime(saved.eatenAt),
+      time: formatLocalTime(saved.eatenAt),
       eatenAt: saved.eatenAt,
+      detail: buildLocalMeal({
+        id: saved.id,
+        name: saved.name,
+        slot,
+        kcal: saved.kcal,
+        proteinG: saved.proteinG,
+        carbsG,
+        fatG,
+        eatenAt: saved.eatenAt,
+        mediaId,
+        analysis,
+      }),
       source,
     };
     set((s) => {

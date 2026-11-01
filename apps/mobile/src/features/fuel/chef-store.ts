@@ -10,6 +10,7 @@ import {
   type ChefTurn,
   type RecipeDetail,
 } from "@/lib/api";
+import { openAiLimitSheet } from "@/features/you/AiLimitSheet";
 import { errorMessage, logger } from "@/lib/logger";
 
 /** A message row. `local` rows exist only on this device (guard / refusal notices, unsent text). */
@@ -100,8 +101,10 @@ export const useChefStore = create<ChefState>((set, get) => ({
       set({ detail, generating: false });
     } catch (err) {
       logger.warn("chef.generate_failed", { message: errorMessage(err) });
-      if (isOutOfCredits(err)) set({ generating: false, outOfCredits: true });
-      else set({ generating: false, error: err instanceof MirraApiError ? RETRY : OFFLINE });
+      if (isOutOfCredits(err)) {
+        openAiLimitSheet();
+        set({ generating: false, outOfCredits: true });
+      } else set({ generating: false, error: err instanceof MirraApiError ? RETRY : OFFLINE });
     }
   },
 
@@ -124,6 +127,7 @@ export const useChefStore = create<ChefState>((set, get) => ({
     } catch (err) {
       logger.warn("chef.send_failed", { message: errorMessage(err) });
       if (isOutOfCredits(err)) {
+        openAiLimitSheet();
         set({ sending: false, messages: withoutPending(), outOfCredits: true, pendingMessage: message });
       } else if (err instanceof MirraApiError && err.code === "thread_capped") {
         set({ sending: false, messages: withoutPending(), capped: true });

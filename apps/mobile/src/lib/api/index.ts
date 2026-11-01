@@ -17,6 +17,7 @@ export * from "./progress";
 export * from "./insights";
 export * from "./coach-revise";
 export * from "./ai-usage";
+export * from "./credits";
 export * from "./voice-cue";
 export * from "./weight";
 export * from "./attendance";

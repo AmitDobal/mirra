@@ -1,4 +1,4 @@
-import { apiFetch, MirraApiError } from "./client";
+import { apiFetch } from "./client";
 
 /** Mirrors contracts `recipe-chat.ts` (`/v1/recipe/*`). Chef thread is tied to a planned meal id. */
 
@@ -65,7 +65,3 @@ export const sendChefMessage = (
     headers: opts.heuristic ? HEURISTIC : undefined,
     quiet: true, // 402 / 409 / 422 are expected states with their own UI
   });
-
-/** 402 `ai_credits_exhausted` (heuristic Chef is still free). */
-export const isOutOfCredits = (err: unknown): boolean =>
-  err instanceof MirraApiError && err.status === 402;

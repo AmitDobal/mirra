@@ -17,10 +17,12 @@ import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { AiLimitSheet } from "@/features/you/AiLimitSheet";
 import { hydrateAuthSession } from "@/lib/auth";
 import { useAttendancePing } from "@/lib/attendance-ping";
 import { ensureMirraDb } from "@/lib/local";
 import { configurePurchases } from "@/lib/purchases";
+import { useMeStore } from "@/stores/me-store";
 import { color } from "@/theme/tokens";
 
 void SplashScreen.preventAutoHideAsync();
@@ -48,6 +50,11 @@ const RootLayout = () => {
         await hydrateAuthSession();
       } catch (error: unknown) {
         console.warn("[mirra] hydrateAuthSession failed", error);
+      }
+      try {
+        await useMeStore.getState().hydrate();
+      } catch (error: unknown) {
+        console.warn("[mirra] me-store hydrate failed", error);
       }
       try {
         await configurePurchases();
@@ -91,6 +98,7 @@ const RootLayout = () => {
           <Stack.Screen name="(onboarding)" />
           <Stack.Screen name="(tabs)" />
         </Stack>
+        <AiLimitSheet />
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

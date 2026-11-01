@@ -15,7 +15,7 @@
 | B | Google **new** user → onboarding | **NOT RUN** | No live Google account in sim. Covered by `cold-start-route.test.ts` |
 | C | Google returning onboarded + entitled → tabs | **NOT RUN** | Same. Unit tests only |
 | D | Onboarded, not entitled → paywall, no tabs | **PASS** (dev session) | `D-00/D-01` cold launch lands on paywall; `F-cold-restart` after kill+relaunch back on paywall (soft-skip is not persisted) |
-| F-ish | Cold start with session, mid-funnel resume | **PASS** | Second quiz run resumed on week-reveal, auth skipped path not needed (no session) |
+| Resume | Cold start mid-funnel resumes (no session) | **PASS** | Interrupted quiz run reopened on week-reveal (not Today) |
 | G | Signed out cannot reach tabs | **PASS (weak)** | Sign out → welcome (`G`). Deep link `/--/today` while signed out stayed on welcome; Expo Go may not route deep link, so also confirmed in code: `(tabs)/_layout.tsx` `resolveTabGuard` |
 | Tab guard | No session / not onboarded / not entitled → redirect, unless soft-skip | **PASS** | Code + unit tests + D/F screens |
 | J | Exercise hub shows AI week for selected day | **PASS** | `J-exercise-day-test` (day-test-1, Upper Body Strength, 4 ex); `A-06` (fresh generated plan, Full Body Strength, 5 ex, matches week reveal) |

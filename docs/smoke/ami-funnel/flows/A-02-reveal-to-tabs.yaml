@@ -1,0 +1,22 @@
+appId: host.exp.Exponent
+---
+- tapOn:
+    point: "50%,87%"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Save your plan"
+    timeout: 15000
+- takeScreenshot: A-03-auth-after-reveal
+- tapOn:
+    point: "50%,63%"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Start 7-day trial"
+    timeout: 25000
+- takeScreenshot: A-04-paywall-after-dev
+- tapOn: "Continue without Pro"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "TODAY"
+    timeout: 25000
+- takeScreenshot: A-05-tabs-after-dev

@@ -11,7 +11,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "update:day-test": "CI=1 EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 eas-cli update --branch day-test --environment preview --platform ios --non-interactive",
+    "update:day-test": "CI=1 EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 EXPO_PUBLIC_ALLOW_DEV_AUTH=true eas-cli update --branch day-test --environment preview --platform ios --non-interactive",
     "postinstall": "node ./scripts/patch-css-interop.mjs"
   },
   "dependencies": {

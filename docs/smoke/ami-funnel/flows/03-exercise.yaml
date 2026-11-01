@@ -1,0 +1,8 @@
+appId: host.exp.Exponent
+---
+- tapOn:
+    point: "36%,92%"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: ".*(Dumbbell|Bench|sets).*"
+    timeout: 20000

@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — Ship gate PASS: funnel gates + Exercise AI plan (AMI-143/144, 97cc841)
+
+**Done:** HEAD == origin/main `97cc841`. Worktrees mirra-wt-ami-143/144 removed (branches merged + on origin). tsc clean, auth unit tests 14/14. EAS `day-test` iOS `01a198f6-daa4-7bc7-bf48-ac3f256baade`, group `d07aed29-3d38-4f2d-a9aa-83659d5a9e68`, published with `EXPO_PUBLIC_ALLOW_DEV_AUTH=true` (also added to `npm run update:day-test`).
+
+**Phone:** https://u.expo.dev/update/01a198f6-daa4-7bc7-bf48-ac3f256baade
+
+**Smoke PASS (fresh Expo Go 58 sim, Maestro):** quiz -> generate -> week reveal -> auth -> Dev Tester -> tabs; cold restart with Dev session lands on paywall (no tabs); sign out -> welcome; Exercise hub shows the AI week exercises (day-test-1 and freshly generated plan). Evidence `docs/smoke/ami-funnel/RESULT.md`.
+
+**Not driven:** Google cases B/C/E/H/I (no live Google in sim; unit-covered), weekday switch on Exercise. Watch: day strip shows week of Oct 26 with 26 selected on Nov 2 (plan week anchor).
+
 ## 2026-11-02 — Ship gate PASS: Today Focus-first + Exercise hub (AMI-141/142, 336394d)
 
 **Done:** HEAD == origin/main `336394d`, tracked clean. tsc clean. Metro from tip in Expo Go 58 (iPhone 16 Pro Max sim), past dev auth. EAS `day-test` iOS update `01a198d6-6fd6-706d-a6b5-3f5ebe644e2c`, group `4c5446c0-6b02-48c1-8173-c127bf56fc03`. Worktrees mirra-wt-ami-141/142 removed.

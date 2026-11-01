@@ -16,13 +16,14 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | Today S15c Focus-first + Exercise hub S25-S27 (AMI-141/142 @ `336394d`) on top of check-in S20b tap flow + S20c result (AMI-139) + Today S15b check-in/fuel photo rows (AMI-140) on top of AMI-137/138 (mobile-only; API unchanged) |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/4c5446c0-6b02-48c1-8173-c127bf56fc03 |
-| iOS update ID | `01a198d6-6fd6-706d-a6b5-3f5ebe644e2c` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a198d6-6fd6-706d-a6b5-3f5ebe644e2c |
+| Mobile bundle | AMI-143/144 funnel gates + Exercise AI week (@ `97cc841`, built with `EXPO_PUBLIC_ALLOW_DEV_AUTH=true`) on top of Today S15c Focus-first + Exercise hub S25-S27 (AMI-141/142 @ `336394d`) on top of check-in S20b tap flow + S20c result (AMI-139) + Today S15b check-in/fuel photo rows (AMI-140) on top of AMI-137/138 (mobile-only; API unchanged) |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/d07aed29-3d38-4f2d-a9aa-83659d5a9e68 |
+| iOS update ID | `01a198f6-daa4-7bc7-bf48-ac3f256baade` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a198f6-daa4-7bc7-bf48-ac3f256baade |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `AMI-141/142 Today Focus-first + Exercise hub @336394d` |
+| Message | `ship gate AMI-143/144 funnel gates + exercise plan @97cc841` |
+| Dev Tester | Requires `EXPO_PUBLIC_ALLOW_DEV_AUTH=true` at publish time (now in `npm run update:day-test`). App Store builds leave it unset = hard gate |
 | Smoke shots | `docs/05-project-management/smoke/ami-139/` (builder S20b/S20c). Ship gate: tsc clean on tip, sim boot OK; Today/check-in UI not driven (no input automation) |
 | Bundle prove | Commit `336394d` (EAS reports clean tree) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |

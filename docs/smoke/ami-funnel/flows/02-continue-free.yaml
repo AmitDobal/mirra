@@ -1,0 +1,7 @@
+appId: host.exp.Exponent
+---
+- tapOn: "Continue without Pro"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "TODAY"
+    timeout: 25000

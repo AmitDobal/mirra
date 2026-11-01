@@ -1,19 +1,18 @@
 import { Heart, SlidersHorizontal, Zap } from "lucide-react-native";
-import { MotiView, type MotiTransition } from "moti";
 import type { ReactNode } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 
 import { s11GeneratingWeek } from "../../../../assets/stitch";
 import { color, font, radius } from "@/theme/tokens";
 
+import { GeneratingShimmerBar } from "./GeneratingShimmerBar";
+
 type SplitCard = {
   key: string;
   image: number;
-  /** Stitch `opacity-*` on the grayscale athlete photo. */
   imageOpacity: number;
-  /** Stitch `mix-blend-color` tint over the photo (hex with alpha) or null. */
   tint: string | null;
-  titleBar: { width: number; color: string; delay: number };
+  titleBar: { width: number; color: string; sheen: string; delay: number };
   caption: string;
   captionColor: string;
   subBarWidth: number;
@@ -28,7 +27,12 @@ const CARDS: readonly SplitCard[] = [
     image: s11GeneratingWeek.athleteSquatBw,
     imageOpacity: 0.9,
     tint: `${color.primaryFixed}33`,
-    titleBar: { width: 112, color: color.primaryFixed, delay: 0 },
+    titleBar: {
+      width: 112,
+      color: color.primaryFixed,
+      sheen: "rgba(22,30,0,0.35)",
+      delay: 0,
+    },
     caption: "42 MIN",
     captionColor: color.onSurfaceVariant,
     subBarWidth: 160,
@@ -44,7 +48,12 @@ const CARDS: readonly SplitCard[] = [
     image: s11GeneratingWeek.sprinterKneelingBw,
     imageOpacity: 0.85,
     tint: `${color.secondary}4D`,
-    titleBar: { width: 128, color: color.secondary, delay: 200 },
+    titleBar: {
+      width: 128,
+      color: color.secondary,
+      sheen: "rgba(255,255,255,0.4)",
+      delay: 180,
+    },
     caption: "ACTIVE REC",
     captionColor: color.onSurfaceVariant,
     subBarWidth: 144,
@@ -60,7 +69,12 @@ const CARDS: readonly SplitCard[] = [
     image: s11GeneratingWeek.athleteBarbellBw,
     imageOpacity: 0.75,
     tint: null,
-    titleBar: { width: 96, color: color.surfaceBright, delay: 400 },
+    titleBar: {
+      width: 96,
+      color: color.surfaceBright,
+      sheen: "rgba(255,255,255,0.3)",
+      delay: 360,
+    },
     caption: "SYNTHESIZING",
     captionColor: color.outlineVariant,
     subBarWidth: 192,
@@ -72,15 +86,6 @@ const CARDS: readonly SplitCard[] = [
     },
   },
 ];
-
-const PULSE = (delay: number) =>
-  ({
-    type: "timing",
-    duration: 1000,
-    loop: true,
-    repeatReverse: true,
-    delay,
-  }) as MotiTransition;
 
 const Row = ({ card }: { card: SplitCard }) => (
   <View style={styles.card}>
@@ -98,14 +103,12 @@ const Row = ({ card }: { card: SplitCard }) => (
       </View>
       <View style={styles.texts}>
         <View style={styles.titleRow}>
-          <MotiView
-            from={{ opacity: 1 }}
-            animate={{ opacity: 0.5 }}
-            transition={PULSE(card.titleBar.delay)}
-            style={[
-              styles.titleBar,
-              { width: card.titleBar.width, backgroundColor: card.titleBar.color },
-            ]}
+          <GeneratingShimmerBar
+            width={card.titleBar.width}
+            height={12}
+            baseColor={card.titleBar.color}
+            sheenColor={card.titleBar.sheen}
+            delay={card.titleBar.delay}
           />
           <Text
             style={[styles.caption, { color: card.captionColor }]}
@@ -114,7 +117,13 @@ const Row = ({ card }: { card: SplitCard }) => (
             {card.caption}
           </Text>
         </View>
-        <View style={[styles.subBar, { width: card.subBarWidth }]} />
+        <GeneratingShimmerBar
+          width={card.subBarWidth}
+          height={10}
+          baseColor={color.surfaceContainerHighest}
+          sheenColor="rgba(203,241,80,0.22)"
+          delay={card.titleBar.delay + 120}
+        />
       </View>
     </View>
     <View style={[styles.pill, card.pill.solid ? null : styles.pillMuted]}>
@@ -132,7 +141,7 @@ const Row = ({ card }: { card: SplitCard }) => (
   </View>
 );
 
-/** Three skeleton split cards with athlete cutouts (Stitch S11). */
+/** Three skeleton split cards with athlete cutouts + shimmer bars (Stitch S11). */
 export const GeneratingSplitCards = () => (
   <View style={styles.stack}>
     {CARDS.map((card) => (
@@ -182,23 +191,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  titleBar: {
-    height: 12,
-    borderRadius: radius.full,
-    flexShrink: 1,
-  },
   caption: {
     flexShrink: 0,
     fontFamily: font.labelBold,
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.88,
-  },
-  subBar: {
-    height: 10,
-    maxWidth: "100%",
-    borderRadius: radius.full,
-    backgroundColor: color.surfaceContainerHighest,
   },
   pill: {
     flexDirection: "row",

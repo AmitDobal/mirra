@@ -215,6 +215,13 @@ export const onboardingCopy = {
     stepLabel: "STEP 3 OF 4",
     stepFinal: "FINAL COMPILATION",
     title: "Building your week…",
+    /** Rotating “AI is working” cues under the blueprint card. */
+    statusLines: [
+      "Calibrating volume…",
+      "Matching cuisine…",
+      "Structuring rest cadence…",
+      "Building week…",
+    ],
     sub: "Aligning metabolic volume, recovery cadence, and equipment profiles.",
     badgeRecovery: "VO2 RECOVERY: OPTIMAL",
     badgeEquipment: "BARBELL + DUMBBELL",

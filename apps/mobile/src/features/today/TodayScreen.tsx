@@ -164,20 +164,6 @@ export const TodayScreen = () => {
         </Pressable>
       ) : null}
 
-      {checkInDue ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Open check-in"
-          onPress={() => router.push("/(tabs)/coach")}
-          style={sx(
-            "mb-space-md flex-row items-center gap-1.5 self-start rounded-full bg-primary-fixed px-3 py-1.5",
-          )}
-        >
-          <AiBadge label={false} tone="dark" size={16} />
-          <CapsLabel tone="dark">Check-in</CapsLabel>
-        </Pressable>
-      ) : null}
-
       <WeekStripCard
         weekDays={weekDays}
         dayIndex={dayIndex}
@@ -214,6 +200,19 @@ export const TodayScreen = () => {
           <Text style={sx("font-body-medium text-body-sm text-on-primary-fixed/85")}>
             {workout?.focus ?? "Recovery focus"}
           </Text>
+          {checkInDue ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open check-in"
+              onPress={() => router.push("/(tabs)/coach")}
+              style={sx(
+                "mt-0.5 self-start flex-row items-center gap-1 rounded-full bg-on-primary-fixed/12 px-2 py-0.5",
+              )}
+            >
+              <AiBadge label={false} tone="dark" size={12} />
+              <CapsLabel tone="dark">Check-in</CapsLabel>
+            </Pressable>
+          ) : null}
         </View>
         <Image
           source={s15Today.athleteMidMotion}

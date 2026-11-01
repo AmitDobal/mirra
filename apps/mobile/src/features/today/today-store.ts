@@ -15,6 +15,7 @@ import {
   type PlanDay,
   type PlanWorkout,
 } from "@/lib/api";
+import { localTodayIso } from "@/lib/datetime";
 import { usePlanStore } from "@/stores/plan-store";
 
 import { mirrorPlanToLocal } from "./mirror-local-plan";
@@ -24,12 +25,15 @@ type TodayState = {
   readonly workout: PlanWorkout | null;
   readonly weekDays: readonly PlanDay[];
   readonly dayIndex: number;
+  /** Index of the device-calendar "today" inside `weekDays` (drives isToday copy). */
+  readonly todayIndex: number;
   readonly checkInDue: boolean;
   readonly fuelRemaining: number | null;
   readonly kcalTarget: number | null;
   readonly loading: boolean;
   readonly notice: string | null;
-  readonly hydrate: () => Promise<void>;
+  /** `keepSelection` re-selects the day the user already picked (Exercise hub, edits). */
+  readonly hydrate: (opts?: HydrateOptions) => Promise<void>;
   readonly swapDay: () => void;
   /** Move ±1 day in the current week strip (Stitch S15 chevrons). */
   readonly shiftWeek: (delta: -1 | 1) => void;
@@ -38,7 +42,10 @@ type TodayState = {
   readonly setNotice: (notice: string) => void;
 };
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+type HydrateOptions = { readonly keepSelection?: boolean };
+
+/** Device-calendar today. Server `/v1/today` is UTC and is wrong for IST after midnight. */
+const todayIso = localTodayIso;
 
 /** Mon=0 … Sun=6 for UTC calendar date. */
 const mondayIndex = (iso: string): number => {
@@ -103,25 +110,34 @@ const kcalFromSummary = (summary: Record<string, unknown> | undefined) => {
   return typeof v === "number" ? v : null;
 };
 
+/**
+ * The plan's `days[].workout` is the only workout source. Selection follows the
+ * device-calendar today unless `keepId` names a day that still exists.
+ */
 const applyPlan = (
   set: (partial: Partial<TodayState>) => void,
   opts: {
     date: string;
     days: readonly PlanDay[];
-    workout: PlanWorkout | null;
     checkInDue: boolean;
     fuelRemaining: number | null;
     kcalTarget: number | null;
+    keepId?: string;
+    /** Only used when the plan has no days at all (never for a real plan day). */
+    fallbackWorkout?: PlanWorkout | null;
     notice?: string | null;
   },
 ) => {
-  const idx = resolveDayIndex(opts.days, opts.date);
+  const todayIndex = resolveDayIndex(opts.days, opts.date);
+  const keptIndex = opts.keepId ? opts.days.findIndex((d) => d.id === opts.keepId) : -1;
+  const idx = keptIndex >= 0 ? keptIndex : todayIndex;
   const day = opts.days[idx];
   set({
-    date: opts.date,
-    workout: opts.workout ?? day?.workout ?? null,
+    date: day?.date ?? opts.date,
+    workout: day ? (day.workout ?? null) : (opts.fallbackWorkout ?? null),
     weekDays: opts.days,
     dayIndex: idx,
+    todayIndex,
     checkInDue: opts.checkInDue,
     fuelRemaining: opts.fuelRemaining,
     kcalTarget: opts.kcalTarget,
@@ -135,6 +151,7 @@ export const useTodayStore = create<TodayState>((set, get) => ({
   workout: null,
   weekDays: [],
   dayIndex: 0,
+  todayIndex: 0,
   checkInDue: false,
   fuelRemaining: null,
   kcalTarget: null,
@@ -144,7 +161,13 @@ export const useTodayStore = create<TodayState>((set, get) => ({
   clearNotice: () => set({ notice: null }),
   setNotice: (notice) => set({ notice }),
 
-  hydrate: async () => {
+  hydrate: async (opts) => {
+    // Read at apply time so a day tapped while the fetch is in flight is not overwritten.
+    const pickedId = () => {
+      if (!opts?.keepSelection) return undefined;
+      const { weekDays, dayIndex } = get();
+      return weekDays[dayIndex]?.id;
+    };
     set({ loading: true });
     const date = todayIso();
     const cached = usePlanStore.getState().plan;
@@ -160,9 +183,6 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         void mirrorPlanToLocal(plan);
       }
       const days = plan?.days ?? cached?.days ?? [];
-      const idx = resolveDayIndex(days, today.date ?? date);
-      // Never fall back to "any lift this week" — rest days must look like rest.
-      const workout = today.workout ?? days[idx]?.workout ?? null;
       const kcalTarget =
         today.fuel?.kcalTarget ??
         kcalFromSummary(today.summary) ??
@@ -172,10 +192,12 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         today.fuel?.kcalRemaining ??
         today.fuelRemaining?.calories ??
         null;
+      // Rest days must look like rest: no "any lift this week" fallback.
       applyPlan(set, {
-        date: today.date ?? date,
+        date,
         days,
-        workout,
+        keepId: pickedId(),
+        fallbackWorkout: today.workout,
         checkInDue: today.checkInDue,
         fuelRemaining,
         kcalTarget: kcalTarget ?? null,
@@ -192,12 +214,11 @@ export const useTodayStore = create<TodayState>((set, get) => ({
       const [today, plan] = await Promise.all([getLocalToday(), getLocalPlan()]);
       if (plan) usePlanStore.getState().setPlan(asCurrent(plan));
       const days = plan?.days.map(asDay) ?? cached?.days ?? [];
-      const idx = resolveDayIndex(days, today.date ?? date);
-      const workout = asWorkout(today.day?.workout) ?? days[idx]?.workout ?? null;
       applyPlan(set, {
-        date: today.date ?? date,
+        date,
         days,
-        workout,
+        keepId: pickedId(),
+        fallbackWorkout: asWorkout(today.day?.workout),
         checkInDue: today.checkInDue,
         fuelRemaining: null,
         kcalTarget: today.summary?.kcalTarget ?? plan?.summary.kcalTarget ?? null,
@@ -207,7 +228,7 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         applyPlan(set, {
           date,
           days: cached.days,
-          workout: cached.days[resolveDayIndex(cached.days, date)]?.workout ?? null,
+          keepId: pickedId(),
           checkInDue: false,
           fuelRemaining: null,
           kcalTarget: kcalFromSummary(cached.summary),

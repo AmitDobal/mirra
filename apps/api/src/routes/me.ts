@@ -1,5 +1,6 @@
 import {
   UpdatePreferencesBodySchema,
+  type DeleteMeResponse,
   type MeResponse,
   type OnboardingPreferences,
   type OnboardingProfile,
@@ -12,10 +13,12 @@ import { createDb } from "../db";
 import { accounts, entitlements, preferences, profiles, users } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { msToUnix } from "../lib/dates";
+import { getObjectStore } from "../lib/object-store";
 import { toPreferencesOut } from "../lib/prefs-out";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
+import { deleteAccount } from "../services/account-deletion";
 
 export const meRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -74,6 +77,14 @@ meRoutes.get("/v1/me", requireAuth, async (c) => {
     onboardingCompleted: Boolean(profile?.onboardingCompletedAt),
     accounts: linked.map((a) => ({ providerId: a.providerId })),
   };
+  return c.json(body);
+});
+
+/** Hard-delete the signed-in account: R2 media, D1 rows, auth sessions. userId comes from the session only. */
+meRoutes.delete("/v1/me", requireAuth, async (c) => {
+  const userId = c.get("userId");
+  await deleteAccount(createDb(c.env.DB), getObjectStore(c.env), userId);
+  const body: DeleteMeResponse = { ok: true };
   return c.json(body);
 });
 

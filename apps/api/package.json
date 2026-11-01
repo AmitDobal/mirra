@@ -11,6 +11,7 @@
     "test:context": "tsx scripts/assert-personalization-context.ts",
     "test:chef": "tsx scripts/assert-recipe-safety.ts",
     "test:nutrition": "tsx scripts/assert-nutrition-history.ts",
+    "test:account-delete": "tsx scripts/assert-account-deletion.ts",
     "test:auth": "tsx scripts/assert-auth-harden.ts",
     "smoke:chef": "node scripts/smoke-chef.mjs",
     "db:generate": "drizzle-kit generate",

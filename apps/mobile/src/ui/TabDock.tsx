@@ -36,7 +36,7 @@ const tabs: TabDef[] = [
 ];
 
 const activeTab = (path: string): TabId => {
-  if (path.includes("fuel")) return "fuel";
+  if (path.includes("fuel") || path.includes("history")) return "fuel";
   if (path.includes("coach")) return "coach";
   if (path.includes("progress")) return "progress";
   if (path.includes("you")) return "you";

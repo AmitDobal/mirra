@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Camera, ChevronRight, Lock } from "lucide-react-native";
+import { BarChart3, Camera, ChevronRight, Lock } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -214,6 +214,24 @@ export const ProgressScreen = () => {
       </View>
 
       <WeightJourneyCard />
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open calorie and workout history"
+        onPress={() => router.push("/(tabs)/history")}
+        style={sx(
+          "mb-space-md flex-row items-center gap-space-md rounded-lg bg-surface-container-low p-space-md",
+        )}
+      >
+        <BarChart3 size={22} color={color.primaryFixed} />
+        <View style={sx("flex-1")}>
+          <Text style={sx("font-label text-label-lg text-on-surface")}>Calories &amp; training history</Text>
+          <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
+            Day, week and month charts
+          </Text>
+        </View>
+        <ChevronRight size={18} color={color.onSurfaceVariant} />
+      </Pressable>
 
       <View style={sx("mb-space-md flex-row gap-space-sm")}>
         <Stat label="Photos" value={count} unit="saved" />

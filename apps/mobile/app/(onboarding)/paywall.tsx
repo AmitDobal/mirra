@@ -20,7 +20,7 @@ import { color } from "@/theme/tokens";
 import { LimeCta } from "@/ui";
 import { sx } from "@/theme/sx";
 
-/** S13 — Hard paywall. Purchase/restore require Google; X never grants Pro. */
+/** S13 — Hard paywall. Trial / restore / terms only. No continue without Pro. X never grants Pro. */
 const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
@@ -31,7 +31,7 @@ const PaywallScreen = () => {
     void loadOfferings();
   }, [loadOfferings]);
 
-  const finishEntitled = () => {
+  const finishPro = () => {
     void completeOnboardingFunnel().then(() => {
       if (!shouldReplaceFunnelDest("/(tabs)/today")) return;
       router.replace("/(tabs)/today");
@@ -61,13 +61,13 @@ const PaywallScreen = () => {
   const handleTrial = async () => {
     if (!ensureGoogleForPurchase()) return;
     const result = await purchase(packageId);
-    if (result?.ok) finishEntitled();
+    if (result?.ok) finishPro();
   };
 
   const handleRestore = async () => {
     if (!ensureGoogleForPurchase()) return;
     const result = await restore();
-    if (result?.ok) finishEntitled();
+    if (result?.ok) finishPro();
   };
 
   /**
@@ -86,12 +86,18 @@ const PaywallScreen = () => {
     void Linking.openURL(onboardingCopy.auth.termsUrl);
   };
 
+  const handlePrivacy = () => {
+    void Linking.openURL(onboardingCopy.auth.privacyUrl);
+  };
+
   return (
     <OnboardingShell
       header={
         <View style={sx("flex-row items-center justify-between pb-space-md")}>
           <View
-            style={sx("flex-row items-center gap-space-xs rounded-full bg-primary-container px-space-md py-space-xs")}
+            style={sx(
+              "flex-row items-center gap-space-xs rounded-full bg-primary-container px-space-md py-space-xs",
+            )}
           >
             <Zap color={color.onPrimaryFixed} fill={color.onPrimaryFixed} size={14} />
             <Text style={sx("font-label-bold text-label-caps uppercase text-on-primary-fixed")}>
@@ -139,9 +145,22 @@ const PaywallScreen = () => {
                 {c.termsLink}
               </Text>
             </Pressable>
+            <Text style={sx("font-body text-body-sm text-surface-container-highest")}>•</Text>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={c.privacyLink}
+              onPress={handlePrivacy}
+              hitSlop={8}
+            >
+              <Text style={sx("font-label text-label-md text-on-surface-variant")}>
+                {c.privacyLink}
+              </Text>
+            </Pressable>
           </View>
           <Text
-            style={sx("max-w-xs text-center font-body text-body-sm text-on-surface-variant leading-tight")}
+            style={sx(
+              "max-w-xs text-center font-body text-[10px] leading-tight text-on-surface-variant",
+            )}
           >
             {c.legal}
           </Text>

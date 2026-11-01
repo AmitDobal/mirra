@@ -21,13 +21,20 @@ type Props = {
   readonly personaId: string;
   readonly size?: number;
   readonly selected?: boolean;
+  /** Accent corner dot — off for S09B head-and-shoulders cards. */
+  readonly showAccentDot?: boolean;
 };
 
-/** Stitch photographic portrait for a trainer persona. */
-export const PersonaAvatar = ({ personaId, size = 80, selected = false }: Props) => {
+/** Stitch head-and-shoulders portrait for a trainer persona. */
+export const PersonaAvatar = ({
+  personaId,
+  size = 80,
+  selected = false,
+  showAccentDot = true,
+}: Props) => {
   const persona = getTrainerPersonaOption(personaId);
   const source = PORTRAITS[persona.id];
-  const showDot = size >= 40;
+  const showDot = showAccentDot && size >= 40;
   const dot = Math.max(10, Math.round(size * 0.18));
   return (
     <View
@@ -38,7 +45,9 @@ export const PersonaAvatar = ({ personaId, size = 80, selected = false }: Props)
       <View
         style={[
           sx(`overflow-hidden rounded-full ${
-            selected ? "border-2 border-primary-fixed" : "border border-outline-variant/40"
+            selected
+              ? "border-2 border-primary-container"
+              : "border border-surface-container-high"
           }`),
           { width: size, height: size },
         ]}

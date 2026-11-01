@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Pick Your Trainer — Mirra AI</title>
+<!-- Material Symbols Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Space Grotesk & Plus Jakarta Sans Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration matching Style Tokens -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error": "#690005",
+            "surface": "#131313",
+            "secondary-container": "#50426b",
+            "primary": "#ffffff",
+            "primary-fixed-dim": "#b0d434",
+            "on-error-container": "#ffdad6",
+            "on-tertiary": "#670024",
+            "surface-container-highest": "#353534",
+            "on-tertiary-container": "#b53354",
+            "surface-container-low": "#1c1b1b",
+            "on-tertiary-fixed": "#400013",
+            "on-background": "#e5e2e1",
+            "on-secondary-fixed": "#21143a",
+            "tertiary": "#ffffff",
+            "surface-dim": "#131313",
+            "on-primary-fixed-variant": "#3c4d00",
+            "on-primary-container": "#566c00",
+            "background": "#131313",
+            "secondary": "#d1beef",
+            "on-surface": "#e5e2e1",
+            "surface-tint": "#b0d434",
+            "surface-container-high": "#2a2a2a",
+            "secondary-fixed-dim": "#d1beef",
+            "on-secondary-fixed-variant": "#4e4068",
+            "surface-variant": "#353534",
+            "error": "#ffb4ab",
+            "surface-container": "#201f1f",
+            "on-secondary-container": "#c2b0e0",
+            "surface-container-lowest": "#0e0e0e",
+            "outline": "#8f937c",
+            "on-surface-variant": "#c5c9b0",
+            "tertiary-container": "#ffd9dd",
+            "primary-fixed": "#cbf150",
+            "error-container": "#93000a",
+            "on-tertiary-fixed-variant": "#8c1037",
+            "inverse-surface": "#e5e2e1",
+            "outline-variant": "#454936",
+            "surface-bright": "#393939",
+            "tertiary-fixed": "#ffd9dd",
+            "on-secondary": "#372950",
+            "inverse-on-surface": "#313030",
+            "tertiary-fixed-dim": "#ffb2bd",
+            "inverse-primary": "#516600",
+            "on-primary": "#293500",
+            "primary-container": "#cbf150",
+            "secondary-fixed": "#ebdcff",
+            "on-primary-fixed": "#161e00"
+          },
+          "borderRadius": {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.25rem",
+            "space-xs": "0.25rem",
+            "space-xl": "1.75rem",
+            "space-sm": "0.5rem",
+            "gutter": "1rem",
+            "space-md": "1rem",
+            "margin": "1.25rem"
+          },
+          "fontFamily": {
+            "label-caps": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "label-lg": ["Space Grotesk"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Space Grotesk"],
+            "label-md": ["Space Grotesk"],
+            "headline-md": ["Space Grotesk"],
+            "body-md": ["Plus Jakarta Sans"],
+            "display-lg": ["Space Grotesk"],
+            "display-metric": ["Space Grotesk"]
+          },
+          "fontSize": {
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Soundwave animation */
+    @keyframes wave {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+    .wave-bar-1 { animation: wave 1.2s ease-in-out infinite 0.1s; }
+    .wave-bar-2 { animation: wave 1.0s ease-in-out infinite 0.25s; }
+    .wave-bar-3 { animation: wave 1.4s ease-in-out infinite 0.05s; }
+    .wave-bar-4 { animation: wave 0.9s ease-in-out infinite 0.35s; }
+    .wave-bar-5 { animation: wave 1.3s ease-in-out infinite 0.2s; }
+    .wave-bar-6 { animation: wave 1.1s ease-in-out infinite 0.15s; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex justify-center selection:bg-primary-container selection:text-surface">
+<!-- Mobile Simulator Frame -->
+<div class="relative w-full max-w-[430px] min-h-screen bg-surface flex flex-col justify-between overflow-x-hidden border-x border-surface-container-high shadow-2xl">
+<!-- Top Hardware Ambient Inset & Progress Bar Navigation -->
+<header class="sticky top-0 z-30 bg-surface/95 backdrop-blur-md pt-11 px-margin pb-3">
+<!-- Status Bar Area Placeholder / Top Bar Info -->
+<div class="flex items-center justify-between mb-4">
+<!-- Back Button -->
+<button aria-label="Go Back" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary border border-surface-container-high active:scale-95 transition-transform duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<!-- Centered Step Indicator Badge -->
+<div class="px-3 py-1 rounded-full bg-surface-container border border-surface-container-high">
+<span class="font-label-caps text-label-caps text-on-surface tracking-wider">STEP 9 / 10</span>
+</div>
+<!-- Right Label / Brand -->
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low border border-surface-container-high">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps text-on-surface font-bold tracking-widest">MIRRA AI</span>
+</div>
+</div>
+<!-- Linear Step Progress Bar (Step 9 of 10) -->
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-primary-container rounded-full transition-all duration-500 w-[90%]"></div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin pt-3 pb-36">
+<!-- Section Tag Pill -->
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container border border-surface-container-high mb-3">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps text-on-surface tracking-wider">VOICE &amp; DEMEANOR</span>
+</div>
+<!-- Title & Subtitle -->
+<div class="mb-5">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-1.5">Pick your trainer.</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Choose the voice that will coach you every day. You can change this later in You.</p>
+</div>
+<!-- Grid of Compact Persona Cards (3 rows of 2 columns) -->
+<div aria-label="Select AI Trainer Persona" class="grid grid-cols-2 gap-3" role="radiogroup">
+<!-- 1. Drill Sergeant -->
+<div class="persona-card relative bg-surface-container-low rounded-2xl p-3 border border-surface-container-high cursor-pointer transition-all duration-200 active:scale-[0.98] hover:border-surface-variant flex flex-col items-center text-center">
+<div class="relative w-16 h-16 rounded-full overflow-hidden mb-2.5 p-0.5 border border-surface-container-high bg-surface-container">
+<img alt="Drill Sergeant persona portrait" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1WmZbTz4lb-yVRLWIgxWiQA794c_tPAdt9rwZzAAci_hFm6CYJyx1QkcodSMqeMvH62pskg69C6B_w8bhKDR3iXClCTHQCxky84umKW1G98Zi7kpDJ-7Jgm73_Gkm_pq5TeUNSW0G2A5oyjixbYMgUAbv3Xza6bp5z0x1rsw6dwTpqcuraBuY89bAHaMGDCWh6ggta8ZE6FTuAK-8UuoiEqoRg4LdcPGEF-sJ7hOLabhC8QIsyb44xn1HU"/>
+</div>
+<div class="inline-block px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-[10px] mb-1">
+            Relentless
+          </div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-0.5 text-center leading-tight">Drill Sergeant</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 text-center">Pushes your absolute limits</p>
+</div>
+<!-- 2. Sweet Spot -->
+<div class="persona-card relative bg-surface-container-low rounded-2xl p-3 border border-surface-container-high cursor-pointer transition-all duration-200 active:scale-[0.98] hover:border-surface-variant flex flex-col items-center text-center">
+<div class="relative w-16 h-16 rounded-full overflow-hidden mb-2.5 p-0.5 border border-surface-container-high bg-surface-container">
+<img alt="Sweet Spot persona portrait" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1Vj1f4b8qKPXGXEgOkUFlBq4Dq9Bv22Xo5H00idmZlB03W63qad4XZlLQI9vnZQxDeXkUG3npkMOIKxxj0HjEWraJw5T9NFcT-PHj7keK3swMewnNJUfHZ7QWB8nnpzko8fs4eRG4PUanMD_KrRNhMexxPoDWDtKnZqWuOsAqCdH4AtpwtYmKn9WV7HN2fJiw55WtHSm0qkNE68f8Cyq6KLSuRgSSnLoZ885V1BQftzZ6A_hveavjs2lVA5"/>
+</div>
+<div class="inline-block px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-[10px] mb-1">
+            Encouraging
+          </div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-0.5 text-center leading-tight">Sweet Spot</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 text-center">Always in your corner</p>
+</div>
+<!-- 3. Side-Eye (ACTIVE / SELECTED) -->
+<div class="persona-card relative bg-surface-container-low rounded-2xl p-3 border-2 border-primary-container ring-1 ring-primary-container/30 cursor-pointer transition-all duration-200 active:scale-[0.98] flex flex-col items-center text-center shadow-[0_0_24px_rgba(203,241,80,0.12)]">
+<!-- Active Pill Badge -->
+<div class="absolute -top-2.5 bg-primary-container text-on-primary-fixed font-label-caps text-[10px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">check</span>
+<span>ACTIVE</span>
+</div>
+<div class="relative w-16 h-16 rounded-full overflow-hidden mb-2.5 p-0.5 ring-2 ring-primary-container bg-surface-container">
+<img alt="Side-Eye persona portrait" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1W5PoYc75V106nJ7fmDgmcE2opyd1TRLU6jqgwHGmvI175iMSfDh1EmFahJBxgTSl9_JWOWvx_2mcWLzdq8c9yJryw3d-IA4MTdL-Z1HT6jLPHIzyPfxe31GwAZvO1DS2yTZPiqUsttqkyfy1cOKt8vKgVkrvuBLO0i6M0Yv-W0R2XEhyCNLfCAQBSGAK_zPTj1Uyxo_ux58GRItoRdUuUWIB0H5uLKhY4Ht-97qr-XLyBtzgr9O3JyQ1I"/>
+</div>
+<div class="inline-block px-2 py-0.5 rounded-full bg-secondary text-surface font-label-caps text-[10px] font-bold mb-1">
+            Sarcastic
+          </div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-0.5 text-center leading-tight">Side-Eye</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 text-center">Annoyingly accurate</p>
+</div>
+<!-- 4. Spark -->
+<div class="persona-card relative bg-surface-container-low rounded-2xl p-3 border border-surface-container-high cursor-pointer transition-all duration-200 active:scale-[0.98] hover:border-surface-variant flex flex-col items-center text-center">
+<div class="relative w-16 h-16 rounded-full overflow-hidden mb-2.5 p-0.5 border border-surface-container-high bg-surface-container">
+<img alt="Spark persona portrait" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1VnmUlt5nd3NI9IWghFPfT1BWjYLOv8BVaPe8ZEFWhiMBpYW5LR2wyNXgvA5KsFpJzhWq-TMV-JSo_tx4-xAIUmj3S8HMHH8_PlzqYy2jvUOiwjX6gaGfIxwMuX1PlUeOAzicdsufFnhUileTnLDbd_2SkhinIb0vKme24RlvQ9b2nh3hZmA6xrBll1wmHXeMTyZAnPu_84by5cTaAaa1gLkAGU0770DztT0N6TtBQbgcja1RM87VvXiyCD"/>
+</div>
+<div class="inline-block px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-[10px] mb-1">
+            High Energy
+          </div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-0.5 text-center leading-tight">Spark</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 text-center">Laughs through the burn</p>
+</div>
+<!-- 5. Steady -->
+<div class="persona-card relative bg-surface-container-low rounded-2xl p-3 border border-surface-container-high cursor-pointer transition-all duration-200 active:scale-[0.98] hover:border-surface-variant flex flex-col items-center text-center">
+<div class="relative w-16 h-16 rounded-full overflow-hidden mb-2.5 p-0.5 border border-surface-container-high bg-surface-container">
+<img alt="Steady persona portrait" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1U-Z0jX_EiuBAbI-piKcvurKpMG9roI2DDWOi9OQxxU1Wb8H6aNKYSkCFt1r1MGsWSf2fWogVQUowSZJjwYWKlQ9ombXgHgf-s-p9RyiKrh-0HZYoFcrNCkxGHJprV01qWgNGmTSlGjPknZHbCs_f6BRjZCt-TN72HBC9JLUzPcJnVLeC8zNSG7gCOjV4qxnI5Wpxln66lwS30pUYYmBKOTHxczoKwChLMsPSdJGDba_s44LqsM0glZU_u9"/>
+</div>
+<div class="inline-block px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-[10px] mb-1">
+            Grounded
+          </div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-0.5 text-center leading-tight">Steady</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 text-center">Calm, precision tempo</p>
+</div>
+<!-- 6. Rival -->
+<div class="persona-card relative bg-surface-container-low rounded-2xl p-3 border border-surface-container-high cursor-pointer transition-all duration-200 active:scale-[0.98] hover:border-surface-variant flex flex-col items-center text-center">
+<div class="relative w-16 h-16 rounded-full overflow-hidden mb-2.5 p-0.5 border border-surface-container-high bg-surface-container">
+<img alt="Rival persona portrait" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1XdqggZuwAhYsX4LM_cOKS_th8fX2UyJe5l8PXv-ovFqXMCBHP1ZUPAymCtRdBwcW0IZfLPBDnCEAADnTaUSXkZRBtn3odBSm8q2hyx6MhhUQCAtW8HuMCb63dAvu8jBHZTNWCz49EKKF6FS0qXUo9m2YOemdUxUvjMFUDLt8dDmMT0AVYKAvGfTWYgfWLwAeqffK-oGTUnrGJbOahWfUm-LVARpPCZW5lr-mCOZkVBB1ABV5HUP9-70ZIp"/>
+</div>
+<div class="inline-block px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-[10px] mb-1">
+            Competitive
+          </div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-0.5 text-center leading-tight">Rival</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 text-center">Beat yesterday's score</p>
+</div>
+</div>
+</main>
+<!-- Bottom Docked Area: Audio Voice Preview + Primary Action CTA -->
+<div class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto z-40 bg-gradient-to-t from-surface via-surface/95 to-transparent pt-6 pb-6 px-margin backdrop-blur-md">
+<!-- Audio Voice Preview Pill Bar -->
+<div class="w-full bg-surface-container-low border border-surface-container-high rounded-full p-2 pl-2.5 pr-4 flex items-center justify-between mb-3 shadow-[0px_8px_24px_rgba(0,0,0,0.6)]">
+<!-- Left: Play Icon Circle & Persona Voice Quote -->
+<div class="flex items-center gap-3 overflow-hidden">
+<button aria-label="Preview Voice Sample" class="w-10 h-10 rounded-full bg-primary-container text-surface flex items-center justify-center shrink-0 active:scale-90 transition-transform duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+<div class="flex flex-col text-left truncate">
+<span class="font-label-caps text-[10px] text-primary-container tracking-wider font-bold">VOICE PREVIEW</span>
+<span class="font-body-sm text-body-sm text-primary truncate italic">“You're really resting that long? Okay.”</span>
+</div>
+</div>
+<!-- Right: Animated Soundwave Visualizer -->
+<div class="flex items-center gap-1 shrink-0 pl-2">
+<span class="w-1 bg-primary-container rounded-full wave-bar-1 inline-block h-3"></span>
+<span class="w-1 bg-secondary rounded-full wave-bar-2 inline-block h-4"></span>
+<span class="w-1 bg-primary-container rounded-full wave-bar-3 inline-block h-2"></span>
+<span class="w-1 bg-secondary rounded-full wave-bar-4 inline-block h-5"></span>
+<span class="w-1 bg-primary-container rounded-full wave-bar-5 inline-block h-3"></span>
+<span class="w-1 bg-secondary rounded-full wave-bar-6 inline-block h-2"></span>
+</div>
+</div>
+<!-- Primary Action CTA Button -->
+<button class="w-full h-14 bg-primary-container text-on-primary-fixed font-label-lg text-label-lg font-bold rounded-full flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-150 shadow-[0_12px_28px_rgba(203,241,80,0.22)]" type="button">
+<span>Continue</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<!-- Native iOS Home Indicator Bar -->
+<div class="w-32 h-1 bg-surface-container-highest rounded-full mx-auto mt-4"></div>
+</div>
+</div>
+</body></html>

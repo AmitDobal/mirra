@@ -15,16 +15,16 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
 | Google OAuth | Better Auth browser social → accounts.google.com (see `mirra-google-oauth.md`); **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/59816a19-cfc7-4744-a3f2-570da31aba3e |
-| iOS update ID | `01a195f8-d00b-7be5-99af-c925e5efcb34` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a195f8-d00b-7be5-99af-c925e5efcb34 |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/2f7fae30-23f7-4184-afc8-e09289cf7555 |
+| iOS update ID | `01a1960c-cdf6-7554-9620-f1ef4d3c7d1b` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1960c-cdf6-7554-9620-f1ef4d3c7d1b |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `credits-store no Checking flash + prior #38-40` |
-| Smoke shots | `/tmp/mirra-qa/credits-no-flash-device/` |
-| Bundle prove | Commit `8054d0a` (#44 credits-store + #38–#40); You cache/credits/trainers; Progress; Today week strip |
-| API prove | `GET /v1/me` cached; progress photos API; week plan D1 persist |
-| Smoke note | **PASS** sim Expo Go — credits meter no Checking flash; see `/tmp/mirra-qa/credits-no-flash-device/RESULT.txt` |
+| Message | `you-profile-polish #46 avatar/location/credits` |
+| Smoke shots | `/tmp/mirra-qa/you-profile-polish/` |
+| Bundle prove | Commit `38bad26` (#46 You polish); 64px avatar; location prefs; credits force refresh |
+| API prove | `PATCH /v1/me/preferences` `trainingLocation`; D1 `0011_training_location` |
+| Smoke note | **PASS** sim Expo Go — You locations persist + credits; see `/tmp/mirra-qa/you-profile-polish/RESULT.txt` |
 
 ### Open on phone (laptop can be off)
 

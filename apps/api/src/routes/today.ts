@@ -25,7 +25,13 @@ todayRoutes.get("/v1/today", requireAuth, async (c) => {
   const userId = c.get("userId");
   const db = createDb(c.env.DB);
   const current = await loadCurrentPlan(db, userId);
-  const day = current.days.find((d) => d.date === date) ?? null;
+  // Prefer exact date; else same weekday in the stored week (plan kept until rebuild).
+  const utcDay = new Date(`${date}T12:00:00.000Z`).getUTCDay();
+  const mondayIndex = utcDay === 0 ? 6 : utcDay - 1;
+  const day =
+    current.days.find((d) => d.date === date) ??
+    current.days.find((d) => d.dayIndex === mondayIndex) ??
+    null;
   const workout =
     day?.workoutId != null
       ? (current.workouts.find((w) => w.id === day.workoutId) ?? null)

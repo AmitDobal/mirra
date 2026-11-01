@@ -4,6 +4,7 @@ export * from "./types";
 export * from "./onboarding";
 export * from "./me";
 export * from "./plans";
+export * from "./ensure-plan";
 export * from "./today";
 export * from "./today-actions";
 export * from "./check-ins";

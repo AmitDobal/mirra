@@ -17,7 +17,7 @@ import {
 } from "@/features/onboarding/components/WeekRevealParts";
 import { loadWeekPlanFromDb } from "@/features/onboarding/services/plan-persist";
 import type { OnboardingWeekPlan } from "@/features/onboarding/types";
-import { getCurrentPlan } from "@/lib/api";
+import { getCurrentPlan, type CurrentPlan, type PlanWorkout } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
 import { color } from "@/theme/tokens";
 import { Button } from "@/ui";
@@ -48,9 +48,7 @@ const dayTag = (kind: string, hasWorkout: boolean) => {
 };
 
 const toOnboardingWorkout = (
-  w: NonNullable<
-    Awaited<ReturnType<typeof getCurrentPlan>>["days"][number]["workout"]
-  >,
+  w: PlanWorkout,
 ): OnboardingWeekPlan["workouts"][number] => ({
   id: w.id,
   title: w.title,
@@ -66,9 +64,7 @@ const toOnboardingWorkout = (
   })),
 });
 
-const fromApiPlan = (
-  raw: Awaited<ReturnType<typeof getCurrentPlan>>,
-): OnboardingWeekPlan => {
+const fromApiPlan = (raw: CurrentPlan): OnboardingWeekPlan => {
   const workouts = raw.days
     .map((d) => d.workout)
     .filter((w): w is NonNullable<typeof w> => w != null)

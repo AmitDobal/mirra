@@ -7,18 +7,17 @@ const fromExtra = (key: string): string | null => {
   return typeof value === "string" && value.length > 0 ? value : null;
 };
 
-const read = (envKey: string, extraKey: string, fallback: string): string =>
-  (
-    process.env[envKey] ??
-    fromExtra(extraKey) ??
-    fallback
-  ).replace(/\/$/, "");
+/**
+ * Prefer static `process.env.EXPO_PUBLIC_*` so Metro inlines at export time.
+ * Dynamic `process.env[key]` is NOT replaced and stays empty in EAS Update bundles.
+ */
+const pick = (inlined: string | undefined, extraKey: string, fallback = ""): string =>
+  (inlined && inlined.length > 0 ? inlined : null) ??
+  fromExtra(extraKey) ??
+  fallback;
 
-const readOptional = (envKey: string, extraKey: string): string =>
-  process.env[envKey] ?? fromExtra(extraKey) ?? "";
-
-const revenueCatApiKey = readOptional(
-  "EXPO_PUBLIC_REVENUECAT_API_KEY",
+const revenueCatApiKey = pick(
+  process.env.EXPO_PUBLIC_REVENUECAT_API_KEY,
   "revenueCatApiKey",
 );
 
@@ -29,14 +28,14 @@ const revenueCatFlag =
 
 /** Runtime config — never hardcode URLs in feature code. */
 export const env = {
-  apiBaseUrl: read(
-    "EXPO_PUBLIC_API_BASE_URL",
+  apiBaseUrl: pick(
+    process.env.EXPO_PUBLIC_API_BASE_URL,
     "apiBaseUrl",
     "http://127.0.0.1:8787",
-  ),
+  ).replace(/\/$/, ""),
   /** Dev identity header until Better Auth lands (`x-mirra-user-id`). */
-  mirraUserId: read(
-    "EXPO_PUBLIC_MIRRA_USER_ID",
+  mirraUserId: pick(
+    process.env.EXPO_PUBLIC_MIRRA_USER_ID,
     "mirraUserId",
     "dev-user-1",
   ),
@@ -47,16 +46,16 @@ export const env = {
       fromExtra("allowDevAuth") ??
       "") === "true",
   /** Google OAuth web client id (Better Auth / Google sign-in). Empty = disabled. */
-  googleWebClientId: readOptional(
-    "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
+  googleWebClientId: pick(
+    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     "googleWebClientId",
   ),
-  googleIosClientId: readOptional(
-    "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID",
+  googleIosClientId: pick(
+    process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     "googleIosClientId",
   ),
-  googleAndroidClientId: readOptional(
-    "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID",
+  googleAndroidClientId: pick(
+    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     "googleAndroidClientId",
   ),
 

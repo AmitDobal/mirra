@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** Day-test EAS republished from `8054d0a` (#44 credits-store + #38–#40). iOS manifest: https://u.expo.dev/update/01a195f8-d00b-7be5-99af-c925e5efcb34. Evidence `/tmp/mirra-qa/credits-no-flash-device/`.
+**Latest:** API **`141fd02`** (#49 auth-harden) on Worker; EAS **`01a1963b`** (#47+#48). Phone: https://u.expo.dev/update/01a1963b-801d-7e46-b723-4dbc7cd1c2a0. Prod curl verify + matrix `/tmp/mirra-qa/prod-smoke-matrix/RESULT.md`.
 
 | | |
 | --- | --- |
@@ -8,9 +8,9 @@
 | State | **DAY-TEST LIVE** — hosted API + EAS Update (laptop-off Expo Go) |
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
-| API | https://mirra-api.amit-dobalwork.workers.dev |
-| Mobile | Expo SDK **58** (Expo Go 58) |
-| Mobile day-test | Expo Go → [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test` channel) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — **`141fd02` (#49) deployed** |
+| Mobile | Expo SDK **58** — EAS **`01a1963b`** (#47+#48) |
+| Mobile day-test | https://u.expo.dev/update/01a1963b-801d-7e46-b723-4dbc7cd1c2a0 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

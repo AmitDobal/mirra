@@ -10,14 +10,16 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 
 | Piece | Value |
 | --- | --- |
-| API | https://mirra-api.amit-dobalwork.workers.dev |
+| API | https://mirra-api.amit-dobalwork.workers.dev — **`141fd02` (#49 api-auth-harden) deployed** |
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
+| Auth probe | `GET /api/auth/ok` → `{"ok":true}` (no `google` field; #49) |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth browser social → accounts.google.com (see `mirra-google-oauth.md`); **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/2f7fae30-23f7-4184-afc8-e09289cf7555 |
-| iOS update ID | `01a1960c-cdf6-7554-9620-f1ef4d3c7d1b` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1960c-cdf6-7554-9620-f1ef4d3c7d1b |
+| Mobile bundle | **#47** signup-before-pro + **#48** check-in relocate |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/a1639358-b12a-446b-8dfa-ce3bac93abe8 |
+| iOS update ID | `01a1963b-801d-7e46-b723-4dbc7cd1c2a0` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1963b-801d-7e46-b723-4dbc7cd1c2a0 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
 | Message | `you-profile-polish #46 avatar/location/credits` |

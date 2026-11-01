@@ -1,5 +1,17 @@
 # Handoff
 
+## 2026-11-01 — User-base session + You (#34/#35)
+
+**Done:** Session hydrate + cold-start lands on Today; You tab reads profile from `GET /v1/me`; sign-out clears local auth/session; D1 `users` + `accounts` wired on API. Merged #34 / #35.
+
+**In progress:** Device prove — kill app and reopen (session restore on phone).
+
+**Next:** Open EAS update on device — https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab
+
+**Watch:** Primary checkout is dirty WIP (`feat/sx-arbitrary-radius`) — **not** the ship line; EAS/day-test only from clean `origin/main`.
+
+**Evidence:** `/tmp/mirra-qa/user-base-e2e/`
+
 ## 2026-11-01 — Day-test runbook Live → 01a19599
 
 **Done:** `docs/09-runbooks/ios-day-test.md` Live table now points at post-#30 EAS update (was stale `01a1958d`). Smoke path `/tmp/mirra-qa/google-oauth-proxy-fix/`.

@@ -1,22 +1,14 @@
 # Handoff
 
-## 2026-11-02 — Ship gate: check-in S20b + Today S15b (60a5f0a)
+## 2026-11-02 — Check-in/Today wave complete (AMI-139/140)
 
-**Done:** `origin/main` `60a5f0a` == local HEAD, tracked tree clean. `tsc --noEmit` PASS in `apps/mobile`. EAS `day-test` iOS update `01a1989c-87e3-7f14-948b-359d87fe0f1b`, group `5e2f916b-e4cb-47fb-b72a-5a7dabff06da`, published from the clean tip (message "AMI-139/140 check-in S20b + Today S15b"). Mobile-only; API unchanged. Worktrees `mirra-wt-ami-139/140` removed (branches on origin).
+**Done:** Hygiene `.gitignore` (Expo-Go tar/dist). Decision: no daily recalibration vector — 3 taps + Adjust today (`docs/03-engineering/checkin-today-ux.md`). Stitch S15b/S20b/S20c exported. Merged to `main` (`60a5f0a` code + docs tip). EAS `day-test` `01a1989c-87e3-7f14-948b-359d87fe0f1b`. Worktrees removed. Linear AMI-139/140 Done.
 
 **Phone:** https://u.expo.dev/update/01a1989c-87e3-7f14-948b-359d87fe0f1b
 
-**Smoke:** Simulator (Expo Go 58) boots the tip and renders onboarding. Today How-are-you + fuel photo rows, S20b open, and S20c/rest-day submit were NOT driven (sim taps unavailable; Auth needed Dev Tester tap). Builder S20b/S20c shots in `smoke/ami-139/`. Verify on phone.
+**Smoke PASS (tip):** Today How-are-you + fuel rows; S20b open/fill; S20c rest variant; post-submit Checked in. Evidence `docs/05-project-management/smoke/ami-139-140/`. Lift-day S20c diff still covered by builder `smoke/ami-139/s20c-lighter-diff.png`. No "recalibration vector" in UI.
 
-**Watch out:** Sim SQLite for `day-test-1` was seeded with a profile row; session lives in Keychain so cold start still lands on week-reveal until Dev Tester is tapped.
-
-## 2026-11-02 — Check-in/Today Stitch + gitignore (in progress)
-
-**Done:** `.gitignore` ignores Expo-Go `*.tar.app`, dist, native build junk (`12ede1c`). Research: daily recalibration vector picker is out — 3 taps + AI Adjust today. Stitch generated + exported S20b/S20c/S15b under `stitch_mirra_ai_personal_trainer/` + `docs/03-engineering/checkin-today-ux.md`. Linear AMI-139 (check-in) + AMI-140 (Today).
-
-**Next:** Parallel builders implement vs Stitch (`sx()`), smoke, merge main, EAS day-test.
-
-**Watch out:** Keep product 4-tab bar (Stitch S15b shows 5). No eng jargon in UI.
+**Watch out:** Adjust today is client-side minutes overlay until a real plan-apply API exists.
 
 ## 2026-11-02 — Day-test pinned: meal local time + History cache (02a4aad)
 

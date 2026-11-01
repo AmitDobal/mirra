@@ -84,7 +84,7 @@
 
 ### Settings
 - `PATCH /v1/preferences`
-- `DELETE /v1/me` (account delete — soft then hard job)
+- `DELETE /v1/me` → `{ ok: true }` hard delete (R2 + D1 + sessions); see `account-deletion.md`
 
 ---
 

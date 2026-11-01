@@ -43,3 +43,7 @@ export type MeResponse = z.infer<typeof MeResponseSchema>;
 export type MeUser = z.infer<typeof MeUserSchema>;
 export type MeAccount = z.infer<typeof MeAccountSchema>;
 export type EntitlementStatus = z.infer<typeof EntitlementStatusSchema>;
+
+/** DELETE /v1/me — hard-delete the signed-in account and all personal data. */
+export const DeleteMeResponseSchema = z.object({ ok: z.literal(true) });
+export type DeleteMeResponse = z.infer<typeof DeleteMeResponseSchema>;

@@ -14,12 +14,12 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/bca3713e-617c-4ff1-8c4a-9b124e423273 |
-| iOS update ID | `01a19560-f28f-71e7-ad64-d5a64fbcc28b` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19560-f28f-71e7-ad64-d5a64fbcc28b |
+| Latest update | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/8b472653-9461-4668-a7b9-883e41acc4de |
+| iOS update ID | `01a19580-8a17-7b8f-9a66-6eeed8fc0446` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19580-8a17-7b8f-9a66-6eeed8fc0446 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `day-test: Google OAuth client id + Better Auth` (from `59fcd12`) |
+| Message | `day-test: Mirra GCP web+ios oauth (#26)` (from `cb51494`) |
 | Smoke shots | `/tmp/mirra-qa/google-oauth-eas/` (Continue with Google + Dev Tester) |
 | API prove | `GET /api/auth/ok` → `{ok:true,google:true}`; insights/actions/voice still 200 with day-test-1 |
 
@@ -46,12 +46,12 @@ npx wrangler deploy
 ```bash
 cd apps/mobile
 # Prefer --platform ios (web export fails on expo-sqlite wasm).
-# Load EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID from local apps/mobile/.env (gitignored). Do not echo.
-CI=1 \
+# Load WEB + IOS client ids from local apps/mobile/.env (gitignored). Do not echo.
+# Always npm install at repo root first (EAS fails without node_modules / expo-router).
+set -a && . ./.env && set +a
 EXPO_PUBLIC_API_BASE_URL=https://mirra-api.amit-dobalwork.workers.dev \
 EXPO_PUBLIC_MIRRA_USER_ID=day-test-1 \
 EXPO_PUBLIC_ALLOW_DEV_AUTH=true \
-EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID="$ID" \
 npx eas-cli update --branch day-test --environment preview --platform ios --message "…" --non-interactive
 ```
 

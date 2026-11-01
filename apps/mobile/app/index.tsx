@@ -2,7 +2,10 @@ import { Redirect, type Href } from "expo-router";
 import { useEffect, useState } from "react";
 
 import { useOnboardingStore } from "@/features/onboarding";
-import { isOnboardingCompleteLocal } from "@/features/onboarding/services/memory-store";
+import {
+  isOnboardingCompleteLocal,
+  isPlanGeneratedLocal,
+} from "@/features/onboarding/services/memory-store";
 import { hasSession } from "@/lib/auth";
 import {
   resolveColdStartRoute,
@@ -12,8 +15,9 @@ import { logger } from "@/lib/logger";
 
 /**
  * Cold open gate (after `_layout` hydrates auth):
- * - session + onboarding done → Today
- * - session + onboarding incomplete → resume welcome
+ * - session + funnel done → Today
+ * - plan generated (guest or mid-funnel) → week-reveal (not Today)
+ * - session + incomplete → welcome
  * - no session → splash → welcome
  */
 const Index = () => {
@@ -24,11 +28,16 @@ const Index = () => {
     void (async () => {
       const storeDone = useOnboardingStore.getState().completed;
       const onboardingCompleted =
-        storeDone || (hasSession() ? await isOnboardingCompleteLocal() : false);
+        storeDone || (await isOnboardingCompleteLocal());
+      const planGenerated =
+        onboardingCompleted ||
+        Boolean(useOnboardingStore.getState().weekPlan) ||
+        (await isPlanGeneratedLocal());
       if (onboardingCompleted && !storeDone) markCompleted();
       const dest = resolveColdStartRoute({
         hasSession: hasSession(),
         onboardingCompleted,
+        planGenerated,
       });
       logger.info("boot.route", { dest });
       setHref(dest);

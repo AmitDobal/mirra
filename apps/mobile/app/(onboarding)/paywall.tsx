@@ -8,6 +8,7 @@ import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { PaywallFeatureList } from "@/features/onboarding/components/PaywallFeatureList";
 import { PaywallHero } from "@/features/onboarding/components/PaywallHero";
 import { PaywallPlanCard } from "@/features/onboarding/components/PaywallPlanCard";
+import { completeOnboardingFunnel } from "@/features/onboarding/services/complete-funnel";
 import {
   canSoftSkipPaywall,
   requireSignedInUser,
@@ -23,7 +24,6 @@ const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
   const setPaywallPlan = useOnboardingStore((s) => s.setPaywallPlan);
-  const markCompleted = useOnboardingStore((s) => s.markCompleted);
   const { loading, purchase, restore, loadOfferings, offerings } = usePurchases();
 
   useEffect(() => {
@@ -31,8 +31,9 @@ const PaywallScreen = () => {
   }, [loadOfferings]);
 
   const finishFree = () => {
-    markCompleted();
-    router.replace("/(tabs)/today");
+    void completeOnboardingFunnel().then(() => {
+      router.replace("/(tabs)/today");
+    });
   };
 
   const goAuth = (intent: "paywall" | "tabs") => {

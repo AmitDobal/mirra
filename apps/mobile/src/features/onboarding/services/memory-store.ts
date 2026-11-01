@@ -18,19 +18,26 @@ export const savePlanLocal = async (
 export const getPlanLocal = (): Promise<OnboardingWeekPlan | null> =>
   loadWeekPlanFromDb();
 
-/**
- * No-op for writes: `saveOnboarding` already sets `onboarding_completed_at`.
- * Zustand still tracks UI `completed`.
- */
+/** @deprecated Prefer `completeOnboardingFunnel`. */
 export const markOnboardingCompleteLocal = (): void => {
-  /* profile timestamp set during generate */
+  /* durable write via completeOnboardingFunnel */
 };
 
-/** Async read of SQLite profile flag. */
+/** Funnel finished (auth + paywall soft finish) — cold start → Today. */
 export const isOnboardingCompleteLocal = async (): Promise<boolean> => {
   await ensureMirraDb();
   const profile = await getProfile();
   return profile?.onboardingCompletedAt != null;
+};
+
+/** Plan generated but funnel may still need auth/paywall. */
+export const isPlanGeneratedLocal = async (): Promise<boolean> => {
+  await ensureMirraDb();
+  const profile = await getProfile();
+  if (profile?.planGeneratedAt != null) return true;
+  if (profile?.onboardingCompletedAt != null) return true;
+  const plan = await loadWeekPlanFromDb();
+  return plan != null;
 };
 
 /** @deprecated Clearing SQLite plans is out of scope for this shim. */

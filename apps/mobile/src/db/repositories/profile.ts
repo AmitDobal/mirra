@@ -16,6 +16,7 @@ type ProfileRow = {
   goal_weight_kg: number | null;
   pace: string | null;
   timezone: string;
+  plan_generated_at: number | null;
   onboarding_completed_at: number | null;
 };
 
@@ -40,6 +41,10 @@ const toTrainingLocation = (value: string | null | undefined): "gym" | "home" | 
   return "gym";
 };
 
+/**
+ * Persist quiz prefs + stamp `plan_generated_at`.
+ * Does NOT set `onboarding_completed_at` — that waits for auth + paywall soft finish.
+ */
 export const saveOnboarding = async (input: OnboardingInput): Promise<string> => {
   const data = OnboardingInputSchema.parse(input);
   const userId = data.userId ?? getLocalUserId();
@@ -50,13 +55,15 @@ export const saveOnboarding = async (input: OnboardingInput): Promise<string> =>
   await db.runAsync(
     `INSERT INTO profiles (
       user_id, sex, age_years, height_cm, weight_kg, goal_weight_kg, pace,
-      timezone, onboarding_completed_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      timezone, plan_generated_at, onboarding_completed_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET
       sex=excluded.sex, age_years=excluded.age_years, height_cm=excluded.height_cm,
       weight_kg=excluded.weight_kg, goal_weight_kg=excluded.goal_weight_kg,
       pace=excluded.pace, timezone=excluded.timezone,
-      onboarding_completed_at=excluded.onboarding_completed_at, updated_at=excluded.updated_at`,
+      plan_generated_at=excluded.plan_generated_at,
+      onboarding_completed_at=profiles.onboarding_completed_at,
+      updated_at=excluded.updated_at`,
     userId,
     p.sex ?? null,
     p.ageYears ?? null,
@@ -101,6 +108,21 @@ export const saveOnboarding = async (input: OnboardingInput): Promise<string> =>
   );
 
   return userId;
+};
+
+/** Mark funnel finished (auth + paywall soft skip / purchase). */
+export const markOnboardingComplete = async (
+  userId: string = getLocalUserId(),
+): Promise<void> => {
+  const db = await getDb();
+  const ts = nowMs();
+  await db.runAsync(
+    `UPDATE profiles SET onboarding_completed_at = ?, updated_at = ?
+     WHERE user_id = ?`,
+    ts,
+    ts,
+    userId,
+  );
 };
 
 /** Update only the trainer persona on the local preferences row (no-op without a row). */
@@ -155,6 +177,7 @@ export const getProfile = async (
     goalWeightKg: profile.goal_weight_kg,
     pace: profile.pace,
     timezone: profile.timezone,
+    planGeneratedAt: profile.plan_generated_at ?? null,
     onboardingCompletedAt: profile.onboarding_completed_at,
     preferences: prefs
       ? {

@@ -170,7 +170,7 @@ export const bodyToOnboardingInput = (
   preferences: body.preferences,
 });
 
-/** Persist profile + prefs (sets `onboarding_completed_at`). */
+/** Persist profile + prefs; stamps `plan_generated_at` only (not funnel-complete). */
 export const persistOnboardingProfile = async (
   body: OnboardingPutBody,
 ): Promise<void> => {

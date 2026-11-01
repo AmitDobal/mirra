@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { Gauge, Dumbbell } from "lucide-react-native";
+import { MotiView, type MotiTransition } from "moti";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -20,6 +21,12 @@ const MAX_PERCENT = 96;
 const FINAL_STEP_AT = 85;
 const TICK_MS = 400;
 const TICK_STEP = 3;
+const STATUS_ROTATE_MS = 1500;
+
+const FADE: MotiTransition = {
+  type: "timing",
+  duration: 320,
+} as MotiTransition;
 
 const useCalibrationPercent = () => {
   const [percent, setPercent] = useState(START_PERCENT);
@@ -30,6 +37,18 @@ const useCalibrationPercent = () => {
     return () => clearInterval(id);
   }, []);
   return percent;
+};
+
+const useRotatingStatus = (lines: readonly string[]) => {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (lines.length <= 1) return;
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % lines.length);
+    }, STATUS_ROTATE_MS);
+    return () => clearInterval(id);
+  }, [lines.length]);
+  return lines[index] ?? lines[0] ?? "";
 };
 
 const toCurrentPlan = (plan: OnboardingWeekPlan): CurrentPlan => ({
@@ -48,13 +67,14 @@ const toCurrentPlan = (plan: OnboardingWeekPlan): CurrentPlan => ({
   })),
 });
 
-/** S11 — PUT onboarding → generate plan → week-reveal (Stitch calibration UI). */
+/** S11 — PUT onboarding → generate plan → week-reveal (Stitch + AI shimmer). */
 const GeneratingScreen = () => {
   const c = onboardingCopy.generating;
   const setWeekPlan = useOnboardingStore((s) => s.setWeekPlan);
   const setPlan = usePlanStore((s) => s.setPlan);
   const started = useRef(false);
   const percent = useCalibrationPercent();
+  const statusLine = useRotatingStatus(c.statusLines);
 
   useEffect(() => {
     if (started.current) return;
@@ -88,8 +108,15 @@ const GeneratingScreen = () => {
             percent={percent}
             finalStep={percent > FINAL_STEP_AT}
           />
-          <View style={styles.status}>
-            <Text style={styles.statusTitle}>{c.title}</Text>
+          <View style={styles.status} accessibilityLiveRegion="polite">
+            <MotiView
+              key={statusLine}
+              from={{ opacity: 0, translateY: 4 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={FADE}
+            >
+              <Text style={styles.statusTitle}>{statusLine}</Text>
+            </MotiView>
             <Text style={styles.statusSub}>{c.sub}</Text>
           </View>
           <View style={styles.badges}>
@@ -122,6 +149,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     maxWidth: 320,
     gap: 4,
+    minHeight: 48,
   },
   statusTitle: {
     fontFamily: font.headlineSemi,

@@ -20,12 +20,17 @@ export const GeneratingHeader = () => {
   return (
     <View style={styles.row}>
       <View style={styles.pill}>
-        <MotiView
-          from={{ scale: 1, opacity: 1 }}
-          animate={{ scale: 2, opacity: 0 }}
-          transition={{ type: "timing", duration: 1000, loop: true } as MotiTransition}
-          style={styles.ping}
-        />
+        <View style={styles.pingWrap}>
+          <MotiView
+            from={{ scale: 1, opacity: 0.85 }}
+            animate={{ scale: 2.2, opacity: 0 }}
+            transition={
+              { type: "timing", duration: 1000, loop: true } as MotiTransition
+            }
+            style={styles.ping}
+          />
+          <View style={styles.pingCore} />
+        </View>
         <Text style={styles.pillText}>{c.engine}</Text>
       </View>
       <View style={styles.version}>
@@ -60,7 +65,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     backgroundColor: color.surfaceContainerHigh,
   },
+  pingWrap: {
+    width: 8,
+    height: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   ping: {
+    position: "absolute",
+    width: 8,
+    height: 8,
+    borderRadius: radius.full,
+    backgroundColor: color.primaryFixed,
+  },
+  pingCore: {
     width: 8,
     height: 8,
     borderRadius: radius.full,

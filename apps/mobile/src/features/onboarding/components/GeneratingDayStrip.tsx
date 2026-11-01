@@ -1,5 +1,6 @@
 import { RefreshCw } from "lucide-react-native";
 import { MotiView, type MotiTransition } from "moti";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { color, font, radius } from "@/theme/tokens";
@@ -10,9 +11,7 @@ type Day = {
   letter: string;
   tag: string;
   state: DayState;
-  /** Stitch `opacity-*` on the pending days. */
   opacity: number;
-  /** Stitch `bg-surface-container/NN` alpha as hex; empty = solid. */
   bgAlpha: string;
 };
 
@@ -34,6 +33,14 @@ const PULSE = {
   repeatReverse: true,
 } as MotiTransition;
 
+const SHEEN: MotiTransition = {
+  type: "timing",
+  duration: 1800,
+  loop: true,
+} as MotiTransition;
+
+const WALK_MS = 850;
+
 const dotGlow = (tint: string) => ({
   shadowColor: tint,
   shadowOpacity: 1,
@@ -41,8 +48,14 @@ const dotGlow = (tint: string) => ({
   shadowOffset: { width: 0, height: 0 },
 });
 
-const Capsule = ({ state }: { state: DayState }) => {
-  if (state === "active") {
+const Capsule = ({
+  state,
+  synthesizing,
+}: {
+  state: DayState;
+  synthesizing: boolean;
+}) => {
+  if (synthesizing || state === "active") {
     return (
       <MotiView
         from={{ opacity: 1 }}
@@ -56,9 +69,14 @@ const Capsule = ({ state }: { state: DayState }) => {
   }
   if (state === "pending") {
     return (
-      <View style={[styles.capsule, styles.capsulePending]}>
+      <MotiView
+        from={{ opacity: 0.35 }}
+        animate={{ opacity: 0.9 }}
+        transition={{ ...PULSE, delay: 200 } as MotiTransition}
+        style={[styles.capsule, styles.capsulePending]}
+      >
         <View style={styles.pendingDot} />
-      </View>
+      </MotiView>
     );
   }
   const tint = state === "lime" ? color.primaryFixed : color.secondary;
@@ -69,59 +87,101 @@ const Capsule = ({ state }: { state: DayState }) => {
         { backgroundColor: state === "lime" ? `${tint}33` : `${tint}40` },
       ]}
     >
-      <View style={[styles.dot, { backgroundColor: tint }, dotGlow(tint)]} />
+      <MotiView
+        from={{ scale: 0.85, opacity: 0.7 }}
+        animate={{ scale: 1.05, opacity: 1 }}
+        transition={PULSE}
+        style={[styles.dot, { backgroundColor: tint }, dotGlow(tint)]}
+      />
     </View>
   );
 };
 
-const tagColor = (state: DayState) => {
+const tagColor = (state: DayState, synthesizing: boolean) => {
+  if (synthesizing) return color.primaryFixed;
   if (state === "lavender") return color.secondary;
   if (state === "pending") return color.outlineVariant;
   return color.primaryFixed;
 };
 
-const dayBackground = ({ state, bgAlpha }: Day) =>
-  state === "active"
+const dayBackground = (day: Day, synthesizing: boolean) => {
+  if (synthesizing) return color.surfaceContainerHigh;
+  return day.state === "active"
     ? color.surfaceContainerHigh
-    : `${color.surfaceContainer}${bgAlpha}`;
+    : `${color.surfaceContainer}${day.bgAlpha}`;
+};
 
-/** 7-day microcycle capsule strip from the Stitch S11 export. */
-export const GeneratingDayStrip = () => (
-  <View style={styles.grid}>
-    {DAYS.map((day, i) => (
-      <View
-        key={`${day.letter}-${i}`}
-        style={[
-          styles.col,
-          { backgroundColor: dayBackground(day), opacity: day.opacity },
-          day.state === "active" ? styles.colActive : null,
-        ]}
-      >
-        <Text
-          style={[
-            styles.letter,
-            { color: day.state === "active" ? color.primary : color.onSurfaceVariant },
-          ]}
-        >
-          {day.letter}
-        </Text>
-        <Capsule state={day.state} />
-        <Text
-          style={[
-            styles.tag,
-            { color: tagColor(day.state) },
-            day.state === "pending" ? styles.tagPending : null,
-          ]}
-          numberOfLines={1}
-        >
-          {day.tag}
-        </Text>
+/** 7-day microcycle strip — walking synth focus + shimmer sheen. */
+export const GeneratingDayStrip = () => {
+  const [focus, setFocus] = useState(3);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFocus((f) => (f + 1) % DAYS.length);
+    }, WALK_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <View style={styles.wrap}>
+      <View style={styles.grid}>
+        {DAYS.map((day, i) => {
+          const synthesizing = i === focus;
+          return (
+            <View
+              key={`${day.letter}-${i}`}
+              style={[
+                styles.col,
+                {
+                  backgroundColor: dayBackground(day, synthesizing),
+                  opacity: synthesizing ? 1 : day.opacity,
+                },
+                synthesizing ? styles.colActive : null,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.letter,
+                  {
+                    color: synthesizing ? color.primary : color.onSurfaceVariant,
+                  },
+                ]}
+              >
+                {day.letter}
+              </Text>
+              <Capsule state={day.state} synthesizing={synthesizing} />
+              <Text
+                style={[
+                  styles.tag,
+                  { color: tagColor(day.state, synthesizing) },
+                  !synthesizing && day.state === "pending"
+                    ? styles.tagPending
+                    : null,
+                ]}
+                numberOfLines={1}
+              >
+                {day.tag}
+              </Text>
+            </View>
+          );
+        })}
       </View>
-    ))}
-  </View>
-);
+      <MotiView
+        from={{ translateX: -80 }}
+        animate={{ translateX: 320 }}
+        transition={SHEEN}
+        pointerEvents="none"
+        style={styles.sheen}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
+  wrap: {
+    overflow: "hidden",
+    position: "relative",
+  },
   grid: {
     flexDirection: "row",
     gap: 6,
@@ -177,5 +237,12 @@ const styles = StyleSheet.create({
   tagPending: {
     fontFamily: font.label,
     fontWeight: "400",
+  },
+  sheen: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: 56,
+    backgroundColor: "rgba(203,241,80,0.08)",
   },
 });

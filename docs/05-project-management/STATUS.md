@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** EAS **`01a1989c`** (AMI-139/140 check-in S20b + Today S15b @ `60a5f0a`). Phone: https://u.expo.dev/update/01a1989c-87e3-7f14-948b-359d87fe0f1b. Prior: `01a1966b` (#53+#54). Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md`. API still **`141fd02`**.
+**Latest:** EAS **`01a198d6`** (AMI-141/142 Today Focus-first + Exercise hub @ `336394d`). Phone: https://u.expo.dev/update/01a198d6-6fd6-706d-a6b5-3f5ebe644e2c. Prior: `01a1989c` (AMI-139/140). Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md`. API still **`141fd02`**.
 
 | | |
 | --- | --- |
@@ -9,8 +9,8 @@
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
 | API | https://mirra-api.amit-dobalwork.workers.dev — **`141fd02` (#49) deployed** |
-| Mobile | Expo SDK **58** — EAS **`01a1989c`** (AMI-139/140 @ `60a5f0a`) |
-| Mobile day-test | https://u.expo.dev/update/01a1989c-87e3-7f14-948b-359d87fe0f1b · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| Mobile | Expo SDK **58** — EAS **`01a198d6`** (AMI-141/142 @ `336394d`) |
+| Mobile day-test | https://u.expo.dev/update/01a198d6-6fd6-706d-a6b5-3f5ebe644e2c · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

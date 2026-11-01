@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — Ship gate PASS: Today Focus-first + Exercise hub (AMI-141/142, 336394d)
+
+**Done:** HEAD == origin/main `336394d`, tracked clean. tsc clean. Metro from tip in Expo Go 58 (iPhone 16 Pro Max sim), past dev auth. EAS `day-test` iOS update `01a198d6-6fd6-706d-a6b5-3f5ebe644e2c`, group `4c5446c0-6b02-48c1-8173-c127bf56fc03`. Worktrees mirra-wt-ami-141/142 removed.
+
+**Phone:** https://u.expo.dev/update/01a198d6-6fd6-706d-a6b5-3f5ebe644e2c
+
+**Smoke PASS:** Today (live day-test-1, rest day): compact week, Focus first, twin targets, fuel row, Weekly Check-in is a compact row below fuel (nothing full-width above Focus). Dock = Today, Exercise, Fuel, Progress, You (no Coach). Exercise hub (session hero, library, chips, grid) and S26 detail (deep link) render. Evidence `smoke/ami-141/10-gate-*`, `smoke/ami-142/10-11-gate-*`.
+
+**Not driven live (no tap/scroll automation; Computer Use permission off):** exercise teaser row (hidden on rest day by design) and swap sheet. Covered by builder shots `smoke/ami-141/01-today-workout-day-focus-first.png` and `smoke/ami-142/07-s27-swap-sheet.png` (mocked workout day). Check both on phone.
+
 ## 2026-11-02 — Check-in/Today wave complete (AMI-139/140)
 
 **Done:** Hygiene `.gitignore` (Expo-Go tar/dist). Decision: no daily recalibration vector — 3 taps + Adjust today (`docs/03-engineering/checkin-today-ux.md`). Stitch S15b/S20b/S20c exported. Merged to `main` (`60a5f0a` code + docs tip). EAS `day-test` `01a1989c-87e3-7f14-948b-359d87fe0f1b`. Worktrees removed. Linear AMI-139/140 Done.

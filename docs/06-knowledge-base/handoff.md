@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-01 — Day-test pinned after calorie history wave (e7198d9)
+
+**Done:** Calorie history + Cal AI meal snap wave (AMI-130–134) merged and deployed from clean `origin/main` `e7198d9`. API Worker version `95377ecd-4a47-4e87-9361-4eb92df179ac` (`/health` 200, `/api/auth/ok` `{"ok":true}`; D1 0012/0013 already applied remote). EAS `day-test` iOS update `01a1983a-1790-72df-b212-03b68c51505b`, group `549d2f11-7c2b-4126-932b-5acfdb1401b7`.
+
+**Phone:** https://u.expo.dev/update/01a1983a-1790-72df-b212-03b68c51505b
+
+**Watch out:** `OPENAI_API_KEY` is already in use for meal-snap vision; rotate anytime with `npx wrangler secret put OPENAI_API_KEY` in `apps/api`. Prod Worker still has `ALLOW_DEV_USER_HEADER=true` (day-test only). Untracked local junk (`apps/api/api-workout-seed.txt`, Expo-Go tar.app) is not committed.
+
+**Evidence:** smoke `/tmp/mirra-qa/calorie-history-full-smoke/`
+
 ## 2026-11-01 — Local full smoke PASS + deploy main 7db7c04
 
 **Done:** Local smoke PASS (inventory 14/14; API local PASS; iOS sim A–H PASS). Deployed from clean `origin/main` `7db7c04`: API Worker version `6c5afa9c-04e8-4c42-8070-7bad7c9e82b5` (no pending D1 migrations; `/health` 200, `/api/auth/ok` `{"ok":true}`). EAS `day-test` iOS update `01a197a9-4346-71e7-8087-e08f946edd5a`, group `e87ea211-4703-4e84-8eaf-286e37f5eccd`.

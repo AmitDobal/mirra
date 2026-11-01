@@ -10,21 +10,21 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 
 | Piece | Value |
 | --- | --- |
-| API | https://mirra-api.amit-dobalwork.workers.dev — redeployed from clean `origin/main` **`7db7c04`**, Worker version `6c5afa9c-04e8-4c42-8070-7bad7c9e82b5` (D1: no pending migrations) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — redeployed from clean `origin/main` **`e7198d9`** (calorie history wave AMI-130–134), Worker version `95377ecd-4a47-4e87-9361-4eb92df179ac` (D1 0012/0013 already applied remote) |
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Auth probe | `GET /api/auth/ok` → `{"ok":true}` (no `google` field; #49) |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | **#56** mandatory signup + meal teaser (on #53/#54 funnel) |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/e87ea211-4703-4e84-8eaf-286e37f5eccd |
-| iOS update ID | `01a197a9-4346-71e7-8087-e08f946edd5a` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a197a9-4346-71e7-8087-e08f946edd5a |
+| Mobile bundle | Calorie history + Cal AI meal snap (AMI-130–134) on top of #56 funnel |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/549d2f11-7c2b-4126-932b-5acfdb1401b7 |
+| iOS update ID | `01a1983a-1790-72df-b212-03b68c51505b` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1983a-1790-72df-b212-03b68c51505b |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `full local smoke PASS + redeploy main 7db7c04` |
-| Smoke shots | `/tmp/mirra-qa/local-full-smoke-20261101/` (inventory 14/14, API local PASS, iOS sim A–H PASS) |
-| Bundle prove | Commit `7db7c04` (includes #56 mandatory signup + meal teaser) |
+| Message | `calorie history + Cal AI meal snap AMI-130-134 e7198d9` |
+| Smoke shots | `/tmp/mirra-qa/calorie-history-full-smoke/` |
+| Bundle prove | Commit `e7198d9` (AMI-130–134 merged) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
 | Smoke note | Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md` |
 

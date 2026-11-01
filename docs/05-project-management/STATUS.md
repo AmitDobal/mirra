@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** User-base session + You profile (**#34** / **#35**). EAS `01a195bd-58de-73a6-9e7d-5c25cf639aab` — https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab. Prod `GET /v1/me` returns user + accounts. **Device reopen** (cold-start session restore) still to verify. Evidence `/tmp/mirra-qa/user-base-e2e/`. Prior: Google OAuth Expo Go proxy PASS (#30); tab UI restore #17.
+**Latest:** Docs — user data sync/cache (`docs/03-engineering/user-data-sync-cache.md`). Merged polish **#38–#40** on `main` (me-store TTL, credits meter, progress R2 sync, stable week plan). **EAS pending** smoke republish after polish wave #38–#40 (last known update still #34/#35: https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab). Device reopen still to verify. Evidence `/tmp/mirra-qa/user-base-e2e/`.
 
 | | |
 | --- | --- |

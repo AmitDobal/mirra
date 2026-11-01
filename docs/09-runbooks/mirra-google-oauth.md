@@ -18,7 +18,7 @@ Production sign-in is **Google only**. Simulator / day-test keeps **Continue as 
 | Authorized redirect URI | `http://127.0.0.1:8787/api/auth/callback/google` |
 | Authorized redirect URI | `https://mirra-api.amit-dobalwork.workers.dev/api/auth/callback/google` |
 | App scheme | `mirra://` (Better Auth `trustedOrigins`) |
-| Consent | External **Testing**; test user `amit.dobalwork@gmail.com` |
+| Consent | External; Audience currently **In production** on `hitdm-app` (test-user list N/A). Client: **Mirra API**. |
 
 ## Secrets (never commit)
 
@@ -67,3 +67,7 @@ GCP Console (manual or headed Playwright with a Google-logged Chrome profile):
 
 - EAS day-test: set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` on the mobile env if not already in the build
 - Cutover: turn off `ALLOW_DEV_USER_HEADER` only when ready for real prod auth
+
+## Playwright session note
+
+`hitdm/e2e/.auth/user.json` has **only** `.hitdm.com` cookies — not Google Console. GCP edits used the **mvp-sprint Playwright MCP** browser already signed in as `amit.dobalwork@gmail.com`. Do not wipe HitDM `user.json`.

@@ -17,6 +17,7 @@ import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { hydrateAuthSession } from "@/lib/auth";
 import { useAttendancePing } from "@/lib/attendance-ping";
 import { ensureMirraDb } from "@/lib/local";
 import { configurePurchases } from "@/lib/purchases";
@@ -41,6 +42,12 @@ const RootLayout = () => {
         await ensureMirraDb();
       } catch (error: unknown) {
         console.warn("[mirra] ensureMirraDb failed", error);
+      }
+      // Session must hydrate after DB (reassign rows) and before any routing UI.
+      try {
+        await hydrateAuthSession();
+      } catch (error: unknown) {
+        console.warn("[mirra] hydrateAuthSession failed", error);
       }
       try {
         await configurePurchases();

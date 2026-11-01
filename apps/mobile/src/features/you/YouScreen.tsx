@@ -10,6 +10,8 @@ import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useOnboardingStore } from "@/features/onboarding";
 import { PersonaGrid, usePersonaStore } from "@/features/trainer";
+import { clearSession } from "@/lib/auth";
+import { authClient } from "@/lib/auth/auth-client";
 import { getPurchases } from "@/lib/purchases";
 import { usePlanStore } from "@/stores/plan-store";
 import { color } from "@/theme/tokens";
@@ -115,6 +117,20 @@ export const YouScreen = () => {
   const handleChoosePersona = async (id: TrainerPersonaId) => {
     if (id === persona) return;
     if (!(await choosePersona(id))) Alert.alert("Trainer", "Couldn't switch trainer. Try again.");
+  };
+
+  const handleSignOut = () => {
+    void (async () => {
+      try {
+        await authClient.signOut();
+      } catch {
+        /* still clear local session */
+      }
+      await clearSession();
+      resetOnboarding();
+      clearPlan();
+      router.replace("/(onboarding)/welcome");
+    })();
   };
 
   const locations = [
@@ -263,11 +279,7 @@ export const YouScreen = () => {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Log out"
-        onPress={() => {
-          resetOnboarding();
-          clearPlan();
-          router.replace("/(onboarding)/welcome");
-        }}
+        onPress={handleSignOut}
         style={sx("mt-space-md flex-row items-center justify-center gap-space-sm py-space-md")}
       >
         <LogOut size={16} color={color.error} />

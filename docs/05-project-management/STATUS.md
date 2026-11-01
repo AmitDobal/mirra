@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** EAS **`01a1991e`** (funnel-v2 AMI-145/146/147 @ `6d49c50`, `ALLOW_DEV_AUTH=true`). Phone: https://u.expo.dev/update/01a1991e-25a1-7a69-9d7a-d0bf133028f3. Smoke `docs/smoke/ami-funnel-v2/RESULT.md`. Prior: `01a198f6` (AMI-143/144). API still **`141fd02`**.
+**Latest:** AMI-148 residual on `fix/ami-148-residual` (female S02c assets + auth unit 24/24 + prod `DELETE /v1/me` throwaway). EAS still **`01a1991e`** until post-merge `update:day-test`. Smoke `docs/smoke/ami-funnel-v2/RESULT.md`. API still **`141fd02`**.
 
 | | |
 | --- | --- |

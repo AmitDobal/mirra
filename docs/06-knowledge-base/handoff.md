@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-11-02 — AMI-148 residual: female S02c assets + delete API + Google unit coverage
+
+**Done (worktree `mirra-wt-ami-148`, branch `fix/ami-148-residual` off `b7847c0`):** Replaced female `PLACEHOLDER-*` with S02c welcome hero (`0608cba57d2e45e5a1aaa6091a4e397b` → `stitch_mirra_ai_personal_trainer/s02_welcome_hook_female/screen.png`); wired welcome v2 + paywall female coach. Auth units **24/24** (welcome signin + mid-onboarding Google). Prod throwaway `DELETE /v1/me` for `del-ami148-*` PASS; `day-test-1` untouched.
+
+**Blocked:** Live Google B/C (Computer Use Accessibility not granted; Maestro missing). You-screen delete UI not re-driven.
+
+**Next:** Merge PR → clean tip `npm run update:day-test` → refresh STATUS phone URL. Evidence append in `docs/smoke/ami-funnel-v2/RESULT.md`.
+
 ## 2026-11-02 — Ship gate PASS: funnel-v2 hard paywall + Stitch + gender (AMI-145/146/147, 6d49c50)
 
 **Done:** Merged via PR #57 `integrate/funnel-v2` → `origin/main` `6d49c50`. Conflicts: kept AMI-145 funnel-nav + no Continue-without-Pro; AMI-146 Stitch layouts/copy + privacy; AMI-147 `useOnboardingImagery` in PaywallHero/Generating. Worktrees ami-145/146/147 + integrate removed after origin confirm. Auth unit tests 19/19; tsc clean.
@@ -8,7 +16,7 @@
 
 **Smoke PASS (AMI-148):** Expo Go 58 + Maestro — welcome Stitch → sex required → female imagery week-reveal → auth (soft-skip CTA absent) → Dev Tester → tabs; cold relaunch → hard paywall (trial/restore/terms/privacy only). Evidence `docs/smoke/ami-funnel-v2/RESULT.md`.
 
-**Not driven:** Live Google B/C; delete-account path. Female assets still PLACEHOLDER-* until Stitch exports.
+**Not driven (closed in residual below):** Live Google B/C; delete-account path. Female assets still PLACEHOLDER-* until Stitch exports — see AMI-148 residual entry.
 
 ## 2026-11-02 — Ship gate PASS: funnel gates + Exercise AI plan (AMI-143/144, 97cc841)
 

@@ -6,7 +6,7 @@ Imagery rule (`useOnboardingImagery` / `imageryGenderForSex`):
 
 | Sex | People assets |
 | --- | --- |
-| `female` | `assets/stitch/*/female/` (PLACEHOLDER-* from `portrait-woman-athlete` until Stitch export) |
+| `female` | `assets/stitch/*/female/` (S02c female hero `0608cba57d2e45e5a1aaa6091a4e397b`) |
 | `male` | `assets/stitch/*/male/` |
 | `prefer_not` | same as male |
 
@@ -16,4 +16,4 @@ Evidence (asset sources wired into target / generating / week-reveal / paywall):
 - `male-01-target.jpg` … `male-04-paywall.jpg`
 - `prefer_not-04-paywall-uses-male.jpg`
 
-Welcome stays mixed (pre-sex). Drop-in: replace `female/PLACEHOLDER-*` with Stitch exports keeping filenames.
+Welcome stays mixed (pre-sex). AMI-148: female PLACEHOLDER-* replaced from S02c welcome hero; paywall/welcome wired.

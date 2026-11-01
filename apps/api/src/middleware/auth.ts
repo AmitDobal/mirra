@@ -6,14 +6,12 @@ import { users } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { createAuth } from "../lib/auth";
 import { unauthorized } from "../lib/errors";
+import { isDevUserHeaderAllowed } from "../lib/runtime-env";
 import type { RequestIdVars } from "./request-id";
 
 export type AuthVars = RequestIdVars & {
   userId: string;
 };
-
-const isDevUserHeaderAllowed = (env: MirraEnv): boolean =>
-  env.ALLOW_DEV_USER_HEADER === "true";
 
 const upsertDevUser = async (env: MirraEnv, userId: string): Promise<void> => {
   const db = createDb(env.DB);
@@ -33,8 +31,9 @@ const upsertDevUser = async (env: MirraEnv, userId: string): Promise<void> => {
  * Require authenticated user.
  *
  * 1. Better Auth session (cookie or `Authorization: Bearer <token>`)
- * 2. DEV ONLY: when `ALLOW_DEV_USER_HEADER=true`, accept `x-mirra-user-id`
- *    (alias `x-user-id`) and upsert an ephemeral users row. Never enable in prod.
+ * 2. DEV / day-test ONLY: when `ALLOW_DEV_USER_HEADER=true` AND not production
+ *    (`MIRRA_ENV` / `APP_ENV` / `ENVIRONMENT`), accept `x-mirra-user-id`
+ *    (alias `x-user-id`) and upsert an ephemeral users row.
  */
 export const requireAuth = createMiddleware<{
   Bindings: MirraEnv;

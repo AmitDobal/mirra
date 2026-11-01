@@ -15,11 +15,13 @@ import { meals } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { sanitizeAiCopy } from "../lib/ai-copy";
 import { dayBoundsMs, todayUtc } from "../lib/dates";
+import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { getMealEstimator } from "../lib/meal-estimator";
 import { decodeCursor, olderThan, parsePageQuery, toPage } from "../lib/pagination";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
+import { withAiCredits } from "../services/credits-gate";
 import { loadHydration } from "../services/hydration";
 import { deleteMeal, insertMeal, toMealResponse, updateMeal } from "../services/meals";
 import { defaultFuelTargets, loadCurrentPlan } from "../services/plan-loaders";
@@ -85,12 +87,22 @@ fuelRoutes.post("/v1/meals/estimate", requireAuth, async (c) => {
   const body = parseBody(MealEstimateBodySchema, await c.req.json());
   const userId = c.get("userId");
   const db = createDb(c.env.DB);
-  const estimator = getMealEstimator(c.env, db);
-  const result = await estimator.estimate({
-    userId,
-    imageDataUrl: body.imageDataUrl,
-    description: body.description,
-  });
+  const forceHeuristic = c.req.header("x-mirra-ai-mode")?.toLowerCase() === "heuristic";
+  const estimator = getMealEstimator(c.env, db, { forceHeuristic });
+  const result = await withAiCredits(
+    { env: c.env, db, userId },
+    {
+      feature: "meal_estimate",
+      paid: !forceHeuristic && resolveAiProvider(c.env) === "openai",
+      wasPaid: (r) => r.source === "openai",
+    },
+    () =>
+      estimator.estimate({
+        userId,
+        imageDataUrl: body.imageDataUrl,
+        description: body.description,
+      }),
+  );
   const response: MealEstimateResponse = {
     name: sanitizeAiCopy(result.name) || result.name,
     kcal: Math.round(result.kcal),

@@ -15,7 +15,8 @@
   "vars": {
     "APP_NAME": "mirra",
     "APP_VERSION": "0.1.0",
-    // DEV / day-test — enables x-mirra-user-id. Turn off for real prod auth.
+    // DEV / day-test — enables x-mirra-user-id. Ignored when MIRRA_ENV=production.
+    // Real prod: set MIRRA_ENV=production and ALLOW_DEV_USER_HEADER=false.
     "ALLOW_DEV_USER_HEADER": "true",
     "AI_PROVIDER": "openai"
   },

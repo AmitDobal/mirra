@@ -38,6 +38,9 @@ export class ApiError extends Error {
 export const unauthorized = (message = "Authentication required") =>
   new ApiError("unauthorized", message, 401);
 
+export const forbidden = (message = "Forbidden") =>
+  new ApiError("forbidden", message, 403);
+
 export const notFound = (message = "Not found") =>
   new ApiError("not_found", message, 404);
 

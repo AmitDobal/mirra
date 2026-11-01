@@ -9,12 +9,14 @@ import { and, count, eq, gte } from "drizzle-orm";
 
 import { auditLog, preferences } from "../db/schema";
 import { sanitizeAiCopy } from "../lib/ai-copy";
+import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { dayBoundsMs, todayUtc } from "../lib/dates";
 import { ApiError } from "../lib/errors";
 import { parseJson } from "../lib/json";
 import { filterCatalog } from "../lib/meal-diet";
 import { getPlanReviser } from "../lib/plan-reviser";
 import { hasMealIntent, hasWorkoutIntent } from "../lib/plan-intent";
+import { withAiCredits } from "./credits-gate";
 import { recordRegen } from "./meal-plan-draft";
 import { generatePlan, getTodayPlan, swapPlannedMeal, type MealPlanCtx } from "./meal-plan";
 import { loadCurrentPlan } from "./plan-loaders";
@@ -90,18 +92,27 @@ export const revisePlans = async (
     null;
   const workoutIsNextLift = Boolean(workout && !requested && !dayWorkoutId && nextLiftId);
 
-  const result = await getPlanReviser(ctx.env, ctx.db).propose({
-    userId: ctx.userId,
-    message: body.message,
-    scope,
-    equipment,
-    dietTags,
-    foodsAvoid,
-    cuisineStyles,
-    workoutTitle: workout?.title ?? null,
-    exerciseNames: workout?.exercises.map((e) => e.name) ?? [],
-    persona: toTrainerPersonaId(prefs?.trainerPersona),
-  });
+  const result = await withAiCredits(
+    ctx,
+    {
+      feature: "revise",
+      paid: resolveAiProvider(ctx.env) === "openai",
+      wasPaid: (r) => r.source === "openai",
+    },
+    () =>
+      getPlanReviser(ctx.env, ctx.db).propose({
+        userId: ctx.userId,
+        message: body.message,
+        scope,
+        equipment,
+        dietTags,
+        foodsAvoid,
+        cuisineStyles,
+        workoutTitle: workout?.title ?? null,
+        exerciseNames: workout?.exercises.map((e) => e.name) ?? [],
+        persona: toTrainerPersonaId(prefs?.trainerPersona),
+      }),
+  );
   const { intent } = result;
   const warnings = [...result.warnings];
   const changes: CoachReviseChange[] = [];

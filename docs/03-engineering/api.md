@@ -93,7 +93,7 @@
 - Every `/v1/*` except health, auth, RC webhook requires session
 - Webhook: signature only, no user session
 - Row access: `user_id = session.userId` always
-- Pro gates (server): generate beyond free trial, rebuild apply, unlimited photo — check `entitlements`
+- Pro gates (server): `force` meal-plan regenerate, rebuild apply — `requirePro` / `entitlements`. Matrix: `api-auth-matrix.md`
 
 ## Idempotency
 

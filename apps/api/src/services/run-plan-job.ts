@@ -3,11 +3,13 @@ import { eq } from "drizzle-orm";
 import type { AppDB } from "../db";
 import { planJobs, preferences, profiles } from "../db/schema";
 import type { MirraEnv } from "../env";
+import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { mondayOf, todayUtc } from "../lib/dates";
 import { badRequest } from "../lib/errors";
 import { newId } from "../lib/id";
 import { getPersonalizationContext } from "../lib/personalization-context";
 import { getPlanGenerator } from "../lib/plan-generator";
+import { withAiCredits } from "./credits-gate";
 import { persistGeneratedPlan } from "./persist-plan";
 import { buildPlanPrefsJson, buildPlanProfileJson } from "./plan-input";
 
@@ -56,15 +58,24 @@ export const runPlanGenerateJob = async ({
       subjectId: weekStart,
       localDate: todayUtc(),
     });
-    const generated = await generator.generate({
-      userId,
-      timezone: profile.timezone,
-      weekStart,
-      kind: "generate",
-      prefsJson: buildPlanPrefsJson(prefs),
-      profileJson: buildPlanProfileJson(profile),
-      context,
-    });
+    const generated = await withAiCredits(
+      { env, db, userId },
+      {
+        feature: "plan_gen",
+        paid: resolveAiProvider(env) === "openai",
+        wasPaid: (r) => r.summary.generator === "openai",
+      },
+      () =>
+        generator.generate({
+          userId,
+          timezone: profile.timezone,
+          weekStart,
+          kind: "generate",
+          prefsJson: buildPlanPrefsJson(prefs),
+          profileJson: buildPlanProfileJson(profile),
+          context,
+        }),
+    );
 
     const { planId } = await persistGeneratedPlan({
       db,

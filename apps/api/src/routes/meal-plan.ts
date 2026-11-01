@@ -14,6 +14,7 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import type { MirraEnv } from "../env";
 import { todayUtc } from "../lib/dates";
+import { requirePro } from "../lib/entitlement";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
@@ -44,6 +45,11 @@ const readJson = async (req: Request): Promise<unknown> => req.json().catch(() =
 
 mealPlanRoutes.post("/v1/meal-plan/generate", requireAuth, async (c) => {
   const body = parseBody(GenerateMealPlanBodySchema, await readJson(c.req.raw));
+  // Free: first generate / cache hit. Pro: unlimited force regenerate.
+  if (body.force) {
+    const ctx = ctxOf(c);
+    await requirePro(ctx.db, ctx.userId);
+  }
   return c.json(await generatePlan(ctxOf(c), body));
 });
 

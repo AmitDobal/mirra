@@ -2,83 +2,85 @@
 
 Date: 2026-11-01  
 Account: `amit.dobalwork@gmail.com`  
-GCP project: **HitDM** (`hitdm-app`) — Web OAuth client reused / extended for Mirra  
+GCP project: **Mirra** (`auth-test-442714`) — dedicated (not HitDM)  
 API: `https://mirra-api.amit-dobalwork.workers.dev`
 
-## Goal
+## Why not HitDM
 
-Production sign-in is **Google only**. Simulator / day-test keeps **Continue as Dev Tester** (`x-mirra-user-id` / `POST /v1/dev/session` while `ALLOW_DEV_USER_HEADER=true`).
+Earlier Mirra OAuth clients were created under GCP project **HitDM** (`hitdm-app`). Consent UI showed **HitDM**, and Expo redirects were missing → Google `invalid_request` / Error 400. Those HitDM **Mirra API** / Mirra iOS clients are **abandoned for Mirra**. Do not point Worker or mobile env at HitDM clients.
 
-## Redirect / origins (Web client)
+Free-trial project quota blocked creating a fresh id like `mirra-app`. Unused project **Auth-test** was renamed to **Mirra** (id remains `auth-test-442714`). When quota allows, optionally create `mirra-app` and migrate clients.
 
-| Type | Value |
+## Consent / Audience
+
+| Field | Value |
 | --- | --- |
-| Authorized JS origin | `http://127.0.0.1:8787` |
-| Authorized JS origin | `https://mirra-api.amit-dobalwork.workers.dev` |
-| Authorized redirect URI | `http://127.0.0.1:8787/api/auth/callback/google` |
-| Authorized redirect URI | `https://mirra-api.amit-dobalwork.workers.dev/api/auth/callback/google` |
-| App scheme | `mirra://` (Better Auth `trustedOrigins`) |
-| Consent | External; Audience currently **In production** on `hitdm-app` (test-user list N/A). Client: **Mirra API**. |
+| App name | Mirra |
+| User type | External |
+| Publishing | Testing |
+| Test users | `amit.dobalwork@gmail.com`, `amit.dobalwork1@gmail.com` |
+
+## Clients (exactly 2 — do not create more)
+
+| Name | Type | Used by |
+| --- | --- | --- |
+| **Mirra API** | Web application | Worker `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, mobile `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, Better Auth |
+| **Mirra Expo Go iOS** | iOS · bundle `host.exp.Exponent` | mobile `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` (Expo Go / day-test) |
+
+Day-test uses **Expo Go**, so the single iOS client must be `host.exp.Exponent` (not `ai.mirra.app`). For a future standalone build, replace that one iOS client — still keep **exactly two** clients total (1 Web + 1 iOS).
+
+Deleted 2026-11-01: duplicate **Mirra Expo Go iOS**, **Mirra iOS**. HitDM-project Mirra clients stay abandoned.
+
+### Web client — Authorized JS origins
+
+- `http://127.0.0.1:8787`
+- `https://mirra-api.amit-dobalwork.workers.dev`
+- `https://auth.expo.io`
+
+### Web client — Authorized redirect URIs
+
+- `http://127.0.0.1:8787/api/auth/callback/google`
+- `https://mirra-api.amit-dobalwork.workers.dev/api/auth/callback/google`
+- `https://auth.expo.io/@amitdobal141/mirra`
+- `https://auth.expo.io/@amitdobal141/mirra/--/expo-auth-session`
+
+Custom schemes (`mirra://`, `exp://`) are **not** valid on Web clients. Mobile must use an **iOS** client id so `expo-auth-session` uses the native redirect (`host.exp.Exponent:/oauthredirect` in Expo Go). Do not force `makeRedirectUri({ scheme: "mirra" })` with only a Web client id (causes `invalid_request`).
 
 ## Secrets (never commit)
 
-Worker `mirra-api` (via `wrangler secret put` from `apps/api`):
+Worker `mirra-api` (`wrangler secret put` from `apps/api`):
 
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` = **Mirra** Web client (project `auth-test-442714`)
 - `BETTER_AUTH_SECRET`
 - `APP_URL` = `https://mirra-api.amit-dobalwork.workers.dev`
 
-Local: same keys in gitignored `apps/api/.dev.vars` (local `APP_URL=http://127.0.0.1:8787`).  
-Mobile: `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` = same web client id; `EXPO_PUBLIC_ALLOW_DEV_AUTH=true` for day-test.
+Local: same in gitignored `apps/api/.dev.vars`.  
+Mobile gitignored `.env`:
+
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` = Mirra Web client id
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` = **Mirra Expo Go iOS** client id only (bundle `host.exp.Exponent`)
+- `EXPO_PUBLIC_ALLOW_DEV_AUTH=true` for day-test only
 
 ## Code path
 
-1. API mounts Better Auth at `/api/auth/*` (`apps/api/src/routes/auth.ts`) plus probe `GET /api/auth/ok`.
-2. Mobile `GoogleSignInButton` → Google id_token → `authClient.signIn.social({ provider: "google", idToken })` → `setGoogleSession` + Bearer from `set-auth-token`.
-3. `/v1/me` prefers `Authorization: Bearer`; Dev Tester still uses `x-mirra-user-id` when not on a Google session.
+1. API Better Auth at `/api/auth/*` + `GET /api/auth/ok`
+2. Mobile `GoogleSignInButton` → id_token via `useIdTokenAuthRequest` (web + ios client ids; no forced `mirra://` redirect) → Better Auth social → Bearer
 
-## Playwright prove recipe
-
-HitDM `e2e/.auth/user.json` is a **HitDM app session** (`.hitdm.com` cookies), not a raw Gmail profile. Prefer headed Chrome already logged in as `amit.dobalwork@gmail.com` for GCP Console edits. Do **not** run HitDM auth setup that overwrites `user.json` empty.
+## Prove
 
 ```bash
-mkdir -p /tmp/mirra-qa/google-oauth
-# optional: echo '<web-client-id>' > /tmp/mirra-qa/google-oauth/client-id.txt
-cd apps/api
-MIRRA_API_BASE=https://mirra-api.amit-dobalwork.workers.dev \
-  node scripts/prove-google-oauth.mjs
+curl -sS https://mirra-api.amit-dobalwork.workers.dev/api/auth/ok
+# expect {"ok":true,"google":true}
 ```
 
-Expect:
+Consent branding: open Google authorize URL with the **Mirra** Web client id → app name **Mirra**, not HitDM. Screenshots: `/tmp/mirra-qa/google-oauth-mirra-project/`.
 
-- `GET /api/auth/ok` → 200 `{ ok: true, google: true }`
-- Bogus `POST /api/auth/sign-in/social` → 4xx
-- `POST /v1/dev/session` + Bearer `GET /v1/me` → 200
-- Screenshots under `/tmp/mirra-qa/google-oauth/prove-*.png`
+## EAS day-test
 
-GCP Console (manual or headed Playwright with a Google-logged Chrome profile):
+Republish `day-test` after updating `EXPO_PUBLIC_GOOGLE_*` in local `.env` (baked into update). See `ios-day-test.md`.
 
-1. Open Auth Platform / Credentials for project `hitdm-app`
-2. Edit the Mirra/HitDM **Web** client; ensure Workers origin + redirect above
-3. Audience → Testing → test user `amit.dobalwork@gmail.com`
+## Follow-ups (P1)
 
-## EAS day-test verify (2026-11-01)
-
-| Piece | Value |
-| --- | --- |
-| iOS manifest | https://u.expo.dev/update/01a19560-f28f-71e7-ad64-d5a64fbcc28b |
-| Update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/bca3713e-617c-4ff1-8c4a-9b124e423273 |
-| Branch | `day-test` |
-| Message | `day-test: Google OAuth client id + Better Auth` @ `59fcd12` |
-| Mobile env | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` baked from local `.env` (set; never commit) |
-| Expect on welcome | **Continue with Google** visible when client id present; **Continue as Dev Tester** still works |
-| Device P1 | Full Google account picker may need a physical device if blocked in sim |
-
-## Follow-ups
-
-- Cutover: turn off `ALLOW_DEV_USER_HEADER` only when ready for real prod auth
-
-## Playwright session note
-
-`hitdm/e2e/.auth/user.json` has **only** `.hitdm.com` cookies — not Google Console. GCP edits used the **mvp-sprint Playwright MCP** browser already signed in as `amit.dobalwork@gmail.com`. Do not wipe HitDM `user.json`.
+- Create true project id `mirra-app` after quota increase; migrate clients + secrets
+- Upload Mirra logo on Branding (optional; Testing skips verification)
+- Cutover: turn off `ALLOW_DEV_USER_HEADER` only for real prod auth

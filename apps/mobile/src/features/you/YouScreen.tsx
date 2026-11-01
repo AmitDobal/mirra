@@ -35,6 +35,7 @@ import {
   persistTrainingLocation,
   toTrainingLocationId,
 } from "./training-location";
+import { useDeleteAccount } from "./use-delete-account";
 import { YouFooterGroups } from "./YouFooterGroups";
 import { YouTrainingCard, type TrainingLocationId } from "./YouTrainingCard";
 import { Divider, Group, Row, ToggleRow } from "./you-settings";
@@ -191,6 +192,8 @@ export const YouScreen = () => {
     );
   };
 
+  const { deleting, confirm: handleDeleteAccount } = useDeleteAccount();
+
   const handleSignOut = () => {
     void (async () => {
       try {
@@ -284,6 +287,8 @@ export const YouScreen = () => {
         onPrivacy={() => void openUrl(PRIVACY_URL)}
         onTerms={() => void openUrl(TERMS_URL)}
         onSignOut={handleSignOut}
+        onDeleteAccount={handleDeleteAccount}
+        deleting={deleting}
       />
 
       <DietPrefsSheet

@@ -48,3 +48,12 @@ export const clearCuePlayed = async (date: string): Promise<void> => {
     logger.warn("voice_cue.prefs.clear_failed", { message: errorMessage(err) });
   }
 };
+
+/** Account deletion: drop the speak-cues preference (played-date keys are harmless flags). */
+export const clearVoiceCuePrefs = async (): Promise<void> => {
+  try {
+    await SecureStore.deleteItemAsync(SPEAK_KEY);
+  } catch (err) {
+    logger.warn("voice_cue.prefs.delete_failed", { message: errorMessage(err) });
+  }
+};

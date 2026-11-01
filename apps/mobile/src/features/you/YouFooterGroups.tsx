@@ -1,5 +1,5 @@
-import { LogOut } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { LogOut, Trash2 } from "lucide-react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
@@ -11,14 +11,18 @@ type Props = {
   readonly onPrivacy: () => void;
   readonly onTerms: () => void;
   readonly onSignOut: () => void;
+  readonly onDeleteAccount: () => void;
+  readonly deleting?: boolean;
 };
 
-/** Connected accounts + hardware + legal + sign out. */
+/** Connected accounts + hardware + legal + sign out + delete account. */
 export const YouFooterGroups = ({
   accountLabels,
   onPrivacy,
   onTerms,
   onSignOut,
+  onDeleteAccount,
+  deleting = false,
 }: Props) => (
   <>
     <Group title="Connected accounts">
@@ -57,5 +61,28 @@ export const YouFooterGroups = ({
       <LogOut size={16} color={color.error} />
       <Text style={sx("font-label-bold text-label-lg text-error")}>Sign out</Text>
     </Pressable>
+
+    <Group title="Danger zone">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Delete account"
+        accessibilityState={{ disabled: deleting, busy: deleting }}
+        disabled={deleting}
+        onPress={onDeleteAccount}
+        style={sx("flex-row items-center gap-space-sm px-space-md pt-space-md")}
+      >
+        {deleting ? (
+          <ActivityIndicator size="small" color={color.error} />
+        ) : (
+          <Trash2 size={16} color={color.error} />
+        )}
+        <Text style={sx("font-label-bold text-label-lg text-error")}>
+          {deleting ? "Deleting…" : "Delete account"}
+        </Text>
+      </Pressable>
+      <Text style={sx("px-space-md pb-space-md pt-1 font-body text-body-sm text-on-surface-variant")}>
+        Permanently erases your account, meals, workouts and photos.
+      </Text>
+    </Group>
   </>
 );

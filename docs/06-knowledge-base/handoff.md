@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-11-02 — Check-in/Today Stitch + gitignore (in progress)
+
+**Done:** `.gitignore` ignores Expo-Go `*.tar.app`, dist, native build junk (`12ede1c`). Research: daily recalibration vector picker is out — 3 taps + AI Adjust today. Stitch generated + exported S20b/S20c/S15b under `stitch_mirra_ai_personal_trainer/` + `docs/03-engineering/checkin-today-ux.md`. Linear AMI-139 (check-in) + AMI-140 (Today).
+
+**Next:** Parallel builders implement vs Stitch (`sx()`), smoke, merge main, EAS day-test.
+
+**Watch out:** Keep product 4-tab bar (Stitch S15b shows 5). No eng jargon in UI.
+
 ## 2026-11-02 — Day-test pinned: meal local time + History cache (02a4aad)
 
 **Done:** AMI-137 (device-local meal times + logged meal detail sheet) and AMI-138 (History 1h cache + pull-to-refresh) on `origin/main` `02a4aad`. Typecheck PASS in clean worktree. EAS `day-test` iOS update `01a1986b-3a2b-76c2-9aee-f6cf8fe77073`, group `ba285788-777a-4b73-8bbb-09dd91cb12ad`. Mobile-only: API unchanged, no wrangler deploy.

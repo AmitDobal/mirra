@@ -17,7 +17,7 @@ Durable day/week/month calorie + exercise history with charts; meal photo analys
 | Workout session history list/charts | Missing |
 | Micros / ingredients on meal logs | Missing |
 | Async analysis queue | Missing (`plan_jobs` only) |
-| Onboarding mirror → R2 | UI only (local URI) |
+| Onboarding mirror → R2 | Done (AMI-134): upload on S10 continue, `profile.mirrorMediaId` on `PUT /v1/onboarding` |
 | Generic media upload URL | Documented, not implemented |
 | MealEstimator in integrations table | Missing row (port exists) |
 
@@ -94,7 +94,7 @@ Implement `POST /v1/media/upload-url` + confirm for kinds `meal` \| `mirror` \| 
 | GET | `/v1/workouts/sessions?from=&to=` | history list |
 | GET | `/v1/workouts/summary?range=` | minutes / volume series |
 | POST | `/v1/media/upload-url` | R2 presign / worker put helper |
-| POST | `/v1/onboarding/mirror` | attach mirror media_id |
+| PUT | `/v1/onboarding` (`profile.mirrorMediaId`) | attach mirror media_id (AMI-134; no separate route) |
 
 Auth: existing `requireAuth`. AI: existing credit / scan budget gates.
 

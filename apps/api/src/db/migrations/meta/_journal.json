@@ -85,6 +85,13 @@
       "when": 1762801200000,
       "tag": "0012_meal_vision_history",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1762887600000,
+      "tag": "0013_profile_mirror_media",
+      "breakpoints": true
     }
   ]
 }

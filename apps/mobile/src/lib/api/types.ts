@@ -16,6 +16,8 @@ export type OnboardingPutBody = {
     readonly goalWeightKg?: number | null;
     readonly pace?: "steady" | "aggressive" | null;
     readonly timezone: string;
+    /** Confirmed `kind=mirror` media id (AMI-134). */
+    readonly mirrorMediaId?: string | null;
   };
   readonly preferences: {
     readonly primaryGoal:

@@ -2,6 +2,7 @@ export { apiFetch, MirraApiError } from "./client";
 export type { RequestOptions } from "./client";
 export * from "./types";
 export * from "./onboarding";
+export * from "./media";
 export * from "./me";
 export * from "./plans";
 export * from "./ensure-plan";

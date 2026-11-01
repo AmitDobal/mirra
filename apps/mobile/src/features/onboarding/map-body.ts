@@ -64,6 +64,7 @@ export const toOnboardingBody = (
       goalWeightKg: answers.goalWeightKg,
       pace: answers.pace,
       timezone,
+      mirrorMediaId: answers.mirrorMediaId,
     },
     preferences: {
       primaryGoal: GOAL_MAP[answers.goal ?? "build_muscle"],

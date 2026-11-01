@@ -146,6 +146,10 @@ export type OnboardingAnswers = {
   mirrorSkipped: boolean;
   /** Local URI after capture / pick; null if skipped or not taken. */
   mirrorUri: string | null;
+  /** Confirmed media id from `POST /v1/media/:id/confirm` (kind=mirror); null until uploaded. */
+  mirrorMediaId: string | null;
+  /** Auth user id that owns `mirrorMediaId` (guest → Google sign-in changes it, so re-upload). */
+  mirrorMediaOwnerId: string | null;
   paywallPlan: PaywallPlan;
   completed: boolean;
   weekPlan: OnboardingWeekPlan | null;

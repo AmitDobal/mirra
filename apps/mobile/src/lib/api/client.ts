@@ -29,7 +29,7 @@ export type RequestOptions = {
   readonly quiet?: boolean;
 };
 
-const buildUrl = (path: string, query?: RequestOptions["query"]): string => {
+export const buildUrl = (path: string, query?: RequestOptions["query"]): string => {
   const base = env.apiBaseUrl.replace(/\/$/, "");
   const normalized = path.startsWith("/") ? path : `/${path}`;
   const url = new URL(`${base}${normalized}`);
@@ -42,7 +42,9 @@ const buildUrl = (path: string, query?: RequestOptions["query"]): string => {
   return url.toString();
 };
 
-const buildHeaders = async (idempotencyKey?: string): Promise<HeadersInit> => {
+export const buildHeaders = async (
+  idempotencyKey?: string,
+): Promise<Record<string, string>> => {
   const headers: Record<string, string> = {
     Accept: "application/json",
     "Content-Type": "application/json",

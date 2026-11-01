@@ -8,6 +8,7 @@ import { errorMessage, logger } from "@/lib/logger";
 
 import { toOnboardingBody } from "../map-body";
 import { useOnboardingStore } from "../store";
+import { uploadMirrorSelfie } from "./upload-mirror";
 import { persistOnboardingProfile, persistWeekPlan } from "./plan-persist";
 
 const sleep = (ms: number) =>
@@ -18,6 +19,8 @@ const sleep = (ms: number) =>
  * real identity. Guests must not leave personalization device-only.
  */
 export const syncPersonalizationAfterAuth = async (): Promise<void> => {
+  // Guest-owned media is not valid under the Google identity: re-upload first.
+  await uploadMirrorSelfie();
   const answers = useOnboardingStore.getState();
   const body = toOnboardingBody(answers);
 

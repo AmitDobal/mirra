@@ -59,6 +59,7 @@ export const FuelScreen = () => {
   const addWater = useFuelStore((s) => s.addWater);
 
   const hydratePlan = useMealPlanStore((s) => s.hydrate);
+  const ensureAfterOnboarding = useMealPlanStore((s) => s.ensureAfterOnboarding);
   const { section } = useLocalSearchParams<{ section?: string }>();
   const scrollRef = useRef<ScrollViewInstance>(null);
   const planY = useRef<number | null>(null);
@@ -74,8 +75,8 @@ export const FuelScreen = () => {
 
   useEffect(() => {
     void hydrate();
-    void hydratePlan();
-  }, [hydrate, hydratePlan]);
+    void hydratePlan().then(() => ensureAfterOnboarding());
+  }, [hydrate, hydratePlan, ensureAfterOnboarding]);
 
   useEffect(scrollToPlan, [scrollToPlan]);
 

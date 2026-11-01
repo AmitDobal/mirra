@@ -12,6 +12,7 @@ import {
 import {
   WeekRevealDayStrip,
   WeekRevealHero,
+  WeekRevealMealTeaser,
   WeekRevealWorkoutCard,
   splitTitleFromWorkouts,
 } from "@/features/onboarding/components/WeekRevealParts";
@@ -41,11 +42,37 @@ const WeekRevealScreen = () => {
   const c = onboardingCopy.weekReveal;
   const goal = useOnboardingStore((s) => s.goal);
   const trainingDays = useOnboardingStore((s) => s.trainingDays);
+  const diet = useOnboardingStore((s) => s.diet);
+  const cuisines = useOnboardingStore((s) => s.cuisines);
+  const cuisineOther = useOnboardingStore((s) => s.cuisineOther);
+  const foodsToAvoid = useOnboardingStore((s) => s.foodsToAvoid);
   const storePlan = useOnboardingStore((s) => s.weekPlan);
   const planStore = usePlanStore((s) => s.plan);
   const setPlan = usePlanStore((s) => s.setPlan);
   const [extra, setExtra] = useState<OnboardingWeekPlan | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  const dietLabels = useMemo(() => {
+    const out: string[] = [];
+    for (const id of diet) {
+      const label = onboardingCopy.diet.options.find((o) => o.id === id)?.label;
+      if (label) out.push(label);
+    }
+    return out;
+  }, [diet]);
+  const cuisineLabels = useMemo(() => {
+    const out: string[] = [];
+    for (const id of cuisines) {
+      if (id === "other" && cuisineOther.trim()) {
+        out.push(cuisineOther.trim());
+        continue;
+      }
+      const label = onboardingCopy.cuisine.options.find((o) => o.id === id)?.label;
+      if (label) out.push(label);
+    }
+    return out;
+  }, [cuisines, cuisineOther]);
+  const avoidLabel = foodsToAvoid.trim() || null;
 
   useEffect(() => {
     let alive = true;
@@ -237,6 +264,12 @@ const WeekRevealScreen = () => {
           </Text>
         </View>
       ) : null}
+
+      <WeekRevealMealTeaser
+        dietLabels={dietLabels}
+        cuisineLabels={cuisineLabels}
+        avoidLabel={avoidLabel}
+      />
     </OnboardingShell>
   );
 };

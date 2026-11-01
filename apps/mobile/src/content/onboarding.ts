@@ -255,6 +255,13 @@ export const onboardingCopy = {
     ],
     start: "Start with Mirra →",
     edit: "Edit answers",
+    mealTeaser: {
+      eyebrow: "Fuel",
+      title: "Your meal plan is also ready",
+      sub: "Recipes matched to how you eat — ready when you open Fuel on your homepage.",
+      avoidPrefix: "Skipping:",
+      homeHint: "See it on your homepage after you save your plan.",
+    },
   },
   paywall: {
     title: "Don’t quit on day three",
@@ -318,6 +325,8 @@ export const onboardingCopy = {
     email: "Continue with Email",
     notNow: "Not now",
     devTester: "Day-test only: Dev Tester (free, no Pro)",
+    /** When postAuthIntent is paywall — Dev skips paywall entirely. */
+    devTesterPaywall: "Day-test only: Dev Tester → free tabs (skips paywall)",
     comingSoonTitle: "Coming soon",
     comingSoonBody: "This sign-in method is not available yet. Use Google to save your plan.",
     googleMissingTitle: "Google sign-in not configured",

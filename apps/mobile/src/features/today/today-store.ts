@@ -8,6 +8,7 @@ import {
   type LocalWorkout,
 } from "@/db";
 import {
+  ensureCurrentWeekPlan,
   getCurrentPlan as getApiPlan,
   getToday as getApiToday,
   type CurrentPlan,
@@ -15,6 +16,8 @@ import {
   type PlanWorkout,
 } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
+
+import { mirrorPlanToLocal } from "./mirror-local-plan";
 
 type TodayState = {
   readonly date: string;
@@ -36,6 +39,21 @@ type TodayState = {
 };
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
+
+/** Mon=0 … Sun=6 for UTC calendar date. */
+const mondayIndex = (iso: string): number => {
+  const day = new Date(`${iso}T12:00:00.000Z`).getUTCDay();
+  return day === 0 ? 6 : day - 1;
+};
+
+/** Prefer exact date; else same weekday in the stored week (plan persists past week end). */
+const resolveDayIndex = (days: readonly PlanDay[], date: string): number => {
+  if (!days.length) return 0;
+  const byDate = days.findIndex((d) => d.date === date);
+  if (byDate >= 0) return byDate;
+  const byWeekday = days.findIndex((d) => d.dayIndex === mondayIndex(date));
+  return byWeekday >= 0 ? byWeekday : 0;
+};
 
 const asWorkout = (w: LocalWorkout | null | undefined): PlanWorkout | null => {
   if (!w) return null;
@@ -85,6 +103,33 @@ const kcalFromSummary = (summary: Record<string, unknown> | undefined) => {
   return typeof v === "number" ? v : null;
 };
 
+const applyPlan = (
+  set: (partial: Partial<TodayState>) => void,
+  opts: {
+    date: string;
+    days: readonly PlanDay[];
+    workout: PlanWorkout | null;
+    checkInDue: boolean;
+    fuelRemaining: number | null;
+    kcalTarget: number | null;
+    notice?: string | null;
+  },
+) => {
+  const idx = resolveDayIndex(opts.days, opts.date);
+  const day = opts.days[idx];
+  set({
+    date: opts.date,
+    workout: opts.workout ?? day?.workout ?? null,
+    weekDays: opts.days,
+    dayIndex: idx,
+    checkInDue: opts.checkInDue,
+    fuelRemaining: opts.fuelRemaining,
+    kcalTarget: opts.kcalTarget,
+    loading: false,
+    notice: opts.notice ?? null,
+  });
+};
+
 export const useTodayStore = create<TodayState>((set, get) => ({
   date: todayIso(),
   workout: null,
@@ -105,13 +150,17 @@ export const useTodayStore = create<TodayState>((set, get) => ({
     const cached = usePlanStore.getState().plan;
 
     try {
-      const [today, plan] = await Promise.all([getApiToday(), getApiPlan()]);
-      if (plan?.days?.length) usePlanStore.getState().setPlan(plan);
+      const today = await getApiToday();
+      let plan = await getApiPlan();
+      if (!plan?.days?.length) {
+        plan = await ensureCurrentWeekPlan();
+      }
+      if (plan?.days?.length) {
+        usePlanStore.getState().setPlan(plan);
+        void mirrorPlanToLocal(plan);
+      }
       const days = plan?.days ?? cached?.days ?? [];
-      const idx = Math.max(
-        0,
-        days.findIndex((d) => d.date === (today.date ?? date)),
-      );
+      const idx = resolveDayIndex(days, today.date ?? date);
       // Never fall back to "any lift this week" — rest days must look like rest.
       const workout = today.workout ?? days[idx]?.workout ?? null;
       const kcalTarget =
@@ -123,16 +172,14 @@ export const useTodayStore = create<TodayState>((set, get) => ({
         today.fuel?.kcalRemaining ??
         today.fuelRemaining?.calories ??
         null;
-      set({
+      applyPlan(set, {
         date: today.date ?? date,
+        days,
         workout,
-        weekDays: days,
-        dayIndex: idx >= 0 ? idx : 0,
         checkInDue: today.checkInDue,
         fuelRemaining,
         kcalTarget: kcalTarget ?? null,
-        loading: false,
-        notice: null,
+        notice: days.length ? null : "No week plan yet — finish onboarding or rebuild in Coach",
       });
       return;
     } catch (err) {
@@ -145,33 +192,24 @@ export const useTodayStore = create<TodayState>((set, get) => ({
       const [today, plan] = await Promise.all([getLocalToday(), getLocalPlan()]);
       if (plan) usePlanStore.getState().setPlan(asCurrent(plan));
       const days = plan?.days.map(asDay) ?? cached?.days ?? [];
-      const idx = Math.max(
-        0,
-        days.findIndex((d) => d.date === (today.date ?? date)),
-      );
+      const idx = resolveDayIndex(days, today.date ?? date);
       const workout = asWorkout(today.day?.workout) ?? days[idx]?.workout ?? null;
-      set({
+      applyPlan(set, {
         date: today.date ?? date,
+        days,
         workout,
-        weekDays: days,
-        dayIndex: idx >= 0 ? idx : 0,
         checkInDue: today.checkInDue,
         fuelRemaining: null,
         kcalTarget: today.summary?.kcalTarget ?? plan?.summary.kcalTarget ?? null,
-        loading: false,
       });
     } catch {
       if (cached?.days?.length) {
-        const idx = Math.max(
-          0,
-          cached.days.findIndex((d) => d.date === date),
-        );
-        set({
+        applyPlan(set, {
           date,
-          workout: cached.days[idx]?.workout ?? null,
-          weekDays: cached.days,
-          dayIndex: idx >= 0 ? idx : 0,
-          loading: false,
+          days: cached.days,
+          workout: cached.days[resolveDayIndex(cached.days, date)]?.workout ?? null,
+          checkInDue: false,
+          fuelRemaining: null,
           kcalTarget: kcalFromSummary(cached.summary),
         });
         return;

@@ -5,13 +5,13 @@ import type { CurrentPlan, PlanJobResponse } from "./types";
 export const getPlanJob = (jobId: string) =>
   apiFetch<PlanJobResponse>(`/v1/plans/jobs/${encodeURIComponent(jobId)}`);
 
-export const getCurrentPlan = async (): Promise<CurrentPlan> => {
+/**
+ * Ready week plan from D1, or `null` when the user has none yet.
+ * Empty `{ plan: null, days: [] }` is not an error — callers may ensure once.
+ */
+export const getCurrentPlan = async (): Promise<CurrentPlan | null> => {
   const raw = await apiFetch<unknown>("/v1/plans/current");
-  const plan = normalizeCurrentPlan(raw);
-  if (!plan) {
-    throw new Error("Invalid current plan payload");
-  }
-  return plan;
+  return normalizeCurrentPlan(raw);
 };
 
 export const previewRebuild = async (body: {

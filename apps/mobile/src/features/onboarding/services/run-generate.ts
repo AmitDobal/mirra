@@ -88,6 +88,9 @@ const tryApiGenerate = async (
     throw new Error("Plan job timed out");
   }
   const raw = await getApiCurrentPlan();
+  if (!raw?.days?.length) {
+    throw new Error("Empty current plan");
+  }
   usePlanStore.getState().setPlan(raw);
   const plan = normalizeApiPlan(raw);
   if (!plan || plan.days.length === 0) {

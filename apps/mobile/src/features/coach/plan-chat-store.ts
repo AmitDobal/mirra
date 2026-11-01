@@ -54,7 +54,8 @@ const friendlyError = (err: unknown): string => {
 /** Pull the edited plans into the other tabs (server is the source of truth). */
 const refreshPlans = async (mealPlan: DayMealPlan | null) => {
   try {
-    usePlanStore.getState().setPlan(await getCurrentPlan());
+    const plan = await getCurrentPlan();
+    if (plan) usePlanStore.getState().setPlan(plan);
   } catch (err) {
     logger.warn("plan-chat.refresh.plan_failed", { message: errorMessage(err) });
   }

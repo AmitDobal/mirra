@@ -28,7 +28,8 @@ export const MealSnapScreen = () => {
   const handleSave = async () => {
     const kcal = await snap.save();
     if (kcal === null) return;
-    router.back();
+    // Land on Fuel (not the Log meal screen we may have come from).
+    router.replace("/(tabs)/fuel");
     void promptRebalanceIfOffPlan(kcal);
   };
   const handleManual = () => router.replace("/(tabs)/log-meal");

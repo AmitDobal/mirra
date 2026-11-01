@@ -126,7 +126,7 @@ export const LogMealScreen = () => {
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
-          <View style={sx("absolute inset-0 items-center justify-center bg-black/25")}>
+          <View style={sx("absolute inset-0 items-center justify-center bg-black/55")}>
             <Text style={sx("mb-space-sm font-body text-body-sm text-on-surface")}>
               Snap or describe — Mirra fills in the numbers
             </Text>

@@ -14,6 +14,9 @@ export const permissionFailure = (): SnapFailure => ({
   body: "Allow camera or photos in Settings to snap a meal, or describe it instead.",
 });
 
+/** RN / Expo fetch failures arrive as plain Errors with these messages. */
+const NETWORK_RE = /network|fetch failed|could not connect|offline|timed out|internet/i;
+
 /** Map any estimate/upload error to user copy. No raw server text. */
 export const toSnapFailure = (err: unknown): SnapFailure => {
   if (err instanceof MirraApiError) {
@@ -32,7 +35,7 @@ export const toSnapFailure = (err: unknown): SnapFailure => {
       };
     }
   }
-  if (err instanceof TypeError) {
+  if (err instanceof TypeError || (err instanceof Error && NETWORK_RE.test(err.message))) {
     return {
       kind: "network",
       title: "No connection",

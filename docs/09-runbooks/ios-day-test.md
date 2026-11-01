@@ -14,19 +14,19 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Auth probe | `GET /api/auth/ok` → `{"ok":true}` (no `google` field; #49) |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
-| Google OAuth | Better Auth browser social → accounts.google.com (see `mirra-google-oauth.md`); **never** auth.expo.io |
+| Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | **#47** signup-before-pro + **#48** check-in relocate |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/a1639358-b12a-446b-8dfa-ce3bac93abe8 |
-| iOS update ID | `01a1963b-801d-7e46-b723-4dbc7cd1c2a0` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1963b-801d-7e46-b723-4dbc7cd1c2a0 |
+| Mobile bundle | **#51** Google static web-browser (fixes Expo Go “not installed” alert) |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/09b1ef59-46f0-4dea-a213-d7ee681dac4d |
+| iOS update ID | `01a19656-aa25-7ab7-9222-94b3ec2c34d3` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19656-aa25-7ab7-9222-94b3ec2c34d3 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `you-profile-polish #46 avatar/location/credits` |
-| Smoke shots | `/tmp/mirra-qa/you-profile-polish/` |
-| Bundle prove | Commit `38bad26` (#46 You polish); 64px avatar; location prefs; credits force refresh |
-| API prove | `PATCH /v1/me/preferences` `trainingLocation`; D1 `0011_training_location` |
-| Smoke note | **PASS** sim Expo Go — You locations persist + credits; see `/tmp/mirra-qa/you-profile-polish/RESULT.txt` |
+| Message | `fix google static expo-web-browser #51` |
+| Smoke shots | `/tmp/mirra-qa/google-webview-fix/` |
+| Bundle prove | Commit `11076d8` (#51); `disableRedirect` + static `openAuthSessionAsync` via Expo proxy |
+| API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
+| Smoke note | **PASS** authorize URL → Google chooser for workers.dev (no module alert); see `/tmp/mirra-qa/google-webview-fix/RESULT.txt` |
 
 ### Open on phone (laptop can be off)
 

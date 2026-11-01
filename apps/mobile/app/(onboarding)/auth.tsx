@@ -7,17 +7,23 @@ import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { AppleGlyph } from "@/features/onboarding/components/AuthGlyphs";
 import { AuthLegalLine } from "@/features/onboarding/components/AuthLegalLine";
 import { AuthPlanCard } from "@/features/onboarding/components/AuthPlanCard";
-import { getBearerToken, setDevSession, setGoogleSession } from "@/lib/auth";
+import {
+  getBearerToken,
+  setDevSession,
+  setGoogleSession,
+  takePostAuthIntent,
+} from "@/lib/auth";
 import { GoogleSignInButton } from "@/lib/auth/GoogleSignInButton";
 import { env } from "@/lib/config/env";
 import { logger } from "@/lib/logger";
+import { getPurchases } from "@/lib/purchases";
 import { Button } from "@/ui";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 
 const devAuthAllowed = __DEV__ || env.allowDevAuth;
 
-/** S14 — Auth → tabs. Google = Better Auth browser social (no auth.expo.io). */
+/** S14 — Auth. Google for Pro path; Dev Tester = free tabs only (day-test). */
 const AuthScreen = () => {
   const c = onboardingCopy.auth;
   const markCompleted = useOnboardingStore((s) => s.markCompleted);
@@ -35,15 +41,27 @@ const AuthScreen = () => {
     if (router.canGoBack()) router.back();
   };
 
-  const finishOnboarding = () => {
+  const goTabsFree = () => {
     markCompleted();
     router.replace("/(tabs)/today");
+  };
+
+  /** Google may return to paywall; Dev Tester never claims Pro. */
+  const finishAfterAuth = (kind: "google" | "dev") => {
+    const intent = takePostAuthIntent();
+    if (kind === "google" && intent === "paywall") {
+      router.replace("/(onboarding)/paywall");
+      return;
+    }
+    goTabsFree();
   };
 
   const handleDevTester = () => {
     void (async () => {
       await setDevSession();
-      finishOnboarding();
+      // Consume paywall intent so QA lands on free tabs, not purchase.
+      takePostAuthIntent();
+      goTabsFree();
     })();
   };
 
@@ -62,8 +80,13 @@ const AuthScreen = () => {
   const handleGoogleSignedIn = (userId: string, bearer?: string | null) => {
     void (async () => {
       await setGoogleSession(userId, bearer ?? getBearerToken());
+      try {
+        await getPurchases().logIn(userId);
+      } catch {
+        /* stub/RC login optional; session still valid */
+      }
       logger.info("auth.google.session_ok");
-      finishOnboarding();
+      finishAfterAuth("google");
     })();
   };
 

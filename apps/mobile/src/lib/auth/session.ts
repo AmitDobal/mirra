@@ -54,6 +54,23 @@ export const getBearerToken = (): string | null => cachedBearerToken;
 
 export const hasSession = (): boolean => cachedUserId !== null;
 
+/**
+ * True only for a real Google / Better Auth identity.
+ * Dev Tester (`setDevSession`) must NOT pass — blocks purchase/restore.
+ */
+export const requireSignedInUser = (): boolean =>
+  cachedMode === "google" && cachedUserId !== null;
+
+/**
+ * Soft-skip paywall → free tabs (no Pro claim).
+ * Google signed-in, or day-test Dev Tester when ALLOW_DEV_AUTH / __DEV__.
+ */
+export const canSoftSkipPaywall = (): boolean => {
+  if (requireSignedInUser()) return true;
+  if (!(__DEV__ || env.allowDevAuth)) return false;
+  return cachedMode === "dev" && cachedUserId !== null;
+};
+
 /** Point SQLite at the active identity, moving rows from the previous owner. */
 const syncLocalUser = async (nextUserId: string): Promise<void> => {
   const previous = getLocalUserId();

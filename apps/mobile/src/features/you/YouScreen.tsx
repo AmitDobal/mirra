@@ -11,9 +11,12 @@ import { useOnboardingStore } from "@/features/onboarding";
 import { PersonaGrid, usePersonaStore } from "@/features/trainer";
 import { creditsPool } from "@/lib/api/credits";
 import type { MeEntitlement, MeUser } from "@/lib/api/me";
-import { clearSession } from "@/lib/auth";
+import {
+  clearSession,
+  requireSignedInUser,
+  setPostAuthIntent,
+} from "@/lib/auth";
 import { authClient } from "@/lib/auth/auth-client";
-import { getPurchases } from "@/lib/purchases";
 import { useCreditsStore } from "@/stores/credits-store";
 import { useMeStore } from "@/stores/me-store";
 import { usePlanStore } from "@/stores/plan-store";
@@ -129,12 +132,13 @@ export const YouScreen = () => {
     else Alert.alert("Link", url);
   };
 
-  const handleManageSub = async () => {
-    const restored = await getPurchases().restore();
-    if (restored.ok) {
-      setSubNote("Restored purchases");
-      Alert.alert("Subscription", "Purchases restored.");
-    } else setSubNote(restored.error.message);
+  const handleManageSub = () => {
+    if (!requireSignedInUser()) {
+      setPostAuthIntent("paywall");
+      router.push("/(onboarding)/auth");
+      return;
+    }
+    setSubNote(null);
     router.push("/(onboarding)/paywall");
   };
 
@@ -271,7 +275,7 @@ export const YouScreen = () => {
         <Row
           title={subNote ?? planLabel}
           meta="Manage / restore"
-          onPress={() => void handleManageSub()}
+          onPress={handleManageSub}
         />
       </Group>
 

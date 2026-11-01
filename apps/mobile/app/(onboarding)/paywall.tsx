@@ -8,12 +8,17 @@ import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { PaywallFeatureList } from "@/features/onboarding/components/PaywallFeatureList";
 import { PaywallHero } from "@/features/onboarding/components/PaywallHero";
 import { PaywallPlanCard } from "@/features/onboarding/components/PaywallPlanCard";
+import {
+  canSoftSkipPaywall,
+  requireSignedInUser,
+  setPostAuthIntent,
+} from "@/lib/auth";
 import { usePurchases } from "@/lib/purchases";
 import { color } from "@/theme/tokens";
 import { LimeCta } from "@/ui";
 import { sx } from "@/theme/sx";
 
-/** S13 — Soft paywall (stub OK) → tabs. */
+/** S13 — Soft paywall. Purchase/restore require Google; close never grants Pro. */
 const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
@@ -25,9 +30,14 @@ const PaywallScreen = () => {
     void loadOfferings();
   }, [loadOfferings]);
 
-  const finish = () => {
+  const finishFree = () => {
     markCompleted();
     router.replace("/(tabs)/today");
+  };
+
+  const goAuth = (intent: "paywall" | "tabs") => {
+    setPostAuthIntent(intent);
+    router.push("/(onboarding)/auth");
   };
 
   const packageId =
@@ -39,17 +49,31 @@ const PaywallScreen = () => {
     offerings[0]?.packages[0]?.identifier ??
     (plan === "annual" ? "$rc_annual" : "$rc_monthly");
 
+  const ensureGoogleForPurchase = (): boolean => {
+    if (requireSignedInUser()) return true;
+    goAuth("paywall");
+    return false;
+  };
+
   const handleTrial = async () => {
-    await purchase(packageId);
-    finish();
+    if (!ensureGoogleForPurchase()) return;
+    const result = await purchase(packageId);
+    if (result?.ok) finishFree();
   };
 
   const handleRestore = async () => {
-    await restore();
-    finish();
+    if (!ensureGoogleForPurchase()) return;
+    const result = await restore();
+    if (result?.ok) finishFree();
   };
 
-  const goAuth = () => router.push("/(onboarding)/auth");
+  const handleCloseOrSkip = () => {
+    if (canSoftSkipPaywall()) {
+      finishFree();
+      return;
+    }
+    goAuth("tabs");
+  };
 
   const handleTerms = () => {
     void Linking.openURL(onboardingCopy.auth.termsUrl);
@@ -70,7 +94,7 @@ const PaywallScreen = () => {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={c.closeLabel}
-            onPress={goAuth}
+            onPress={handleCloseOrSkip}
             hitSlop={8}
             style={sx("h-9 w-9 items-center justify-center rounded-full bg-surface-container-high")}
           >
@@ -109,6 +133,17 @@ const PaywallScreen = () => {
               </Text>
             </Pressable>
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={c.continueWithoutPro}
+            onPress={handleCloseOrSkip}
+            hitSlop={8}
+            style={sx("px-space-md py-space-xs")}
+          >
+            <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
+              {c.continueWithoutPro}
+            </Text>
+          </Pressable>
           <Text
             style={sx("max-w-xs text-center font-body text-body-sm text-on-surface-variant leading-tight")}
           >

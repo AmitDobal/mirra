@@ -18,7 +18,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AiLimitSheet } from "@/features/you/AiLimitSheet";
-import { hydrateAuthSession } from "@/lib/auth";
+import { getAuthUserId, hasSession, hydrateAuthSession } from "@/lib/auth";
 import { useAttendancePing } from "@/lib/attendance-ping";
 import { ensureMirraDb } from "@/lib/local";
 import { configurePurchases } from "@/lib/purchases";
@@ -63,7 +63,7 @@ const RootLayout = () => {
         console.warn("[mirra] credits-store hydrate failed", error);
       }
       try {
-        await configurePurchases();
+        await configurePurchases(hasSession() ? getAuthUserId() : null);
       } catch (error: unknown) {
         console.warn("[mirra] configurePurchases failed", error);
       } finally {

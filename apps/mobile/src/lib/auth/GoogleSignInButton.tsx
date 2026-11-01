@@ -17,13 +17,10 @@ type Props = {
 };
 
 /**
- * Best-effort Google OAuth via expo-auth-session. Only mount when
+ * Google ID token via expo-auth-session. Only mount when
  * `env.googleWebClientId` is set (the provider hook throws without client ids).
- *
- * TODO(better-auth): exchange the ID token with Better Auth
- * (https://www.better-auth.com/docs/authentication/google) and persist the
- * server user id with `setGoogleSession`. Until the API verifies sessions,
- * the caller must not treat this token as a login.
+ * Caller exchanges the token with Better Auth (`authClient.signIn.social`)
+ * and persists via `setGoogleSession`.
  */
 export const GoogleSignInButton = ({ label, onIdToken }: Props) => {
   const webClientId = env.googleWebClientId;

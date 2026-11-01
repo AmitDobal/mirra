@@ -5,25 +5,27 @@ import type { MirraEnv } from "./env";
 import { ApiError } from "./lib/errors";
 import type { AuthVars } from "./middleware/auth";
 import { requestIdMiddleware } from "./middleware/request-id";
+import { aiRoutes } from "./routes/ai";
 import { attendanceRoutes } from "./routes/attendance";
+import { authRoutes } from "./routes/auth";
 import { checkInRoutes } from "./routes/check-ins";
 import { coachRoutes } from "./routes/coach";
 import { creditsRoutes } from "./routes/credits";
 import { creditsDevRoutes } from "./routes/credits-dev";
+import { devAuthRoutes } from "./routes/dev-auth";
 import { fuelRoutes } from "./routes/fuel";
 import { healthRoutes } from "./routes/health";
 import { historyRoutes } from "./routes/history";
 import { insightsRoutes } from "./routes/insights";
-import { todayActionsRoutes } from "./routes/today-actions";
 import { mealPlanRoutes } from "./routes/meal-plan";
 import { meRoutes } from "./routes/me";
 import { onboardingRoutes } from "./routes/onboarding";
 import { planRoutes } from "./routes/plans";
 import { recipeRoutes } from "./routes/recipe";
+import { todayActionsRoutes } from "./routes/today-actions";
 import { todayRoutes } from "./routes/today";
-import { workoutRoutes } from "./routes/workouts";
 import { weightRoutes } from "./routes/weight";
-import { aiRoutes } from "./routes/ai";
+import { workoutRoutes } from "./routes/workouts";
 
 export const createApp = () => {
   const app = new Hono<{ Bindings: MirraEnv; Variables: AuthVars }>();
@@ -32,20 +34,26 @@ export const createApp = () => {
   app.use(
     "*",
     cors({
-      origin: "*",
+      // Reflect origin so Expo / browser cookie flows work with credentials.
+      origin: (origin) => origin || "http://127.0.0.1:8787",
       allowHeaders: [
         "Content-Type",
         "Authorization",
+        "Cookie",
         "x-request-id",
         "Idempotency-Key",
         "x-mirra-user-id",
         "x-user-id",
         "x-mirra-ai-mode",
+        "expo-origin",
       ],
-      exposeHeaders: ["x-request-id"],
+      exposeHeaders: ["x-request-id", "Set-Cookie", "set-auth-token"],
+      credentials: true,
     }),
   );
 
+  app.route("/", authRoutes);
+  app.route("/", devAuthRoutes);
   app.route("/", healthRoutes);
   app.route("/", meRoutes);
   app.route("/", onboardingRoutes);

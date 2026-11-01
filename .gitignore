@@ -8,11 +8,31 @@ dist/
 web-build/
 expo-env.d.ts
 apps/mobile/.expo/
+apps/mobile/dist/
 apps/mobile/ios/
 apps/mobile/android/
+apps/mobile/*.jks
+apps/api/dist/
+
+# Local Expo Go / simulator archives (never commit)
+Expo-Go*.tar.app/
+*.tar.app/
+*.ipa
+*.apk
+*.aab
+*.app/
+
+# EAS / native build outputs
+apps/mobile/.eas/
+*.hbc
+assetmap.json
+apps/mobile/ios/build/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
 
 # Metro
 .metro-health-check*
+.metro-cache/
 
 # debug
 npm-debug.*

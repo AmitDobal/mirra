@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-11-01 — API #49 + EAS #47/#48 (prod verify)
+
+**Done:** Worker matches `origin/main` **`141fd02`** (#49 api-auth-harden). Curl: `/health` 200; `/v1/me` no auth **401**; `/api/auth/ok` → `{"ok":true}` only (no `google` field).
+
+**Phone:** https://u.expo.dev/update/01a1963b-801d-7e46-b723-4dbc7cd1c2a0 — mobile **#47** + **#48**. Runbook `docs/09-runbooks/ios-day-test.md`. Matrix append: `/tmp/mirra-qa/prod-smoke-matrix/RESULT.md`.
+
+**Next:** Phone smoke on that manifest; keep `ALLOW_DEV_USER_HEADER` dev-only.
+
 ## 2026-11-01 — Day-test EAS: credits-store no-flash
 
 **Done:** Clean `origin/main` worktree @ `8054d0a` → `eas update --branch day-test` (“credits-store no Checking flash + prior #38-40”). Live table → iOS `01a195f8-d00b-7be5-99af-c925e5efcb34`.

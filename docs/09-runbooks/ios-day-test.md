@@ -17,12 +17,12 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
 | Mobile bundle | Calorie history + Cal AI meal snap (AMI-130–134) on top of #56 funnel |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/549d2f11-7c2b-4126-932b-5acfdb1401b7 |
-| iOS update ID | `01a1983a-1790-72df-b212-03b68c51505b` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1983a-1790-72df-b212-03b68c51505b |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/333e1d4a-290e-4ede-9548-6259ac72a79e |
+| iOS update ID | `01a19848-bdd6-7f7a-aca4-f64aa07b4b7b` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19848-bdd6-7f7a-aca4-f64aa07b4b7b |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `calorie history + Cal AI meal snap AMI-130-134 e7198d9` |
+| Message | `fix reopen: republish calorie history wave 4a6e112` |
 | Smoke shots | `/tmp/mirra-qa/calorie-history-full-smoke/` |
 | Bundle prove | Commit `e7198d9` (AMI-130–134 merged) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |

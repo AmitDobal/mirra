@@ -17,20 +17,29 @@ export const MeUserSchema = z.object({
   image: z.string().nullable(),
 });
 
+/** Thin Better Auth account link — `providerId` only (google | apple | credential…). */
+export const MeAccountSchema = z.object({
+  providerId: z.string().min(1),
+});
+
 export const MeEntitlementSchema = z.object({
   status: EntitlementStatusSchema,
   expiresAt: z.number().int().nullable(),
   productId: z.string().nullable(),
 });
 
-/** Stub shape for GET /v1/me — filled once auth + profile land. */
+/** GET /v1/me — auth user + profile/prefs + entitlement + linked providers. */
 export const MeResponseSchema = z.object({
   user: MeUserSchema,
   profile: OnboardingProfileSchema.nullable(),
   preferences: OnboardingPreferencesSchema.nullable(),
   entitlement: MeEntitlementSchema,
   onboardingCompleted: z.boolean(),
+  /** Linked auth providers; empty when none (dev header users). */
+  accounts: z.array(MeAccountSchema).default([]),
 });
 
 export type MeResponse = z.infer<typeof MeResponseSchema>;
+export type MeUser = z.infer<typeof MeUserSchema>;
+export type MeAccount = z.infer<typeof MeAccountSchema>;
 export type EntitlementStatus = z.infer<typeof EntitlementStatusSchema>;

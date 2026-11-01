@@ -1,15 +1,15 @@
 import { router } from "expo-router";
 import { LogOut } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Image, Linking, Pressable, Text, View } from "react-native";
+import { Alert, Linking, Pressable, Text, View } from "react-native";
 
-import { s24ProfileSettings } from "../../../assets/stitch";
 import type { TrainerPersonaId } from "@/content/trainer-personas";
 import { getCurrentPlan, getProfile, type LocalPlan, type LocalProfile } from "@/db";
 import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useOnboardingStore } from "@/features/onboarding";
 import { PersonaGrid, usePersonaStore } from "@/features/trainer";
+import { getMe, type MeEntitlement, type MeResponse, type MeUser } from "@/lib/api/me";
 import { clearSession } from "@/lib/auth";
 import { authClient } from "@/lib/auth/auth-client";
 import { getPurchases } from "@/lib/purchases";
@@ -19,11 +19,18 @@ import { CapsLabel } from "@/ui/CapsLabel";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { sx } from "@/theme/sx";
 
+import { connectedAccountLabels, experienceLabel } from "./profile-display";
+import { ProfileHero } from "./ProfileHero";
 import { SpeakCuesToggle } from "./SpeakCuesToggle";
 import { Divider, Group, Row, StatusRow, ToggleRow } from "./you-settings";
 
 const PRIVACY_URL = "https://adtechservices.in/privacy";
 const TERMS_URL = "https://adtechservices.in/terms";
+const LOCATIONS = [
+  { id: "gym", label: "Primary kit" },
+  { id: "home", label: "Home" },
+  { id: "hotel", label: "Hotel" },
+] as const;
 
 /** S24 You (clean) — Stitch redesign: compact hero, trainer grid, grouped settings. */
 export const YouScreen = () => {
@@ -32,6 +39,9 @@ export const YouScreen = () => {
   const [subNote, setSubNote] = useState<string | null>(null);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
   const [plan, setPlan] = useState<LocalPlan | null>(null);
+  const [meUser, setMeUser] = useState<MeUser | null>(null);
+  const [entitlement, setEntitlement] = useState<MeEntitlement | null>(null);
+  const [accountLabels, setAccountLabels] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
   const resetOnboarding = useOnboardingStore((s) => s.reset);
@@ -42,11 +52,22 @@ export const YouScreen = () => {
   const personaSaving = usePersonaStore((s) => s.saving);
   const choosePersona = usePersonaStore((s) => s.choose);
 
+  const applyMe = useCallback((me: MeResponse) => {
+    setMeUser(me.user);
+    setEntitlement(me.entitlement);
+    setAccountLabels(connectedAccountLabels(me.accounts));
+  }, []);
+
   const reload = useCallback(async () => {
     const [p, pl] = await Promise.all([getProfile(), getCurrentPlan()]);
     setProfile(p);
     setPlan(pl);
-  }, []);
+    try {
+      applyMe(await getMe());
+    } catch {
+      /* offline / unauth — keep local fallbacks */
+    }
+  }, [applyMe]);
 
   useEffect(() => {
     void reload();
@@ -63,23 +84,10 @@ export const YouScreen = () => {
 
   const prefs = profile?.preferences;
   const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
-  const EXP_LABELS: Record<string, string> = {
-    new: "New",
-    months: "Some months",
-    some_months: "Some months",
-    y1_2: "1–2 years",
-    one_two_years: "1–2 years",
-    y3_plus: "3+ years",
-    three_plus: "3+ years",
-  };
-  const expNice = prefs?.experience
-    ? (EXP_LABELS[prefs.experience] ??
-      prefs.experience.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase()))
-    : "Member";
-  const name =
+  const fallbackName =
     profile?.sex != null ? `Athlete · ${goalNice}` : "Mirra athlete";
-  const handle = profile
-    ? `${expNice} · ${prefs?.sessionMinutes ?? 45} min sessions`
+  const fallbackMeta = profile
+    ? `${experienceLabel(prefs?.experience)} · ${prefs?.sessionMinutes ?? 45} min sessions`
     : "Complete onboarding for profile";
   const protocolTitle = plan?.days.find((d) => d.workout)?.workout?.title ?? "No active plan";
   const protocolBody =
@@ -133,50 +141,18 @@ export const YouScreen = () => {
     })();
   };
 
-  const locations = [
-    { id: "gym", label: "Primary kit" },
-    { id: "home", label: "Home" },
-    { id: "hotel", label: "Hotel" },
-  ] as const;
-
   return (
     <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
-      <View style={sx("mb-space-lg flex-row items-center gap-space-md")}>
-        <Image
-          source={s24ProfileSettings.avatarAlexChen}
-          accessibilityLabel="Profile avatar"
-          style={{ width: 56, height: 56, borderRadius: 28 }}
-          resizeMode="cover"
-        />
-        <View style={sx("min-w-0 flex-1")}>
-          <View style={sx("flex-row items-center gap-space-sm")}>
-            <Text
-              numberOfLines={1}
-              style={sx("min-w-0 flex-shrink font-headline text-headline-sm text-on-surface")}
-            >
-              {name}
-            </Text>
-            <View style={sx("shrink-0 rounded-full bg-primary-fixed px-2 py-0.5")}>
-              <Text style={sx("font-label-bold text-[9px] leading-3 text-on-primary-fixed")}>
-                PRO
-              </Text>
-            </View>
-          </View>
-          <Text
-            numberOfLines={2}
-            style={sx("mt-0.5 font-body text-body-sm text-on-surface-variant")}
-          >
-            {handle}
-          </Text>
-        </View>
-      </View>
+      <ProfileHero
+        user={meUser}
+        entitlement={entitlement}
+        fallbackName={fallbackName}
+        fallbackMeta={fallbackMeta}
+      />
 
       <View style={sx("mb-space-sm flex-row items-end justify-between gap-space-sm")}>
         <CapsLabel>Your trainer</CapsLabel>
-        <Text
-          numberOfLines={1}
-          style={sx("shrink font-body text-[11px] text-on-surface-variant")}
-        >
+        <Text numberOfLines={1} style={sx("shrink font-body text-[11px] text-on-surface-variant")}>
           Tap to switch
         </Text>
       </View>
@@ -210,7 +186,7 @@ export const YouScreen = () => {
         <View style={sx("px-space-md py-space-sm")}>
           <CapsLabel style={sx("mb-space-sm")}>Training locations</CapsLabel>
           <View style={sx("flex-row flex-wrap gap-space-sm")}>
-            {locations.map((loc) => {
+            {LOCATIONS.map((loc) => {
               const active = locationId === loc.id;
               return (
                 <Pressable
@@ -262,10 +238,23 @@ export const YouScreen = () => {
         />
       </Group>
 
+      <Group title="Connected accounts">
+        {accountLabels.length > 0 ? (
+          accountLabels.map((label, i) => (
+            <View key={label}>
+              {i > 0 ? <Divider /> : null}
+              <StatusRow title={label} meta="Connected" />
+            </View>
+          ))
+        ) : (
+          <StatusRow title="No linked accounts" meta="None" />
+        )}
+      </Group>
+
       <Group title="Connected">
-        <StatusRow title="Apple Health / Watch" meta="Synced" />
+        <StatusRow title="Apple Health / Watch" meta="Not connected" />
         <Divider />
-        <StatusRow title="Withings Body Scan" meta="Ready" />
+        <StatusRow title="Withings Body Scan" meta="Not connected" />
         <Divider />
         <StatusRow title="USDA & Vision Scanner" meta="Ready" />
       </Group>

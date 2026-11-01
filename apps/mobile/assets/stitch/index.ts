@@ -48,6 +48,12 @@ export const s15Today = {
   trainerSquat: require("./s15_today/trainer-squat.jpg"),
 } as const;
 
+/** S15B — Today check-in inline (avatar + weekly mirror chip), resized to 320px. */
+export const s15bTodayCheckinInline = {
+  avatar: require("./s15b_today_checkin_inline/avatar.jpg"),
+  mirror: require("./s15b_today_checkin_inline/mirror.jpg"),
+} as const;
+
 export const s16LiveWorkoutHud = {
   athleteDeepSquat: require("./s16_live_workout_hud/athlete-deep-squat.jpg"),
 } as const;
@@ -92,6 +98,7 @@ export const stitchAssets = {
   s12WeekReveal,
   s13Paywall,
   s15Today,
+  s15bTodayCheckinInline,
   s16LiveWorkoutHud,
   s18Fuel,
   s19LogMeal,

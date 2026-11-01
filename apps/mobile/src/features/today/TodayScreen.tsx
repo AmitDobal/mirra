@@ -1,13 +1,9 @@
 import { router, useFocusEffect } from "expo-router";
-import { Bell, Zap } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { s15Today } from "../../../assets/stitch";
-import { AiBadge } from "@/ui/AiBadge";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { ScreenScroll } from "@/ui/ScreenScroll";
-import { color } from "@/theme/tokens";
 import { selectLoggedKcal, useFuelStore } from "@/features/fuel/fuel-store";
 import {
   selectHasOpenPlannedMeal,
@@ -21,7 +17,8 @@ import { GoalChecklist } from "./GoalChecklist";
 import { HeroNextCard } from "./HeroNextCard";
 import { KcalDonut } from "./KcalDonut";
 import { MacroStrip } from "./MacroStrip";
-import { FuelLogStrip, RoutineCard } from "./RoutineCard";
+import { RoutineCard } from "./RoutineCard";
+import { FuelPhotoRow } from "./FuelPhotoRow";
 import { TodayActionsPending } from "./TodayActionsPending";
 import { TodayBrief } from "./TodayBrief";
 import { resolveGoalRoute } from "./goal-routes";
@@ -30,7 +27,11 @@ import { useTodayActions } from "./use-today-actions";
 import { useVoiceCueOnFocus } from "./use-voice-cue";
 import { useTodayInsights } from "./use-today-insights";
 import { useRoutineEdit } from "./use-routine-edit";
-import { TodayIconBtn } from "./TodayIconBtn";
+import { CheckInRow } from "./CheckInRow";
+import { TodayHeader } from "./TodayHeader";
+import { TodayHeroCard } from "./TodayHeroCard";
+import { WeeklyMirrorChip } from "./WeeklyMirrorChip";
+import { openCheckIn } from "./check-in-route";
 import { WeekStripCard } from "./WeekStripCard";
 import { useTodayStore } from "./today-store";
 import { sx } from "@/theme/sx";
@@ -140,29 +141,7 @@ export const TodayScreen = () => {
 
   return (
     <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
-      <View style={sx("mb-space-lg flex-row items-center justify-between")}>
-        <View style={sx("flex-row items-center gap-space-sm")}>
-          <View style={sx("h-2.5 w-2.5 rounded-full bg-primary-fixed")} />
-          <Text style={sx("font-headline-semi text-headline-sm uppercase text-on-surface")}>
-            Today
-          </Text>
-        </View>
-        <View style={sx("flex-row gap-space-sm")}>
-          <TodayIconBtn
-            label="Notifications"
-            Icon={Bell}
-            onPress={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")}
-          />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open profile"
-            onPress={() => router.push("/(tabs)/you")}
-            style={sx("h-11 w-11 items-center justify-center rounded-full bg-surface-container-high")}
-          >
-            <Text style={sx("font-label-bold text-label-md text-primary-fixed")}>A</Text>
-          </Pressable>
-        </View>
-      </View>
+      <TodayHeader onBell={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")} />
 
       {notice ? (
         <Pressable
@@ -187,50 +166,10 @@ export const TodayScreen = () => {
       />
       {dayHistorySheet}
 
-      <View
-        style={sx(
-          "mb-space-md min-h-[148px] flex-row items-center justify-between overflow-hidden rounded-lg bg-primary-fixed p-space-lg",
-        )}
-      >
-        <View style={sx("max-w-[62%] flex-1 flex-col gap-space-sm")}>
-          <View
-            style={sx(
-              "self-start flex-row items-center gap-1 rounded-full bg-on-primary-fixed/10 px-2.5 py-1",
-            )}
-          >
-            <Zap size={14} color={color.onPrimaryFixed} />
-            <CapsLabel tone="dark">Today&apos;s Focus</CapsLabel>
-          </View>
-          <Text
-            style={sx("font-headline text-headline-lg text-on-primary-fixed")}
-            numberOfLines={3}
-          >
-            {title}
-          </Text>
-          <Text style={sx("font-body-medium text-body-sm text-on-primary-fixed/85")}>
-            {workout?.focus ?? "Recovery focus"}
-          </Text>
-          {checkInDue ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open check-in"
-              onPress={() => router.push("/(tabs)/coach")}
-              style={sx(
-                "mt-0.5 self-start flex-row items-center gap-1 rounded-full bg-on-primary-fixed/12 px-2 py-0.5",
-              )}
-            >
-              <AiBadge label={false} tone="dark" size={12} />
-              <CapsLabel tone="dark">Check-in</CapsLabel>
-            </Pressable>
-          ) : null}
-        </View>
-        <Image
-          source={s15Today.athleteMidMotion}
-          accessibilityLabel="Today focus"
-          style={{ width: 112, height: 112, borderRadius: 56 }}
-          resizeMode="cover"
-        />
-      </View>
+      <CheckInRow due={checkInDue} onPress={openCheckIn} />
+      <WeeklyMirrorChip todayDate={todayDate} />
+
+      <TodayHeroCard title={title} focus={workout?.focus ?? null} />
 
       <View style={sx("mb-space-md flex-row gap-space-sm")}>
         <View style={sx("min-h-[148px] flex-1 justify-between rounded-lg bg-secondary p-space-md")}>
@@ -282,7 +221,7 @@ export const TodayScreen = () => {
       />
       {routineEdit.sheet}
 
-      <FuelLogStrip
+      <FuelPhotoRow
         logged={logged}
         target={fuelTarget}
         left={kcal.left}

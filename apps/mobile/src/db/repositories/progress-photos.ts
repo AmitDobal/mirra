@@ -5,6 +5,7 @@ import { getLocalUserId, newId, nowMs } from "../ids";
 import { PoseSchema, type LocalProgressPhoto } from "../types";
 
 const SaveSchema = z.object({
+  id: z.string().optional(),
   userId: z.string().optional(),
   localUri: z.string().min(1),
   pose: PoseSchema,
@@ -20,13 +21,18 @@ export const saveProgressPhoto = async (
   const data = SaveSchema.parse(input);
   const userId = data.userId ?? getLocalUserId();
   const db = await getDb();
-  const id = newId("photo");
+  const id = data.id ?? newId("photo");
   const takenAt = data.takenAt ?? nowMs();
   const createdAt = nowMs();
 
   await db.runAsync(
     `INSERT INTO progress_photos (id, user_id, local_uri, pose, taken_at, note, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       local_uri = excluded.local_uri,
+       pose = excluded.pose,
+       taken_at = excluded.taken_at,
+       note = excluded.note`,
     id,
     userId,
     data.localUri,
@@ -44,6 +50,22 @@ export const saveProgressPhoto = async (
     note: data.note ?? null,
   };
 };
+
+/** Upsert remote row into the offline mirror (same PK as API). */
+export const upsertProgressPhotoMirror = async (row: {
+  id: string;
+  localUri: string;
+  pose: "front" | "side";
+  takenAt: number;
+  note: string | null;
+}): Promise<LocalProgressPhoto> =>
+  saveProgressPhoto({
+    id: row.id,
+    localUri: row.localUri,
+    pose: row.pose,
+    takenAt: row.takenAt,
+    note: row.note,
+  });
 
 type Row = {
   id: string;
@@ -73,4 +95,18 @@ export const listProgressPhotos = async (
     limit,
   );
   return rows.map(mapRow);
+};
+
+export const getProgressPhotoById = async (
+  id: string,
+  userId: string = getLocalUserId(),
+): Promise<LocalProgressPhoto | null> => {
+  const db = await getDb();
+  const row = await db.getFirstAsync<Row>(
+    `SELECT id, local_uri, pose, taken_at, note FROM progress_photos
+     WHERE user_id = ? AND id = ? LIMIT 1`,
+    userId,
+    id,
+  );
+  return row ? mapRow(row) : null;
 };

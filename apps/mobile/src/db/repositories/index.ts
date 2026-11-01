@@ -19,7 +19,12 @@ export type {
   LocalSession,
   LocalSetLog,
 } from "./sessions";
-export { saveProgressPhoto, listProgressPhotos } from "./progress-photos";
+export {
+  saveProgressPhoto,
+  listProgressPhotos,
+  upsertProgressPhotoMirror,
+  getProgressPhotoById,
+} from "./progress-photos";
 export type { SaveProgressPhotoInput } from "./progress-photos";
 export { getCached, setCached, clearCached } from "./ai-cache";
 export type { CachedEntry } from "./ai-cache";

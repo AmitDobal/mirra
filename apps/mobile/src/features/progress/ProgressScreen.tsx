@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { Camera, ChevronRight, Lock } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { s22ProgressGallery } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { color, space } from "@/theme/tokens";
@@ -24,16 +23,23 @@ import { PhotoSlot, Stat } from "./ProgressParts";
 import { WeightJourneyCard } from "./WeightJourneyCard";
 import { sx } from "@/theme/sx";
 
-const GALLERY_FALLBACKS = [
-  s22ProgressGallery.checkinBaselineStudio,
-  s22ProgressGallery.checkinLockerDefined,
-  s22ProgressGallery.checkinUpperBody,
-  s22ProgressGallery.checkinMidPhase,
-  s22ProgressGallery.checkinApartment,
-  s22ProgressGallery.checkinDayOne,
-] as const;
+const dayKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
-/** S22 Progress gallery — paginated history (20 per page, load more on scroll). */
+/** Distinct check-in days in the loaded page (honest, not fabricated). */
+const streakishDays = (photos: readonly ProgressPhoto[]): number => {
+  const keys = [...new Set(photos.map((p) => dayKey(p.takenAt)))].sort().reverse();
+  if (keys.length === 0) return 0;
+  let streak = 1;
+  for (let i = 1; i < keys.length; i += 1) {
+    const prev = new Date(`${keys[i - 1]}T12:00:00Z`).getTime();
+    const cur = new Date(`${keys[i]}T12:00:00Z`).getTime();
+    if (Math.round((prev - cur) / 86_400_000) === 1) streak += 1;
+    else break;
+  }
+  return streak;
+};
+
+/** S22 Progress gallery — API-backed, page size 10, empty CTA (no stock Stitch). */
 export const ProgressScreen = () => {
   const insets = useSafeAreaInsets();
   const photos = useProgressStore((s) => s.photos);
@@ -43,15 +49,12 @@ export const ProgressScreen = () => {
   const addPhoto = useProgressStore((s) => s.addPhoto);
   const hydratePhotos = useProgressStore((s) => s.hydrate);
   const [note, setNote] = useState<string | null>(null);
-  const [streak, setStreak] = useState(0);
   const [weekSessions, setWeekSessions] = useState(0);
-
   const [refreshing, setRefreshing] = useState(false);
 
   const loadInsights = useCallback(async () => {
     try {
       const i = await getTodayInsights();
-      setStreak(i.checkIn.streakDays);
       setWeekSessions(i.training.sessionsThisWeek);
     } catch {
       /* optional */
@@ -106,24 +109,27 @@ export const ProgressScreen = () => {
     }
     const entry = await addPhoto();
     setNote(`Saved · ${entry.label}`);
-    Alert.alert("Photo saved", "On-device entry added.");
+    Alert.alert("Photo saved", "On-device entry added. Sync when online.");
   };
 
   const latest = photos[0] ?? null;
   const prior = photos[1] ?? null;
+  const photoStreak = useMemo(() => streakishDays(photos), [photos]);
+  const latestDate = latest
+    ? new Date(latest.takenAt).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      })
+    : "—";
 
-  const renderPhoto = ({
-    item: e,
-    index,
-  }: {
-    item: ProgressPhoto;
-    index: number;
-  }) => (
+  const renderPhoto = ({ item: e }: { item: ProgressPhoto }) => (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Open ${e.label}`}
       onPress={handleCompare}
-      style={sx("mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md")}
+      style={sx(
+        "mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md",
+      )}
     >
       {e.uri ? (
         <Image
@@ -133,12 +139,14 @@ export const ProgressScreen = () => {
           resizeMode="cover"
         />
       ) : (
-        <Image
-          source={GALLERY_FALLBACKS[index % GALLERY_FALLBACKS.length]}
-          accessibilityLabel={e.label}
-          style={{ width: 56, height: 72, borderRadius: 8 }}
-          resizeMode="cover"
-        />
+        <View
+          style={[
+            sx("items-center justify-center rounded-lg bg-surface-container-highest"),
+            { width: 56, height: 72 },
+          ]}
+        >
+          <Camera size={20} color={color.onSurfaceVariant} />
+        </View>
       )}
       <View style={sx("flex-1")}>
         <Text style={sx("font-label text-label-md text-primary-fixed")}>{e.label}</Text>
@@ -161,7 +169,7 @@ export const ProgressScreen = () => {
       </Text>
       <Text style={sx("mb-space-md font-body text-body-md text-on-surface-variant")}>
         {photos.length
-          ? `${count} check-ins · private on device`
+          ? `${count} check-ins · synced when online`
           : "Add your first check-in photo"}
       </Text>
 
@@ -182,7 +190,7 @@ export const ProgressScreen = () => {
           </CapsLabel>
           <View style={sx("flex-row items-center gap-1")}>
             <Lock size={12} color={color.onSurfaceVariant} />
-            <CapsLabel>On-Device</CapsLabel>
+            <CapsLabel>Private</CapsLabel>
           </View>
         </View>
         <View style={sx("flex-row gap-space-sm")}>
@@ -209,12 +217,18 @@ export const ProgressScreen = () => {
 
       <View style={sx("mb-space-md flex-row gap-space-sm")}>
         <Stat label="Photos" value={count} unit="saved" />
-        <Stat label="Streak" value={String(streak)} unit="check-ins" />
-        <Stat label="Sessions" value={String(weekSessions)} unit="this week" />
+        <Stat label="Latest" value={latestDate} unit="check-in" />
+        <Stat
+          label="Streak"
+          value={String(photoStreak || weekSessions)}
+          unit={photoStreak ? "photo days" : "sessions / wk"}
+        />
       </View>
 
       <View style={sx("mb-space-sm flex-row items-center justify-between")}>
-        <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>Check-in history</Text>
+        <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>
+          Check-in history
+        </Text>
         <CapsLabel>{count} check-ins</CapsLabel>
       </View>
     </View>
@@ -243,9 +257,10 @@ export const ProgressScreen = () => {
       ListFooterComponent={footer}
       ListEmptyComponent={
         <View style={sx("mb-space-sm rounded-lg bg-surface-container-high p-space-md")}>
-          <Text style={sx("font-body text-body-md text-on-surface-variant")}>
-            No progress photos yet. Add one to start comparing.
+          <Text style={sx("mb-space-sm font-body text-body-md text-on-surface-variant")}>
+            No progress photos yet. Add one to start comparing across devices.
           </Text>
+          <LimeCta label="Add your first photo" onPress={() => void handleAdd()} />
         </View>
       }
       onEndReached={handleEndReached}

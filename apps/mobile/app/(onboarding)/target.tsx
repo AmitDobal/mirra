@@ -2,12 +2,12 @@ import { router } from "expo-router";
 import { Minus, Plus } from "lucide-react-native";
 import { Image, Pressable, Text, View } from "react-native";
 
-import { s06Target } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
   ProgressHeader,
   QuizEyebrow,
+  useOnboardingImagery,
   useOnboardingStore,
 } from "@/features/onboarding";
 import { color } from "@/theme/tokens";
@@ -17,6 +17,7 @@ import { sx } from "@/theme/sx";
 /** S06 — Goal weight + pace. */
 const TargetScreen = () => {
   const c = onboardingCopy.target;
+  const { targetAthlete } = useOnboardingImagery();
   const goalWeightKg = useOnboardingStore((s) => s.goalWeightKg);
   const pace = useOnboardingStore((s) => s.pace);
   const weightUnit = useOnboardingStore((s) => s.weightUnit);
@@ -53,7 +54,7 @@ const TargetScreen = () => {
         {c.sub}
       </Text>
       <Image
-        source={s06Target.athleteTyingShoes}
+        source={targetAthlete}
         accessibilityLabel="Athlete tying shoes"
         style={{ width: "100%", height: 140, borderRadius: 12, marginTop: 16 }}
         resizeMode="cover"

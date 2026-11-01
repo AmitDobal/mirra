@@ -120,7 +120,8 @@ export type OnboardingPlanOption = OnboardingWeekPlan & {
 export type OnboardingAnswers = {
   goal: GoalId | null;
   experience: ExperienceId | null;
-  sex: SexId;
+  /** Null until body-stats; Continue disabled until female|male|prefer_not. */
+  sex: SexId | null;
   age: number;
   heightCm: number;
   heightUnit: HeightUnit;

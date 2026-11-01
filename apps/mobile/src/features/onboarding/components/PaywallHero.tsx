@@ -1,8 +1,9 @@
 import { Image, Text, View, type ImageStyle } from "react-native";
 
-import { s13Paywall } from "../../../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { sx } from "@/theme/sx";
+
+import { useOnboardingImagery } from "../imagery";
 
 /** Right-anchored coach image (ImageStyle ≠ sx's View/Text style type). */
 const imageStyle: ImageStyle = {
@@ -17,6 +18,7 @@ const imageStyle: ImageStyle = {
 /** S13 hero — headline + subtitle left, coach image bleeding off the right edge. */
 export const PaywallHero = () => {
   const c = onboardingCopy.paywall;
+  const { paywallCoach } = useOnboardingImagery();
 
   return (
     <View style={sx("min-h-36 overflow-hidden rounded bg-surface-container-low p-space-md")}>
@@ -29,7 +31,7 @@ export const PaywallHero = () => {
         </Text>
       </View>
       <Image
-        source={s13Paywall.coachCutout}
+        source={paywallCoach}
         accessibilityLabel="Mirra coach"
         resizeMode="cover"
         style={imageStyle}

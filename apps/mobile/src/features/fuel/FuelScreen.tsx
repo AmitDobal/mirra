@@ -1,15 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { Camera, Plus } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  Image,
-  Platform,
-  Pressable,
-  type ScrollViewInstance,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, type ScrollViewInstance, Text, View } from "react-native";
 
 import { s18Fuel } from "../../../assets/stitch";
 import { AiBadge } from "@/ui/AiBadge";
@@ -20,13 +12,11 @@ import { color } from "@/theme/tokens";
 import { kcalStatus } from "@/lib/accountability";
 
 import { CalorieDonut } from "./CalorieDonut";
-import { DescribeMealModal } from "./DescribeMealModal";
 import { HydrationCard } from "./HydrationCard";
 import { MacroMeters } from "./MacroMeters";
 import { useMealEditor } from "./MealEditor";
 import { MealPlanSection } from "./MealPlanSection";
 import { useMealPlanStore } from "./meal-plan-store";
-import { promptRebalanceIfOffPlan } from "./rebalance-prompt";
 import { selectLoggedKcal, useFuelStore } from "./fuel-store";
 import { sx } from "@/theme/sx";
 
@@ -45,11 +35,8 @@ export const FuelScreen = () => {
   const target = useFuelStore((s) => s.target);
   const proteinTarget = useFuelStore((s) => s.proteinTarget);
   const hydrate = useFuelStore((s) => s.hydrate);
-  const snapMeal = useFuelStore((s) => s.snapMeal);
-  const describeMeal = useFuelStore((s) => s.describeMeal);
   const tip = useFuelStore((s) => s.tip);
   const clearTip = useFuelStore((s) => s.clearTip);
-  const estimating = useFuelStore((s) => s.estimating);
   const carbsTarget = useFuelStore((s) => s.carbsTarget);
   const carbsLogged = useFuelStore((s) => s.carbsLogged);
   const fatTarget = useFuelStore((s) => s.fatTarget);
@@ -65,7 +52,6 @@ export const FuelScreen = () => {
   const planY = useRef<number | null>(null);
 
   const [refreshing, setRefreshing] = useState(false);
-  const [describeOpen, setDescribeOpen] = useState(false);
   const mealEditor = useMealEditor();
 
   const scrollToPlan = useCallback(() => {
@@ -100,31 +86,8 @@ export const FuelScreen = () => {
   });
 
   const handleLog = () => router.push("/(tabs)/log-meal");
-  const handleSnap = async () => {
-    const meal = await snapMeal();
-    if (meal) void promptRebalanceIfOffPlan(meal.calories);
-  };
-  const submitDescribe = async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    const meal = await describeMeal(trimmed);
-    if (meal) void promptRebalanceIfOffPlan(meal.calories);
-  };
-
-  const handleDescribePress = () => {
-    if (Platform.OS === "ios") {
-      Alert.prompt(
-        "Describe meal",
-        "What did you eat?",
-        (value) => {
-          if (value) void submitDescribe(value);
-        },
-        "plain-text",
-      );
-      return;
-    }
-    setDescribeOpen(true);
-  };
+  const handleSnap = () => router.push("/(tabs)/meal-snap?mode=camera");
+  const handleDescribePress = () => router.push("/(tabs)/meal-snap?mode=describe");
 
   return (
     <ScreenScroll scrollRef={scrollRef} refreshing={refreshing} onRefresh={handleRefresh}>
@@ -142,9 +105,7 @@ export const FuelScreen = () => {
           style={sx("mb-space-sm max-w-full flex-row items-center gap-1.5 self-start rounded-full bg-primary-fixed/20 px-3 py-1")}
         >
           <AiBadge label={false} tone="lime" size={16} />
-          <CapsLabel tone={kcal.over && !estimating ? "alert" : "lime"}>
-            {estimating ? "Estimating…" : tip}
-          </CapsLabel>
+          <CapsLabel tone={kcal.over ? "alert" : "lime"}>{tip}</CapsLabel>
         </Pressable>
       ) : null}
 
@@ -188,13 +149,14 @@ export const FuelScreen = () => {
           icon={<Plus size={18} color={color.onPrimaryFixed} />}
         />
         <LimeCta
-          label={estimating ? "…" : "Snap"}
-          onPress={() => void handleSnap()}
+          label="Snap"
+          accessibilityLabel="Snap a meal photo"
+          onPress={handleSnap}
           variant="dark"
           icon={<Camera size={18} color={color.onSurface} />}
         />
         <LimeCta
-          label={estimating ? "…" : "Describe"}
+          label="Describe"
           accessibilityLabel="Describe meal with AI"
           onPress={handleDescribePress}
           variant="dark"
@@ -262,11 +224,6 @@ export const FuelScreen = () => {
       )}
 
       {mealEditor.sheet}
-      <DescribeMealModal
-        visible={describeOpen}
-        onClose={() => setDescribeOpen(false)}
-        onSubmit={(text) => void submitDescribe(text)}
-      />
     </ScreenScroll>
   );
 };

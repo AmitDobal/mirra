@@ -20,6 +20,8 @@ export class MirraApiError extends Error {
 export type RequestOptions = {
   readonly method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   readonly body?: unknown;
+  /** Raw bytes (media upload). Overrides `body`; set `Content-Type` via `headers`. */
+  readonly rawBody?: Blob;
   readonly query?: Record<string, string | number | boolean | undefined | null>;
   readonly idempotencyKey?: string;
   readonly signal?: AbortSignal;
@@ -92,7 +94,7 @@ export const apiFetch = async <T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> => {
-  const { method = "GET", body, query, idempotencyKey, signal, quiet, headers } = options;
+  const { method = "GET", body, rawBody, query, idempotencyKey, signal, quiet, headers } = options;
   const startedAt = Date.now();
   const logBase = { method, path, host: apiHost() };
   const logFail = quiet ? logger.warn.bind(logger) : logger.error.bind(logger);
@@ -102,7 +104,7 @@ export const apiFetch = async <T>(
     response = await fetch(buildUrl(path, query), {
       method,
       headers: { ...(await buildHeaders(idempotencyKey)), ...headers },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: rawBody ?? (body === undefined ? undefined : JSON.stringify(body)),
       // Expo attaches Cookie manually — omit browser credential merge.
       credentials: "omit",
       signal,

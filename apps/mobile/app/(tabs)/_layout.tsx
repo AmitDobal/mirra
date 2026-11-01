@@ -5,7 +5,7 @@ import { sx } from "@/theme/sx";
 import { TabDock } from "@/ui/TabDock";
 
 const hideDock = (path: string) =>
-  /log-meal|rebuild|compare|plan-chat/.test(path);
+  /log-meal|meal-snap|rebuild|compare|plan-chat/.test(path);
 
 /** Tab shell with floating pill dock (hidden on modal tab routes). */
 const TabsLayout = () => {

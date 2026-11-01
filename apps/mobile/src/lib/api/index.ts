@@ -9,6 +9,7 @@ export * from "./today";
 export * from "./today-actions";
 export * from "./check-ins";
 export * from "./meals";
+export * from "./media";
 export * from "./meal-plan";
 export * from "./water";
 export * from "./coach";

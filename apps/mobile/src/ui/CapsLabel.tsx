@@ -7,6 +7,7 @@ type Props = {
   children: ReactNode;
   tone?: "muted" | "lime" | "dark" | "alert";
   /** @deprecated NativeWind removed */ className?: string;
+  numberOfLines?: number;
   style?: StyleProp<TextStyle>;
 };
 
@@ -17,8 +18,8 @@ const toneColor = {
   alert: color.error,
 } as const;
 
-export const CapsLabel = ({ children, tone = "muted", style }: Props) => (
-  <Text style={[styles.base, { color: toneColor[tone] }, style]}>
+export const CapsLabel = ({ children, tone = "muted", style, numberOfLines }: Props) => (
+  <Text numberOfLines={numberOfLines} style={[styles.base, { color: toneColor[tone] }, style]}>
     {children}
   </Text>
 );

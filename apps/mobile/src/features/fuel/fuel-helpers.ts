@@ -19,7 +19,15 @@ export const slotKey = (slot: string): MealSlot => {
   return "snack";
 };
 
-export const uriToDataUrl = async (uri: string): Promise<string> => {
+/** Blobs from file:// URIs often have no type → force a real image mime so the vision API accepts it. */
+const withImageMime = (dataUrl: string, mime: string | null): string => {
+  const comma = dataUrl.indexOf(",");
+  if (comma < 0) return dataUrl;
+  const type = mime && mime.startsWith("image/") ? mime : "image/jpeg";
+  return `data:${type};base64,${dataUrl.slice(comma + 1)}`;
+};
+
+export const uriToDataUrl = async (uri: string, mime: string | null = null): Promise<string> => {
   const res = await fetch(uri);
   const blob = await res.blob();
   return await new Promise((resolve, reject) => {
@@ -27,7 +35,7 @@ export const uriToDataUrl = async (uri: string): Promise<string> => {
     reader.onerror = () => reject(new Error("Could not read image"));
     reader.onloadend = () => {
       const result = reader.result;
-      if (typeof result === "string") resolve(result);
+      if (typeof result === "string") resolve(withImageMime(result, mime));
       else reject(new Error("Invalid image data"));
     };
     reader.readAsDataURL(blob);

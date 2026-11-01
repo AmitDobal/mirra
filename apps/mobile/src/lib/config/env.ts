@@ -45,7 +45,10 @@ export const env = {
     (process.env.EXPO_PUBLIC_ALLOW_DEV_AUTH ??
       fromExtra("allowDevAuth") ??
       "") === "true",
-  /** Google OAuth web client id (Better Auth / Google sign-in). Empty = disabled. */
+  /**
+   * Optional leftover client ids. Google sign-in uses Better Auth API social
+   * (Worker GOOGLE_CLIENT_*); mobile ids are not required for Expo Go.
+   */
   googleWebClientId: pick(
     process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     "googleWebClientId",

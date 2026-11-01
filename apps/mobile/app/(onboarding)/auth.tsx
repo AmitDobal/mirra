@@ -4,22 +4,20 @@ import { Alert, Pressable, Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
-import { AppleGlyph, GoogleGlyph } from "@/features/onboarding/components/AuthGlyphs";
+import { AppleGlyph } from "@/features/onboarding/components/AuthGlyphs";
 import { AuthLegalLine } from "@/features/onboarding/components/AuthLegalLine";
 import { AuthPlanCard } from "@/features/onboarding/components/AuthPlanCard";
-import { authClient } from "@/lib/auth/auth-client";
 import { getBearerToken, setDevSession, setGoogleSession } from "@/lib/auth";
 import { GoogleSignInButton } from "@/lib/auth/GoogleSignInButton";
 import { env } from "@/lib/config/env";
-import { errorMessage, logger } from "@/lib/logger";
+import { logger } from "@/lib/logger";
 import { Button } from "@/ui";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 
 const devAuthAllowed = __DEV__ || env.allowDevAuth;
-const googleConfigured = env.googleWebClientId.length > 0;
 
-/** S14 — Auth → tabs. Dev tester for sim; Google via Better Auth when client IDs exist. */
+/** S14 — Auth → tabs. Google = Better Auth browser social (no auth.expo.io). */
 const AuthScreen = () => {
   const c = onboardingCopy.auth;
   const markCompleted = useOnboardingStore((s) => s.markCompleted);
@@ -61,52 +59,16 @@ const AuthScreen = () => {
     Alert.alert(c.comingSoonTitle, c.comingSoonBody);
   };
 
-  const handleGoogleMissing = () => {
-    Alert.alert(c.googleMissingTitle, c.googleMissingBody);
+  const handleGoogleSignedIn = (userId: string, bearer?: string | null) => {
+    void (async () => {
+      await setGoogleSession(userId, bearer ?? getBearerToken());
+      logger.info("auth.google.session_ok");
+      finishOnboarding();
+    })();
   };
 
-  const handleGoogleIdToken = (idToken: string) => {
-    void (async () => {
-      try {
-        const { data, error } = await authClient.signIn.social({
-          provider: "google",
-          idToken: { token: idToken },
-        });
-        if (error) {
-          logger.error("auth.google.better_auth_failed", {
-            message: error.message ?? "unknown",
-          });
-          Alert.alert(c.googleFailedTitle, error.message ?? c.googleFailedBody);
-          return;
-        }
-        const userId =
-          data && "user" in data && data.user?.id ? data.user.id : null;
-        if (!userId) {
-          // Browser redirect flow — session cookie may still land via Expo plugin.
-          const session = await authClient.getSession();
-          const sessionUserId = session.data?.user?.id;
-          if (!sessionUserId) {
-            Alert.alert(c.googleFailedTitle, c.googleFailedBody);
-            return;
-          }
-          await setGoogleSession(sessionUserId);
-          logger.info("auth.google.session_ok");
-          finishOnboarding();
-          return;
-        }
-        const tokenFromBody =
-          data && "token" in data && typeof data.token === "string"
-            ? data.token
-            : null;
-        // Prefer body token; else bearer already captured from set-auth-token.
-        await setGoogleSession(userId, tokenFromBody ?? getBearerToken());
-        logger.info("auth.google.session_ok");
-        finishOnboarding();
-      } catch (err) {
-        logger.error("auth.google.exception", { message: errorMessage(err) });
-        Alert.alert(c.googleFailedTitle, errorMessage(err));
-      }
-    })();
+  const handleGoogleError = (message: string) => {
+    Alert.alert(c.googleFailedTitle, message || c.googleFailedBody);
   };
 
   return (
@@ -160,17 +122,11 @@ const AuthScreen = () => {
           icon={<AppleGlyph />}
           onPress={handleComingSoon}
         />
-        {googleConfigured ? (
-          <GoogleSignInButton label={c.google} onIdToken={handleGoogleIdToken} />
-        ) : (
-          <Button
-            label={c.google}
-            variant="surfaceLow"
-            size="tall"
-            icon={<GoogleGlyph />}
-            onPress={handleGoogleMissing}
-          />
-        )}
+        <GoogleSignInButton
+          label={c.google}
+          onSignedIn={handleGoogleSignedIn}
+          onError={handleGoogleError}
+        />
         <Button
           label={c.email}
           variant="surface"

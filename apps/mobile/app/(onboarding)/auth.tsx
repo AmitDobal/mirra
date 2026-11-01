@@ -8,7 +8,7 @@ import { AppleGlyph, GoogleGlyph } from "@/features/onboarding/components/AuthGl
 import { AuthLegalLine } from "@/features/onboarding/components/AuthLegalLine";
 import { AuthPlanCard } from "@/features/onboarding/components/AuthPlanCard";
 import { authClient } from "@/lib/auth/auth-client";
-import { setDevSession, setGoogleSession } from "@/lib/auth";
+import { getBearerToken, setDevSession, setGoogleSession } from "@/lib/auth";
 import { GoogleSignInButton } from "@/lib/auth/GoogleSignInButton";
 import { env } from "@/lib/config/env";
 import { errorMessage, logger } from "@/lib/logger";
@@ -94,11 +94,12 @@ const AuthScreen = () => {
           finishOnboarding();
           return;
         }
-        const token =
+        const tokenFromBody =
           data && "token" in data && typeof data.token === "string"
             ? data.token
             : null;
-        await setGoogleSession(userId, token);
+        // Prefer body token; else bearer already captured from set-auth-token.
+        await setGoogleSession(userId, tokenFromBody ?? getBearerToken());
         logger.info("auth.google.session_ok");
         finishOnboarding();
       } catch (err) {

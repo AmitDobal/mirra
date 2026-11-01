@@ -6,7 +6,9 @@
 
 **Blocked:** Live Google B/C (Computer Use Accessibility not granted; Maestro missing). You-screen delete UI not re-driven.
 
-**Next:** Merge PR → clean tip `npm run update:day-test` → refresh STATUS phone URL. Evidence append in `docs/smoke/ami-funnel-v2/RESULT.md`.
+**Phone:** https://u.expo.dev/update/01a19929-fe4f-79bc-80f3-a0672644a612 (group `669ed799-4171-4e5e-bafd-4f8732a1f21d`, tip `ae8eb1f`).
+
+**Done:** PR #58 merged; EAS day-test republished with female S02c assets. Worktrees removable.
 
 ## 2026-11-02 — Ship gate PASS: funnel-v2 hard paywall + Stitch + gender (AMI-145/146/147, 6d49c50)
 

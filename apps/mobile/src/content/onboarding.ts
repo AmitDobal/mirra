@@ -285,8 +285,9 @@ export const onboardingCopy = {
     trial: "Start 7-day trial",
     restore: "Restore purchases",
     termsLink: "Terms & Privacy",
+    continueWithoutPro: "Continue without Pro",
     legal:
-      "Renews automatically at chosen plan after 7-day trial. Cancel anytime in Apple ID settings.",
+      "Renews automatically at chosen plan after 7-day trial. Cancel anytime in Apple ID settings. Sign in with Google required before purchase.",
     closeLabel: "Close paywall",
   },
   auth: {
@@ -309,9 +310,9 @@ export const onboardingCopy = {
     google: "Continue with Google",
     email: "Continue with Email",
     notNow: "Not now",
-    devTester: "Continue as Dev Tester",
+    devTester: "Day-test only: Dev Tester (free, no Pro)",
     comingSoonTitle: "Coming soon",
-    comingSoonBody: "This sign-in method is not available yet. Use Google or the dev tester.",
+    comingSoonBody: "This sign-in method is not available yet. Use Google to save your plan.",
     googleMissingTitle: "Google sign-in not configured",
     googleMissingBody:
       "Add EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (a Google OAuth web client ID) to apps/mobile/.env. In the simulator, sign in to a Google account in the browser sheet that opens (Expo Go cannot use the native Google account picker).",

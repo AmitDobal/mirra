@@ -71,6 +71,10 @@ curl -sS https://mirra-api.amit-dobalwork.workers.dev/api/auth/ok
 
 Opening Continue with Google must hit **accounts.google.com** (or API `/api/auth/sign-in/social` → Google) — **never** `auth.expo.io`. Consent app name = **Mirra**. Evidence: `/tmp/mirra-qa/google-better-auth-social/`.
 
+## Signup before Pro
+
+Purchase / restore / Start trial require `requireSignedInUser()` (`authMode === "google"`). Dev Tester (`setDevSession`) can enter free tabs for day-test QA but **cannot** claim Pro via paywall CTAs. Close / “Continue without Pro” sends unsigned users to auth (`postAuthIntent: "tabs"`); Google success with `postAuthIntent: "paywall"` returns to the paywall. After Google, call `getPurchases().logIn(userId)`. Evidence: `/tmp/mirra-qa/signup-before-pro/`.
+
 ## EAS day-test
 
 Republish `day-test` after auth changes. Point `EXPO_PUBLIC_API_BASE_URL` at the Worker. Google Web/iOS client ids on mobile are optional for Better Auth social.

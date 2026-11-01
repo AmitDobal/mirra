@@ -63,9 +63,20 @@ GCP Console (manual or headed Playwright with a Google-logged Chrome profile):
 2. Edit the Mirra/HitDM **Web** client; ensure Workers origin + redirect above
 3. Audience → Testing → test user `amit.dobalwork@gmail.com`
 
+## EAS day-test verify (2026-11-01)
+
+| Piece | Value |
+| --- | --- |
+| iOS manifest | https://u.expo.dev/update/01a19560-f28f-71e7-ad64-d5a64fbcc28b |
+| Update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/bca3713e-617c-4ff1-8c4a-9b124e423273 |
+| Branch | `day-test` |
+| Message | `day-test: Google OAuth client id + Better Auth` @ `59fcd12` |
+| Mobile env | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` baked from local `.env` (set; never commit) |
+| Expect on welcome | **Continue with Google** visible when client id present; **Continue as Dev Tester** still works |
+| Device P1 | Full Google account picker may need a physical device if blocked in sim |
+
 ## Follow-ups
 
-- EAS day-test: set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` on the mobile env if not already in the build
 - Cutover: turn off `ALLOW_DEV_USER_HEADER` only when ready for real prod auth
 
 ## Playwright session note

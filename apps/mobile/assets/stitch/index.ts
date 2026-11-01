@@ -3,7 +3,7 @@
  * Paths match docs/03-engineering/stitch-assets.md.
  *
  * Gendered onboarding people assets live under `male/` / `female/`.
- * Female folders use PLACEHOLDER-* from portrait-woman-athlete until Stitch exports drop in.
+ * Female heroes from Stitch S02c welcome (`0608cba57d2e45e5a1aaa6091a4e397b`).
  */
 
 export const s02WelcomeHook = {
@@ -24,7 +24,7 @@ export const s06Target = {
     athleteTyingShoes: require("./s06_target/male/athlete-tying-shoes.jpg"),
   },
   female: {
-    athleteTyingShoes: require("./s06_target/female/PLACEHOLDER-athlete-tying-shoes.jpg"),
+    athleteTyingShoes: require("./s06_target/female/athlete-tying-shoes.jpg"),
   },
   /** @deprecated Prefer `s06Target[gender].athleteTyingShoes`. */
   athleteTyingShoes: require("./s06_target/male/athlete-tying-shoes.jpg"),
@@ -40,12 +40,12 @@ export const s11GeneratingWeek = {
     athleteBarbellBw: require("./s11_generating_week/male/athlete-barbell-bw.jpg"),
   },
   female: {
-    athleteSquat: require("./s11_generating_week/female/PLACEHOLDER-athlete-squat.jpg"),
-    sprinterKneeling: require("./s11_generating_week/female/PLACEHOLDER-sprinter-kneeling.jpg"),
-    athleteBarbell: require("./s11_generating_week/female/PLACEHOLDER-athlete-barbell.jpg"),
-    athleteSquatBw: require("./s11_generating_week/female/PLACEHOLDER-athlete-squat-bw.jpg"),
-    sprinterKneelingBw: require("./s11_generating_week/female/PLACEHOLDER-sprinter-kneeling-bw.jpg"),
-    athleteBarbellBw: require("./s11_generating_week/female/PLACEHOLDER-athlete-barbell-bw.jpg"),
+    athleteSquat: require("./s11_generating_week/female/athlete-squat.jpg"),
+    sprinterKneeling: require("./s11_generating_week/female/sprinter-kneeling.jpg"),
+    athleteBarbell: require("./s11_generating_week/female/athlete-barbell.jpg"),
+    athleteSquatBw: require("./s11_generating_week/female/athlete-squat-bw.jpg"),
+    sprinterKneelingBw: require("./s11_generating_week/female/sprinter-kneeling-bw.jpg"),
+    athleteBarbellBw: require("./s11_generating_week/female/athlete-barbell-bw.jpg"),
   },
   /** @deprecated Prefer gendered keys via onboarding imagery helper. */
   athleteSquat: require("./s11_generating_week/male/athlete-squat.jpg"),
@@ -63,9 +63,9 @@ export const s12WeekReveal = {
     barbellBackSquat: require("./s12_week_reveal/male/barbell-back-squat.jpg"),
   },
   female: {
-    dumbbellOverheadPress: require("./s12_week_reveal/female/PLACEHOLDER-dumbbell-overhead-press.jpg"),
-    barbellBentOverRow: require("./s12_week_reveal/female/PLACEHOLDER-barbell-bent-over-row.jpg"),
-    barbellBackSquat: require("./s12_week_reveal/female/PLACEHOLDER-barbell-back-squat.jpg"),
+    dumbbellOverheadPress: require("./s12_week_reveal/female/dumbbell-overhead-press.jpg"),
+    barbellBentOverRow: require("./s12_week_reveal/female/barbell-bent-over-row.jpg"),
+    barbellBackSquat: require("./s12_week_reveal/female/barbell-back-squat.jpg"),
   },
   /** @deprecated Prefer gendered keys via onboarding imagery helper. */
   dumbbellOverheadPress: require("./s12_week_reveal/male/dumbbell-overhead-press.jpg"),
@@ -78,7 +78,7 @@ export const s13Paywall = {
     coachCutout: require("./s13_paywall/male/coach-cutout.jpg"),
   },
   female: {
-    coachCutout: require("./s13_paywall/female/PLACEHOLDER-coach-cutout.jpg"),
+    coachCutout: require("./s13_paywall/female/coach-cutout.jpg"),
   },
   /** @deprecated Prefer gendered keys via onboarding imagery helper. */
   coachCutout: require("./s13_paywall/male/coach-cutout.jpg"),

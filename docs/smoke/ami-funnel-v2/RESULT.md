@@ -32,3 +32,34 @@
 
 - Integrate order: AMI-145 → 146 → 147. Conflicts resolved: hard close + funnel-nav kept; Stitch paywall layout/copy + privacy link; `useOnboardingImagery` wired into PaywallHero.
 - Dev Tester still gated by `ALLOW_DEV_AUTH` / `__DEV__` and skips paywall into tabs.
+
+---
+
+## AMI-148 residual (2026-11-02) — `fix/ami-148-residual` off `b7847c0`
+
+**Base:** `origin/main` `b7847c0` · worktree `../mirra-wt-ami-148`
+
+### Google B/C live
+| Check | Result |
+| --- | --- |
+| Expo Go + Maestro live Google OAuth | **BLOCKED** — Maestro CLI not installed; Computer Use needs Accessibility/Screen Recording grant (prompted, not approved this run). Sim Google OAuth historically not automatable (browser/handoff). |
+| Unit coverage strengthened | **PASS** — `cold-start-route` 13/13 (welcome signin intent + mid-onboarding Google return); new `post-auth-intent.test.ts` 3/3; funnel-nav + dev-tester still green → **24/24** auth unit suite |
+
+### Delete-account
+| Check | Result |
+| --- | --- |
+| Prod throwaway `DELETE /v1/me` | **PASS** — user `del-ami148-1793570784` (NOT day-test-1): GET 200 → DELETE `{"ok":true}` → unauth DELETE 401; day-test-1 profile still intact |
+| Local `npm run test:account-delete` | **SKIP** — fresh worktree D1 has no `users` table (migrations not applied locally); prior AMI-135/136 local assert still authoritative |
+| You → Settings UI cold → welcome | **NOT RUN** — Computer Use / Maestro unavailable this residual; API path smoke covers wipe contract |
+
+### Female Stitch assets
+| Check | Result |
+| --- | --- |
+| Export | Stitch `0608cba57d2e45e5a1aaa6091a4e397b` + local `stitch_mirra_ai_personal_trainer/s02_welcome_hook_female/screen.png` |
+| Welcome | `s02_welcome_hook_v2` hero + `portrait-woman-athlete` from S02c female runner |
+| Paywall | `s13_paywall/female/coach-cutout.jpg` (PLACEHOLDER removed) |
+| Other female folders | PLACEHOLDER-* → real filenames (same S02c hero until more gendered exports) |
+
+### Notes
+- EAS `update:day-test` required after merge (new mobile assets).
+- sx-only; no NativeWind/`className` changes.

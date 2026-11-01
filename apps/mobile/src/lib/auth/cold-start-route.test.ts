@@ -35,6 +35,42 @@ test("B: new Google user via welcome → onboarding start, never tabs", () => {
   );
 });
 
+test("welcome signin intent (afterSignIn, no plan): goal; never splash/tabs", () => {
+  assert.equal(
+    resolveColdStartRoute({
+      ...base,
+      serverOnboarded: false,
+      planGenerated: false,
+      afterSignIn: true,
+    }),
+    "/(onboarding)/goal",
+  );
+  assert.notEqual(
+    resolveColdStartRoute({
+      ...base,
+      serverOnboarded: false,
+      afterSignIn: true,
+    }),
+    "/(tabs)/today",
+  );
+});
+
+test("mid-onboarding Google return without plan: stay on welcome path until quiz", () => {
+  // Session exists, server not onboarded, no plan yet → welcome (cold) or goal (fresh sign-in).
+  assert.equal(
+    resolveColdStartRoute({ ...base, serverOnboarded: false }),
+    "/(onboarding)/welcome",
+  );
+  assert.equal(
+    resolveColdStartRoute({
+      ...base,
+      serverOnboarded: false,
+      afterSignIn: true,
+    }),
+    "/(onboarding)/goal",
+  );
+});
+
 test("C/F: returning onboarded + entitled → today", () => {
   assert.equal(resolveColdStartRoute({ ...base, entitled: true, afterSignIn: true }), "/(tabs)/today");
   assert.equal(resolveColdStartRoute({ ...base, entitled: true }), "/(tabs)/today");

@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 import { createDb } from "../db";
-import { entitlements, preferences, profiles, users } from "../db/schema";
+import { accounts, entitlements, preferences, profiles, users } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { msToUnix } from "../lib/dates";
 import { toPreferencesOut } from "../lib/prefs-out";
@@ -38,6 +38,10 @@ meRoutes.get("/v1/me", requireAuth, async (c) => {
     .from(entitlements)
     .where(eq(entitlements.userId, userId))
     .limit(1);
+  const linked = await db
+    .select({ providerId: accounts.providerId })
+    .from(accounts)
+    .where(eq(accounts.userId, userId));
 
   const profileOut: OnboardingProfile | null = profile
     ? {
@@ -68,6 +72,7 @@ meRoutes.get("/v1/me", requireAuth, async (c) => {
       productId: ent?.productId ?? null,
     },
     onboardingCompleted: Boolean(profile?.onboardingCompletedAt),
+    accounts: linked.map((a) => ({ providerId: a.providerId })),
   };
   return c.json(body);
 });

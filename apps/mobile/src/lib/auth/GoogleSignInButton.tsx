@@ -6,6 +6,10 @@ import { useState } from "react";
 
 import { GoogleGlyph } from "@/features/onboarding/components/AuthGlyphs";
 import { authClient } from "@/lib/auth/auth-client";
+import {
+  clearGoogleAuthHandoff,
+  markGoogleAuthHandoff,
+} from "@/lib/auth/funnel-nav";
 import { getBearerToken } from "@/lib/auth/session";
 import { env } from "@/lib/config/env";
 import { errorMessage, logger } from "@/lib/logger";
@@ -76,9 +80,10 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
     void (async () => {
       if (pending) return;
       setPending(true);
+      /** Keep OAuth return on auth — not `/` cold-start (double paywall / wrong gate). */
+      const callbackURL = Linking.createURL("/(onboarding)/auth");
+      markGoogleAuthHandoff();
       try {
-        const callbackURL = Linking.createURL("/");
-
         const result = await authClient.signIn.social({
           provider: "google",
           callbackURL,
@@ -92,6 +97,7 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
             result.error.message ?? "Could not sign in with Google",
           );
           logger.error("auth.google.better_auth_failed", { message });
+          clearGoogleAuthHandoff();
           onError?.(message);
           return;
         }
@@ -99,6 +105,7 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
         const authorizeUrl = authorizeUrlFromData(result.data);
         if (!authorizeUrl) {
           logger.error("auth.google.no_authorize_url");
+          clearGoogleAuthHandoff();
           onError?.("Could not start Google sign-in");
           return;
         }
@@ -116,11 +123,13 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
         } catch (err) {
           const raw = errorMessage(err);
           logger.error("auth.google.browser_open_failed", { message: raw });
+          clearGoogleAuthHandoff();
           onError?.(friendlyGoogleError(raw));
           return;
         }
 
         if (browserResult.type === "cancel" || browserResult.type === "dismiss") {
+          clearGoogleAuthHandoff();
           onError?.("Sign-in cancelled");
           return;
         }
@@ -129,6 +138,7 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
           !("url" in browserResult) ||
           !browserResult.url
         ) {
+          clearGoogleAuthHandoff();
           onError?.("Google sign-in did not complete");
           return;
         }
@@ -139,6 +149,7 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
         const sessionUserId = session.data?.user?.id;
         if (!sessionUserId) {
           logger.error("auth.google.no_session");
+          clearGoogleAuthHandoff();
           onError?.("Google sign-in did not return a session");
           return;
         }
@@ -146,6 +157,7 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
       } catch (err) {
         const message = friendlyGoogleError(errorMessage(err));
         logger.error("auth.google.exception", { message });
+        clearGoogleAuthHandoff();
         onError?.(message);
       } finally {
         setPending(false);

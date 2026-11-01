@@ -1,6 +1,6 @@
 import { devTesterAllowed } from "./dev-tester";
 
-/** Dev / day-test only: user tapped "Continue without Pro" so the tab guard lets them in. */
+/** Dev / day-test only: Dev Tester on auth marked soft-skip so the tab guard lets them in. */
 let skipped = false;
 
 export const markPaywallSoftSkipped = (): void => {

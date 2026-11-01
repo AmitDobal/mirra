@@ -63,6 +63,25 @@ test("G: session + plan generated, funnel not complete → week-reveal", () => {
   );
 });
 
+test("mid-funnel Google: planGenerated resumes reveal; revealSeen → paywall once", () => {
+  assert.equal(
+    resolveColdStartRoute({
+      ...base, serverOnboarded: false, planGenerated: true, afterSignIn: true,
+    }),
+    "/(onboarding)/week-reveal",
+  );
+  assert.equal(
+    resolveColdStartRoute({
+      ...base,
+      serverOnboarded: false,
+      planGenerated: true,
+      revealSeen: true,
+      afterSignIn: true,
+    }),
+    "/(onboarding)/paywall",
+  );
+});
+
 test("offline (me unknown): local completed + entitled cache → today; else gate", () => {
   assert.equal(
     resolveColdStartRoute({ ...base, serverOnboarded: null, localCompleted: true, entitled: true }),

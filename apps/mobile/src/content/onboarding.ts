@@ -305,7 +305,6 @@ export const onboardingCopy = {
     trial: "Start 7-day trial",
     restore: "Restore purchases",
     termsLink: "Terms & Privacy",
-    continueWithoutPro: "Continue without Pro",
     legal:
       "Renews automatically at chosen plan after 7-day trial. Cancel anytime in Apple ID settings. Sign in with Google required before purchase.",
     closeLabel: "Close paywall",

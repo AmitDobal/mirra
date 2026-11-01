@@ -24,3 +24,9 @@ export {
   markPaywallSoftSkipped,
   resetPaywallSoftSkip,
 } from "./paywall-skip";
+export {
+  clearGoogleAuthHandoff,
+  isGoogleAuthHandoff,
+  markGoogleAuthHandoff,
+  shouldReplaceFunnelDest,
+} from "./funnel-nav";

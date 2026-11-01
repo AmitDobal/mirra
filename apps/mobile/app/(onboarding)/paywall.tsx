@@ -10,18 +10,17 @@ import { PaywallHero } from "@/features/onboarding/components/PaywallHero";
 import { PaywallPlanCard } from "@/features/onboarding/components/PaywallPlanCard";
 import { completeOnboardingFunnel } from "@/features/onboarding/services/complete-funnel";
 import {
-  canSoftSkipPaywall,
   hasSession,
-  markPaywallSoftSkipped,
   requireSignedInUser,
   setPostAuthIntent,
 } from "@/lib/auth";
+import { shouldReplaceFunnelDest } from "@/lib/auth/funnel-nav";
 import { usePurchases } from "@/lib/purchases";
 import { color } from "@/theme/tokens";
 import { LimeCta } from "@/ui";
 import { sx } from "@/theme/sx";
 
-/** S13 — Soft paywall. Purchase/restore require Google; close never grants Pro. */
+/** S13 — Hard paywall. Purchase/restore require Google; X never grants Pro. */
 const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
@@ -32,8 +31,9 @@ const PaywallScreen = () => {
     void loadOfferings();
   }, [loadOfferings]);
 
-  const finishFree = () => {
+  const finishEntitled = () => {
     void completeOnboardingFunnel().then(() => {
+      if (!shouldReplaceFunnelDest("/(tabs)/today")) return;
       router.replace("/(tabs)/today");
     });
   };
@@ -61,30 +61,26 @@ const PaywallScreen = () => {
   const handleTrial = async () => {
     if (!ensureGoogleForPurchase()) return;
     const result = await purchase(packageId);
-    if (result?.ok) finishFree();
+    if (result?.ok) finishEntitled();
   };
 
   const handleRestore = async () => {
     if (!ensureGoogleForPurchase()) return;
     const result = await restore();
-    if (result?.ok) finishFree();
+    if (result?.ok) finishEntitled();
   };
 
-  /** Prod: no entitlement → stay. Only `__DEV__` may skip into tabs. */
-  const handleCloseOrSkip = () => {
-    if (canSoftSkipPaywall()) {
-      markPaywallSoftSkipped();
-      finishFree();
-      return;
-    }
+  /**
+   * Hard close: no Continue without Pro. No session → auth; session → blocked alert.
+   * Day-test bypass lives on auth Dev Tester only (`finishAfterAuth("dev")`).
+   */
+  const handleClose = () => {
     if (!hasSession()) {
       goAuth("paywall");
       return;
     }
     Alert.alert(c.blockedTitle, c.blockedBody);
   };
-
-  const showSkip = canSoftSkipPaywall();
 
   const handleTerms = () => {
     void Linking.openURL(onboardingCopy.auth.termsUrl);
@@ -105,7 +101,7 @@ const PaywallScreen = () => {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={c.closeLabel}
-            onPress={handleCloseOrSkip}
+            onPress={handleClose}
             hitSlop={8}
             style={sx("h-9 w-9 items-center justify-center rounded-full bg-surface-container-high")}
           >
@@ -144,19 +140,6 @@ const PaywallScreen = () => {
               </Text>
             </Pressable>
           </View>
-          {showSkip ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={c.continueWithoutPro}
-              onPress={handleCloseOrSkip}
-              hitSlop={8}
-              style={sx("px-space-md py-space-xs")}
-            >
-              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
-                {c.continueWithoutPro}
-              </Text>
-            </Pressable>
-          ) : null}
           <Text
             style={sx("max-w-xs text-center font-body text-body-sm text-on-surface-variant leading-tight")}
           >

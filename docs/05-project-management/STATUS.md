@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** Day-test runbook Live table → iOS `01a19599-0637-7472-8d78-8890a33bfb83` (Google OAuth Expo Go proxy PASS, PR #30). Evidence `/tmp/mirra-qa/google-oauth-proxy-fix/`. Prior: Tab UI restore **merged** PR #17 (`ccc28c8`). Light smoke `/tmp/mirra-qa/restore-all-screens/`. Weight + AI usage on prod API.
+**Latest:** User-base session + You profile (**#34** / **#35**). EAS `01a195bd-58de-73a6-9e7d-5c25cf639aab` — https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab. Prod `GET /v1/me` returns user + accounts. **Device reopen** (cold-start session restore) still to verify. Evidence `/tmp/mirra-qa/user-base-e2e/`. Prior: Google OAuth Expo Go proxy PASS (#30); tab UI restore #17.
 
 | | |
 | --- | --- |
@@ -15,6 +15,18 @@
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |
 | Day-test runbook | `docs/09-runbooks/ios-day-test.md` |
+
+## 2026-11-01 — User-base session + You (#34/#35)
+
+| | |
+| --- | --- |
+| Verdict | **PASS** (API + sim smoke); device reopen **pending** |
+| PRs | [#34](https://github.com/AmitDobal/mirra/pull/34) session/hydrate · [#35](https://github.com/AmitDobal/mirra/pull/35) You from `/v1/me` |
+| API | `GET /v1/me` → user + linked accounts (D1 `users` / `accounts`) |
+| Mobile | Hydrate + cold-start → Today; You profile from API; sign-out clears local session |
+| EAS | https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab |
+| Evidence | `/tmp/mirra-qa/user-base-e2e/` |
+| Open | Prove app **reopen** on physical device after kill |
 
 ## 2026-11-01 — Restore smoke PASS + EAS
 
@@ -66,4 +78,4 @@ npm run mobile
 - S11/S24 screen.png re-export
 - Reduce remaining mock chrome on secondary tabs
 
-Updated 2026-10-31.
+Updated 2026-11-01 (user-base #34/#35 + EAS `01a195bd`).

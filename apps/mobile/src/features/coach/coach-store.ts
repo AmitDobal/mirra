@@ -1,14 +1,9 @@
 import { create } from "zustand";
 
 import { copy } from "@/content/copy";
-import { listCheckIns, submitCheckIn } from "@/db";
-import { useFuelStore } from "@/features/fuel/fuel-store";
-import { useTodayStore } from "@/features/today/today-store";
+import { listCheckIns } from "@/db";
 import {
   applyRebuild,
-  createCheckIn,
-  previewRebuild,
-  type CheckInStatus,
   type CoachPill,
   type CoachVector,
   type CurrentPlan,
@@ -46,7 +41,6 @@ type CoachState = {
   readonly fetchAdvise: () => Promise<void>;
   /** Corner-refresh: bypass TTL, throttled to once per 60s per key. */
   readonly forceRefreshAdvise: () => Promise<void>;
-  readonly submitCheckIn: () => Promise<"rebuild" | "done" | "failed">;
   readonly apply: () => Promise<void>;
   readonly keep: () => Promise<void>;
   readonly clearNotice: () => void;
@@ -95,103 +89,6 @@ export const useCoachStore = create<CoachState>((set, get) => ({
 
   fetchAdvise: () => runAdvise(get, set, false),
   forceRefreshAdvise: () => runAdvise(get, set, true),
-
-  submitCheckIn: async () => {
-    const { readiness, vectorId, fetchAdvise } = get();
-    // Map coach UI → API CheckInStatusSchema (done|partial|skipped|soreness|low_sleep|travel).
-    const status: CheckInStatus =
-      readiness === "rest"
-        ? "skipped"
-        : vectorId === "missed"
-          ? "partial"
-          : vectorId === "deload"
-            ? "low_sleep"
-            : vectorId === "express"
-              ? "travel"
-              : "done";
-    const localDate = todayIso();
-    let checkInId: string | null = null;
-    let coachMessage: string | undefined;
-
-    try {
-      const row = await submitCheckIn({
-        localDate,
-        status,
-        note: `vector:${vectorId}`,
-        triggeredRebuild: status === "skipped",
-      });
-      checkInId = row.id;
-    } catch (err) {
-      logger.warn("coach.checkin.local.failed", { message: errorMessage(err) });
-      checkInId = `local_${Date.now()}`;
-    }
-
-    let remoteOk = false;
-    try {
-      const remote = await createCheckIn({
-        localDate,
-        status,
-        note: `vector:${vectorId}`,
-      });
-      checkInId = remote.id;
-      coachMessage = remote.coachMessage;
-      remoteOk = true;
-      logger.info("coach.checkin.remote.ok", { id: remote.id, status });
-    } catch (err) {
-      logger.error("coach.checkin.remote.failed", {
-        message: errorMessage(err),
-        status: err instanceof MirraApiError ? err.status : undefined,
-        code: err instanceof MirraApiError ? err.code : undefined,
-      });
-    }
-
-    if (!remoteOk) {
-      // Never claim "saved": the server (source of truth for Today) did not get it.
-      set({
-        lastCheckInId: null,
-        notice: "Check-in failed to sync — not saved. Check your connection and try again.",
-      });
-      return "failed";
-    } else {
-      set({
-        lastCheckInId: checkInId,
-        checkedInDate: localDate,
-        notice: "Check-in saved — Today updated",
-        ...(coachMessage ? { adviseMessage: coachMessage } : {}),
-      });
-      // Optimistic: hide Today "Check-in" chip before hydrate round-trip.
-      useTodayStore.setState({ checkInDue: false });
-      await get().hydrate();
-      if (!coachMessage) await fetchAdvise();
-      await Promise.all([
-        useTodayStore.getState().hydrate(),
-        useFuelStore.getState().hydrate(),
-      ]).catch(() => undefined);
-      if (status !== "skipped") return "done";
-    }
-
-    try {
-      const preview = await previewRebuild({
-        checkInId: checkInId ?? undefined,
-        reason: "skipped_session",
-      });
-      set({
-        previewToken: preview.previewToken ?? "local_preview",
-        previewAfter: preview.after,
-      });
-      if (preview.after) usePlanStore.getState().setPlan(preview.after);
-      logger.info("coach.rebuild.preview.ok", {
-        hasToken: Boolean(preview.previewToken),
-      });
-    } catch (err) {
-      logger.error("coach.rebuild.preview.failed", {
-        message: errorMessage(err),
-        status: err instanceof MirraApiError ? err.status : undefined,
-      });
-      set({ previewToken: "local_preview", previewAfter: null });
-    }
-    return "rebuild";
-  },
 
   apply: async () => {
     const { previewToken } = get();

@@ -17,6 +17,7 @@ import { useWorkoutStore } from "@/features/workout/workout-store";
 import { type DailyGoal, type NextAction } from "@/lib/api";
 import { kcalStatus } from "@/lib/accountability";
 import { useAttendanceStore } from "./attendance-store";
+import { openCheckIn } from "@/features/checkin/open-check-in";
 import { GoalChecklist } from "./GoalChecklist";
 import { HeroNextCard } from "./HeroNextCard";
 import { KcalDonut } from "./KcalDonut";
@@ -214,7 +215,7 @@ export const TodayScreen = () => {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Open check-in"
-              onPress={() => router.push("/(tabs)/coach")}
+              onPress={openCheckIn}
               style={sx(
                 "mt-0.5 self-start flex-row items-center gap-1 rounded-full bg-on-primary-fixed/12 px-2 py-0.5",
               )}

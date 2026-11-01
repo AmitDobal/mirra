@@ -1,3 +1,4 @@
-import { CoachScreen } from "@/features/coach";
+import { CheckInFlow } from "@/features/checkin/CheckInFlow";
 
-export default CoachScreen;
+/** Daily check-in (S20b tap flow → S20c result). Route kept as `coach` for deep links. */
+export default CheckInFlow;

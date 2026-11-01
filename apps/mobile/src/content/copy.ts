@@ -33,7 +33,6 @@ export const copy = {
     submit: "Submit check-in",
     submitting: "Submitting…",
     keep: "Keep original schedule anyway",
-    vectorsLabel: "Select Recalibration Vector",
     push: "Ready to Push",
     rest: "Body Needs Rest",
     calibration: "Daily Calibration",

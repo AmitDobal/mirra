@@ -84,6 +84,14 @@ export const s24ProfileSettings = {
   avatarAlexChen: require("./s24_profile_settings/avatar-alex-chen.jpg"),
 } as const;
 
+export const s20bDailyCheckInTap = {
+  hero: require("./s20b_daily_check_in_tap/hero.jpg"),
+} as const;
+
+export const s20cAdjustToday = {
+  hero: require("./s20c_adjust_today/hero.jpg"),
+} as const;
+
 export const stitchAssets = {
   s02WelcomeHook,
   s06Target,
@@ -95,6 +103,8 @@ export const stitchAssets = {
   s16LiveWorkoutHud,
   s18Fuel,
   s19LogMeal,
+  s20bDailyCheckInTap,
+  s20cAdjustToday,
   s21RebuildPreview,
   s22ProgressGallery,
   s23MirrorComparison,

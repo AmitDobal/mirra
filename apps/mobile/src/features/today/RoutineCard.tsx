@@ -2,12 +2,15 @@ import { ChevronRight, Play, Utensils } from "lucide-react-native";
 import { Image, Pressable, Text, View } from "react-native";
 
 import { s15Today } from "../../../assets/stitch";
+import { adjustedMinutes, useTodayAdjustStore } from "@/features/checkin/adjust-store";
 import type { PlanExercise, PlanWorkout } from "@/lib/api";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
 import { AiBadge } from "@/ui/AiBadge";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
+
+import { useTodayStore } from "./today-store";
 
 const MAX_ROWS = 6;
 
@@ -32,6 +35,9 @@ export const RoutineCard = ({
   onAddExercise,
 }: Props) => {
   const exercises = workout?.exercises ?? [];
+  const adjustment = useTodayAdjustStore((s) => s.adjustment);
+  const todayDate = useTodayStore((s) => s.date);
+  const minutes = adjustedMinutes(adjustment, todayDate, workout?.durationMin ?? 0);
   const preview = exercises
     .slice(0, 4)
     .map((e) => e.name)
@@ -57,7 +63,7 @@ export const RoutineCard = ({
           </View>
           <View style={sx("rounded-full bg-primary px-3 py-1")}>
             <Text style={sx("font-label-bold text-label-md text-on-primary")}>
-              {workout?.durationMin ?? 0} mins
+              {minutes} mins
             </Text>
           </View>
         </View>

@@ -1,10 +1,20 @@
 # Handoff
 
+## 2026-11-01 — Day-test EAS: credits-store no-flash
+
+**Done:** Clean `origin/main` worktree @ `8054d0a` → `eas update --branch day-test` (“credits-store no Checking flash + prior #38-40”). Live table → iOS `01a195f8-d00b-7be5-99af-c925e5efcb34`.
+
+**Open on phone:** https://u.expo.dev/update/01a195f8-d00b-7be5-99af-c925e5efcb34
+
+**Next:** Physical device kill→relaunch You if needed; prune ship worktrees.
+
+**Evidence:** `/tmp/mirra-qa/credits-no-flash-device/`
+
 ## 2026-11-01 — Credits meter no-flash (SecureStore)
 
 **Done:** `credits-store` mirrors `me-store`: persist last `GET /v1/credits` snapshot in SecureStore, hydrate at boot, You tab paints cached remaining/limit instantly; background refresh via TTL + pull-to-refresh. Sign-out clears credits cache.
 
-**Next:** Merge PR → `eas update --branch day-test` with credits cache fix; reopen You tab on device — no “Checking your balance…” flash.
+**Next:** Device prove done via day-test EAS above; keep monitoring no-flash on physical phone.
 
 **Evidence:** `/tmp/mirra-qa/credits-no-flash/RESULT.txt`
 

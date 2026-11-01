@@ -1,5 +1,12 @@
 # Handoff
 
+## 2026-11-01 — Google OAuth EAS env fix PASS
+
+**Done:** Root cause was Metro not inlining dynamic `process.env[key]` (plus empty EAS preview env). Fixed static `EXPO_PUBLIC_GOOGLE_*` in `env.ts`, `app.config.ts` extra, `eas env:set` for preview. Merged #28 (`19383d6`).
+**Manifest:** https://u.expo.dev/update/01a1958d-fce8-77e1-b848-1e3d4f8050cd
+**Prove:** dist `.hbc` WEB+IOS hits=1 each (len 72). Sim Continue with Google → ASWebAuthenticationSession google.com (not “Google sign-in not configured”). Shots `/tmp/mirra-qa/google-oauth-eas-fix/`.
+**Watch:** Always export GOOGLE_* in shell + keep EAS preview vars; never use dynamic env key access for EXPO_PUBLIC_*.
+
 ## 2026-11-01 — Restore tabs + insights API day-test PASS
 
 **Done:** Prod Worker serves `GET /v1/insights/today`, `/v1/today/actions`, `/v1/voice/cue/today` (200). Main `3289337` (#17 UI + #20/#21 API). Tab smoke shots in `/tmp/mirra-qa/restore-all-screens/`. EAS day-test republished.

@@ -63,3 +63,8 @@
 ### Notes
 - EAS `update:day-test` required after merge (new mobile assets).
 - sx-only; no NativeWind/`className` changes.
+
+### EAS after merge
+- Tip `ae8eb1f` · iOS update `01a19929-fe4f-79bc-80f3-a0672644a612` · group `669ed799-4171-4e5e-bafd-4f8732a1f21d`
+- Phone: https://u.expo.dev/update/01a19929-fe4f-79bc-80f3-a0672644a612
+- Dashboard: https://expo.dev/accounts/amitdobal141/projects/mirra/updates/669ed799-4171-4e5e-bafd-4f8732a1f21d

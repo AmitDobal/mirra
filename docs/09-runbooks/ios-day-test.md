@@ -16,15 +16,15 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | Delete account in You + `DELETE /v1/me` wipe (AMI-135/136) on top of calorie history wave |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/fe2291ea-bb8a-43d3-8fb4-447ec0a75c6c |
-| iOS update ID | `01a1985f-6aed-7bb1-b316-010d69e6f84d` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1985f-6aed-7bb1-b316-010d69e6f84d |
+| Mobile bundle | Local meal times + logged meal detail (AMI-137) + History 1h cache/PTR (AMI-138) on top of delete-account wave (mobile-only; API unchanged) |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/ba285788-777a-4b73-8bbb-09dd91cb12ad |
+| iOS update ID | `01a1986b-3a2b-76c2-9aee-f6cf8fe77073` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1986b-3a2b-76c2-9aee-f6cf8fe77073 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `delete account AMI-135/136 5075117` |
-| Smoke shots | `/tmp/mirra-qa/ami-delete-account/` (RESULT.md) |
-| Bundle prove | Commit `5075117` (AMI-135/136 merged) |
+| Message | `meal local time + detail + history cache 02a4aad` |
+| Smoke shots | `/tmp/mirra-qa/meal-history-ux/` (RESULT.md; boot only, UI flow not driven) |
+| Bundle prove | Commit `02a4aad` (AMI-137/138 merged) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
 | Smoke note | Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md` |
 

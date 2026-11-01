@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — Day-test pinned: meal local time + History cache (02a4aad)
+
+**Done:** AMI-137 (device-local meal times + logged meal detail sheet) and AMI-138 (History 1h cache + pull-to-refresh) on `origin/main` `02a4aad`. Typecheck PASS in clean worktree. EAS `day-test` iOS update `01a1986b-3a2b-76c2-9aee-f6cf8fe77073`, group `ba285788-777a-4b73-8bbb-09dd91cb12ad`. Mobile-only: API unchanged, no wrangler deploy.
+
+**Phone:** https://u.expo.dev/update/01a1986b-3a2b-76c2-9aee-f6cf8fe77073
+
+**Smoke:** Simulator (Expo Go 58) loads the published update and renders onboarding. Log meal -> Fuel time -> detail, and History PTR vs remount were NOT driven; check on phone. Invalidate-on-meal follow-up not merged (History can show a stale series up to 1h after logging a meal until PTR).
+
+**Evidence:** `/tmp/mirra-qa/meal-history-ux/RESULT.md`
+
 ## 2026-11-01 — Account deletion deployed (AMI-135/136, 5075117)
 
 **Done:** Smoke (local only, prod `day-test-1` not touched): `npm run test:account-delete` PASS; local `GET/DELETE /v1/me` with throwaway `del-smoke-*` header OK; unauth DELETE 401. Deployed from clean `origin/main` `5075117`: API Worker version `e76c6b15-54b5-4363-81bf-7163feae2637` (`/health` 200, no pending D1 migrations; prod unauth DELETE/GET `/v1/me` 401). EAS `day-test` iOS update `01a1985f-6aed-7bb1-b316-010d69e6f84d`, group `fe2291ea-bb8a-43d3-8fb4-447ec0a75c6c`.

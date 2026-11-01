@@ -77,7 +77,12 @@ Consent branding: open Google authorize URL with the **Mirra** Web client id →
 
 ## EAS day-test
 
-Republish `day-test` after updating `EXPO_PUBLIC_GOOGLE_*` in local `.env` (baked into update). See `ios-day-test.md`.
+Republish `day-test` with `EXPO_PUBLIC_GOOGLE_*` from local `.env` **and** EAS env
+`preview` (`eas env:set`). `env.ts` must use static `process.env.EXPO_PUBLIC_GOOGLE_*`
+(Metro does not inline `process.env[key]`). `app.config.ts` also copies them into
+`extra`. After publish, confirm the Hermes `.hbc` contains `apps.googleusercontent.com`
+(length/hit-count only — never log full client ids). Missing string ⇒ alert
+**Google sign-in not configured**. See `ios-day-test.md`.
 
 ## Follow-ups (P1)
 

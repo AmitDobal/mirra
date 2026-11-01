@@ -2,33 +2,25 @@ import {
   Image,
   Text,
   View,
-  type ImageSourcePropType,
   type ImageStyle,
 } from "react-native";
 
-import { s13PaywallHard } from "../../../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import { sx } from "@/theme/sx";
 
-type Props = {
-  /**
-   * Optional coach image (AMI-147 gendered helper can pass this).
-   * Defaults to hard-paywall Stitch athlete cutout.
-   */
-  readonly coachSource?: ImageSourcePropType;
-};
+import { useOnboardingImagery } from "../imagery";
 
+/** Rounded athlete tile (ImageStyle ≠ sx View/Text). */
 const imageStyle: ImageStyle = {
   width: 96,
   height: 96,
   borderRadius: 16,
 };
 
-/** S13 hero — copy left, rounded athlete tile right (Stitch hard paywall). */
-export const PaywallHero = ({
-  coachSource = s13PaywallHard.coachAthlete,
-}: Props) => {
+/** S13 hero — Stitch hard-paywall layout; coach image from gendered imagery helper. */
+export const PaywallHero = () => {
   const c = onboardingCopy.paywall;
+  const { paywallCoach } = useOnboardingImagery();
 
   return (
     <View
@@ -45,7 +37,7 @@ export const PaywallHero = ({
         </Text>
       </View>
       <Image
-        source={coachSource}
+        source={paywallCoach}
         accessibilityLabel="Mirra coach"
         resizeMode="cover"
         style={imageStyle}

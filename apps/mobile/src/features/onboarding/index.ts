@@ -3,6 +3,12 @@ export { ProgressHeader } from "./components/ProgressHeader";
 export { QuizEyebrow } from "./components/QuizEyebrow";
 export { QuizHint } from "./components/QuizHint";
 export { SelectRow } from "./components/SelectRow";
+export {
+  getOnboardingImagery,
+  imageryGenderForSex,
+  useOnboardingImagery,
+} from "./imagery";
+export type { ImageryGender, OnboardingImagery } from "./imagery";
 export { toOnboardingBody } from "./map-body";
 export { useOnboardingStore } from "./store";
 export type * from "./types";

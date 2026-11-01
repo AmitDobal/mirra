@@ -3,10 +3,10 @@ import { TrendingUp } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 
-import { s12WeekReveal } from "../../assets/stitch";
 import { onboardingCopy } from "@/content/onboarding";
 import {
   OnboardingShell,
+  useOnboardingImagery,
   useOnboardingStore,
 } from "@/features/onboarding";
 import {
@@ -31,15 +31,11 @@ import { Button } from "@/ui";
 import { sx } from "@/theme/sx";
 
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"] as const;
-const WORKOUT_IMGS = [
-  s12WeekReveal.dumbbellOverheadPress,
-  s12WeekReveal.barbellBentOverRow,
-  s12WeekReveal.barbellBackSquat,
-] as const;
 
 /** S12 — Stitch week reveal + expandable exercises. */
 const WeekRevealScreen = () => {
   const c = onboardingCopy.weekReveal;
+  const { weekRevealWorkouts: WORKOUT_IMGS } = useOnboardingImagery();
   const goal = useOnboardingStore((s) => s.goal);
   const trainingDays = useOnboardingStore((s) => s.trainingDays);
   const diet = useOnboardingStore((s) => s.diet);

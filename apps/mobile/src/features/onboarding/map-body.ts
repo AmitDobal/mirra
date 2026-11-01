@@ -36,6 +36,11 @@ const SEX_MAP: Record<SexId, "female" | "male" | "unspecified"> = {
 export const toOnboardingBody = (
   answers: OnboardingAnswers,
 ): OnboardingPutBody => {
+  // Null never submitted; prefer_not → unspecified (AMI-147).
+  if (answers.sex == null) {
+    throw new Error("Biological sex is required before submitting onboarding");
+  }
+
   const trainDays = answers.trainingDays
     .map((on, i) => (on ? i + 1 : null))
     .filter((d): d is number => d != null);

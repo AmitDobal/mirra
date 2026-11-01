@@ -12,6 +12,7 @@ import { completeOnboardingFunnel } from "@/features/onboarding/services/complet
 import { syncPersonalizationAfterAuth } from "@/features/onboarding/services/secure-prefs";
 import {
   getBearerToken,
+  peekPostAuthIntent,
   requireSignedInUser,
   setDevSession,
   setGoogleSession,
@@ -27,13 +28,14 @@ import { sx } from "@/theme/sx";
 
 const devAuthAllowed = __DEV__ || env.allowDevAuth;
 
-/** S14 — Soft Google save-plan → paywall. Dev Tester → skipable paywall. */
+/** S14 — Soft Google save-plan → paywall. Dev Tester → free tabs (day-test). */
 const AuthScreen = () => {
   const c = onboardingCopy.auth;
   const goal = useOnboardingStore((s) => s.goal);
   const trainingDays = useOnboardingStore((s) => s.trainingDays);
   const kcalTarget = useOnboardingStore((s) => s.weekPlan?.summary?.kcalTarget);
   const autoRan = useRef(false);
+  const paywallIntent = peekPostAuthIntent() === "paywall";
 
   const goalLabel = onboardingCopy.goal.options.find((o) => o.id === goal)?.label;
   const planTitle = goalLabel
@@ -51,10 +53,13 @@ const AuthScreen = () => {
     });
   };
 
-  /** Google → paywall when intent set; Dev → paywall (soft-skippable). */
+  /**
+   * Paywall intent: only Google continues to paywall.
+   * Dev Tester always lands free tabs (never paywall) for day-test.
+   */
   const finishAfterAuth = (kind: "google" | "dev") => {
     const intent = takePostAuthIntent();
-    if (kind === "dev" || intent === "paywall") {
+    if (kind === "google" && intent === "paywall") {
       router.replace("/(onboarding)/paywall");
       return;
     }
@@ -76,11 +81,8 @@ const AuthScreen = () => {
     })();
   };
 
+  /** Never skip signup via Not now — Google (or existing Google session) only. */
   const handleNotNow = () => {
-    if (devAuthAllowed) {
-      handleDevTester();
-      return;
-    }
     Alert.alert(c.authRequiredTitle, c.authRequiredBody);
   };
 
@@ -190,7 +192,7 @@ const AuthScreen = () => {
             style={sx("px-space-md py-space-xs")}
           >
             <Text style={sx("font-label text-label-md text-primary-container")}>
-              {c.devTester}
+              {paywallIntent ? c.devTesterPaywall : c.devTester}
             </Text>
           </Pressable>
         ) : null}

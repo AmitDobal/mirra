@@ -55,6 +55,7 @@ export const TodayScreen = () => {
   const target = useFuelStore((s) => s.target);
   const hydrateFuel = useFuelStore((s) => s.hydrate);
   const hydratePlan = useMealPlanStore((s) => s.hydrate);
+  const ensureAfterOnboarding = useMealPlanStore((s) => s.ensureAfterOnboarding);
   const hasOpenPlannedMeal = useMealPlanStore(selectHasOpenPlannedMeal);
   const startWorkout = useWorkoutStore((s) => s.start);
   const openExercise = useWorkoutStore((s) => s.openExercise);
@@ -77,10 +78,19 @@ export const TodayScreen = () => {
   const reload = useCallback(
     async (force = false) => {
       await Promise.all([hydrate(), hydrateFuel(), hydratePlan(), refetchActions()]);
+      void ensureAfterOnboarding();
       void loadAttendance(useTodayStore.getState().weekDays[0]?.date);
       await loadInsights(force);
     },
-    [hydrate, hydrateFuel, hydratePlan, refetchActions, loadAttendance, loadInsights],
+    [
+      hydrate,
+      hydrateFuel,
+      hydratePlan,
+      ensureAfterOnboarding,
+      refetchActions,
+      loadAttendance,
+      loadInsights,
+    ],
   );
 
   useFocusEffect(

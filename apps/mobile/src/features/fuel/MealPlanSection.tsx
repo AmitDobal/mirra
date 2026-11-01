@@ -13,6 +13,7 @@ import type { MealSlot, PlannedMeal } from "@/lib/api";
 
 import { needsDietPrompt } from "./diet-prefs";
 import { slotKey } from "./fuel-helpers";
+import { canGenerateMealPlanSync } from "./meal-plan-gate";
 import { SLOT_LABELS, toAmount } from "./MealEditor";
 import { DietPrefsSheet } from "./DietPrefsSheet";
 import { MealDetailSheet } from "./MealDetailSheet";
@@ -58,6 +59,13 @@ export const MealPlanSection = () => {
   }, [refreshNeedsPrefs]);
 
   const handleGenerate = () => {
+    if (!canGenerateMealPlanSync()) {
+      Alert.alert(
+        "Save your plan first",
+        "Sign in with Google and finish setup — then generate meals here.",
+      );
+      return;
+    }
     if (needsPrefs) setSheetOpen(true);
     else void generate();
   };
@@ -65,6 +73,7 @@ export const MealPlanSection = () => {
   const handlePrefsSaved = () => {
     setSheetOpen(false);
     setNeedsPrefs(false);
+    if (!canGenerateMealPlanSync()) return;
     // Existing plan was built with old prefs → rebuild; otherwise first generate.
     void generate(Boolean(plan));
   };

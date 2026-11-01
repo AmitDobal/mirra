@@ -14,6 +14,7 @@ import {
 } from "@/lib/api";
 import { errorMessage, logger } from "@/lib/logger";
 
+import { canGenerateMealPlan } from "./meal-plan-gate";
 import { useFuelStore, type LocalMeal } from "./fuel-store";
 import { formatTime, todayIso } from "./fuel-helpers";
 
@@ -26,6 +27,8 @@ type MealPlanState = {
   readonly error: string | null;
   readonly hydrate: () => Promise<void>;
   readonly generate: (force?: boolean) => Promise<void>;
+  /** First Fuel/Today after Google + funnel soft-finish — generate once if empty. */
+  readonly ensureAfterOnboarding: () => Promise<void>;
   readonly log: (meal: PlannedMeal) => Promise<void>;
   readonly swap: (meal: PlannedMeal) => Promise<void>;
   readonly rebalance: (reason?: "off_plan_log" | "manual") => Promise<void>;
@@ -93,6 +96,13 @@ export const useMealPlanStore = create<MealPlanState>((set, get) => ({
 
   generate: async (force) => {
     if (get().generating) return;
+    if (!(await canGenerateMealPlan())) {
+      logger.info("meal_plan.generate_deferred", { reason: "funnel_or_auth" });
+      set({
+        error: "Save your plan with Google first — then open Fuel to build meals.",
+      });
+      return;
+    }
     set({ generating: true, error: null });
     try {
       const plan = await generateMealPlan({ date: todayIso(), force });
@@ -101,6 +111,14 @@ export const useMealPlanStore = create<MealPlanState>((set, get) => ({
       logger.warn("meal_plan.generate_failed", { message: errorMessage(err) });
       set({ generating: false, error: "Couldn't build today's plan. Try again." });
     }
+  },
+
+  ensureAfterOnboarding: async () => {
+    if (!(await canGenerateMealPlan())) return;
+    if (get().plan || get().generating) return;
+    await get().hydrate();
+    if (get().plan || get().generating) return;
+    await get().generate(false);
   },
 
   log: async (meal) => {

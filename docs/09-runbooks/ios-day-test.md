@@ -24,7 +24,7 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | Smoke shots | `/tmp/mirra-qa/polish-goal-e2e/` |
 | Bundle prove | Commit `23db13b` (#38+#39+#40); You cache/credits/trainers; Progress gallery; Today 7-day week strip |
 | API prove | `GET /v1/me` cached; progress photos API; week plan D1 persist |
-| Smoke note | See `/tmp/mirra-qa/polish-goal-e2e/RESULT.txt` |
+| Smoke note | **PASS** sim Expo Go — see `/tmp/mirra-qa/polish-goal-e2e/RESULT.txt` |
 
 ### Open on phone (laptop can be off)
 

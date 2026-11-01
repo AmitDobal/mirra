@@ -9,11 +9,11 @@ import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useOnboardingStore } from "@/features/onboarding";
 import { PersonaGrid, usePersonaStore } from "@/features/trainer";
-import { getCredits, type CreditsSnapshot } from "@/lib/api/credits";
 import type { MeEntitlement, MeUser } from "@/lib/api/me";
 import { clearSession } from "@/lib/auth";
 import { authClient } from "@/lib/auth/auth-client";
 import { getPurchases } from "@/lib/purchases";
+import { useCreditsStore } from "@/stores/credits-store";
 import { useMeStore } from "@/stores/me-store";
 import { usePlanStore } from "@/stores/plan-store";
 import { color } from "@/theme/tokens";
@@ -39,7 +39,6 @@ export const YouScreen = () => {
   const [subNote, setSubNote] = useState<string | null>(null);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
   const [plan, setPlan] = useState<LocalPlan | null>(null);
-  const [credits, setCredits] = useState<CreditsSnapshot | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
 
@@ -51,6 +50,15 @@ export const YouScreen = () => {
   const ensureMe = useMeStore((s) => s.ensureMe);
   const refreshMe = useMeStore((s) => s.refreshInBackground);
   const clearMe = useMeStore((s) => s.clear);
+
+  const credits = useCreditsStore((s) => s.credits);
+  const cachedCredits = useCreditsStore((s) => s.cachedCredits);
+  const hydrateCredits = useCreditsStore((s) => s.hydrate);
+  const ensureCredits = useCreditsStore((s) => s.ensureCredits);
+  const refreshCredits = useCreditsStore((s) => s.refreshInBackground);
+  const clearCredits = useCreditsStore((s) => s.clear);
+
+  const creditsMeter = credits ?? cachedCredits;
 
   const resetOnboarding = useOnboardingStore((s) => s.reset);
   const clearPlan = usePlanStore((s) => s.clear);
@@ -70,34 +78,39 @@ export const YouScreen = () => {
     setPlan(pl);
   }, []);
 
-  const reloadCredits = useCallback(async () => {
-    try {
-      setCredits(await getCredits());
-    } catch {
-      /* offline — keep prior meter */
-    }
-  }, []);
-
   useEffect(() => {
     void (async () => {
-      await hydrateMe();
+      await Promise.all([hydrateMe(), hydrateCredits()]);
       await reloadLocal();
       refreshMe();
-      void reloadCredits();
+      refreshCredits();
       void ensureMe().catch(() => undefined);
+      void ensureCredits().catch(() => undefined);
     })();
-  }, [ensureMe, hydrateMe, refreshMe, reloadCredits, reloadLocal]);
+  }, [
+    ensureCredits,
+    ensureMe,
+    hydrateCredits,
+    hydrateMe,
+    refreshCredits,
+    refreshMe,
+    reloadLocal,
+  ]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([reloadLocal(), ensureMe({ force: true }), reloadCredits()]);
+      await Promise.all([
+        reloadLocal(),
+        ensureMe({ force: true }),
+        ensureCredits({ force: true }),
+      ]);
     } catch {
       /* keep cache */
     } finally {
       setRefreshing(false);
     }
-  }, [ensureMe, reloadCredits, reloadLocal]);
+  }, [ensureCredits, ensureMe, reloadLocal]);
 
   const prefs = profile?.preferences;
   const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
@@ -139,7 +152,7 @@ export const YouScreen = () => {
   };
 
   const handleCreditsPress = () => {
-    if (credits && credits.remaining <= 0) openAiLimitSheet(credits.resetsAt);
+    if (creditsMeter && creditsMeter.remaining <= 0) openAiLimitSheet(creditsMeter.resetsAt);
   };
 
   const handleSignOut = () => {
@@ -150,6 +163,7 @@ export const YouScreen = () => {
         /* still clear local session */
       }
       await clearMe();
+      await clearCredits();
       await clearSession();
       resetOnboarding();
       clearPlan();
@@ -167,7 +181,7 @@ export const YouScreen = () => {
       />
 
       <Group title="AI credits">
-        <CreditsMeter credits={credits} onPress={handleCreditsPress} />
+        <CreditsMeter credits={creditsMeter} onPress={handleCreditsPress} />
       </Group>
 
       <View style={sx("mb-space-sm flex-row items-end justify-between gap-space-sm")}>

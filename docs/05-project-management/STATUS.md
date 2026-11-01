@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** Docs — user data sync/cache (`docs/03-engineering/user-data-sync-cache.md`). Merged polish **#38–#40** on `main` (me-store TTL, credits meter, progress R2 sync, stable week plan). **EAS pending** smoke republish after polish wave #38–#40 (last known update still #34/#35: https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab). Device reopen still to verify. Evidence `/tmp/mirra-qa/user-base-e2e/`.
+**Latest:** Credits meter SecureStore cache (no “Checking…” flash on relaunch). Polish **#38–#40** on `main`. Day-test iOS manifest: https://u.expo.dev/update/01a195ea-b64c-7c73-a1f6-2bc9f90d9e99. Evidence `/tmp/mirra-qa/credits-no-flash/`.
 
 | | |
 | --- | --- |

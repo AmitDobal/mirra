@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Camera, Plus } from "lucide-react-native";
+import { BarChart3, Camera, Plus } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -128,11 +128,22 @@ export const FuelScreen = () => {
 
   return (
     <ScreenScroll scrollRef={scrollRef} refreshing={refreshing} onRefresh={handleRefresh}>
-      <View style={sx("mb-space-md")}>
-        <Text style={sx("font-headline text-headline-lg text-on-surface")}>Fuel</Text>
-        <Text style={sx("font-body text-body-md text-on-surface-variant")}>
-          Target {target || "—"} kcal
-        </Text>
+      <View style={sx("mb-space-md flex-row items-center justify-between")}>
+        <View>
+          <Text style={sx("font-headline text-headline-lg text-on-surface")}>Fuel</Text>
+          <Text style={sx("font-body text-body-md text-on-surface-variant")}>
+            Target {target || "—"} kcal
+          </Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open nutrition history"
+          onPress={() => router.push("/(tabs)/history")}
+          style={sx("flex-row items-center gap-1.5 rounded-full bg-surface-container-high px-3 py-2")}
+        >
+          <BarChart3 size={16} color={color.primaryFixed} />
+          <Text style={sx("font-label text-label-md text-on-surface")}>History</Text>
+        </Pressable>
       </View>
 
       {tip ? (

@@ -42,3 +42,5 @@ export {
   setProfileWeight,
 } from "./weight-logs";
 export type { AddWeightLogInput } from "./weight-logs";
+export { listRollupDays, upsertRollupDays } from "./rollups";
+export type { RollupDay } from "./rollups";

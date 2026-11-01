@@ -23,3 +23,4 @@ export * from "./voice-cue";
 export * from "./weight";
 export * from "./attendance";
 export * from "./recipe-chat";
+export * from "./history";

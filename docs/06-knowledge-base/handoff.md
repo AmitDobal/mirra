@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-01 — Local full smoke PASS + deploy main 7db7c04
+
+**Done:** Local smoke PASS (inventory 14/14; API local PASS; iOS sim A–H PASS). Deployed from clean `origin/main` `7db7c04`: API Worker version `6c5afa9c-04e8-4c42-8070-7bad7c9e82b5` (no pending D1 migrations; `/health` 200, `/api/auth/ok` `{"ok":true}`). EAS `day-test` iOS update `01a197a9-4346-71e7-8087-e08f946edd5a`, group `e87ea211-4703-4e84-8eaf-286e37f5eccd`.
+
+**Phone:** https://u.expo.dev/update/01a197a9-4346-71e7-8087-e08f946edd5a
+
+**Watch out:** Prod Worker still has `ALLOW_DEV_USER_HEADER=true` (day-test only). First `d1 migrations apply` hit a transient 7403; retry succeeded.
+
+**Evidence:** `/tmp/mirra-qa/local-full-smoke-20261101/`
+
 ## 2026-11-01 — API #49 + EAS #47/#48 (prod verify)
 
 **Done:** Worker matches `origin/main` **`141fd02`** (#49 api-auth-harden). Curl: `/health` 200; `/v1/me` no auth **401**; `/api/auth/ok` → `{"ok":true}` only (no `google` field).

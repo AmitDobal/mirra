@@ -10,21 +10,21 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 
 | Piece | Value |
 | --- | --- |
-| API | https://mirra-api.amit-dobalwork.workers.dev — **`141fd02` (#49 api-auth-harden) deployed** |
+| API | https://mirra-api.amit-dobalwork.workers.dev — redeployed from clean `origin/main` **`7db7c04`**, Worker version `6c5afa9c-04e8-4c42-8070-7bad7c9e82b5` (D1: no pending migrations) |
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Auth probe | `GET /api/auth/ok` → `{"ok":true}` (no `google` field; #49) |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
 | Mobile bundle | **#56** mandatory signup + meal teaser (on #53/#54 funnel) |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/eae8d851-873e-4d04-ba9a-682f3235d7be |
-| iOS update ID | `01a196c3-a13f-7601-8b3f-86bfeedb7b7c` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a196c3-a13f-7601-8b3f-86bfeedb7b7c |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/e87ea211-4703-4e84-8eaf-286e37f5eccd |
+| iOS update ID | `01a197a9-4346-71e7-8087-e08f946edd5a` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a197a9-4346-71e7-8087-e08f946edd5a |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `mandatory signup + meal teaser #56 (bf47eac)` |
-| Smoke shots | `/tmp/mirra-qa/mandatory-signup-meal-teaser/` |
-| Bundle prove | Commit `bf47eac` (#56); Not now alert; meal teaser; meal generate deferred |
+| Message | `full local smoke PASS + redeploy main 7db7c04` |
+| Smoke shots | `/tmp/mirra-qa/local-full-smoke-20261101/` (inventory 14/14, API local PASS, iOS sim A–H PASS) |
+| Bundle prove | Commit `7db7c04` (includes #56 mandatory signup + meal teaser) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
 | Smoke note | Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md` |
 

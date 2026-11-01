@@ -78,6 +78,13 @@
       "when": 1762714800000,
       "tag": "0011_training_location",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1762801200000,
+      "tag": "0012_meal_vision_history",
+      "breakpoints": true
     }
   ]
 }

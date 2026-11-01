@@ -11,13 +11,13 @@ export const copy = {
   tabs: {
     today: "Today",
     fuel: "Fuel",
-    coach: "Coach",
+    exercise: "Exercise",
     progress: "Progress",
     you: "You",
   },
   stubs: {
     fuel: "Fuel",
-    coach: "Coach",
+    exercise: "Exercise",
     progress: "Progress",
     you: "You",
     comingSoon: "Coming soon.",

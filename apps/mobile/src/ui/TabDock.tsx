@@ -1,10 +1,10 @@
 import { router, usePathname, type Href } from "expo-router";
 import {
+  Dumbbell,
   Flame,
   Home,
   LineChart,
   User,
-  Zap,
   type LucideIcon,
 } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { copy } from "@/content/copy";
 import { color, radius, shadow, space } from "@/theme/tokens";
 
-type TabId = "today" | "fuel" | "coach" | "progress" | "you";
+type TabId = "today" | "exercise" | "fuel" | "progress" | "you";
 
 type TabDef = {
   id: TabId;
@@ -24,8 +24,13 @@ type TabDef = {
 
 const tabs: TabDef[] = [
   { id: "today", label: copy.tabs.today, href: "/(tabs)/today", Icon: Home },
+  {
+    id: "exercise",
+    label: copy.tabs.exercise,
+    href: "/(tabs)/exercise",
+    Icon: Dumbbell,
+  },
   { id: "fuel", label: copy.tabs.fuel, href: "/(tabs)/fuel", Icon: Flame },
-  { id: "coach", label: copy.tabs.coach, href: "/(tabs)/coach", Icon: Zap },
   {
     id: "progress",
     label: copy.tabs.progress,
@@ -37,7 +42,7 @@ const tabs: TabDef[] = [
 
 const activeTab = (path: string): TabId => {
   if (path.includes("fuel") || path.includes("history")) return "fuel";
-  if (path.includes("coach")) return "coach";
+  if (path.includes("exercise")) return "exercise";
   if (path.includes("progress")) return "progress";
   if (path.includes("you")) return "you";
   return "today";

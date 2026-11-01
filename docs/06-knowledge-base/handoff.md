@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — Ship gate PASS: funnel-v2 hard paywall + Stitch + gender (AMI-145/146/147, 6d49c50)
+
+**Done:** Merged via PR #57 `integrate/funnel-v2` → `origin/main` `6d49c50`. Conflicts: kept AMI-145 funnel-nav + no Continue-without-Pro; AMI-146 Stitch layouts/copy + privacy; AMI-147 `useOnboardingImagery` in PaywallHero/Generating. Worktrees ami-145/146/147 + integrate removed after origin confirm. Auth unit tests 19/19; tsc clean.
+
+**Phone:** https://u.expo.dev/update/01a1991e-25a1-7a69-9d7a-d0bf133028f3 (group `e39aff31-5ce5-4884-8970-99b4a821c96a`, `ALLOW_DEV_AUTH=true`).
+
+**Smoke PASS (AMI-148):** Expo Go 58 + Maestro — welcome Stitch → sex required → female imagery week-reveal → auth (soft-skip CTA absent) → Dev Tester → tabs; cold relaunch → hard paywall (trial/restore/terms/privacy only). Evidence `docs/smoke/ami-funnel-v2/RESULT.md`.
+
+**Not driven:** Live Google B/C; delete-account path. Female assets still PLACEHOLDER-* until Stitch exports.
+
 ## 2026-11-02 — Ship gate PASS: funnel gates + Exercise AI plan (AMI-143/144, 97cc841)
 
 **Done:** HEAD == origin/main `97cc841`. Worktrees mirra-wt-ami-143/144 removed (branches merged + on origin). tsc clean, auth unit tests 14/14. EAS `day-test` iOS `01a198f6-daa4-7bc7-bf48-ac3f256baade`, group `d07aed29-3d38-4f2d-a9aa-83659d5a9e68`, published with `EXPO_PUBLIC_ALLOW_DEV_AUTH=true` (also added to `npm run update:day-test`).

@@ -1,0 +1,22 @@
+appId: host.exp.Exponent
+---
+# After cold relaunch with Dev session (onboarded, not entitled): paywall, no soft-skip CTA.
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "This is the developer menu"
+    commands:
+      - tapOn: "Continue"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
+      - tapOn: "Close"
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Start 7-day"
+    timeout: 45000
+- assertVisible: "Start 7-day free trial"
+- assertNotVisible: "Continue without Pro"
+- takeScreenshot: D-01-paywall-no-soft-skip

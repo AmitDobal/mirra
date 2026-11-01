@@ -1,0 +1,101 @@
+appId: host.exp.Exponent
+---
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "This is the developer menu"
+    commands:
+      - tapOn: "Continue"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
+      - tapOn: "Close"
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Continue →"
+    timeout: 45000
+- takeScreenshot: A-00-welcome-stitch
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Primary outcome"
+    timeout: 15000
+- tapOn: "Lose fat"
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- tapOn: "New"
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Biological sex"
+    timeout: 15000
+- takeScreenshot: A-00b-body-stats-sex-required
+- assertVisible: "Female"
+- assertVisible: "Male"
+- tapOn: "Female"
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Skip target weight"
+    timeout: 12000
+- tapOn: "Skip target weight"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "What physique are you chasing?"
+    timeout: 12000
+- tapOn: "Skip for now"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Where will you train?"
+    timeout: 12000
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Days you can train"
+    timeout: 12000
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Tell Mirra about your days"
+    timeout: 12000
+- tapOn: "Skip for now"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "How you eat"
+    timeout: 12000
+- tapOn: "Vegetarian"
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Food you eat"
+    timeout: 12000
+- tapOn: "Indian"
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Pick your trainer."
+    timeout: 12000
+- takeScreenshot: A-00c-trainer-stitch
+- tapOn: "Continue →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Mirror selfie"
+    timeout: 12000
+- tapOn: "Skip for now"
+- extendedWaitUntil:
+    visible: "Your week is ready"
+    timeout: 60000
+- takeScreenshot: A-01-week-reveal-female
+- takeScreenshot: A-02-week-reveal
+- assertVisible: "Your week is ready"
+- tapOn: "Start with Mirra →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Save your plan"
+    timeout: 15000
+- assertVisible: "Continue with Google"
+- assertNotVisible: "Start 7-day trial"
+- assertNotVisible: "Continue without Pro"
+- takeScreenshot: A-03-auth-after-reveal

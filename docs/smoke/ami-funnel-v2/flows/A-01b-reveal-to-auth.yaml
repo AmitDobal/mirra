@@ -1,0 +1,16 @@
+appId: host.exp.Exponent
+---
+- extendedWaitUntil:
+    visible: "Your week is ready"
+    timeout: 20000
+- takeScreenshot: A-02-week-reveal
+- assertVisible: "Start with Mirra →"
+- tapOn: "Start with Mirra →"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Save your plan"
+    timeout: 15000
+- assertVisible: "Continue with Google"
+- assertNotVisible: "Start 7-day trial"
+- assertNotVisible: "Continue without Pro"
+- takeScreenshot: A-03-auth-after-reveal

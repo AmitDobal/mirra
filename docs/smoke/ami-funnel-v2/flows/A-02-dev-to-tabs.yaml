@@ -1,0 +1,27 @@
+appId: host.exp.Exponent
+---
+# From auth: Dev Tester with ALLOW_DEV_AUTH → tabs (skips paywall). Soft-skip CTA must be absent.
+- extendedWaitUntil:
+    visible: "Save your plan"
+    timeout: 20000
+- assertNotVisible: "Continue without Pro"
+- tapOn:
+    point: "50%,63%"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Day-test only"
+    commands:
+      - tapOn: "Day-test only.*"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Dev Tester"
+    commands:
+      - tapOn: ".*Dev Tester.*"
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "TODAY"
+    timeout: 30000
+- assertNotVisible: "Continue without Pro"
+- takeScreenshot: A-05-tabs-after-dev

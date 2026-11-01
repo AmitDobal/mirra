@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** EAS **`01a198f6`** (AMI-143/144 funnel gates + Exercise AI plan @ `97cc841`, `ALLOW_DEV_AUTH=true`). Phone: https://u.expo.dev/update/01a198f6-daa4-7bc7-bf48-ac3f256baade. Prior: `01a198d6` (AMI-141/142). Smoke `docs/smoke/ami-funnel/RESULT.md`. Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md`. API still **`141fd02`**.
+**Latest:** EAS **`01a1991e`** (funnel-v2 AMI-145/146/147 @ `6d49c50`, `ALLOW_DEV_AUTH=true`). Phone: https://u.expo.dev/update/01a1991e-25a1-7a69-9d7a-d0bf133028f3. Smoke `docs/smoke/ami-funnel-v2/RESULT.md`. Prior: `01a198f6` (AMI-143/144). API still **`141fd02`**.
 
 | | |
 | --- | --- |
@@ -9,8 +9,8 @@
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
 | API | https://mirra-api.amit-dobalwork.workers.dev — **`141fd02` (#49) deployed** |
-| Mobile | Expo SDK **58** — EAS **`01a198f6`** (AMI-143/144 @ `97cc841`) |
-| Mobile day-test | https://u.expo.dev/update/01a198d6-6fd6-706d-a6b5-3f5ebe644e2c · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| Mobile | Expo SDK **58** — EAS **`01a1991e`** (funnel-v2 AMI-145/146/147 @ `6d49c50`) |
+| Mobile day-test | https://u.expo.dev/update/01a1991e-25a1-7a69-9d7a-d0bf133028f3 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

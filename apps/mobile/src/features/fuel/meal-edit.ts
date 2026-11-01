@@ -2,6 +2,8 @@ import { deleteLocalMeal, updateLocalMeal } from "@/db";
 import { deleteMeal, MirraApiError, patchMeal, type MealSlot } from "@/lib/api";
 import { errorMessage, logger } from "@/lib/logger";
 
+import { useHistoryStore } from "@/features/history/history-store";
+
 import { useFuelStore, type LocalMeal } from "./fuel-store";
 import { useMealPlanStore } from "./meal-plan-store";
 
@@ -51,6 +53,7 @@ export const editMeal = async (meal: LocalMeal, values: MealEditValues): Promise
     mealSlot: values.slot,
   }).catch((err) => logger.warn("fuel.edit_meal_local_failed", { message: errorMessage(err) }));
   await useFuelStore.getState().hydrate();
+  useHistoryStore.getState().invalidate();
 };
 
 /** Delete a logged meal: optimistic UI → DELETE /v1/meals/:id → local SQLite mirror. */
@@ -72,4 +75,5 @@ export const removeMeal = async (meal: LocalMeal): Promise<void> => {
   );
   // A deleted plan meal re-opens in "Today's plan".
   await Promise.all([useFuelStore.getState().hydrate(), useMealPlanStore.getState().hydrate()]);
+  useHistoryStore.getState().invalidate();
 };

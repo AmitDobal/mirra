@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S27 — Swap or Add Exercise</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              lime: '#D8FF5C',
+              lavender: '#C3B1E1',
+              dark: '#0E0E0E',
+              card: '#18181A',
+              cardSubtle: '#212124',
+              border: '#2A2A2E',
+              muted: '#8E8E93',
+            }
+          },
+          fontFamily: {
+            heading: ['Space Grotesk', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050505;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-heading {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Hide scrollbar for tabs */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex justify-center items-end sm:items-center p-0 sm:p-4 bg-black/90">
+
+  <!-- Screen Container (iOS Viewport Mockup) -->
+  <div class="relative w-full max-w-[412px] h-[915px] max-h-screen bg-[#0A0A0A] overflow-hidden flex flex-col justify-end shadow-2xl rounded-none sm:rounded-[44px] border border-white/5">
+
+    <!-- Background Simulated Inactive Workout Screen (Under Scrim) -->
+    <div class="absolute inset-0 z-0 opacity-25 filter blur-[3px] pointer-events-none scale-105">
+      <div class="p-6 pt-12 space-y-4">
+        <div class="flex justify-between items-center text-white/60">
+          <span class="text-xs uppercase tracking-widest font-heading font-semibold">Live Session</span>
+          <span class="text-xs font-mono">04:30</span>
+        </div>
+        <div class="h-44 rounded-2xl bg-neutral-800 w-full"></div>
+        <div class="h-14 rounded-xl bg-neutral-800/80 w-full"></div>
+        <div class="h-28 rounded-xl bg-neutral-800/60 w-full"></div>
+      </div>
+    </div>
+
+    <!-- Dark Scrim Overlay -->
+    <div class="absolute inset-0 bg-black/75 z-10 backdrop-blur-[2px]"></div>
+
+    <!-- Bottom Sheet Main Surface -->
+    <div class="relative z-20 w-full max-h-[860px] bg-[#121214] rounded-t-[36px] flex flex-col border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
+      
+      <!-- Top Grab Bar & Header Section -->
+      <div class="pt-3 pb-3 px-5 border-b border-white/[0.06] bg-[#121214]/95 backdrop-blur-md sticky top-0 z-30">
+        <!-- Grab Handle -->
+        <div class="w-12 h-1.5 bg-neutral-700/80 rounded-full mx-auto mb-3"></div>
+
+        <!-- Sheet Header Bar -->
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-brand-lime animate-pulse"></span>
+              <span class="text-[11px] font-mono tracking-wider uppercase text-brand-lime font-semibold">Movement Replacement</span>
+            </div>
+            <h1 class="text-[22px] font-heading font-bold text-white tracking-tight leading-snug">
+              Swap exercise
+            </h1>
+          </div>
+          <button class="w-9 h-9 rounded-full bg-neutral-800/90 text-neutral-400 hover:text-white flex items-center justify-center transition-colors active:scale-95">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        <!-- Target Current Exercise Context Badge -->
+        <div class="flex items-center justify-between bg-black/40 border border-white/5 rounded-xl px-3 py-2 mb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[11px] text-neutral-400 font-medium">Replacing:</span>
+            <span class="text-xs text-white font-semibold font-heading">Barbell Bench Press</span>
+            <span class="text-[10px] bg-neutral-800 text-neutral-300 px-1.5 py-0.5 rounded font-mono">4 × 8</span>
+          </div>
+          <span class="text-[11px] text-brand-lavender font-medium">Chest Prime</span>
+        </div>
+
+        <!-- Search Input Bar -->
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined absolute left-3.5 text-neutral-400 text-[20px] pointer-events-none">search</span>
+          <input 
+            type="text" 
+            placeholder="Search exercises or equipment..." 
+            value="Chest"
+            class="w-full bg-[#1A1A1E] text-white text-sm rounded-2xl pl-10 pr-10 py-2.5 border border-white/10 placeholder:text-neutral-500 focus:outline-none focus:border-brand-lime focus:ring-1 focus:ring-brand-lime transition-all"
+          />
+          <button class="absolute right-3 text-neutral-400 hover:text-white flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">cancel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Sheet Content -->
+      <div class="flex-1 overflow-y-auto px-5 py-4 space-y-6 no-scrollbar pb-24">
+
+        <!-- SECTION 1: TOP 3 SMART ALTERNATIVE CARDS -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs uppercase tracking-wider font-heading font-bold text-neutral-200">
+                Mirra AI Alternatives
+              </span>
+              <span class="text-[10px] bg-brand-lime/15 text-brand-lime px-2 py-0.5 rounded-full font-semibold font-mono">
+                Preserves Volume
+              </span>
+            </div>
+            <span class="text-[11px] text-neutral-400">Equal Stimulus</span>
+          </div>
+
+          <div class="space-y-3">
+
+            <!-- Card 1: Dumbbell Bench Press (Recommended Primary Swap) -->
+            <div class="relative bg-[#19191D] hover:bg-[#1E1E23] border-2 border-brand-lime/80 rounded-2xl p-3.5 transition-all shadow-lg shadow-black/40 group">
+              <!-- Recommended Tag -->
+              <div class="absolute -top-2.5 right-4 bg-brand-lime text-black text-[10px] font-bold font-mono uppercase px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px] fill-icon leading-none">bolt</span>
+                Best Match
+              </div>
+
+              <div class="flex gap-3 items-start">
+                <!-- Photo Thumbnail -->
+                <div class="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/10">
+                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQ-POFUOA8NT_WvjCiV8uMoA7Qd3_VHD77ed0iu7-VVW2_cCPZ9lkLvxe6IyU0F9oasOEB_vJ78aiVXowm3v7zf0ntV66KM9_NZdpvgpxDgAVpWwES2ljLxs8TUjWOIpZgDImiTSIijxoAMib71Uhv0BNDJT9avmGzxgloUWl3Zt-ISb0I-Vpj_uU-AWOaRRwkr5fHItqIUF-5q6Vt7COOL2Cju20sViXsh-8AfBKRvj7kUqWvTHe_Qp6PQMZlcsTUP9ERnkRgZf1g" alt="Flat Dumbbell Bench Press" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <span class="absolute bottom-1 left-1.5 text-[9px] font-mono text-white/90 bg-black/60 px-1 rounded">DB</span>
+                </div>
+
+                <!-- Exercise Specs & Rationale -->
+                <div class="flex-1 min-w-0 pr-1">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-heading font-bold text-white tracking-tight truncate">
+                      Flat Dumbbell Press
+                    </h3>
+                  </div>
+
+                  <!-- Equipment & Target Meta -->
+                  <div class="flex items-center gap-2 mt-1 mb-2">
+                    <span class="text-[11px] font-medium text-brand-lavender bg-brand-lavender/10 px-2 py-0.5 rounded-md">
+                      Dumbbells
+                    </span>
+                    <span class="text-[11px] text-neutral-400 font-medium">
+                      4 × 8-10 reps
+                    </span>
+                    <span class="text-[11px] text-neutral-400">·</span>
+                    <span class="text-[11px] text-neutral-400">
+                      28 kg each
+                    </span>
+                  </div>
+
+                  <!-- Why this swap insight -->
+                  <div class="bg-black/40 rounded-lg p-2 border border-white/5 flex items-start gap-1.5 mb-3">
+                    <span class="material-symbols-outlined text-brand-lime text-[15px] flex-shrink-0 mt-0.5">auto_awesome</span>
+                    <p class="text-[11.5px] leading-tight text-neutral-300">
+                      <span class="text-brand-lime font-semibold">Why this swap:</span> Matches barbell chest activation with greater glenohumeral freedom & deeper stretch.
+                    </p>
+                  </div>
+
+                  <!-- Action Button -->
+                  <div class="flex items-center justify-between pt-1">
+                    <span class="text-[11px] text-neutral-400 font-mono">100% hypertrophy stimulus</span>
+                    <button class="bg-brand-lime hover:bg-[#cbf54e] active:scale-95 text-black font-heading font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md shadow-brand-lime/20 flex items-center gap-1.5">
+                      <span>Select</span>
+                      <span class="material-symbols-outlined text-[15px] font-bold">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Machine Chest Press -->
+            <div class="relative bg-[#19191D] hover:bg-[#1E1E23] border border-white/10 hover:border-white/20 rounded-2xl p-3.5 transition-all shadow-md group">
+              <div class="flex gap-3 items-start">
+                <!-- Photo Thumbnail -->
+                <div class="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/10">
+                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDth8A7xNkwbK3Sto9uMtRW2qJ9texp4Zlz42_6BabcuFPeb9RAWH5cspJWstsJckKzgpCNPvFFq6xvhBmM0tYtOvnlOm8hXcBhBe2dzbI4kClUob8nurh9D2H8F-pzBYN9YJgw84KXYrpCk5jO8-CMVT5pL4iHpNtk0ysLllqZske0R8LOFwyExBZNYlsQ4cYQosLjSuqLYggRDAQcYdu3rl89zKHPc_tOUKWCQNhWYIypUbRJG2ZcdorcKyl03z_BWb2QXGkFbm58" alt="Machine Chest Press" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <span class="absolute bottom-1 left-1.5 text-[9px] font-mono text-white/90 bg-black/60 px-1 rounded">Plate</span>
+                </div>
+
+                <!-- Exercise Specs & Rationale -->
+                <div class="flex-1 min-w-0 pr-1">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-heading font-bold text-white tracking-tight truncate">
+                      Plate-Loaded Chest Press
+                    </h3>
+                  </div>
+
+                  <!-- Equipment & Target Meta -->
+                  <div class="flex items-center gap-2 mt-1 mb-2">
+                    <span class="text-[11px] font-medium text-brand-lavender bg-brand-lavender/10 px-2 py-0.5 rounded-md">
+                      Machine / Gym
+                    </span>
+                    <span class="text-[11px] text-neutral-400 font-medium">
+                      4 × 10 reps
+                    </span>
+                    <span class="text-[11px] text-neutral-400">·</span>
+                    <span class="text-[11px] text-neutral-400">
+                      70 kg pin
+                    </span>
+                  </div>
+
+                  <!-- Why this swap insight -->
+                  <div class="bg-black/40 rounded-lg p-2 border border-white/5 flex items-start gap-1.5 mb-3">
+                    <span class="material-symbols-outlined text-brand-lime text-[15px] flex-shrink-0 mt-0.5">auto_awesome</span>
+                    <p class="text-[11.5px] leading-tight text-neutral-300">
+                      <span class="text-brand-lime font-semibold">Why this swap:</span> Zero stabilizer fatigue. Allows training to true muscular failure safely if solo.
+                    </p>
+                  </div>
+
+                  <!-- Action Button -->
+                  <div class="flex items-center justify-between pt-1">
+                    <span class="text-[11px] text-neutral-400 font-mono">96% volume preservation</span>
+                    <button class="bg-brand-lime hover:bg-[#cbf54e] active:scale-95 text-black font-heading font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md shadow-brand-lime/20 flex items-center gap-1.5">
+                      <span>Select</span>
+                      <span class="material-symbols-outlined text-[15px] font-bold">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Deficit Weighted Push-Up Variation -->
+            <div class="relative bg-[#19191D] hover:bg-[#1E1E23] border border-white/10 hover:border-white/20 rounded-2xl p-3.5 transition-all shadow-md group">
+              <div class="flex gap-3 items-start">
+                <!-- Photo Thumbnail -->
+                <div class="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/10">
+                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMu1yYdZdBZnP0SVnDdAgUqxEYMFD2YNa7rRZZrzw5H4aRc8T_avLYIV4AKVhgE0AyVkPa04MQ9PXoV4NG9ovGSPfrauaN_wznsoAldRWMlodHyZwO5moX2qUlrsfkNTBtPpz5mrehKcvuPO8kBH0vpTToeU2IUs1ziTvxzGU9-vzbm1zy7Fwb9Oieg0WnZ49s9aJc3T72kgw11KX3t8Go8heJzsAA8l5Wsg2i3_v5X3WVPs3Qv3ca-03JTkHAs5RwzJdJHowyaBff" alt="Deficit Weighted Push-up" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <span class="absolute bottom-1 left-1.5 text-[9px] font-mono text-white/90 bg-black/60 px-1 rounded">Body/Vest</span>
+                </div>
+
+                <!-- Exercise Specs & Rationale -->
+                <div class="flex-1 min-w-0 pr-1">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-heading font-bold text-white tracking-tight truncate">
+                      Deficit Weighted Push-Up
+                    </h3>
+                  </div>
+
+                  <!-- Equipment & Target Meta -->
+                  <div class="flex items-center gap-2 mt-1 mb-2">
+                    <span class="text-[11px] font-medium text-brand-lavender bg-brand-lavender/10 px-2 py-0.5 rounded-md">
+                      Calisthenics / Blocks
+                    </span>
+                    <span class="text-[11px] text-neutral-400 font-medium">
+                      4 × 12 reps
+                    </span>
+                    <span class="text-[11px] text-neutral-400">·</span>
+                    <span class="text-[11px] text-neutral-400">
+                      RPE 8.5
+                    </span>
+                  </div>
+
+                  <!-- Why this swap insight -->
+                  <div class="bg-black/40 rounded-lg p-2 border border-white/5 flex items-start gap-1.5 mb-3">
+                    <span class="material-symbols-outlined text-brand-lime text-[15px] flex-shrink-0 mt-0.5">auto_awesome</span>
+                    <p class="text-[11.5px] leading-tight text-neutral-300">
+                      <span class="text-brand-lime font-semibold">Why this swap:</span> Ideal when benches are busy. Serratus engagement + intense clavicular pec pump.
+                    </p>
+                  </div>
+
+                  <!-- Action Button -->
+                  <div class="flex items-center justify-between pt-1">
+                    <span class="text-[11px] text-neutral-400 font-mono">High scapular health score</span>
+                    <button class="bg-brand-lime hover:bg-[#cbf54e] active:scale-95 text-black font-heading font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md shadow-brand-lime/20 flex items-center gap-1.5">
+                      <span>Select</span>
+                      <span class="material-symbols-outlined text-[15px] font-bold">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECTION 2: DIVIDER "OR ADD FROM LIBRARY" -->
+        <div class="relative py-2">
+          <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="w-full border-t border-white/10"></div>
+          </div>
+          <div class="relative flex justify-center">
+            <span class="bg-[#121214] px-4 text-xs font-heading font-bold uppercase tracking-wider text-neutral-400">
+              Or add from library
+            </span>
+          </div>
+        </div>
+
+        <!-- SECTION 3: HORIZONTAL MUSCLE CHIPS -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Filter by target muscle</span>
+            <span class="text-[11px] text-brand-lime font-medium">180+ movements</span>
+          </div>
+
+          <!-- Horizontal Filter Pills -->
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            <button class="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-brand-lime text-black font-heading font-bold text-xs shadow-sm">
+              Chest (Prime)
+            </button>
+            <button class="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 font-heading font-medium text-xs border border-white/5 transition-colors">
+              Shoulders
+            </button>
+            <button class="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 font-heading font-medium text-xs border border-white/5 transition-colors">
+              Triceps
+            </button>
+            <button class="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 font-heading font-medium text-xs border border-white/5 transition-colors">
+              Upper Back
+            </button>
+            <button class="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 font-heading font-medium text-xs border border-white/5 transition-colors">
+              Lats
+            </button>
+            <button class="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 font-heading font-medium text-xs border border-white/5 transition-colors">
+              Core
+            </button>
+          </div>
+        </div>
+
+        <!-- SECTION 4: SEARCH RESULT ROWS WITH PHOTOS -->
+        <div class="space-y-2.5">
+
+          <!-- Row 1: Standing Cable Chest Fly -->
+          <div class="flex items-center justify-between bg-[#17171A] hover:bg-[#1D1D21] border border-white/5 rounded-2xl p-2.5 transition-colors group">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/10">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFusA25OI-nO_AVEnnJApztgSTP0L-ZgDAgrZV9mGu7ArFBRVXchfPiv1SJa48E45sKS1h9BGZJ7D0qFIPrdYQhG5SyrfQQV10FqxHztfo5urx-eX_LCYrdNNUcH7VgzwDUl4Mtuq5OKJ6q-tCn9wb6PSiwNlE85rDYAwaaTt_fhNSopiFaQTi9RsBfNzPYfcCmMlKQu2p5WoED1brP1Fa_XewnrKe_PR30478okj0aNddXHA5wL-yl08MS-YXQ_wVG0JiZbcpTewr" alt="Standing Cable Chest Fly" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-sm font-heading font-semibold text-white tracking-tight truncate">
+                  Standing Cable Fly
+                </h4>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-[11px] text-brand-lavender">Cable Stack</span>
+                  <span class="text-[11px] text-neutral-500">·</span>
+                  <span class="text-[11px] text-neutral-400">Peak Contraction</span>
+                </div>
+                <div class="text-[10px] text-neutral-500 font-mono mt-0.5">Isolated sternal fibers</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pl-2">
+              <button class="w-10 h-10 rounded-xl bg-neutral-800 hover:bg-brand-lime hover:text-black text-white flex items-center justify-center transition-colors active:scale-90" title="Add as extra exercise">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+              </button>
+              <button class="px-3 py-2 rounded-xl bg-neutral-800/90 hover:bg-brand-lime hover:text-black text-neutral-200 text-xs font-heading font-semibold transition-all active:scale-95" title="Swap with Barbell Bench Press">
+                Swap
+              </button>
+            </div>
+          </div>
+
+          <!-- Row 2: Incline Dumbbell Bench Press -->
+          <div class="flex items-center justify-between bg-[#17171A] hover:bg-[#1D1D21] border border-white/5 rounded-2xl p-2.5 transition-colors group">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-900 border border-white/10">
+                <img src="https://lh3.googleusercontent.com/aida/AEtjO1VJr1wc8xcydAGTCchkiNfGmxgpO2LqqWj-uvb7q1moRoPPYZvL04rM0HuTIPnw2HKMrdSe1SLAdStKaQmnoDsDHxifoHU9-e3yKSL-VLe0MOMsSFWn8R9oFJvAjHDxXpHsuSrkA_q0eX6YczRy43fsmA_ioW8i7GEnPwyGox3JcB5LHdVSZJBUded5ops9Cp5g1ILSCJhtzuTmk-plShTm1uK0Vvay-b9bGj8neQ7WDtM-5rlrvOjVbyQ" alt="Incline Dumbbell Bench Press" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-sm font-heading font-semibold text-white tracking-tight truncate">
+                  Incline DB Bench Press
+                </h4>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-[11px] text-brand-lavender">Adjustable Bench</span>
+                  <span class="text-[11px] text-neutral-500">·</span>
+                  <span class="text-[11px] text-neutral-400">Upper Pec Focus</span>
+                </div>
+                <div class="text-[10px] text-neutral-500 font-mono mt-0.5">30° angle target load</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pl-2">
+              <button class="w-10 h-10 rounded-xl bg-neutral-800 hover:bg-brand-lime hover:text-black text-white flex items-center justify-center transition-colors active:scale-90" title="Add as extra exercise">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+              </button>
+              <button class="px-3 py-2 rounded-xl bg-neutral-800/90 hover:bg-brand-lime hover:text-black text-neutral-200 text-xs font-heading font-semibold transition-all active:scale-95" title="Swap with Barbell Bench Press">
+                Swap
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Sticky Bottom Bar: Cancel Text Button & Sheet Base -->
+      <div class="absolute bottom-0 left-0 right-0 py-3.5 px-6 bg-[#121214]/95 backdrop-blur-lg border-t border-white/10 flex items-center justify-center z-30">
+        <button class="text-neutral-400 hover:text-white font-heading font-semibold text-sm tracking-wide transition-colors py-1 px-4 active:scale-95">
+          Cancel
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

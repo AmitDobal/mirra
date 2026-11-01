@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>S26 — Exercise Detail</title>
+  <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              lime: '#d8ff5c',
+              limeHover: '#c8ef4c',
+              lavender: '#c3b1e1',
+              dark: '#0e0e0e',
+              card: '#161616',
+              cardBorder: '#232323',
+              muted: '#8e8e93',
+              pill: '#1e1e1e'
+            }
+          },
+          fontFamily: {
+            grotesk: ['"Space Grotesk"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0e0e0e;
+      color: #f5f5f7;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-grotesk {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#0e0e0e] text-[#f5f5f7] flex justify-center selection:bg-[#d8ff5c] selection:text-black">
+  <div class="relative w-full max-w-[430px] min-h-screen pb-32 flex flex-col bg-[#0e0e0e] overflow-x-hidden">
+
+    <!-- Top Chrome / Header Navigation -->
+    <header class="sticky top-0 z-30 flex items-center justify-between px-5 pt-12 pb-3 bg-[#0e0e0e]/85 backdrop-blur-md border-b border-[#1c1c1e]/60">
+      <!-- Close X Button -->
+      <button class="w-10 h-10 rounded-full bg-[#1c1b1b] border border-[#2b2b2b] flex items-center justify-center text-white/90 active:scale-95 transition-transform" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Center Status / Breadcrumb Badge -->
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-[#191919] border border-[#272727]">
+        <span class="w-2 h-2 rounded-full bg-[#d8ff5c] animate-pulse"></span>
+        <span class="text-[11px] font-grotesk tracking-widest uppercase text-white/80 font-semibold">Mirra Protocol · Lift Hub</span>
+      </div>
+
+      <!-- Trailing Action: Info or Bookmark -->
+      <button class="w-10 h-10 rounded-full bg-[#1c1b1b] border border-[#2b2b2b] flex items-center justify-center text-white/80 active:scale-95 transition-transform" aria-label="Exercise Analytics">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main Scrollable Content -->
+    <main class="flex-1 px-5 pt-3 space-y-6">
+
+      <!-- 1) Hero Photo Container (Athlete Bench Press) with Video Play Overlay -->
+      <section class="relative w-full aspect-[16/10] rounded-3xl overflow-hidden border border-[#262626] shadow-[0_16px_36px_rgba(0,0,0,0.65)] group bg-[#161616]">
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6o0t3mkikK_RAk8J-tTmDJWplqluPMOGiwUjUS4Yf2PFyHQW0yd6pRxGYDDSvUBubdmPZZjom_I9kElsYKNQhgR1uozf7ddLwJ7tzNNg6UEBtbiaaPU5NJzEzJXI4N61u5oJ_AqX1l4PA4dsaLOa12itcaYO0ci8tT57UgZQWm2gVlCYfhWNN_bgrx33_dkRF__EL0n7wA0PEPCbzcSSjEbWKh-uYrgpQyX3-xTOun0u7U1TDZ9lXlpIZI1nTt8VmU5nXJckLu4Wh"
+          alt="Athlete executing Barbell Bench Press"
+          class="w-full h-full object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
+        />
+        <!-- Atmospheric Vignette & Contrast Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e]/20 to-black/30 pointer-events-none"></div>
+
+        <!-- Vision / Form Detection Corner Indicator -->
+        <div class="absolute top-3.5 left-3.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-grotesk font-semibold text-[#d8ff5c] tracking-wide">
+          <svg class="w-3 h-3 text-[#d8ff5c]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+          FORM CADENCE ENGINE
+        </div>
+
+        <!-- Subtle Play Overlay for future video demo -->
+        <button class="absolute inset-0 m-auto w-14 h-14 rounded-full bg-black/55 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/95 shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 group-hover:bg-[#d8ff5c] group-hover:text-black group-hover:border-[#d8ff5c]" aria-label="Play exercise demonstration">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 fill-current translate-x-0.5" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+
+        <!-- Angle Badge in bottom corner -->
+        <div class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/65 backdrop-blur-md border border-white/10 text-[11px] font-mono font-medium text-white/70">
+          4K HD · 60 FPS
+        </div>
+      </section>
+
+      <!-- 2) Exercise Title & Attribute Chips -->
+      <section class="space-y-2.5">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-2 h-2 rounded-full bg-[#d8ff5c]"></span>
+          <span class="text-xs font-grotesk tracking-widest uppercase text-[#d8ff5c] font-semibold">Primary Movement</span>
+        </div>
+        <h1 class="text-3xl font-extrabold font-grotesk tracking-tight text-white leading-tight">
+          Barbell Bench Press
+        </h1>
+
+        <!-- Filter Chips -->
+        <div class="flex flex-wrap items-center gap-2 pt-1">
+          <span class="px-3 py-1 rounded-full bg-[#1b1b1b] border border-[#2d2d2d] text-xs font-semibold text-white/90">
+            Chest
+          </span>
+          <span class="px-3 py-1 rounded-full bg-[#1b1b1b] border border-[#2d2d2d] text-xs font-semibold text-white/90">
+            Barbell
+          </span>
+          <span class="px-3 py-1 rounded-full bg-[#201d26] border border-[#3b3249] text-xs font-semibold text-[#c3b1e1]">
+            Intermediate
+          </span>
+          <span class="px-3 py-1 rounded-full bg-[#151d10] border border-[#2a3c18] text-xs font-semibold text-[#d8ff5c]">
+            Compound Hypertrophy
+          </span>
+        </div>
+      </section>
+
+      <!-- 3) Prescription Row: 4 sets · 8 reps · 80 kg · 90s rest -->
+      <section class="bg-[#151515] border border-[#242424] rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between pb-3 border-b border-[#222222]">
+          <span class="text-[11px] font-grotesk tracking-wider uppercase text-white/60 font-semibold">Today's Target Prescription</span>
+          <span class="text-[11px] font-mono text-[#d8ff5c] bg-[#d8ff5c]/10 px-2 py-0.5 rounded-full border border-[#d8ff5c]/25">Cycle 08 · Wk 3</span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 pt-3.5 text-center">
+          <!-- Sets -->
+          <div class="flex flex-col items-center">
+            <span class="text-[26px] font-bold font-grotesk tracking-tight text-white leading-none">
+              4
+            </span>
+            <span class="text-[11px] font-medium text-white/60 uppercase tracking-wider mt-1.5">
+              Sets
+            </span>
+          </div>
+
+          <!-- Reps -->
+          <div class="flex flex-col items-center border-l border-[#222]">
+            <span class="text-[26px] font-bold font-grotesk tracking-tight text-[#d8ff5c] leading-none">
+              8
+            </span>
+            <span class="text-[11px] font-medium text-white/60 uppercase tracking-wider mt-1.5">
+              Reps
+            </span>
+          </div>
+
+          <!-- Load -->
+          <div class="flex flex-col items-center border-l border-[#222]">
+            <div class="flex items-baseline justify-center">
+              <span class="text-[26px] font-bold font-grotesk tracking-tight text-white leading-none">
+                80
+              </span>
+              <span class="text-[11px] font-grotesk font-semibold text-white/60 ml-0.5">kg</span>
+            </div>
+            <span class="text-[11px] font-medium text-white/60 uppercase tracking-wider mt-1.5">
+              Target
+            </span>
+          </div>
+
+          <!-- Rest -->
+          <div class="flex flex-col items-center border-l border-[#222]">
+            <div class="flex items-baseline justify-center">
+              <span class="text-[26px] font-bold font-grotesk tracking-tight text-[#c3b1e1] leading-none">
+                90
+              </span>
+              <span class="text-[11px] font-grotesk font-semibold text-[#c3b1e1] ml-0.5">s</span>
+            </div>
+            <span class="text-[11px] font-medium text-white/60 uppercase tracking-wider mt-1.5">
+              Rest
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5) Cue Callout Card: Coaching Cue Line (Placed prominently for lifters) -->
+      <section class="relative overflow-hidden rounded-2xl bg-[#19191d] border border-[#2b2738] p-4 flex items-start gap-3.5 shadow-md">
+        <div class="w-9 h-9 rounded-xl bg-[#c3b1e1]/15 border border-[#c3b1e1]/30 flex-shrink-0 flex items-center justify-center text-[#c3b1e1]">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div class="flex-1 space-y-1">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-grotesk tracking-wider uppercase font-bold text-[#c3b1e1]">Coach Form Cue</h4>
+            <span class="text-[10px] font-mono text-white/50">Mirra Intelligence</span>
+          </div>
+          <p class="text-[13px] leading-snug font-medium text-white/90">
+            Retract scapulae into bench; drive through heels and touch lower sternum before lockout.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4) HOW TO Section: Numbered 1–5 Short Instruction Steps (Plus Jakarta Sans) -->
+      <section class="space-y-3 pt-1">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-grotesk tracking-wider uppercase font-bold text-white/80">
+            Execution Protocol
+          </h3>
+          <span class="text-[11px] font-mono text-white/50">5 Precision Steps</span>
+        </div>
+
+        <div class="space-y-2.5">
+          <!-- Step 1 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-[#151515] border border-[#222222] transition-colors hover:border-[#333]">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#1f1f1f] border border-[#333] text-[#d8ff5c] text-xs font-grotesk font-bold flex items-center justify-center">
+              1
+            </span>
+            <div class="space-y-0.5">
+              <h5 class="text-xs font-bold text-white">Setup & Eye Alignment</h5>
+              <p class="text-[13px] text-white/70 leading-relaxed font-normal">
+                Lie flat with eyes directly beneath the bar. Plant feet firmly flat on the floor with moderate arch.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-[#151515] border border-[#222222] transition-colors hover:border-[#333]">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#1f1f1f] border border-[#333] text-[#d8ff5c] text-xs font-grotesk font-bold flex items-center justify-center">
+              2
+            </span>
+            <div class="space-y-0.5">
+              <h5 class="text-xs font-bold text-white">Grip & Lat Tension</h5>
+              <p class="text-[13px] text-white/70 leading-relaxed font-normal">
+                Grip slightly wider than shoulder width. Squeeze the barbell firmly to pre-engage lats and triceps.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-[#151515] border border-[#222222] transition-colors hover:border-[#333]">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#1f1f1f] border border-[#333] text-[#d8ff5c] text-xs font-grotesk font-bold flex items-center justify-center">
+              3
+            </span>
+            <div class="space-y-0.5">
+              <h5 class="text-xs font-bold text-white">Unrack & Stabilize</h5>
+              <p class="text-[13px] text-white/70 leading-relaxed font-normal">
+                Inhale deep into the diaphragm, brace abdominal core, and unrack with arms locked over upper chest.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-[#151515] border border-[#222222] transition-colors hover:border-[#333]">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#1f1f1f] border border-[#333] text-[#d8ff5c] text-xs font-grotesk font-bold flex items-center justify-center">
+              4
+            </span>
+            <div class="space-y-0.5">
+              <h5 class="text-xs font-bold text-white">Controlled Eccentric Descent</h5>
+              <p class="text-[13px] text-white/70 leading-relaxed font-normal">
+                Lower bar steadily (2–3 seconds) until lightly touching lower sternum with elbows tucked at 45–60°.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-[#151515] border border-[#222222] transition-colors hover:border-[#333]">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#1f1f1f] border border-[#333] text-[#d8ff5c] text-xs font-grotesk font-bold flex items-center justify-center">
+              5
+            </span>
+            <div class="space-y-0.5">
+              <h5 class="text-xs font-bold text-white">Explosive Concentric Press</h5>
+              <p class="text-[13px] text-white/70 leading-relaxed font-normal">
+                Drive heels down and press explosively up back toward eye line, exhaling past the sticking point.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Biomechanical Target Muscles Insight -->
+      <section class="p-4 rounded-2xl bg-[#141414] border border-[#242424] space-y-3">
+        <div class="flex items-center justify-between text-xs font-grotesk font-semibold text-white/60">
+          <span>TARGET MUSCULATURE</span>
+          <span class="text-[#d8ff5c]">PRIMARY FOCUS</span>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <div class="flex justify-between text-xs font-medium text-white/80 mb-1">
+              <span>Pectoralis Major (Sternal & Clavicular)</span>
+              <span class="font-grotesk text-[#d8ff5c]">70%</span>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-[#202020] overflow-hidden">
+              <div class="h-full bg-[#d8ff5c] rounded-full" style="width: 70%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs font-medium text-white/80 mb-1">
+              <span>Anterior Deltoids & Triceps Brachii</span>
+              <span class="font-grotesk text-[#c3b1e1]">30%</span>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-[#202020] overflow-hidden">
+              <div class="h-full bg-[#c3b1e1] rounded-full" style="width: 30%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 6) Pinned Bottom Bar: Secondary Swap · Primary Add to session / Update (Lime) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 max-w-[430px] mx-auto px-5 py-4 bg-[#0e0e0e]/95 backdrop-blur-xl border-t border-[#1f1f1f] flex items-center gap-3">
+      <!-- Secondary Swap Button -->
+      <button class="flex-1 py-3.5 px-4 rounded-full bg-[#1b1b1b] border border-[#2e2e2e] text-white/90 text-sm font-grotesk font-bold tracking-wide flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-[#242424]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+        Swap
+      </button>
+
+      <!-- Primary Add to session / Update Button (Electric Lime) -->
+      <button class="flex-[2] py-3.5 px-5 rounded-full bg-[#d8ff5c] text-black text-sm font-grotesk font-extrabold tracking-wide flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(216,255,92,0.28)] active:scale-95 transition-all hover:bg-[#c8ef4c]">
+        <span>Add to session</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </nav>
+
+  </div>
+</body>
+</html>

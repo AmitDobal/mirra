@@ -10,7 +10,9 @@ import { usePlanStore } from "@/stores/plan-store";
 import type { OnboardingAnswers, OnboardingWeekPlan } from "../types";
 import { toOnboardingBody } from "../map-body";
 import { generateLocalWeekPlan } from "./local-plan-generator";
+import { useOnboardingStore } from "../store";
 import { persistOnboardingProfile, persistWeekPlan } from "./plan-persist";
+import { uploadMirrorSelfie } from "./upload-mirror";
 
 const POLL_MS = 400;
 const POLL_MAX = 40;
@@ -106,7 +108,10 @@ const tryApiGenerate = async (
 export const runOnboardingGenerate = async (
   answers: OnboardingAnswers,
 ): Promise<OnboardingWeekPlan> => {
-  const body = toOnboardingBody(answers);
+  // Retry a mirror upload that soft-failed earlier; never blocks the plan.
+  await uploadMirrorSelfie();
+  const { mirrorMediaId, mirrorMediaOwnerId } = useOnboardingStore.getState();
+  const body = toOnboardingBody({ ...answers, mirrorMediaId, mirrorMediaOwnerId });
   await persistOnboardingProfile(body);
 
   try {

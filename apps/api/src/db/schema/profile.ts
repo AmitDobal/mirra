@@ -16,6 +16,8 @@ export const profiles = sqliteTable("profiles", {
   goalWeightKg: real("goal_weight_kg"),
   pace: text("pace"),
   timezone: text("timezone").notNull().default("UTC"),
+  /** media_objects.id of the onboarding mirror selfie (kind=mirror); null when skipped. */
+  mirrorMediaId: text("mirror_media_id"),
   onboardingCompletedAt: integer("onboarding_completed_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),

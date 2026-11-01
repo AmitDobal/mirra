@@ -11,6 +11,7 @@ import {
   QuizEyebrow,
   useOnboardingStore,
 } from "@/features/onboarding";
+import { uploadMirrorSelfie } from "@/features/onboarding/services/upload-mirror";
 import { color } from "@/theme/tokens";
 import { Button, Card } from "@/ui";
 import { sx } from "@/theme/sx";
@@ -22,6 +23,8 @@ const MirrorScreen = () => {
   const setMirrorSkipped = useOnboardingStore((s) => s.setMirrorSkipped);
   const setMirrorUri = useOnboardingStore((s) => s.setMirrorUri);
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadFailed, setUploadFailed] = useState(false);
 
   const goNext = (skipped: boolean) => {
     setMirrorSkipped(skipped);
@@ -32,6 +35,7 @@ const MirrorScreen = () => {
   const saveUri = (uri: string) => {
     setMirrorUri(uri);
     setMirrorSkipped(false);
+    setUploadFailed(false);
   };
 
   const pickFromLibrary = async () => {
@@ -104,10 +108,23 @@ const MirrorScreen = () => {
     }
   };
 
+  /** Upload to R2 via media API; on failure stay here with retry / continue-anyway. */
+  const handleUploadAndContinue = async () => {
+    if (uploading) return;
+    setUploading(true);
+    setUploadFailed(false);
+    const ok = await uploadMirrorSelfie();
+    setUploading(false);
+    if (ok) goNext(false);
+    else setUploadFailed(true);
+  };
+
   const handleContinue = () => {
-    if (mirrorUri) goNext(false);
+    if (mirrorUri) void handleUploadAndContinue();
     else void handleCapture();
   };
+
+  const locked = busy || uploading;
 
   return (
     <OnboardingShell
@@ -115,15 +132,30 @@ const MirrorScreen = () => {
       footer={
         <>
           <Button
-            label={mirrorUri ? c.continue : c.capture}
-            disabled={busy}
+            label={
+              uploading
+                ? c.uploading
+                : uploadFailed
+                  ? c.retryUpload
+                  : mirrorUri
+                    ? c.continue
+                    : c.capture
+            }
+            disabled={locked}
             onPress={handleContinue}
           />
-          {mirrorUri ? (
+          {uploadFailed ? (
+            <Button
+              label={c.continueAnyway}
+              variant="outline"
+              disabled={locked}
+              onPress={() => goNext(false)}
+            />
+          ) : mirrorUri ? (
             <Button
               label={c.retake}
               variant="outline"
-              disabled={busy}
+              disabled={locked}
               onPress={() => {
                 void handleCapture();
               }}
@@ -132,7 +164,7 @@ const MirrorScreen = () => {
             <Button
               label={c.skip}
               variant="outline"
-              disabled={busy}
+              disabled={locked}
               onPress={() => goNext(true)}
             />
           )}
@@ -146,6 +178,23 @@ const MirrorScreen = () => {
       <Text style={sx("mt-space-sm font-body text-body-sm text-on-surface-variant")}>
         {c.sub}
       </Text>
+      {uploadFailed ? (
+        <View
+          accessibilityRole="alert"
+          style={sx(
+            "mt-space-md rounded-lg border border-error bg-surface-container-low p-space-md",
+          )}
+        >
+          <Text style={sx("font-label-bold text-label-lg text-error")}>
+            {c.uploadFailedTitle}
+          </Text>
+          <Text
+            style={sx("mt-space-xs font-body text-body-sm text-on-surface-variant")}
+          >
+            {c.uploadFailedBody}
+          </Text>
+        </View>
+      ) : null}
       <View style={sx("mt-space-lg min-h-[300px] flex-1 items-center justify-center")}>
       <Pressable
         accessibilityRole="button"

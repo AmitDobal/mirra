@@ -77,6 +77,8 @@ export const OnboardingProfileSchema = z.object({
   goalWeightKg: z.number().positive().nullable().optional(),
   pace: PaceSchema.nullable().optional(),
   timezone: z.string().min(1),
+  /** Confirmed `kind=mirror` media id (AMI-134). Ignored by the API if not owned / not a mirror. */
+  mirrorMediaId: z.string().min(1).nullable().optional(),
 });
 
 export const OnboardingBodySchema = z.object({

@@ -44,6 +44,8 @@ const defaultAnswers: OnboardingAnswers = {
   trainerPersona: "drill",
   mirrorSkipped: false,
   mirrorUri: null,
+  mirrorMediaId: null,
+  mirrorMediaOwnerId: null,
   paywallPlan: "annual",
   completed: false,
   weekPlan: null,
@@ -74,6 +76,7 @@ type OnboardingStore = OnboardingAnswers & {
   setTrainerPersona: (trainerPersona: TrainerPersonaId) => void;
   setMirrorSkipped: (mirrorSkipped: boolean) => void;
   setMirrorUri: (mirrorUri: string | null) => void;
+  setMirrorMedia: (mediaId: string | null, ownerId: string | null) => void;
   setPaywallPlan: (paywallPlan: PaywallPlan) => void;
   setWeekPlan: (weekPlan: OnboardingWeekPlan | null) => void;
   setPlanOptions: (planOptions: OnboardingPlanOption[] | null) => void;
@@ -120,7 +123,11 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   setLifestyleNotes: (lifestyleNotes) => set({ lifestyleNotes }),
   setTrainerPersona: (trainerPersona) => set({ trainerPersona }),
   setMirrorSkipped: (mirrorSkipped) => set({ mirrorSkipped }),
-  setMirrorUri: (mirrorUri) => set({ mirrorUri }),
+  // A new/cleared photo invalidates any previously uploaded media id.
+  setMirrorUri: (mirrorUri) =>
+    set({ mirrorUri, mirrorMediaId: null, mirrorMediaOwnerId: null }),
+  setMirrorMedia: (mirrorMediaId, mirrorMediaOwnerId) =>
+    set({ mirrorMediaId, mirrorMediaOwnerId }),
   setPaywallPlan: (paywallPlan) => set({ paywallPlan }),
   setWeekPlan: (weekPlan) => set({ weekPlan }),
   setPlanOptions: (planOptions) => set({ planOptions }),

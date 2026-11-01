@@ -204,7 +204,13 @@ export const onboardingCopy = {
     continue: "Continue →",
     retake: "Retake",
     skip: "Skip for now",
-    privacy: "Encrypted & private to your device",
+    privacy: "Private to your account",
+    uploading: "Saving your photo…",
+    uploadFailedTitle: "Couldn't save your photo",
+    uploadFailedBody:
+      "Check your connection and try again, or continue without it. We'll retry later.",
+    retryUpload: "Try again",
+    continueAnyway: "Continue without saving",
   },
   generating: {
     engine: "AI CALIBRATION ENGINE",

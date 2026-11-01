@@ -3,7 +3,9 @@ import { CalendarDays, Search } from "lucide-react-native";
 import { useCallback, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { WeekStripCard } from "@/features/today/WeekStripCard";
 import { useTodayStore } from "@/features/today/today-store";
+import { localTodayIso } from "@/lib/datetime";
 import { useWorkoutStore } from "@/features/workout/workout-store";
 import { color, font, radius, space } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
@@ -16,21 +18,34 @@ import { SessionHero } from "./SessionHero";
 import { useExerciseSheet } from "./use-exercise-sheet";
 import { useNotice } from "./use-notice";
 
+const WEEKDAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+
 /** S25 Exercise hub — today's session, protocol list, searchable library. */
 export const ExerciseScreen = () => {
   const workout = useTodayStore((s) => s.workout);
   const dayIndex = useTodayStore((s) => s.dayIndex);
-  const hasWeek = useTodayStore((s) => s.weekDays.length > 0);
-  const date = useTodayStore((s) => s.date);
+  const todayIndex = useTodayStore((s) => s.todayIndex);
+  const weekDays = useTodayStore((s) => s.weekDays);
   const hydrate = useTodayStore((s) => s.hydrate);
+  const selectDay = useTodayStore((s) => s.selectDay);
+  const shiftWeek = useTodayStore((s) => s.shiftWeek);
   const startWorkout = useWorkoutStore((s) => s.start);
   const { notice, show } = useNotice();
   const { openAdd, sheet } = useExerciseSheet(workout, show);
 
-  // Follow the day picked on Today; only fetch when nothing is loaded yet.
+  // Same source as Today: re-hydrate the AI week plan on every focus, keeping the picked day.
+  const handleRefresh = useCallback(() => hydrate({ keepSelection: true }), [hydrate]);
   useFocusEffect(
     useCallback(() => {
-      if (!useTodayStore.getState().weekDays.length) void hydrate();
+      void hydrate({ keepSelection: true });
     }, [hydrate]),
   );
 
@@ -39,11 +54,13 @@ export const ExerciseScreen = () => {
   };
 
   const exercises = workout?.exercises ?? [];
-  const isToday = date === new Date().toISOString().slice(0, 10);
-  const weekday = new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long" });
+  const hasWeek = weekDays.length > 0;
+  const isToday = !hasWeek || dayIndex === todayIndex;
+  // Weekday comes from the plan slot (Mon=0), not the UTC date string.
+  const weekday = WEEKDAYS[weekDays[dayIndex]?.dayIndex ?? dayIndex] ?? "Today";
 
   return (
-    <ScreenScroll onRefresh={hydrate}>
+    <ScreenScroll onRefresh={handleRefresh}>
       <View style={styles.header}>
         <View style={styles.flex1}>
           <View style={styles.eyebrow}>
@@ -66,9 +83,21 @@ export const ExerciseScreen = () => {
         </View>
       ) : null}
 
+      {hasWeek ? (
+        <WeekStripCard
+          weekDays={weekDays}
+          dayIndex={dayIndex}
+          today={localTodayIso()}
+          onPrev={() => shiftWeek(-1)}
+          onNext={() => shiftWeek(1)}
+          onSelectDay={selectDay}
+        />
+      ) : null}
+
       <SessionHero
         workout={workout}
         dayNumber={hasWeek ? dayIndex + 1 : null}
+        isToday={isToday}
         onStart={handleStart}
       />
 

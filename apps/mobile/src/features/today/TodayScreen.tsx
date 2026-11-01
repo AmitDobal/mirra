@@ -34,6 +34,7 @@ import { TodayHeroCard } from "./TodayHeroCard";
 import { WeeklyMirrorChip } from "./WeeklyMirrorChip";
 import { WeekStripCard } from "./WeekStripCard";
 import { useTodayStore } from "./today-store";
+import { localTodayIso } from "@/lib/datetime";
 import { sx } from "@/theme/sx";
 
 /**
@@ -69,7 +70,7 @@ export const TodayScreen = () => {
   const attendance = useAttendanceStore((s) => s.byDate);
   const loadAttendance = useAttendanceStore((s) => s.load);
   const serverToday = useAttendanceStore((s) => s.today);
-  const todayDate = serverToday ?? new Date().toISOString().slice(0, 10);
+  const todayDate = serverToday ?? localTodayIso();
   const weekDates = useMemo(() => weekDays.map((d) => d.date), [weekDays]);
   const { onSelectDay, sheet: dayHistorySheet } = useDayHistory(
     weekDates,

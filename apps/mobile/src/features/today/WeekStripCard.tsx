@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 
 import type { AttendanceState, PlanDay } from "@/lib/api";
+import { localTodayIso } from "@/lib/datetime";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 
@@ -55,7 +56,7 @@ export const WeekStripCard = ({
   weekDays,
   dayIndex,
   attendance = {},
-  today = new Date().toISOString().slice(0, 10),
+  today = localTodayIso(),
   onPrev,
   onNext,
   onSelectDay,

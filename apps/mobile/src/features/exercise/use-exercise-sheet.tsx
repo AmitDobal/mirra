@@ -38,10 +38,7 @@ export const useExerciseSheet = (
     async (action: () => Promise<unknown>, success: string, failure: string) => {
       try {
         await action();
-        // Keep the day the user picked on Today (hydrate resets to the real today).
-        const keepIndex = useTodayStore.getState().dayIndex;
-        await hydrate();
-        useTodayStore.getState().selectDay(keepIndex);
+        await hydrate({ keepSelection: true });
         onNotice(success);
       } catch (err) {
         logger.warn("exercise.edit_failed", { message: errorMessage(err) });

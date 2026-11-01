@@ -12,11 +12,13 @@ type Props = {
   readonly workout: PlanWorkout | null;
   /** 1-based day number inside the week plan, when known. */
   readonly dayNumber: number | null;
+  /** False when a past/future plan day is selected (copy only). */
+  readonly isToday?: boolean;
   readonly onStart: () => void;
 };
 
 /** S25 "Today's session" hero: photo, focus + duration chips, title, Start Workout. */
-export const SessionHero = ({ workout, dayNumber, onStart }: Props) => {
+export const SessionHero = ({ workout, dayNumber, isToday = true, onStart }: Props) => {
   const exercises = workout?.exercises ?? [];
   const totalSets = exercises.reduce((sum, e) => sum + e.targetSets, 0);
 
@@ -28,7 +30,7 @@ export const SessionHero = ({ workout, dayNumber, onStart }: Props) => {
         <View style={styles.chip}>
           <Zap size={12} color={color.primaryFixed} fill={color.primaryFixed} />
           <Text style={styles.chipLime} numberOfLines={1}>
-            {workout?.focus?.trim() || "Strength"}
+            {workout ? workout.focus?.trim() || "Strength" : "Recovery"}
           </Text>
         </View>
         {workout ? (
@@ -46,7 +48,7 @@ export const SessionHero = ({ workout, dayNumber, onStart }: Props) => {
         <Text style={styles.meta}>
           {workout
             ? `${exercises.length} movements · ${totalSets} sets total`
-            : "No lifts scheduled today. Browse the library below."}
+            : `No lifts scheduled ${isToday ? "today" : "this day"}. Browse the library below.`}
         </Text>
         {workout && exercises.length > 0 ? (
           <LimeCta

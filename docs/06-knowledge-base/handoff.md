@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-11-01 — User data sync/cache doc + main #38–#40
+
+**Done:** Architecture note `docs/03-engineering/user-data-sync-cache.md` (D1/R2 SoT, SQLite mirror, me-store SecureStore TTL, `GET /v1/credits`, progress photos API sync, week plan persist until explicit regenerate). `main` at #40 merge (week plan stable).
+
+**Next:** Smoke seat on `origin/main` → **`eas update --branch day-test`** for #38–#40 JS; until then **EAS pending polish wave #38–#40** (prior manifest: https://u.expo.dev/update/01a195bd-58de-73a6-9e7d-5c25cf639aab).
+
+**Watch:** Primary checkout `feat/sx-arbitrary-radius` is dirty — not the ship line.
+
 ## 2026-11-01 — User-base session + You (#34/#35)
 
 **Done:** Session hydrate + cold-start lands on Today; You tab reads profile from `GET /v1/me`; sign-out clears local auth/session; D1 `users` + `accounts` wired on API. Merged #34 / #35.

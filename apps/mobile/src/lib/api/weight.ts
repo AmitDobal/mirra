@@ -21,8 +21,10 @@ export const listWeightApi = (limit = WEIGHT_LIST_LIMIT) =>
 export const logWeightApi = (body: LogWeightBody) =>
   apiFetch<WeightLogDto>("/v1/weight", { method: "POST", body });
 
-/** Goal weight from GET /v1/me (null until onboarding stores one). */
+/** Goal weight via me-store (null until onboarding stores one). */
 export const getMyGoalWeightKg = async (): Promise<number | null> => {
-  const me = await apiFetch<{ profile: { goalWeightKg?: number | null } | null }>("/v1/me");
-  return me.profile?.goalWeightKg ?? null;
+  const { useMeStore } = await import("@/stores/me-store");
+  const me = await useMeStore.getState().ensureMe();
+  const profile = me.profile as { goalWeightKg?: number | null } | null;
+  return profile?.goalWeightKg ?? null;
 };

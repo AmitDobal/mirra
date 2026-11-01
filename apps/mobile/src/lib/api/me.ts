@@ -48,16 +48,17 @@ export type UpdateFoodPrefsBody = {
   readonly cuisineStyles?: readonly string[];
 };
 
-/** GET /v1/me — full identity + entitlement + linked providers. */
+/** Raw GET /v1/me — prefer `useMeStore.ensureMe()` so callers share one TTL cache. */
 export const getMe = (): Promise<MeResponse> =>
   apiFetch<MeResponse>("/v1/me").then((me) => ({
     ...me,
     accounts: me.accounts ?? [],
   }));
 
-/** GET /v1/me — `preferences` is null until onboarding (or a PATCH) writes the row. */
+/** Food prefs via me-store (deduped / TTL). Null until preferences exist. */
 export const getMyFoodPrefs = async (): Promise<FoodPrefs | null> => {
-  const me = await getMe();
+  const { useMeStore } = await import("@/stores/me-store");
+  const me = await useMeStore.getState().ensureMe();
   if (!me.preferences) return null;
   return {
     dietTags: me.preferences.dietTags ?? [],
@@ -66,9 +67,10 @@ export const getMyFoodPrefs = async (): Promise<FoodPrefs | null> => {
   };
 };
 
-/** GET /v1/me trainer persona; null when no preferences row yet. */
+/** Trainer persona via me-store; null when no preferences row yet. */
 export const getMyTrainerPersona = async (): Promise<string | null> => {
-  const me = await getMe();
+  const { useMeStore } = await import("@/stores/me-store");
+  const me = await useMeStore.getState().ensureMe();
   return me.preferences?.trainerPersona ?? null;
 };
 

@@ -9,41 +9,49 @@ import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useOnboardingStore } from "@/features/onboarding";
 import { PersonaGrid, usePersonaStore } from "@/features/trainer";
-import { getMe, type MeEntitlement, type MeResponse, type MeUser } from "@/lib/api/me";
+import { getCredits, type CreditsSnapshot } from "@/lib/api/credits";
+import type { MeEntitlement, MeUser } from "@/lib/api/me";
 import { clearSession } from "@/lib/auth";
 import { authClient } from "@/lib/auth/auth-client";
 import { getPurchases } from "@/lib/purchases";
+import { useMeStore } from "@/stores/me-store";
 import { usePlanStore } from "@/stores/plan-store";
 import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { sx } from "@/theme/sx";
 
+import { openAiLimitSheet } from "./AiLimitSheet";
+import { CreditsMeter } from "./CreditsMeter";
 import { connectedAccountLabels, experienceLabel } from "./profile-display";
 import { ProfileHero } from "./ProfileHero";
 import { SpeakCuesToggle } from "./SpeakCuesToggle";
+import { YouTrainingCard } from "./YouTrainingCard";
 import { Divider, Group, Row, StatusRow, ToggleRow } from "./you-settings";
 
 const PRIVACY_URL = "https://adtechservices.in/privacy";
 const TERMS_URL = "https://adtechservices.in/terms";
-const LOCATIONS = [
-  { id: "gym", label: "Primary kit" },
-  { id: "home", label: "Home" },
-  { id: "hotel", label: "Hotel" },
-] as const;
 
-/** S24 You (clean) — Stitch redesign: compact hero, trainer grid, grouped settings. */
+/** S24 You — cached identity hero, credits meter, horizontal trainers. */
 export const YouScreen = () => {
   const [rebuildOn, setRebuildOn] = useState(true);
   const [locationId, setLocationId] = useState("gym");
   const [subNote, setSubNote] = useState<string | null>(null);
   const [profile, setProfile] = useState<LocalProfile | null>(null);
   const [plan, setPlan] = useState<LocalPlan | null>(null);
-  const [meUser, setMeUser] = useState<MeUser | null>(null);
-  const [entitlement, setEntitlement] = useState<MeEntitlement | null>(null);
-  const [accountLabels, setAccountLabels] = useState<string[]>([]);
+  const [credits, setCredits] = useState<CreditsSnapshot | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
+
+  const cachedUser = useMeStore((s) => s.cachedUser);
+  const cachedEntitlement = useMeStore((s) => s.cachedEntitlement);
+  const cachedAccounts = useMeStore((s) => s.cachedAccounts);
+  const me = useMeStore((s) => s.me);
+  const hydrateMe = useMeStore((s) => s.hydrate);
+  const ensureMe = useMeStore((s) => s.ensureMe);
+  const refreshMe = useMeStore((s) => s.refreshInBackground);
+  const clearMe = useMeStore((s) => s.clear);
+
   const resetOnboarding = useOnboardingStore((s) => s.reset);
   const clearPlan = usePlanStore((s) => s.clear);
   const hasMealPlan = useMealPlanStore((s) => s.plan !== null);
@@ -52,35 +60,44 @@ export const YouScreen = () => {
   const personaSaving = usePersonaStore((s) => s.saving);
   const choosePersona = usePersonaStore((s) => s.choose);
 
-  const applyMe = useCallback((me: MeResponse) => {
-    setMeUser(me.user);
-    setEntitlement(me.entitlement);
-    setAccountLabels(connectedAccountLabels(me.accounts));
-  }, []);
+  const meUser: MeUser | null = me?.user ?? cachedUser;
+  const entitlement: MeEntitlement | null = me?.entitlement ?? cachedEntitlement;
+  const accountLabels = connectedAccountLabels(me?.accounts ?? cachedAccounts);
 
-  const reload = useCallback(async () => {
+  const reloadLocal = useCallback(async () => {
     const [p, pl] = await Promise.all([getProfile(), getCurrentPlan()]);
     setProfile(p);
     setPlan(pl);
+  }, []);
+
+  const reloadCredits = useCallback(async () => {
     try {
-      applyMe(await getMe());
+      setCredits(await getCredits());
     } catch {
-      /* offline / unauth — keep local fallbacks */
+      /* offline — keep prior meter */
     }
-  }, [applyMe]);
+  }, []);
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    void (async () => {
+      await hydrateMe();
+      await reloadLocal();
+      refreshMe();
+      void reloadCredits();
+      void ensureMe().catch(() => undefined);
+    })();
+  }, [ensureMe, hydrateMe, refreshMe, reloadCredits, reloadLocal]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await reload();
+      await Promise.all([reloadLocal(), ensureMe({ force: true }), reloadCredits()]);
+    } catch {
+      /* keep cache */
     } finally {
       setRefreshing(false);
     }
-  }, [reload]);
+  }, [ensureMe, reloadCredits, reloadLocal]);
 
   const prefs = profile?.preferences;
   const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
@@ -89,12 +106,6 @@ export const YouScreen = () => {
   const fallbackMeta = profile
     ? `${experienceLabel(prefs?.experience)} · ${prefs?.sessionMinutes ?? 45} min sessions`
     : "Complete onboarding for profile";
-  const protocolTitle = plan?.days.find((d) => d.workout)?.workout?.title ?? "No active plan";
-  const protocolBody =
-    plan?.summary.outcomeLine ||
-    (plan
-      ? `${plan.summary.kcalTarget} kcal · ${plan.summary.proteinG}g protein`
-      : "Generate a plan to calibrate volume.");
   const planLabel = plan ? `Plan v${plan.version} · ${plan.status}` : "No subscription plan";
 
   const openUrl = async (url: string) => {
@@ -127,6 +138,10 @@ export const YouScreen = () => {
     if (!(await choosePersona(id))) Alert.alert("Trainer", "Couldn't switch trainer. Try again.");
   };
 
+  const handleCreditsPress = () => {
+    if (credits && credits.remaining <= 0) openAiLimitSheet(credits.resetsAt);
+  };
+
   const handleSignOut = () => {
     void (async () => {
       try {
@@ -134,6 +149,7 @@ export const YouScreen = () => {
       } catch {
         /* still clear local session */
       }
+      await clearMe();
       await clearSession();
       resetOnboarding();
       clearPlan();
@@ -150,10 +166,14 @@ export const YouScreen = () => {
         fallbackMeta={fallbackMeta}
       />
 
+      <Group title="AI credits">
+        <CreditsMeter credits={credits} onPress={handleCreditsPress} />
+      </Group>
+
       <View style={sx("mb-space-sm flex-row items-end justify-between gap-space-sm")}>
         <CapsLabel>Your trainer</CapsLabel>
         <Text numberOfLines={1} style={sx("shrink font-body text-[11px] text-on-surface-variant")}>
-          Tap to switch
+          Swipe to choose
         </Text>
       </View>
       <PersonaGrid
@@ -163,61 +183,12 @@ export const YouScreen = () => {
         onSelect={(id) => void handleChoosePersona(id)}
       />
 
-      <Group title="Active training">
-        <View style={sx("p-space-md")}>
-          <CapsLabel>Active plan</CapsLabel>
-          <Text style={sx("mt-1 font-label text-label-md text-primary-fixed")}>
-            Week of {plan?.weekStart ?? "—"}
-          </Text>
-          <Text style={sx("mt-space-sm font-headline-sm text-headline-sm text-on-surface")}>
-            {protocolTitle}
-          </Text>
-          <Text style={sx("mt-1 font-body text-body-sm text-on-surface-variant")}>{protocolBody}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open coach check-in"
-            onPress={() => router.push("/(tabs)/coach")}
-            style={sx("mt-space-sm self-start")}
-          >
-            <Text style={sx("font-label-bold text-label-md text-primary-fixed")}>Open coach →</Text>
-          </Pressable>
-        </View>
-        <Divider />
-        <View style={sx("px-space-md py-space-sm")}>
-          <CapsLabel style={sx("mb-space-sm")}>Training locations</CapsLabel>
-          <View style={sx("flex-row flex-wrap gap-space-sm")}>
-            {LOCATIONS.map((loc) => {
-              const active = locationId === loc.id;
-              return (
-                <Pressable
-                  key={loc.id}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => setLocationId(loc.id)}
-                  style={sx(
-                    `rounded-full px-3 py-2 ${
-                      active ? "bg-primary-fixed" : "bg-surface-container-highest"
-                    }`,
-                  )}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={sx(
-                      `font-label text-[11px] leading-4 ${
-                        active ? "text-on-primary-fixed" : "text-on-surface"
-                      }`,
-                    )}
-                  >
-                    {loc.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-        <Divider />
-        <Row title="Food prefs" meta="Diet, cuisines & foods to avoid" onPress={() => setPrefsOpen(true)} />
-      </Group>
+      <YouTrainingCard
+        plan={plan}
+        locationId={locationId}
+        onLocation={setLocationId}
+        onFoodPrefs={() => setPrefsOpen(true)}
+      />
 
       <Group title="Coaching">
         <SpeakCuesToggle embedded />

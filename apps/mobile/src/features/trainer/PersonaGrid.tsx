@@ -1,5 +1,5 @@
 import { Check } from "lucide-react-native";
-import { Pressable, Text, useWindowDimensions, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import {
   TRAINER_PERSONA_OPTIONS,
@@ -17,20 +17,30 @@ type Props = {
   readonly compact?: boolean;
 };
 
-/** Stitch S09B / S24 — 2-col trainer cards. Selected: check + ACTIVE under name (no avatar overlap). */
+/** Horizontal swipe chips/cards — urgent pick over Stitch 2-col for this control. */
 export const PersonaGrid = ({
   value,
   onSelect,
   disabled = false,
   compact = false,
 }: Props) => {
-  const { width: windowWidth } = useWindowDimensions();
-  const cardWidth = Math.floor((windowWidth - space.margin * 2 - space.sm) / 2);
+  const cardWidth = compact ? 112 : 148;
   const avatarSize = compact ? 48 : 72;
   const pad = compact ? "px-space-sm pt-space-sm pb-space-sm" : "p-space-md";
 
   return (
-    <View style={sx("flex-row flex-wrap justify-between gap-y-space-sm")}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      accessibilityRole="scrollbar"
+      accessibilityLabel="Trainer choices"
+      contentContainerStyle={{
+        gap: space.sm,
+        paddingVertical: space.xs,
+        paddingRight: space.margin,
+      }}
+      style={sx("mb-space-sm")}
+    >
       {TRAINER_PERSONA_OPTIONS.map((persona) => {
         const selected = persona.id === value;
         return (
@@ -106,6 +116,6 @@ export const PersonaGrid = ({
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 };

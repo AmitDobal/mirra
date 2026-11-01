@@ -13,17 +13,18 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 | API | https://mirra-api.amit-dobalwork.workers.dev |
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true) |
-| Google OAuth | Client ids embedded in update (see `mirra-google-oauth.md`); EAS preview env set |
+| Google OAuth | Expo Go = **Web client + `auth.expo.io` proxy** (see `mirra-google-oauth.md`); Mirra branding |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/f9db0f1b-6e7a-45d0-8cad-d120830c8efd |
-| iOS update ID | `01a1958d-fce8-77e1-b848-1e3d4f8050cd` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1958d-fce8-77e1-b848-1e3d4f8050cd |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/0019d75e-6dfc-468e-8c1e-2f3ff1d1d34d |
+| iOS update ID | `01a19599-0637-7472-8d78-8890a33bfb83` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19599-0637-7472-8d78-8890a33bfb83 |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `fix: inline Google OAuth client ids for day-test EAS Update` |
-| Smoke shots | `/tmp/mirra-qa/google-oauth-eas-fix/` |
-| Bundle prove | dist `.hbc` contains WEB+IOS client id strings (len 72 each) |
+| Message | `fix: Expo Go Google OAuth Web+auth.expo.io proxy (no Expo Go iOS client)` |
+| Smoke shots | `/tmp/mirra-qa/google-oauth-proxy-fix/` |
+| Bundle prove | dist `.hbc`: WEB client hits=1, `auth.expo.io`=1, `host.exp.Exponent`=0 |
 | API prove | `GET /api/auth/ok` → `{ok:true,google:true}`; insights/actions/voice still 200 with day-test-1 |
+| Smoke note | **PASS** (PR #30) — no `invalid_request`; Mirra branding; consent chrome may say **expo.io** (proxy domain, expected) |
 
 ### Open on phone (laptop can be off)
 

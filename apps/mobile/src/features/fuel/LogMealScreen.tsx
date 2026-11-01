@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Camera, CheckCircle2, X } from "lucide-react-native";
+import { Camera, CheckCircle2, Images, Sparkles, X } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 
@@ -14,6 +14,12 @@ import { promptRebalanceIfOffPlan } from "./rebalance-prompt";
 import { sx } from "@/theme/sx";
 
 const slots = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
+
+const SNAP_MODES = [
+  { mode: "camera", label: "Camera", Icon: Camera },
+  { mode: "gallery", label: "Gallery", Icon: Images },
+  { mode: "describe", label: "Describe", Icon: Sparkles },
+] as const;
 
 const ADDS = [
   { name: "Whey Shake", calories: 120, proteinG: 25, meta: "25g P" },
@@ -112,7 +118,7 @@ export const LogMealScreen = () => {
       </View>
 
       <View style={sx("mb-space-md items-center rounded-lg bg-surface-container-low p-space-lg")}>
-        <CapsLabel tone="lime">Manual entry</CapsLabel>
+        <CapsLabel tone="lime">Snap · or enter manually below</CapsLabel>
         <View style={sx("h-36 w-full overflow-hidden rounded-lg bg-surface-container-highest")}>
           <Image
             source={s19LogMeal.mealFlankSteak}
@@ -120,11 +126,24 @@ export const LogMealScreen = () => {
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
-          <View style={sx("absolute inset-0 items-center justify-center bg-black/25")}>
-            <Camera size={32} color={color.onSurface} />
-            <Text style={sx("mt-2 font-body text-body-sm text-on-surface")}>
-              Optional photo · snap from Fuel
+          <View style={sx("absolute inset-0 items-center justify-center bg-black/55")}>
+            <Text style={sx("mb-space-sm font-body text-body-sm text-on-surface")}>
+              Snap or describe — Mirra fills in the numbers
             </Text>
+            <View style={sx("flex-row gap-space-sm")}>
+              {SNAP_MODES.map(({ mode, label, Icon }) => (
+                <Pressable
+                  key={mode}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${label} meal with Mirra Vision`}
+                  onPress={() => router.push(`/(tabs)/meal-snap?mode=${mode}`)}
+                  style={sx("flex-row items-center gap-1.5 rounded-full bg-primary-fixed px-space-md py-2")}
+                >
+                  <Icon size={16} color={color.onPrimaryFixed} />
+                  <Text style={sx("font-label-bold text-label-md text-on-primary-fixed")}>{label}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         </View>
       </View>

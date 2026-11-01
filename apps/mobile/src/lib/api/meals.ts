@@ -1,5 +1,11 @@
 import { apiFetch } from "./client";
-import type { CreateMealBody, FuelTodayResponse, Meal } from "./types";
+import type {
+  CreateMealBody,
+  FuelTodayResponse,
+  Meal,
+  MealAnalysisSource,
+  MealIngredient,
+} from "./types";
 
 export type MealEstimateBody = {
   readonly imageDataUrl?: string;
@@ -14,7 +20,13 @@ export type MealEstimate = {
   readonly fatG: number;
   readonly confidence: number;
   readonly notes?: string;
-  readonly source: "openai" | "heuristic";
+  readonly source: MealAnalysisSource;
+  /** v2 additions (AMI-131) — absent on older API builds. */
+  readonly fiberG?: number;
+  readonly sugarG?: number;
+  readonly sodiumMg?: number;
+  readonly ingredients?: readonly MealIngredient[];
+  readonly warnings?: readonly string[];
 };
 
 export const getFuelToday = (date?: string) =>

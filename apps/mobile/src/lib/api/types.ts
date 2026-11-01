@@ -157,8 +157,34 @@ export type CreateCheckInBody = {
 
 export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
 
+/** Mirrors contracts `MealIngredientSchema`. */
+export type MealIngredient = {
+  readonly name: string;
+  readonly grams?: number;
+  readonly kcal?: number;
+  readonly proteinG?: number;
+  readonly carbsG?: number;
+  readonly fatG?: number;
+  readonly confidence?: number;
+};
+
+export type MealAnalysisStatus = "none" | "pending" | "ready" | "failed";
+export type MealAnalysisSource = "openai" | "anthropic" | "heuristic";
+
+/** Mirrors contracts `MealAnalysisBodyShape` — all optional / additive. */
+export type MealAnalysisFields = {
+  readonly fiberG?: number | null;
+  readonly sugarG?: number | null;
+  readonly sodiumMg?: number | null;
+  readonly ingredients?: readonly MealIngredient[];
+  readonly warnings?: readonly string[];
+  readonly analysisStatus?: MealAnalysisStatus;
+  readonly analysisSource?: MealAnalysisSource | null;
+  readonly estimateConfidence?: number | null;
+};
+
 /** Mirrors contracts `MealResponseSchema`. */
-export type Meal = {
+export type Meal = MealAnalysisFields & {
   readonly id: string;
   readonly name: string;
   readonly mealSlot: MealSlot;
@@ -173,7 +199,7 @@ export type Meal = {
 };
 
 /** Mirrors contracts `MealBodySchema` — `mealSlot` + `kcal` are required. */
-export type CreateMealBody = {
+export type CreateMealBody = MealAnalysisFields & {
   readonly name: string;
   readonly mealSlot: MealSlot;
   readonly kcal: number;

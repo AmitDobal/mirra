@@ -1,16 +1,14 @@
-import * as ImagePicker from "expo-image-picker";
 import { create } from "zustand";
 
 import { getFuelToday as getLocalFuel, logMeal } from "@/db";
 import {
   createMeal,
-  estimateMeal,
   getFuelToday as getApiFuel,
   logWater,
-  type MealEstimate,
+  type MealAnalysisFields,
 } from "@/lib/api";
 import { errorMessage, logger } from "@/lib/logger";
-import { formatTime, slotKey, tipAfterLog, todayIso, uriToDataUrl } from "./fuel-helpers";
+import { formatTime, slotKey, tipAfterLog, todayIso } from "./fuel-helpers";
 
 export type LocalMeal = {
   readonly id: string;
@@ -38,8 +36,6 @@ type FuelState = {
   readonly waterTargetMl: number;
   readonly tip: string | null;
   readonly loading: boolean;
-  readonly estimating: boolean;
-  readonly lastEstimate: MealEstimate | null;
   readonly hydrate: () => Promise<void>;
   readonly addMeal: (input: {
     name: string;
@@ -49,11 +45,11 @@ type FuelState = {
     source?: LocalMeal["source"];
     carbsG?: number;
     fatG?: number;
+    /** Uploaded meal photo (`POST /v1/media/upload-url`). */
+    mediaId?: string | null;
+    /** Vision analysis (ingredients, micros, warnings) saved with the meal. */
+    analysis?: MealAnalysisFields;
   }) => Promise<LocalMeal>;
-  /** Cal AI–style: pick photo → estimate → save. */
-  readonly snapMeal: () => Promise<LocalMeal | null>;
-  /** Describe meal when photo is ambiguous (smoothie etc.). */
-  readonly describeMeal: (description: string) => Promise<LocalMeal | null>;
   readonly clearTip: () => void;
   /** Optimistic `+ml`, persisted via `POST /v1/water`; reverts on failure. */
   readonly addWater: (ml: number) => Promise<void>;
@@ -74,8 +70,6 @@ export const useFuelStore = create<FuelState>((set, get) => ({
   waterTargetMl: DEFAULT_WATER_TARGET_ML,
   tip: null,
   loading: false,
-  estimating: false,
-  lastEstimate: null,
 
   clearTip: () => set({ tip: null }),
 
@@ -161,7 +155,17 @@ export const useFuelStore = create<FuelState>((set, get) => ({
     }
   },
 
-  addMeal: async ({ name, calories, proteinG, slot, source = "manual", carbsG, fatG }) => {
+  addMeal: async ({
+    name,
+    calories,
+    proteinG,
+    slot,
+    source = "manual",
+    carbsG,
+    fatG,
+    mediaId,
+    analysis,
+  }) => {
     const localDate = todayIso();
     const saved = await logMeal({
       name,
@@ -201,6 +205,8 @@ export const useFuelStore = create<FuelState>((set, get) => ({
           carbsG,
           fatG,
           eatenAt: saved.eatenAt,
+          ...(mediaId ? { mediaId } : {}),
+          ...analysis,
         },
         local.id,
       );
@@ -218,85 +224,6 @@ export const useFuelStore = create<FuelState>((set, get) => ({
         kcal: Math.round(calories),
       });
       return local;
-    }
-  },
-
-  snapMeal: async () => {
-    set({ estimating: true, lastEstimate: null });
-    try {
-      const perm = await ImagePicker.requestCameraPermissionsAsync();
-      const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!perm.granted && !lib.granted) {
-        set({ tip: "Allow camera or photos to snap a meal.", estimating: false });
-        return null;
-      }
-      const picked = await ImagePicker.launchCameraAsync({
-        quality: 0.55,
-        base64: false,
-        allowsEditing: true,
-        aspect: [4, 3],
-      }).catch(async () =>
-        ImagePicker.launchImageLibraryAsync({
-          quality: 0.55,
-          allowsEditing: true,
-          aspect: [4, 3],
-        }),
-      );
-      if (picked.canceled || !picked.assets[0]?.uri) {
-        set({ estimating: false });
-        return null;
-      }
-      const imageDataUrl = await uriToDataUrl(picked.assets[0].uri);
-      const estimate = await estimateMeal({ imageDataUrl });
-      set({ lastEstimate: estimate });
-      const meal = await get().addMeal({
-        name: estimate.name,
-        calories: estimate.kcal,
-        proteinG: Math.round(estimate.proteinG),
-        slot: "snack",
-        source: "snap",
-        carbsG: Math.round(estimate.carbsG),
-        fatG: Math.round(estimate.fatG),
-      });
-      set({
-        tip: `Snap · ${estimate.kcal} kcal (${Math.round(estimate.confidence * 100)}% confidence${
-          estimate.source === "heuristic" ? ", offline estimate" : ""
-        })`,
-        estimating: false,
-      });
-      return meal;
-    } catch (err) {
-      logger.error("fuel.snap_failed", { message: errorMessage(err) });
-      set({
-        estimating: false,
-        tip: "Snap failed — try Describe or log manually.",
-      });
-      return null;
-    }
-  },
-
-  describeMeal: async (description) => {
-    const trimmed = description.trim();
-    if (!trimmed) return null;
-    set({ estimating: true });
-    try {
-      const estimate = await estimateMeal({ description: trimmed });
-      set({ lastEstimate: estimate });
-      const meal = await get().addMeal({
-        name: estimate.name,
-        calories: estimate.kcal,
-        proteinG: Math.round(estimate.proteinG),
-        slot: "snack",
-        source: "describe",
-        carbsG: Math.round(estimate.carbsG),
-        fatG: Math.round(estimate.fatG),
-      });
-      set({ estimating: false, tip: `Described · ${estimate.kcal} kcal logged` });
-      return meal;
-    } catch (err) {
-      logger.error("fuel.describe_failed", { message: errorMessage(err) });
-      set({ estimating: false, tip: "Describe failed — log manually." });
-      return null;
     }
   },
 }));

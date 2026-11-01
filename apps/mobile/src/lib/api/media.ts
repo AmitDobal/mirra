@@ -1,9 +1,10 @@
 import { errorMessage, logger } from "@/lib/logger";
 
-import { apiFetch, buildHeaders, buildUrl, MirraApiError } from "./client";
+import { apiFetch, MirraApiError } from "./client";
 
 /** Mirrors `packages/contracts/src/media.ts` (mobile does not depend on contracts). */
 export type MediaKind = "meal" | "mirror" | "progress";
+
 const MEDIA_MAX_BYTES = 6_000_000;
 
 type MediaUploadUrlResponse = {
@@ -11,12 +12,21 @@ type MediaUploadUrlResponse = {
   readonly uploadUrl: string;
   readonly method: "PUT";
   readonly headers: Record<string, string>;
+  readonly maxBytes: number;
 };
+
 type MediaConfirmResponse = { readonly mediaId: string; readonly status: "ready" };
 
-type ImageContentType = "image/jpeg" | "image/png" | "image/webp" | "image/heic";
+/** Mirrors contracts `MEDIA_ALLOWED_TYPES`. */
+const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/heic"] as const;
+type MediaType = (typeof ALLOWED)[number];
 
-const contentTypeFromUri = (uri: string): ImageContentType => {
+const toMediaType = (mime: string | null | undefined): MediaType => {
+  const found = ALLOWED.find((t) => t === mime);
+  return found ?? "image/jpeg";
+};
+
+const contentTypeFromUri = (uri: string): MediaType => {
   const ext = uri.split("?")[0]?.split(".").pop()?.toLowerCase();
   if (ext === "png") return "image/png";
   if (ext === "webp") return "image/webp";
@@ -24,43 +34,55 @@ const contentTypeFromUri = (uri: string): ImageContentType => {
   return "image/jpeg";
 };
 
+const resolveContentType = (uri: string, mime?: string | null): MediaType =>
+  mime != null && mime !== "" ? toMediaType(mime) : contentTypeFromUri(uri);
+
 /**
- * Media API flow (AMI-131): POST upload-url -> PUT raw bytes -> POST confirm.
+ * Media API flow: POST upload-url → PUT raw bytes → POST confirm.
  * Returns the confirmed `mediaId`. Throws on any failure; callers decide how to soft-fail.
  */
 export const uploadMedia = async (
   kind: MediaKind,
-  localUri: string,
+  uri: string,
+  mime?: string | null,
 ): Promise<string> => {
-  const blob = await (await fetch(localUri)).blob();
+  const contentType = resolveContentType(uri, mime);
+  const blob = await (await fetch(uri)).blob();
   if (blob.size === 0) throw new Error("Photo is empty");
-  if (blob.size > MEDIA_MAX_BYTES) throw new Error("Photo is too large to upload");
 
   const slot = await apiFetch<MediaUploadUrlResponse>("/v1/media/upload-url", {
     method: "POST",
-    body: { kind, contentType: contentTypeFromUri(localUri) },
+    body: { kind, contentType },
   });
 
-  const baseHeaders = await buildHeaders();
-  const putRes = await fetch(buildUrl(slot.uploadUrl), {
-    method: slot.method,
-    headers: { ...baseHeaders, ...slot.headers, Accept: "application/json" },
-    body: blob,
-    credentials: "omit",
-  });
-  if (!putRes.ok) {
-    logger.warn("media.put_failed", { kind, status: putRes.status });
-    throw new MirraApiError("upload_failed", "Upload failed", putRes.status);
+  const maxBytes = slot.maxBytes ?? MEDIA_MAX_BYTES;
+  if (blob.size > maxBytes) throw new Error("Photo is too large to upload");
+
+  try {
+    await apiFetch(slot.uploadUrl, {
+      method: "PUT",
+      rawBody: blob,
+      headers: { ...slot.headers },
+    });
+  } catch (err) {
+    logger.warn("media.put_failed", { kind, message: errorMessage(err) });
+    if (err instanceof MirraApiError) throw err;
+    throw new MirraApiError("upload_failed", "Upload failed", 0);
   }
 
   try {
-    await apiFetch<MediaConfirmResponse>(`/v1/media/${slot.mediaId}/confirm`, {
-      method: "POST",
-      body: {},
-    });
+    await apiFetch<MediaConfirmResponse>(
+      `/v1/media/${encodeURIComponent(slot.mediaId)}/confirm`,
+      { method: "POST", body: {} },
+    );
   } catch (err) {
     logger.warn("media.confirm_failed", { kind, message: errorMessage(err) });
     throw err;
   }
+
   return slot.mediaId;
 };
+
+/** Meal photo → `mediaId` (kind `meal`). */
+export const uploadMealPhoto = (uri: string, mime?: string | null) =>
+  uploadMedia("meal", uri, mime);

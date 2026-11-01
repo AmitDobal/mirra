@@ -40,7 +40,7 @@ export const createProgressPhotoApi = (body: CreateProgressPhotoBody) =>
 export const getProgressPhotoApi = (id: string) =>
   apiFetch<ProgressPhotoDto>(`/v1/progress/photos/${id}`);
 
-const mediaAuthHeaders = async (): Promise<Record<string, string>> => {
+export const mediaAuthHeaders = async (): Promise<Record<string, string>> => {
   const headers: Record<string, string> = { Accept: "image/*" };
   const bearer = getBearerToken();
   if (bearer) {

@@ -2,6 +2,7 @@ import { Utensils } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 
 import type { Meal } from "@/lib/api";
+import { formatLocalTime } from "@/lib/datetime";
 import { sx } from "@/theme/sx";
 import { color, radius } from "@/theme/tokens";
 
@@ -15,13 +16,18 @@ const SLOT_LABEL: Record<string, string> = {
 };
 
 const mealMeta = (m: Meal): string => {
-  const time = new Date(m.eatenAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const time = formatLocalTime(m.eatenAt);
   const slot = SLOT_LABEL[m.mealSlot] ?? "Meal";
   return m.proteinG > 0 ? `${slot} · ${time} · ${Math.round(m.proteinG)}g Protein` : `${slot} · ${time}`;
 };
 
-const MealRow = ({ meal }: { meal: Meal }) => (
-  <View style={sx("mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-low p-space-sm")}>
+const MealRow = ({ meal, onPress }: { meal: Meal; onPress: (m: Meal) => void }) => (
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel={`${meal.name}. Tap for details`}
+    onPress={() => onPress(meal)}
+    style={sx("mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-low p-space-sm")}
+  >
     <View
       style={{
         width: 52,
@@ -47,7 +53,7 @@ const MealRow = ({ meal }: { meal: Meal }) => (
         {meal.kcal > 0 ? `${meal.kcal} kcal` : NA}
       </Text>
     </View>
-  </View>
+  </Pressable>
 );
 
 type Props = {
@@ -55,10 +61,11 @@ type Props = {
   readonly expanded: boolean;
   readonly hasMore: boolean;
   readonly onSeeAll: () => void;
+  readonly onPressMeal: (meal: Meal) => void;
 };
 
 /** Newest logged meals (`GET /v1/meals`). */
-export const RecentMeals = ({ meals, expanded, hasMore, onSeeAll }: Props) => (
+export const RecentMeals = ({ meals, expanded, hasMore, onSeeAll, onPressMeal }: Props) => (
   <View>
     <View style={sx("mb-space-sm flex-row items-center justify-between")}>
       <Text style={sx("font-headline-semi text-headline-sm text-on-surface")}>Recent Logged Meals</Text>
@@ -74,7 +81,7 @@ export const RecentMeals = ({ meals, expanded, hasMore, onSeeAll }: Props) => (
         <Text style={sx("mt-1 font-body text-body-sm text-on-surface-variant")}>No meals logged yet</Text>
       </View>
     ) : (
-      meals.map((m) => <MealRow key={m.id} meal={m} />)
+      meals.map((m) => <MealRow key={m.id} meal={m} onPress={onPressMeal} />)
     )}
   </View>
 );

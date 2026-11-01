@@ -16,7 +16,8 @@ import { errorMessage, logger } from "@/lib/logger";
 
 import { canGenerateMealPlan } from "./meal-plan-gate";
 import { useFuelStore, type LocalMeal } from "./fuel-store";
-import { formatTime, todayIso } from "./fuel-helpers";
+import { formatLocalTime } from "@/lib/datetime";
+import { todayIso } from "./fuel-helpers";
 
 type MealPlanState = {
   readonly plan: DayMealPlan | null;
@@ -53,6 +54,7 @@ export const isOffPlanKcal = (plan: DayMealPlan, kcal: number): boolean =>
 
 /** Show the logged plan meal in Fuel immediately, before the API replies. */
 const applyOptimisticLog = (meal: PlannedMeal, date: string) => {
+  const now = Date.now();
   const local: LocalMeal = {
     id: `plan-${meal.id}`,
     name: meal.title,
@@ -60,7 +62,8 @@ const applyOptimisticLog = (meal: PlannedMeal, date: string) => {
     proteinG: Math.round(meal.proteinG),
     localDate: date,
     slot: meal.slot,
-    time: formatTime(),
+    time: formatLocalTime(now),
+    eatenAt: now,
     source: "api",
   };
   useFuelStore.setState((s) => ({

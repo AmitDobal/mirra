@@ -47,8 +47,8 @@ export const logMeal = async (input: LogMealInput): Promise<LocalMeal> => {
   const userId = data.userId ?? getLocalUserId();
   const db = await getDb();
   const ts = nowMs();
-  const date = data.localDate ?? todayUtc();
-  const eatenAt = data.eatenAt ?? Date.parse(`${date}T12:00:00.000Z`);
+  // UTC epoch ms; defaults to the moment of logging (never a fake noon).
+  const eatenAt = data.eatenAt ?? ts;
   const id = newId("meal");
 
   await db.runAsync(

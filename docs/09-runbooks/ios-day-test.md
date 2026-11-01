@@ -10,21 +10,21 @@ Expo Go + laptop Metro **cannot** survive laptop sleep/off. You need:
 
 | Piece | Value |
 | --- | --- |
-| API | https://mirra-api.amit-dobalwork.workers.dev — redeployed from clean `origin/main` **`e7198d9`** (calorie history wave AMI-130–134), Worker version `95377ecd-4a47-4e87-9361-4eb92df179ac` (D1 0012/0013 already applied remote) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — redeployed from clean `origin/main` **`5075117`** (account deletion AMI-135/136: `DELETE /v1/me`), Worker version `e76c6b15-54b5-4363-81bf-7163feae2637` (no pending D1 migrations) |
 | Health | `GET /health` → `{"ok":true,"version":"0.1.0"}` |
 | Auth probe | `GET /api/auth/ok` → `{"ok":true}` (no `google` field; #49) |
 | Dev user header | `x-mirra-user-id: day-test-1` (ALLOW_DEV_USER_HEADER=true; blocked if MIRRA_ENV/APP_ENV/ENVIRONMENT=production) |
 | Google OAuth | Better Auth social + **static** `expo-web-browser` (`disableRedirect` → openAuthSessionAsync); see `mirra-google-oauth.md`; **never** auth.expo.io |
 | Expo project | https://expo.dev/accounts/amitdobal141/projects/mirra |
-| Mobile bundle | Calorie history + Cal AI meal snap (AMI-130–134) on top of #56 funnel |
-| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/333e1d4a-290e-4ede-9548-6259ac72a79e |
-| iOS update ID | `01a19848-bdd6-7f7a-aca4-f64aa07b4b7b` |
-| iOS manifest (Expo Go) | https://u.expo.dev/update/01a19848-bdd6-7f7a-aca4-f64aa07b4b7b |
+| Mobile bundle | Delete account in You + `DELETE /v1/me` wipe (AMI-135/136) on top of calorie history wave |
+| Latest update group | https://expo.dev/accounts/amitdobal141/projects/mirra/updates/fe2291ea-bb8a-43d3-8fb4-447ec0a75c6c |
+| iOS update ID | `01a1985f-6aed-7bb1-b316-010d69e6f84d` |
+| iOS manifest (Expo Go) | https://u.expo.dev/update/01a1985f-6aed-7bb1-b316-010d69e6f84d |
 | Branch / channel | `day-test` |
 | Runtime | `exposdk:58.0.0` (Expo Go SDK 58) |
-| Message | `fix reopen: republish calorie history wave 4a6e112` |
-| Smoke shots | `/tmp/mirra-qa/calorie-history-full-smoke/` |
-| Bundle prove | Commit `e7198d9` (AMI-130–134 merged) |
+| Message | `delete account AMI-135/136 5075117` |
+| Smoke shots | `/tmp/mirra-qa/ami-delete-account/` (RESULT.md) |
+| Bundle prove | Commit `5075117` (AMI-135/136 merged) |
 | API prove | `POST /api/auth/sign-in/social` `disableRedirect:true` → accounts.google.com |
 | Smoke note | Matrix `/tmp/mirra-qa/onboarding-conversion-smoke/RESULT.md` |
 

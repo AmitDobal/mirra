@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-01 — Account deletion deployed (AMI-135/136, 5075117)
+
+**Done:** Smoke (local only, prod `day-test-1` not touched): `npm run test:account-delete` PASS; local `GET/DELETE /v1/me` with throwaway `del-smoke-*` header OK; unauth DELETE 401. Deployed from clean `origin/main` `5075117`: API Worker version `e76c6b15-54b5-4363-81bf-7163feae2637` (`/health` 200, no pending D1 migrations; prod unauth DELETE/GET `/v1/me` 401). EAS `day-test` iOS update `01a1985f-6aed-7bb1-b316-010d69e6f84d`, group `fe2291ea-bb8a-43d3-8fb4-447ec0a75c6c`.
+
+**Phone:** https://u.expo.dev/update/01a1985f-6aed-7bb1-b316-010d69e6f84d
+
+**Watch out:** Dev-header users are re-created empty on the next authed call after DELETE (expected; not a failed wipe). Do not tap Delete account as `day-test-1` on prod. EAS reports commit as dirty (`*`) only because of untracked `apps/mobile/Expo-Go-58.0.7.tar.app/`; tracked tree is clean. Prod Worker still has `ALLOW_DEV_USER_HEADER=true` (day-test only).
+
+**Evidence:** `/tmp/mirra-qa/ami-delete-account/RESULT.md`
+
 ## 2026-11-01 — Day-test pinned after calorie history wave (e7198d9)
 
 **Done:** Calorie history + Cal AI meal snap wave (AMI-130–134) merged and deployed from clean `origin/main` `e7198d9`. API Worker version `95377ecd-4a47-4e87-9361-4eb92df179ac` (`/health` 200, `/api/auth/ok` `{"ok":true}`; D1 0012/0013 already applied remote). EAS `day-test` iOS update `01a1983a-1790-72df-b212-03b68c51505b`, group `549d2f11-7c2b-4126-932b-5acfdb1401b7`.

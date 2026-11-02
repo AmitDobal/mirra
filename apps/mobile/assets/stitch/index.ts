@@ -89,6 +89,11 @@ export const s13PaywallHard = {
   coachAthlete: require("./s13_paywall_hard/coach-athlete.jpg"),
 } as const;
 
+/** S13c — Pro Paywall Highlights (AMI-149). */
+export const s13cPaywallHighlights = {
+  coachHero: require("./s13c_paywall_highlights/coach-hero.jpg"),
+} as const;
+
 /** S09B — Stitch-generated trainer character portraits (Kinetic Performance). */
 export const s09bTrainers = {
   drill: require("./s09b_trainers/drill.jpg"),

@@ -26,6 +26,7 @@ import { ScreenScroll } from "@/ui/ScreenScroll";
 import { sx } from "@/theme/sx";
 
 import { openAiLimitSheet } from "./AiLimitSheet";
+import { AlertsToggle } from "@/features/alerts/AlertsToggle";
 import { CreditsMeter } from "./CreditsMeter";
 import { connectedAccountLabels, experienceLabel } from "./profile-display";
 import { ProfileHero } from "./ProfileHero";
@@ -264,6 +265,8 @@ export const YouScreen = () => {
 
       <Group title="Coaching">
         <SpeakCuesToggle embedded />
+        <Divider />
+        <AlertsToggle />
         <Divider />
         <ToggleRow
           title="Adaptive rebuild"

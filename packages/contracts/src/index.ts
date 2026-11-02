@@ -24,3 +24,4 @@ export * from "./credits";
 export * from "./ai-context";
 export * from "./recipe-chat";
 export * from "./streaks";
+export * from "./notifications";

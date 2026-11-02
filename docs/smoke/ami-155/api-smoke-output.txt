@@ -1,0 +1,26 @@
+API http://127.0.0.1:8787
+PASS  unauthenticated list = 401
+PASS  new user: soft ask unanswered  - {"inAppEnabled":null,"streakReminders":true,"workoutReminders":true,"quietStart":null,"quietEnd":null,"softAskDismissedAt":null}
+PASS  reminder prefs default on
+PASS  empty inbox
+PASS  Not now = dismissed, still unanswered
+PASS  unknown field (push token) rejected
+PASS  bad HH:mm rejected
+PASS  Enable sets inAppEnabled
+PASS  first enable drops one welcome row
+PASS  re-enable does not duplicate welcome
+PASS  page 1 = 20 rows + cursor  - unread=25
+PASS  newest first, payload round-trips
+PASS  page 2 = remaining 5, no dupes
+PASS  unread count = 25
+PASS  mark one read
+PASS  mark read is idempotent
+PASS  unread 24, readAt set, limit honoured
+PASS  other user cannot read my row (404)
+PASS  other user inbox isolated
+PASS  read-all updates 24  - updated=24
+PASS  unread 0 after read-all
+PASS  unread count scoped to user
+PASS  disable + streak toggle persist
+
+ALL PASS

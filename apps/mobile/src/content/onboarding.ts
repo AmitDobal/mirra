@@ -336,6 +336,12 @@ export const onboardingCopy = {
     legal:
       "Plan auto-renews after 7-day trial. Cancel anytime in Apple ID settings at least 24 hours before renewal.",
     closeLabel: "Close paywall",
+    restoreNoneTitle: "No purchases found",
+    restoreNoneBody:
+      "We couldn't find an active Mirra Pro plan on this Apple ID. Start the free trial or try a different account.",
+    restoreErrorTitle: "Couldn't restore purchases",
+    restoreErrorFallback: "Something went wrong. Check your connection and try again.",
+    purchaseErrorFallback: "That purchase didn't go through. Please try again.",
     blockedTitle: "Start your trial to continue",
     blockedBody:
       "Mirra needs an active trial or plan to open your week. Start the free trial or restore a purchase.",

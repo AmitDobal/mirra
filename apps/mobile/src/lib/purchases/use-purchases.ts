@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
 
+import { getAuthUserId, hasSession } from "@/lib/auth";
 import { useEntitlementStore } from "@/stores/entitlement-store";
 
 import { getPurchases } from "./instance";
 import type { Offering, PackageIdentifier, PurchasesError } from "./types";
+import { restoreWithLogin } from "./restore-flow";
 import { MIRRA_PRO_ENTITLEMENT } from "./types";
 
 type PurchaseState = {
@@ -68,7 +70,10 @@ export const usePurchases = () => {
 
   const restore = useCallback(async () => {
     setState((s) => ({ ...s, loading: true, error: null }));
-    const result = await getPurchases().restore();
+    const result = await restoreWithLogin(
+      getPurchases(),
+      hasSession() ? getAuthUserId() : null,
+    );
     if (!result.ok) {
       setState((s) => ({ ...s, loading: false, error: result.error }));
       return result;

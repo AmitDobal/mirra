@@ -1,0 +1,9 @@
+
+> @mirra/api@0.1.0 test:revise-caps
+> tsx scripts/assert-revise-caps.ts
+
+PASS  plan chat apply cap = 4/day
+PASS  meal regen cap = 2/day
+PASS  plan meter action coach.revise
+PASS  meal regen includes meal_plan.generate
+PASS  meal regen includes meal_plan.rebalance

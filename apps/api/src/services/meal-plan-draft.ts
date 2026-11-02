@@ -22,8 +22,9 @@ import type { MealPlanInput } from "../ports/meal-plan-generator";
 
 export type MealPlanCtx = { env: MirraEnv; db: AppDB; userId: string };
 
-const DAILY_REGEN_LIMIT = 10;
-const REGEN_ACTIONS = ["meal_plan.generate", "meal_plan.rebalance"];
+export const DAILY_MEAL_REGEN_LIMIT = 2;
+const REGEN_ACTIONS = ["meal_plan.generate", "meal_plan.rebalance"] as const;
+export const MEAL_REGEN_ACTIONS: readonly string[] = REGEN_ACTIONS;
 
 export type Drafted = { title: string; meal: MaterializedMeal };
 
@@ -39,8 +40,8 @@ export const assertRateLimit = async (ctx: MealPlanCtx): Promise<void> => {
         gte(auditLog.createdAt, new Date(start)),
       ),
     );
-  if ((row?.n ?? 0) >= DAILY_REGEN_LIMIT) {
-    throw new ApiError("rate_limited", "Meal plan limit reached for today", 429);
+  if ((row?.n ?? 0) >= DAILY_MEAL_REGEN_LIMIT) {
+    throw new ApiError("rate_limited", "Meal limit reached for today", 429);
   }
 };
 

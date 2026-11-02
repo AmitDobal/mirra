@@ -24,8 +24,8 @@ import { defaultFuelTargets, loadCurrentPlan } from "./plan-loaders";
 import { reviseEquipment, sameList, snapSessionMinutes } from "./prefs-revise";
 import { reviseWorkout } from "./workout-revise";
 
-const REVISE_ACTION = "coach.revise";
-const DAILY_REVISE_LIMIT = 40;
+export const REVISE_ACTION = "coach.revise";
+export const DAILY_REVISE_LIMIT = 4;
 
 const assertReviseLimit = async (ctx: MealPlanCtx): Promise<void> => {
   const { start } = dayBoundsMs(todayUtc());
@@ -57,7 +57,7 @@ export const revisePlans = async (
   const date = body.date ?? todayUtc();
   const dryRun = body.dryRun === true;
   const scope = body.scope ?? "auto";
-  await assertReviseLimit(ctx);
+  if (!dryRun) await assertReviseLimit(ctx);
 
   const [prefs] = await ctx.db
     .select()
@@ -230,7 +230,7 @@ export const revisePlans = async (
   }
 
   const applied = !dryRun && changes.length > 0;
-  await recordRegen(ctx, REVISE_ACTION, date); // metered even for dryRun (the reviser may call AI)
+  if (applied) await recordRegen(ctx, REVISE_ACTION, date);
   const already = meal?.alreadyNotes ?? [];
   const noop = changes.length === 0 && warnings.length === 0;
   // Nothing to do: say so plainly instead of the reviser's "Done, now ..." line.

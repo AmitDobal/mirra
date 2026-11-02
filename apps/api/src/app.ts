@@ -20,6 +20,7 @@ import { insightsRoutes } from "./routes/insights";
 import { mealPlanRoutes } from "./routes/meal-plan";
 import { mediaRoutes } from "./routes/media";
 import { meRoutes } from "./routes/me";
+import { notificationRoutes } from "./routes/notifications";
 import { nutritionRoutes } from "./routes/nutrition";
 import { onboardingRoutes } from "./routes/onboarding";
 import { planRoutes } from "./routes/plans";
@@ -81,6 +82,7 @@ export const createApp = () => {
   app.route("/", aiRoutes);
   app.route("/", creditsRoutes);
   app.route("/", creditsDevRoutes);
+  app.route("/", notificationRoutes);
 
   app.onError((err, c) => {
     if (err instanceof ApiError) {

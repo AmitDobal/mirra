@@ -3,9 +3,10 @@ import { Bell } from "lucide-react-native";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { s15bTodayCheckinInline } from "../../../assets/stitch";
+import { unreadLabel } from "@/features/alerts/alert-meta";
+import type { Streak } from "@/lib/api";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
-import type { Streak } from "@/lib/api";
 import { CheckInPill } from "./CheckInPill";
 import { StreakFireChip } from "./StreakFireChip";
 import { TodayIconBtn } from "./TodayIconBtn";
@@ -18,10 +19,19 @@ type Props = {
   /** Check-in streak; the crimson fire chip renders once it has loaded. */
   readonly streak?: Streak | null;
   readonly onStreak?: () => void;
+  /** Unread in-app alerts; shows a lime count badge on the bell. */
+  readonly unreadCount?: number;
 };
 
-/** S15c header: Today pill + microcopy (or check-in pill when due), bell, avatar → You. */
-export const TodayHeader = ({ onBell, checkInDue = false, onCheckIn, streak, onStreak }: Props) => (
+/** S15c header: Today pill + microcopy (or check-in pill when due), streak fire, bell, avatar → You. */
+export const TodayHeader = ({
+  onBell,
+  checkInDue = false,
+  onCheckIn,
+  streak,
+  onStreak,
+  unreadCount = 0,
+}: Props) => (
   <View style={sx("mb-space-md flex-row items-center justify-between gap-space-sm")}>
     <View style={sx("min-w-0 flex-1 flex-row items-center gap-space-sm")}>
       <View style={sx("shrink-0 flex-row items-center gap-space-sm rounded-full bg-surface-container-high px-3 py-1.5")}>
@@ -38,7 +48,23 @@ export const TodayHeader = ({ onBell, checkInDue = false, onCheckIn, streak, onS
     </View>
     <View style={sx("flex-row items-center gap-space-sm")}>
       {streak ? <StreakFireChip streak={streak} onPress={onStreak} /> : null}
-      <TodayIconBtn label="Notifications" Icon={Bell} onPress={onBell} />
+      <View>
+        <TodayIconBtn
+          label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+          Icon={Bell}
+          onPress={onBell}
+        />
+        {unreadCount > 0 ? (
+          <View
+            pointerEvents="none"
+            style={[sx("absolute items-center justify-center rounded-full bg-primary-fixed px-1"), styles.badge]}
+          >
+            <Text style={sx("font-label-bold text-label-caps text-on-primary-fixed")}>
+              {unreadLabel(unreadCount)}
+            </Text>
+          </View>
+        ) : null}
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Open profile"
@@ -56,6 +82,7 @@ export const TodayHeader = ({ onBell, checkInDue = false, onCheckIn, streak, onS
 );
 
 const styles = StyleSheet.create({
+  badge: { top: 2, right: 0, minWidth: 18, height: 18 },
   avatar: {
     width: 44,
     height: 44,

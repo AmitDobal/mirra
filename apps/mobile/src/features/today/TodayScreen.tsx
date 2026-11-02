@@ -2,6 +2,8 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 
+import { SoftAskSheet } from "@/features/alerts/SoftAskSheet";
+import { useAlertsStore } from "@/features/alerts/alerts-store";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { selectLoggedKcal, useFuelStore } from "@/features/fuel/fuel-store";
@@ -67,6 +69,7 @@ export const TodayScreen = () => {
   useVoiceCueOnFocus();
   const { insights, load: loadInsights } = useTodayInsights();
   const [refreshing, setRefreshing] = useState(false);
+  const unreadAlerts = useAlertsStore((s) => s.unreadCount);
 
   const attendance = useAttendanceStore((s) => s.byDate);
   const loadAttendance = useAttendanceStore((s) => s.load);
@@ -138,7 +141,8 @@ export const TodayScreen = () => {
   return (
     <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
       <TodayHeader
-        onBell={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")}
+        onBell={() => router.push("/(tabs)/alerts")}
+        unreadCount={unreadAlerts}
         checkInDue={checkInDue}
         onCheckIn={openCheckIn}
         streak={streak}
@@ -172,6 +176,7 @@ export const TodayScreen = () => {
         onSelectDay={onSelectDay}
       />
       {dayHistorySheet}
+      <SoftAskSheet />
 
       <TodayHeroCard
         title={title}

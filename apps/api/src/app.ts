@@ -26,6 +26,7 @@ import { onboardingRoutes } from "./routes/onboarding";
 import { planRoutes } from "./routes/plans";
 import { progressRoutes } from "./routes/progress";
 import { recipeRoutes } from "./routes/recipe";
+import { badgeRoutes } from "./routes/badges";
 import { streakRoutes } from "./routes/streaks";
 import { todayActionsRoutes } from "./routes/today-actions";
 import { todayRoutes } from "./routes/today";
@@ -69,6 +70,7 @@ export const createApp = () => {
   app.route("/", historyRoutes);
   app.route("/", checkInRoutes);
   app.route("/", streakRoutes);
+  app.route("/", badgeRoutes);
   app.route("/", coachRoutes);
   app.route("/", fuelRoutes);
   app.route("/", nutritionRoutes);

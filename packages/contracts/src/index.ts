@@ -25,3 +25,4 @@ export * from "./ai-context";
 export * from "./recipe-chat";
 export * from "./streaks";
 export * from "./notifications";
+export * from "./badges";

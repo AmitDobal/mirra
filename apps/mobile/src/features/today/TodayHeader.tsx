@@ -8,6 +8,7 @@ import type { Streak } from "@/lib/api";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
 import { CheckInPill } from "./CheckInPill";
+import { KineticRankChip } from "@/features/rank/KineticRankChip";
 import { StreakFireChip } from "./StreakFireChip";
 import { TodayIconBtn } from "./TodayIconBtn";
 
@@ -19,6 +20,8 @@ type Props = {
   /** Check-in streak; the crimson fire chip renders once it has loaded. */
   readonly streak?: Streak | null;
   readonly onStreak?: () => void;
+  readonly rankTitle?: string | null;
+  readonly onRank?: () => void;
   /** Unread in-app alerts; shows a lime count badge on the bell. */
   readonly unreadCount?: number;
 };
@@ -30,6 +33,8 @@ export const TodayHeader = ({
   onCheckIn,
   streak,
   onStreak,
+  rankTitle,
+  onRank,
   unreadCount = 0,
 }: Props) => (
   <View style={sx("mb-space-md flex-row items-center justify-between gap-space-sm")}>
@@ -47,6 +52,7 @@ export const TodayHeader = ({
       )}
     </View>
     <View style={sx("flex-row items-center gap-space-sm")}>
+      {rankTitle ? <KineticRankChip title={rankTitle} onPress={onRank} /> : null}
       {streak ? <StreakFireChip streak={streak} onPress={onStreak} /> : null}
       <View>
         <TodayIconBtn

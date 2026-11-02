@@ -5,6 +5,7 @@ import type { AppDB } from "../db";
 import { checkIns, userStreaks } from "../db/schema";
 import { addDays } from "../lib/dates";
 import { computeStreak, STREAK_LOOKBACK_DAYS, viewStreak } from "../lib/streak-math";
+import { awardKineticBadgesSafe } from "./badges";
 import { localTodayFor } from "./attendance";
 
 type StreakRow = typeof userStreaks.$inferSelect;
@@ -55,6 +56,7 @@ export const recomputeCheckInStreak = async (
       set: { currentCount: current, bestCount, lastActiveDate, updatedAt: now },
     })
     .returning();
+  await awardKineticBadgesSafe(db, userId, bestCount);
   return row as StreakRow;
 };
 

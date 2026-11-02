@@ -1,10 +1,14 @@
 # Handoff
 
-## 2026-11-02 — AMI-160: Pro entitlement sync (tab guard)
+## 2026-11-02 — AMI-158–160: Chip padding, revise caps, Pro paywall
 
-**Branch:** `feat/ami-160-paywall-entitlement` (PR pending). Tab guard reads `resolveEffectiveEntitlementStatus` (Zustand + persisted `/v1/me`) and mirrors entitled cache into entitlement store. `use-purchases` RC fallback: unentitled → `none` (not fake `trial`). Unit tests + `docs/smoke/ami-160/`.
+**Done:** [#70](https://github.com/AmitDobal/mirra/pull/70) streak+Kinetic chip padding. [#69](https://github.com/AmitDobal/mirra/pull/69) plan apply 4/day, meal regen 2/day, dryRun skips apply quota. [#71](https://github.com/AmitDobal/mirra/pull/71) tab guard mirrors me-cache entitlement; RC fail → `none` not fake trial. Main `c92d8b6` (+ docs `9f771d6`). Worktrees removed. API Worker `63e8f013`.
 
-**Next:** Merge PR; manual Expo Go cold start with entitled cache.
+**Smoke:** `docs/smoke/ami-158/` … `ami-160/`. Asserts: revise-caps + 20 entitlement tests PASS.
+
+**Phone:** https://u.expo.dev/update/01a19d30-6062-729d-9704-5f476b97d3ec (group `6cdcc764-a3fb-4278-b321-4fb63ea66d99`).
+
+**Watch:** Device smoke if Pro still sees paywall after this update (live RC). Kinetic tier ladder already on AMI-156.
 
 ## 2026-11-02 — AMI-154–157: Retention (streak / alerts / ranks / body map)
 

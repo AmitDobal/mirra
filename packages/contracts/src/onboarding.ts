@@ -67,6 +67,8 @@ export const OnboardingPreferencesSchema = z.object({
   lifestyleNotes: z.string().max(2000).nullable().optional(),
   /** Active training site; defaults to gym when unset. */
   trainingLocation: TrainingLocationSchema.default("gym"),
+  /** Meals planned per day (1-4). Null/omit = default 4 slots (breakfast, lunch, snack, dinner). */
+  mealsPerDay: z.number().int().min(1).max(4).nullable().optional(),
 });
 
 export const OnboardingProfileSchema = z.object({

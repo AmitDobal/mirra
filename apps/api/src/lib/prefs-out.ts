@@ -31,4 +31,5 @@ export const toPreferencesOut = (prefs: PrefsRow): OnboardingPreferences => ({
   physiqueTarget: (prefs.physiqueTarget as OnboardingPreferences["physiqueTarget"]) ?? null,
   lifestyleNotes: prefs.lifestyleNotes ?? null,
   trainingLocation: toTrainingLocation(prefs.trainingLocation),
+  mealsPerDay: prefs.mealsPerDay ?? null,
 });

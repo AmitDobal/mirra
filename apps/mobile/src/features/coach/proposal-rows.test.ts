@@ -32,3 +32,14 @@ test("no changes → no sections; preview prefix stripped", () => {
   assert.deepEqual(buildProposalSections([]), []);
   assert.equal(stripPreviewPrefix("Preview: Done."), "Done.");
 });
+
+test("meals_per_day and multi-line meal_regen keep real before/after", () => {
+  const [section] = buildProposalSections([
+    { kind: "meals_per_day", area: "meal", before: "4 meals a day (Breakfast, Lunch, Snack, Dinner)", after: "2 meals a day (Lunch, Dinner)", summary: "Meals per day: 2" },
+    { kind: "meal_regen", area: "meal", before: "Lunch · Rice · 600 kcal\nDinner · Fish · 500 kcal", after: "Lunch · new dish · ~1000 kcal", summary: "Rebuild today's meals" },
+  ]);
+  assert.equal(section!.area, "meal");
+  assert.equal(section!.rows.length, 2);
+  assert.equal(section!.rows[0]!.after, "2 meals a day (Lunch, Dinner)");
+  assert.match(section!.rows[1]!.before ?? "", /Lunch · Rice/);
+});

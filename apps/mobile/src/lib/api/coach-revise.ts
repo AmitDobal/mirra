@@ -3,12 +3,29 @@ import type { DayMealPlan } from "./meal-plan";
 
 export type CoachReviseScope = "auto" | "meal" | "workout" | "both";
 
+/** Mirrors contracts `CoachReviseIntentSchema`: the structured edit a preview resolved. */
+export type CoachReviseIntent = {
+  readonly equipmentAdd: readonly string[];
+  readonly equipmentRemove: readonly string[];
+  readonly foodsAvoidAdd: readonly string[];
+  readonly dietTagsAdd: readonly string[];
+  readonly cuisineStylesAdd: readonly string[];
+  readonly cuisineStylesOnly?: boolean;
+  readonly forceMealRegen: boolean;
+  readonly reviseWorkout: boolean;
+  readonly preferBench?: boolean;
+  readonly shortenMin?: number;
+  readonly mealsPerDay?: number;
+};
+
 /** Mirrors contracts `coach.ts` (`POST /v1/coach/revise`). */
 export type CoachReviseBody = {
   readonly message: string;
   readonly scope?: CoachReviseScope;
   readonly date?: string;
   readonly dryRun?: boolean;
+  /** Confirm: apply exactly the previewed intent (server skips re-parsing `message`). */
+  readonly intent?: CoachReviseIntent;
   readonly context?: {
     readonly workoutId?: string;
     readonly mealItemId?: string;
@@ -34,6 +51,8 @@ export type CoachReviseResponse = {
   readonly mealPlan?: DayMealPlan | null;
   readonly workoutTitle?: string | null;
   readonly warnings?: readonly string[];
+  /** Resolved intent; echo it back with dryRun:false to apply this exact preview. */
+  readonly intent?: CoachReviseIntent;
 };
 
 /** POST /v1/coach/revise — chat message that edits the existing meal + workout plans. */

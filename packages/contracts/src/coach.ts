@@ -49,6 +49,25 @@ export const CoachAdviseResponseSchema = z.object({
 
 export const CoachReviseScopeSchema = z.enum(["auto", "meal", "workout", "both"]);
 
+/**
+ * Structured edit the preview resolved. Echoed back on confirm so "Yes, apply" never
+ * re-parses the free-text message (no LLM drift between preview and apply).
+ */
+export const CoachReviseIntentSchema = z.object({
+  equipmentAdd: z.array(z.string()).max(12).default([]),
+  equipmentRemove: z.array(z.string()).max(12).default([]),
+  foodsAvoidAdd: z.array(z.string()).max(12).default([]),
+  dietTagsAdd: z.array(z.string()).max(12).default([]),
+  cuisineStylesAdd: z.array(z.string()).max(12).default([]),
+  cuisineStylesOnly: z.boolean().optional(),
+  forceMealRegen: z.boolean().default(false),
+  reviseWorkout: z.boolean().default(false),
+  preferBench: z.boolean().optional(),
+  shortenMin: z.number().optional(),
+  /** Target meals per day (1-4). */
+  mealsPerDay: z.number().int().min(1).max(4).optional(),
+});
+
 /** POST /v1/coach/revise — chat message that edits the existing meal/workout plan. */
 export const CoachReviseBodySchema = z.object({
   message: z.string().trim().min(1).max(2000),
@@ -57,6 +76,8 @@ export const CoachReviseBodySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   /** Preview only: describe changes without persisting anything. */
   dryRun: z.boolean().optional(),
+  /** Confirm path: apply exactly this previewed intent instead of re-reading `message`. */
+  intent: CoachReviseIntentSchema.optional(),
   context: z
     .object({
       workoutId: z.string().min(1).max(64).optional(),
@@ -86,6 +107,8 @@ export const CoachReviseResponseSchema = z.object({
   mealPlan: DayMealPlanSchema.nullable().optional(),
   workoutTitle: z.string().nullable().optional(),
   warnings: z.array(z.string()).optional(),
+  /** Resolved intent; send it back with dryRun:false to apply this exact preview. */
+  intent: CoachReviseIntentSchema.optional(),
 });
 
 export type CoachReadiness = z.infer<typeof CoachReadinessSchema>;
@@ -94,6 +117,7 @@ export type CoachVector = z.infer<typeof CoachVectorSchema>;
 export type CoachPillTone = z.infer<typeof CoachPillToneSchema>;
 export type CoachPill = z.infer<typeof CoachPillSchema>;
 export type CoachAdviseResponse = z.infer<typeof CoachAdviseResponseSchema>;
+export type CoachReviseIntent = z.infer<typeof CoachReviseIntentSchema>;
 export type CoachReviseScope = z.infer<typeof CoachReviseScopeSchema>;
 export type CoachReviseBody = z.infer<typeof CoachReviseBodySchema>;
 export type CoachReviseArea = z.infer<typeof CoachReviseAreaSchema>;

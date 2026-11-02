@@ -22,16 +22,19 @@ const ReplySchema = z.object({
     reviseWorkout: z.boolean().default(false),
     preferBench: z.boolean().optional(),
     shortenMin: z.number().optional(),
+    mealsPerDay: z.number().optional(),
   }),
   warnings: z.array(z.string()).default([]),
 });
 
 const SYSTEM = `You are Mirra's plan editor. Convert the user's chat message into a STRICT JSON edit of their EXISTING meal plan and workout plan. Never invent a new plan.
-Reply JSON: {"reply":string,"intent":{"equipmentAdd":string[],"equipmentRemove":string[],"foodsAvoidAdd":string[],"dietTagsAdd":string[],"cuisineStylesAdd":string[],"cuisineStylesOnly"?:boolean,"forceMealRegen":boolean,"reviseWorkout":boolean,"preferBench"?:boolean,"shortenMin"?:number},"warnings":string[]}
+Reply JSON: {"reply":string,"intent":{"equipmentAdd":string[],"equipmentRemove":string[],"foodsAvoidAdd":string[],"dietTagsAdd":string[],"cuisineStylesAdd":string[],"cuisineStylesOnly"?:boolean,"forceMealRegen":boolean,"reviseWorkout":boolean,"preferBench"?:boolean,"shortenMin"?:number,"mealsPerDay"?:number},"warnings":string[]}
 Rules:
 - Equipment ids only: ${EQUIPMENT_IDS.join(", ")}. "no cable machines" -> equipmentRemove ["cables"]. "only dumbbells" -> equipmentRemove ["machines","cables","barbell","bands"], equipmentAdd ["dumbbells"]. "prefer bench press" -> preferBench true, equipmentAdd ["bench"].
 - foodsAvoidAdd: single lowercase food words (dairy, chicken, nuts, gluten...). dietTagsAdd only from: vegetarian, vegan, dairy_free, gluten_free, halal, high_protein.
 - cuisineStylesAdd ids only from: ${CUISINE_STYLE_IDS.join(", ")}. "prefer Indian food" -> ["indian"]; "only Chinese" -> ["chinese"] with cuisineStylesOnly true. Also set forceMealRegen true.
+- mealsPerDay: integer 1-4 when the user says how often they eat ("I only eat two times a day" -> 2, "three meals" -> 3). Do NOT set forceMealRegen for this. If current.mealsPerDay already equals it AND current.meals already has that many slots, still return it (the server reports "already at target"). Never invent a number the user did not say.
+- Use current.meals (today's planned dishes), current.nutrition (goal, daily kcal and protein targets, lifestyle notes) and current.mealsPerDay to judge what is actually possible. Respect lifestyle notes (work hours, fasting windows) when choosing foods or counts.
 - reviseWorkout true whenever equipment, bench preference or session length changes. shortenMin = target minutes (10-90).
 - forceMealRegen true when the user asks for different/new meals.
 - Do not add anything the user did not ask for. If the message asks for nothing actionable, return empty intent and say what you can change.
@@ -50,6 +53,14 @@ const buildUserPayload = (input: PlanReviseInput): string =>
       cuisineStyles: input.cuisineStyles,
       workout: input.workoutTitle,
       exercises: input.exerciseNames.slice(0, 12),
+      mealsPerDay: input.mealsPerDay,
+      meals: input.meals.slice(0, 6).map((m) => ({ slot: m.slot, title: m.title.slice(0, 60), kcal: m.kcal, status: m.status })),
+      nutrition: {
+        goal: input.nutrition.goal,
+        kcalTarget: input.nutrition.kcalTarget,
+        proteinGTarget: input.nutrition.proteinGTarget,
+        lifestyleNotes: input.nutrition.lifestyleNotes?.slice(0, 400) ?? null,
+      },
     },
   });
 
@@ -65,7 +76,7 @@ export const createOpenAiPlanReviser = (env: MirraEnv, db?: AppDB): PlanReviser 
         model,
         jsonMode: true,
         temperature: 0.2,
-        maxTokens: 350,
+        maxTokens: 400,
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: buildUserPayload(input) },

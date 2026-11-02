@@ -41,5 +41,7 @@ export const preferences = sqliteTable("preferences", {
   lifestyleNotes: text("lifestyle_notes"),
   /** gym | home | hotel — filters kit for coach/plan. */
   trainingLocation: text("training_location").notNull().default("gym"),
+  /** Meals planned per day (1-4); null = default four slots. */
+  mealsPerDay: integer("meals_per_day"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 });

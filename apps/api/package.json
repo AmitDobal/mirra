@@ -13,6 +13,8 @@
     "test:nutrition": "tsx scripts/assert-nutrition-history.ts",
     "test:account-delete": "tsx scripts/assert-account-deletion.ts",
     "test:auth": "tsx scripts/assert-auth-harden.ts",
+    "test:meal-revise": "tsx scripts/assert-meal-revise.ts",
+    "smoke:meal-revise": "node scripts/smoke-meal-revise.mjs",
     "smoke:chef": "node scripts/smoke-chef.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply mirra-db --local",

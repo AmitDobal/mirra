@@ -20,6 +20,19 @@ export type PlanReviseIntent = {
   preferBench?: boolean;
   /** Cap session length in minutes (trims tail exercises). */
   shortenMin?: number;
+  /** Target meals per day (1-4); "I only eat two times a day" -> 2. */
+  mealsPerDay?: number;
+};
+
+/** One planned meal as the reviser sees it (for "swap lunch", "two meals a day"). */
+export type PlanReviseMeal = { slot: string; title: string; kcal: number; status: string };
+
+/** Targets + personal context so replies/intent fit the user's actual nutrition. */
+export type PlanReviseNutrition = {
+  goal: string | null;
+  kcalTarget: number | null;
+  proteinGTarget: number | null;
+  lifestyleNotes: string | null;
 };
 
 export type PlanReviseInput = {
@@ -32,6 +45,11 @@ export type PlanReviseInput = {
   cuisineStyles: string[];
   workoutTitle: string | null;
   exerciseNames: string[];
+  /** Saved meals-per-day preference; null = default four slots. */
+  mealsPerDay: number | null;
+  /** Today's current meals (empty when no plan yet). */
+  meals: PlanReviseMeal[];
+  nutrition: PlanReviseNutrition;
   /** Trainer character voice for the reply; defaults to drill. */
   persona?: TrainerPersona;
 };

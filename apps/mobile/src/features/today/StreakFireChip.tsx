@@ -29,7 +29,7 @@ export const StreakFireChip = ({ streak, onPress }: Props) => {
       onPress={onPress}
       style={({ pressed }) => [
         sx(
-          `flex-row items-center gap-1 rounded-full border px-2.5 py-1.5 ${
+          `flex-row items-center gap-1.5 rounded-full border px-3 py-2 ${
             cold
               ? "border-outline-variant bg-surface-container-high"
               : lit
@@ -41,8 +41,8 @@ export const StreakFireChip = ({ streak, onPress }: Props) => {
         pressFeedback(pressed),
       ]}
     >
-      <View style={{ opacity: lit || cold ? 1 : 0.7 }}>
-        <FlameIcon size={18} lit={!cold} />
+      <View style={[sx("items-center justify-center p-1"), { opacity: lit || cold ? 1 : 0.7 }]}>
+        <FlameIcon size={16} lit={!cold} />
       </View>
       <Text
         style={sx(

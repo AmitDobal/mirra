@@ -1,5 +1,11 @@
 # Handoff
 
+## 2026-11-02 — AMI-160: Pro entitlement sync (tab guard)
+
+**Branch:** `feat/ami-160-paywall-entitlement` (PR pending). Tab guard reads `resolveEffectiveEntitlementStatus` (Zustand + persisted `/v1/me`) and mirrors entitled cache into entitlement store. `use-purchases` RC fallback: unentitled → `none` (not fake `trial`). Unit tests + `docs/smoke/ami-160/`.
+
+**Next:** Merge PR; manual Expo Go cold start with entitled cache.
+
 ## 2026-11-02 — AMI-154–157: Retention (streak / alerts / ranks / body map)
 
 **Done:** Merged [#66](https://github.com/AmitDobal/mirra/pull/66) streaks + crimson fire S29, [#65](https://github.com/AmitDobal/mirra/pull/65) in-app Alerts S30 (no FCM), [#68](https://github.com/AmitDobal/mirra/pull/68) Kinetic ranks Spark→Apex S33, [#67](https://github.com/AmitDobal/mirra/pull/67) male/female body map S31/S32. Main tip `e8df514`. Worktrees removed. D1 `0015`–`0017` remote. API Worker `9f584aa8`.

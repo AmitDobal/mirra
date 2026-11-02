@@ -5,6 +5,7 @@ import { useEntitlementStore } from "@/stores/entitlement-store";
 
 import { getPurchases } from "./instance";
 import type { Offering, PackageIdentifier, PurchasesError } from "./types";
+import { fallbackEntitlementStatus } from "./refresh-entitlement-fallback";
 import { restoreWithLogin } from "./restore-flow";
 import { MIRRA_PRO_ENTITLEMENT } from "./types";
 
@@ -36,7 +37,7 @@ export const usePurchases = () => {
       setFromCustomer(info.value, MIRRA_PRO_ENTITLEMENT);
       return;
     }
-    setStatus(entitled ? "active" : "trial");
+    setStatus(fallbackEntitlementStatus(entitled));
   }, [setFromCustomer, setStatus]);
 
   const loadOfferings = useCallback(async () => {

@@ -2,8 +2,8 @@ import { getSetCookie } from "@better-auth/expo/client";
 import * as Linking from "expo-linking";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
-import { useState } from "react";
 
+import { onboardingCopy } from "@/content/onboarding";
 import { GoogleGlyph } from "@/features/onboarding/components/AuthGlyphs";
 import { authClient } from "@/lib/auth/auth-client";
 import {
@@ -22,8 +22,14 @@ const EXPO_COOKIE_KEY = `${env.appScheme}_cookie`;
 
 type Props = {
   readonly label: string;
-  /** Called after Better Auth social returns a session user id. */
-  readonly onSignedIn: (userId: string, bearer?: string | null) => void;
+  /** True from tap until the flow (authorize, browser, session, post-auth start) settles. */
+  readonly pending: boolean;
+  readonly onPendingChange: (pending: boolean) => void;
+  /**
+   * Called after Better Auth social returns a session user id. Awaited, so
+   * `pending` stays true until the parent has finished its post-auth start.
+   */
+  readonly onSignedIn: (userId: string, bearer?: string | null) => void | Promise<void>;
   readonly onError?: (message: string) => void;
 };
 
@@ -73,13 +79,18 @@ const persistCookieFromRedirect = async (redirectUrl: string): Promise<boolean> 
  * We request the authorize URL with `disableRedirect: true` (so that import
  * never runs), then open the Expo proxy with our static import.
  */
-export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
-  const [pending, setPending] = useState(false);
+export const GoogleSignInButton = ({
+  label,
+  pending,
+  onPendingChange,
+  onSignedIn,
+  onError,
+}: Props) => {
 
   const handlePress = () => {
     void (async () => {
       if (pending) return;
-      setPending(true);
+      onPendingChange(true);
       /** Keep OAuth return on auth — not `/` cold-start (double paywall / wrong gate). */
       const callbackURL = Linking.createURL("/(onboarding)/auth");
       markGoogleAuthHandoff();
@@ -153,21 +164,21 @@ export const GoogleSignInButton = ({ label, onSignedIn, onError }: Props) => {
           onError?.("Google sign-in did not return a session");
           return;
         }
-        onSignedIn(sessionUserId, getBearerToken());
+        await onSignedIn(sessionUserId, getBearerToken());
       } catch (err) {
         const message = friendlyGoogleError(errorMessage(err));
         logger.error("auth.google.exception", { message });
         clearGoogleAuthHandoff();
         onError?.(message);
       } finally {
-        setPending(false);
+        onPendingChange(false);
       }
     })();
   };
 
   return (
     <Button
-      label={label}
+      label={pending ? onboardingCopy.auth.googleConnecting : label}
       variant="surfaceLow"
       size="tall"
       icon={<GoogleGlyph />}

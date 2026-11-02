@@ -1,11 +1,12 @@
 import { router } from "expo-router";
 import { ChevronLeft, Mail, Zap } from "lucide-react-native";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { AppleGlyph } from "@/features/onboarding/components/AuthGlyphs";
+import { AuthLoadingOverlay } from "@/features/onboarding/components/AuthLoadingOverlay";
 import { AuthLegalLine } from "@/features/onboarding/components/AuthLegalLine";
 import { AuthPlanCard } from "@/features/onboarding/components/AuthPlanCard";
 import { finishAfterAuth } from "@/features/onboarding/services/post-auth-flow";
@@ -33,6 +34,8 @@ const AuthScreen = () => {
   const goal = useOnboardingStore((s) => s.goal);
   const trainingDays = useOnboardingStore((s) => s.trainingDays);
   const kcalTarget = useOnboardingStore((s) => s.weekPlan?.summary?.kcalTarget);
+  /** Google flow in flight: authorize URL → browser return → session → post-auth start. */
+  const [googlePending, setGooglePending] = useState(false);
   const autoRan = useRef(false);
   /** Capture at mount so Google callback setting session does not race auto-finish. */
   const hadSessionOnMount = useRef(hasSession());
@@ -45,6 +48,7 @@ const AuthScreen = () => {
   const sessionsPerWeek = trainingDays.filter(Boolean).length;
 
   const handleBack = () => {
+    if (googlePending) return;
     if (router.canGoBack()) router.back();
   };
 
@@ -61,6 +65,7 @@ const AuthScreen = () => {
   }, []);
 
   const handleDevTester = () => {
+    if (googlePending) return;
     void (async () => {
       await setDevSession();
       await finishAfterAuth("dev");
@@ -69,24 +74,24 @@ const AuthScreen = () => {
 
   /** Never skip signup via Not now — Google (or existing Google session) only. */
   const handleNotNow = () => {
+    if (googlePending) return;
     Alert.alert(c.authRequiredTitle, c.authRequiredBody);
   };
 
   const handleComingSoon = () => {
+    if (googlePending) return;
     Alert.alert(c.comingSoonTitle, c.comingSoonBody);
   };
 
-  const handleGoogleSignedIn = (userId: string, bearer?: string | null) => {
-    void (async () => {
-      await setGoogleSession(userId, bearer ?? getBearerToken());
-      try {
-        await getPurchases().logIn(userId);
-      } catch {
-        /* stub/RC login optional; session still valid */
-      }
-      logger.info("auth.google.session_ok");
-      await finishAfterAuth("google");
-    })();
+  const handleGoogleSignedIn = async (userId: string, bearer?: string | null) => {
+    await setGoogleSession(userId, bearer ?? getBearerToken());
+    try {
+      await getPurchases().logIn(userId);
+    } catch {
+      /* stub/RC login optional; session still valid */
+    }
+    logger.info("auth.google.session_ok");
+    await finishAfterAuth("google");
   };
 
   const handleGoogleError = (message: string) => {
@@ -101,6 +106,7 @@ const AuthScreen = () => {
             accessibilityRole="button"
             accessibilityLabel={c.backLabel}
             onPress={handleBack}
+            disabled={googlePending}
             style={sx("h-10 w-10 items-center justify-center rounded-full bg-surface-container")}
           >
             <ChevronLeft color={color.onSurface} size={20} />
@@ -142,10 +148,13 @@ const AuthScreen = () => {
           variant="apple"
           size="tall"
           icon={<AppleGlyph />}
+          disabled={googlePending}
           onPress={handleComingSoon}
         />
         <GoogleSignInButton
           label={c.google}
+          pending={googlePending}
+          onPendingChange={setGooglePending}
           onSignedIn={handleGoogleSignedIn}
           onError={handleGoogleError}
         />
@@ -154,6 +163,7 @@ const AuthScreen = () => {
           variant="surface"
           size="tall"
           icon={<Mail color={color.onSurfaceVariant} size={20} />}
+          disabled={googlePending}
           onPress={handleComingSoon}
         />
       </View>
@@ -163,6 +173,7 @@ const AuthScreen = () => {
           accessibilityRole="button"
           accessibilityLabel={c.notNow}
           onPress={handleNotNow}
+          disabled={googlePending}
           hitSlop={8}
           style={sx("px-space-md py-space-sm")}
         >
@@ -173,6 +184,7 @@ const AuthScreen = () => {
             accessibilityRole="button"
             accessibilityLabel={c.devTester}
             onPress={handleDevTester}
+            disabled={googlePending}
             hitSlop={8}
             style={sx("px-space-md py-space-xs")}
           >
@@ -182,6 +194,7 @@ const AuthScreen = () => {
           </Pressable>
         ) : null}
       </View>
+      <AuthLoadingOverlay visible={googlePending} />
     </OnboardingShell>
   );
 };

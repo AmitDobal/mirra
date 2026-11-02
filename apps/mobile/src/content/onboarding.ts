@@ -374,6 +374,10 @@ export const onboardingCopy = {
     googleFailedTitle: "Google sign-in failed",
     googleFailedBody:
       "Could not create a Mirra session. Check that the API has GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, then try again. In the simulator use Continue as Dev Tester.",
+    googleConnecting: "Connecting Google…",
+    loadingBadge: "Live AI",
+    loadingTitle: "Signing you in…",
+    loadingBody: "Stay here — connecting Google securely.",
     authRequiredTitle: "Sign in to continue",
     authRequiredBody: "Choose Google to save your plan.",
     privacy: "Privacy",

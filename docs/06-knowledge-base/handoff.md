@@ -1,5 +1,17 @@
 # Handoff
 
+## 2026-11-02 — AMI-154–157: Retention (streak / alerts / ranks / body map)
+
+**Done:** Merged [#66](https://github.com/AmitDobal/mirra/pull/66) streaks + crimson fire S29, [#65](https://github.com/AmitDobal/mirra/pull/65) in-app Alerts S30 (no FCM), [#68](https://github.com/AmitDobal/mirra/pull/68) Kinetic ranks Spark→Apex S33, [#67](https://github.com/AmitDobal/mirra/pull/67) male/female body map S31/S32. Main tip `e8df514`. Worktrees removed. D1 `0015`–`0017` remote. API Worker `9f584aa8`.
+
+**Stitch:** S29–S33 ids in `docs/05-project-management/stitch-ami-154-157-ids.md`. Arch `docs/03-engineering/retention-streaks-badges-anatomy.md`.
+
+**Smoke:** `docs/smoke/ami-154/` … `ami-157/`. Asserts: streaks + badges PASS.
+
+**Phone:** https://u.expo.dev/update/01a19b41-cfa5-70c0-92f9-d80ffc6527c7 (group `ca579023-7e7c-4db2-a78a-e1088a145ca4`).
+
+**Watch:** FCM still deferred. Device UI smoke vs Stitch screenshots still worth a human pass on Expo Go.
+
 ## 2026-11-02 — AMI-152/153: Restore + meal revise (2×/day)
 
 **Done:** [PR #63](https://github.com/AmitDobal/mirra/pull/63) Restore resume-after-Google + require Pro (no false unlock). [PR #64](https://github.com/AmitDobal/mirra/pull/64) mealsPerDay prefs, rich meal before/after, deterministic confirm intent, nutrition context in reviser. Main tip `2e568ac`. Worktrees removed. D1 migration `0014_meals_per_day` remote applied. API Worker `8d59a1f0`.

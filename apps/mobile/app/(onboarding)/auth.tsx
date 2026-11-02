@@ -39,7 +39,8 @@ const AuthScreen = () => {
   const autoRan = useRef(false);
   /** Capture at mount so Google callback setting session does not race auto-finish. */
   const hadSessionOnMount = useRef(hasSession());
-  const paywallIntent = peekPostAuthIntent() === "paywall";
+  const postAuthIntent = peekPostAuthIntent();
+  const paywallIntent = postAuthIntent === "paywall" || postAuthIntent === "restore";
 
   const goalLabel = onboardingCopy.goal.options.find((o) => o.id === goal)?.label;
   const planTitle = goalLabel

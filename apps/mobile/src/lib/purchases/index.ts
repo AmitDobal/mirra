@@ -18,3 +18,5 @@ export {
   getPurchases,
 } from "./instance";
 export { usePurchases } from "./use-purchases";
+export { classifyRestore, hasProEntitlement, restoreWithLogin } from "./restore-flow";
+export type { RestoreOutcome } from "./restore-flow";

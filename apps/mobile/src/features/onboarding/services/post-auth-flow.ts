@@ -1,6 +1,6 @@
 import { router, type Href } from "expo-router";
 
-import { takePostAuthIntent } from "@/lib/auth";
+import { armRestoreResume, takePostAuthIntent } from "@/lib/auth";
 import { devTesterAllowed } from "@/lib/auth/dev-tester";
 import {
   clearGoogleAuthHandoff,
@@ -57,9 +57,11 @@ export const finishAfterAuth = async (kind: PostAuthKind): Promise<void> =>
       if (snapshot.serverOnboarded === true) await mirrorServerPlan();
 
       const dest = await resolveFunnelDestination(snapshot, {
-        revealSeen: intent === "paywall",
+        revealSeen: intent === "paywall" || intent === "restore",
         afterSignIn: kind !== "existing" || intent === "signin",
       });
+      // Restore resumes on the paywall only; never leak the flag to other dests.
+      if (intent === "restore" && String(dest).includes("paywall")) armRestoreResume();
       replaceFunnel(dest as Href);
     } catch (err) {
       logger.error("funnel.finish_after_auth_failed", { message: errorMessage(err) });

@@ -13,10 +13,12 @@ export {
 } from "./session";
 export type { AuthMode } from "./session";
 export {
+  armRestoreResume,
   clearPostAuthIntent,
   peekPostAuthIntent,
   setPostAuthIntent,
   takePostAuthIntent,
+  takeRestoreResume,
 } from "./post-auth-intent";
 export type { PostAuthIntent } from "./post-auth-intent";
 export {

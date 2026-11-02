@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { ArrowRight, X, Zap } from "lucide-react-native";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
@@ -13,9 +13,14 @@ import {
   hasSession,
   requireSignedInUser,
   setPostAuthIntent,
+  takeRestoreResume,
 } from "@/lib/auth";
 import { shouldReplaceFunnelDest } from "@/lib/auth/funnel-nav";
-import { usePurchases } from "@/lib/purchases";
+import {
+  classifyRestore,
+  MIRRA_PRO_ENTITLEMENT,
+  usePurchases,
+} from "@/lib/purchases";
 import { color } from "@/theme/tokens";
 import { LimeCta } from "@/ui";
 import { sx } from "@/theme/sx";
@@ -25,7 +30,8 @@ const PaywallScreen = () => {
   const c = onboardingCopy.paywall;
   const plan = useOnboardingStore((s) => s.paywallPlan);
   const setPaywallPlan = useOnboardingStore((s) => s.setPaywallPlan);
-  const { loading, purchase, restore, loadOfferings, offerings } = usePurchases();
+  const { loading, error, purchase, restore, loadOfferings, offerings } = usePurchases();
+  const resumedRestore = useRef(false);
 
   useEffect(() => {
     void loadOfferings();
@@ -38,7 +44,7 @@ const PaywallScreen = () => {
     });
   };
 
-  const goAuth = (intent: "paywall" | "tabs") => {
+  const goAuth = (intent: "paywall" | "tabs" | "restore") => {
     setPostAuthIntent(intent);
     router.push("/(onboarding)/auth");
   };
@@ -52,9 +58,11 @@ const PaywallScreen = () => {
     offerings[0]?.packages[0]?.identifier ??
     (plan === "annual" ? "$rc_annual" : "$rc_monthly");
 
-  const ensureGoogleForPurchase = (): boolean => {
+  const ensureGoogleForPurchase = (
+    intent: "paywall" | "restore" = "paywall",
+  ): boolean => {
     if (requireSignedInUser()) return true;
-    goAuth("paywall");
+    goAuth(intent);
     return false;
   };
 
@@ -64,11 +72,41 @@ const PaywallScreen = () => {
     if (result?.ok) finishPro();
   };
 
-  const handleRestore = async () => {
-    if (!ensureGoogleForPurchase()) return;
-    const result = await restore();
-    if (result?.ok) finishPro();
+  /** Restore must find an active `pro` entitlement — empty/stub ok never unlocks. */
+  const runRestore = async () => {
+    const outcome = classifyRestore(await restore(), MIRRA_PRO_ENTITLEMENT);
+    if (outcome.kind === "pro") {
+      finishPro();
+      return;
+    }
+    if (outcome.kind === "error") {
+      Alert.alert(
+        c.restoreErrorTitle,
+        outcome.message || c.restoreErrorFallback,
+      );
+      return;
+    }
+    Alert.alert(c.restoreNoneTitle, c.restoreNoneBody);
   };
+
+  const handleRestore = async () => {
+    if (!ensureGoogleForPurchase("restore")) return;
+    await runRestore();
+  };
+
+  /** Google auth returned with intent=restore → restore once, no second tap. */
+  useEffect(() => {
+    if (resumedRestore.current) return;
+    if (!takeRestoreResume()) return;
+    resumedRestore.current = true;
+    void runRestore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const purchaseErrorText =
+    error && error.code !== "cancelled"
+      ? error.message || c.purchaseErrorFallback
+      : null;
 
   /**
    * Hard close: no Continue without Pro. No session → auth; session → blocked alert.
@@ -128,6 +166,14 @@ const PaywallScreen = () => {
       }
       footer={
         <View style={sx("items-center gap-space-sm pb-space-xs")}>
+          {purchaseErrorText ? (
+            <Text
+              accessibilityRole="alert"
+              style={sx("text-center font-body text-body-sm text-error")}
+            >
+              {purchaseErrorText}
+            </Text>
+          ) : null}
           <LimeCta
             label={loading ? "…" : c.trial}
             icon={<ArrowRight color={color.onPrimaryFixed} size={18} />}

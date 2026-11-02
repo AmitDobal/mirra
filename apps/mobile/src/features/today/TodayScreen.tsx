@@ -13,6 +13,7 @@ import { useWorkoutStore } from "@/features/workout/workout-store";
 import { type DailyGoal, type NextAction } from "@/lib/api";
 import { kcalStatus } from "@/lib/accountability";
 import { useAttendanceStore } from "./attendance-store";
+import { useStreakStore } from "./streak-store";
 import { adjustedMinutes, useTodayAdjustStore } from "@/features/checkin/adjust-store";
 import { openCheckIn } from "@/features/checkin/open-check-in";
 import { GoalChecklist } from "./GoalChecklist";
@@ -70,6 +71,8 @@ export const TodayScreen = () => {
   const attendance = useAttendanceStore((s) => s.byDate);
   const loadAttendance = useAttendanceStore((s) => s.load);
   const serverToday = useAttendanceStore((s) => s.today);
+  const streak = useStreakStore((s) => s.checkIn);
+  const loadStreak = useStreakStore((s) => s.load);
   const todayDate = serverToday ?? localTodayIso();
   const weekDates = useMemo(() => weekDays.map((d) => d.date), [weekDays]);
   const { onSelectDay, sheet: dayHistorySheet } = useDayHistory(
@@ -83,6 +86,7 @@ export const TodayScreen = () => {
       await Promise.all([hydrate(), hydrateFuel(), hydratePlan(), refetchActions()]);
       void ensureAfterOnboarding();
       void loadAttendance(useTodayStore.getState().weekDays[0]?.date);
+      void loadStreak();
       await loadInsights(force);
     },
     [
@@ -92,6 +96,7 @@ export const TodayScreen = () => {
       ensureAfterOnboarding,
       refetchActions,
       loadAttendance,
+      loadStreak,
       loadInsights,
     ],
   );
@@ -136,6 +141,15 @@ export const TodayScreen = () => {
         onBell={() => setNotice(checkInDue ? "Check-in due" : "You're caught up")}
         checkInDue={checkInDue}
         onCheckIn={openCheckIn}
+        streak={streak}
+        onStreak={() =>
+          streak &&
+          setNotice(
+            streak.fire === "cold"
+              ? "Check in to start a streak"
+              : `${streak.current}-day streak · best ${streak.best}`,
+          )
+        }
       />
 
       {notice ? (

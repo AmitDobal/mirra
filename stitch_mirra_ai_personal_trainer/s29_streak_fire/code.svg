@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <linearGradient id="crimsonFlameGrad" x1="24" y1="44" x2="24" y2="4" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#b53354" />
+      <stop offset="50%" stop-color="#ff6b8a" />
+      <stop offset="100%" stop-color="#ff9ebb" />
+    </linearGradient>
+    <filter id="crimsonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#ff6b8a" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  <!-- Outer Flame Body -->
+  <path d="M24 4C24 4 28 11 28 16C28 18.2 27.2 20.1 26 21.5C28.8 20.2 31 17.5 31.8 14.5C36 19.2 38 25.5 38 31C38 38.7 31.7 44 24 44C16.3 44 10 38.7 10 31C10 24 14.5 17 21 12C20.5 14.5 21.2 17 22.8 18.8C23.6 15 24 8 24 4Z" fill="url(#crimsonFlameGrad)" filter="url(#crimsonGlow)" />
+  <!-- Inner Core Flame -->
+  <path d="M24 42C28.4 42 32 38.4 32 34C32 29.5 28.5 26 26.5 23.5C26 25 25 26.2 23.5 27C23.5 24 22 21 20 19C18 23 16 27.5 16 33C16 38 19.6 42 24 42Z" fill="#ffffff" fill-opacity="0.9" />
+</svg>

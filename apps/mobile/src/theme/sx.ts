@@ -50,6 +50,8 @@ const colors: Record<string, string> = {
   "tertiary-fixed-dim": color.tertiaryFixedDim,
   "on-tertiary-fixed": color.onTertiaryFixed,
   "on-tertiary-fixed-variant": color.onTertiaryFixedVariant,
+  "streak-fire": color.streakFire,
+  "streak-fire-deep": color.streakFireDeep,
   error: color.error,
   "on-error": color.onError,
   "error-container": color.errorContainer,

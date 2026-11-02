@@ -26,3 +26,4 @@ export * from "./weight";
 export * from "./attendance";
 export * from "./recipe-chat";
 export * from "./history";
+export * from "./streaks";

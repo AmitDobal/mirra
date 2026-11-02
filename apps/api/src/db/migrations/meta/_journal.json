@@ -99,6 +99,13 @@
       "when": 1762974000000,
       "tag": "0014_meals_per_day",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1763060400000,
+      "tag": "0015_user_streaks",
+      "breakpoints": true
     }
   ]
 }

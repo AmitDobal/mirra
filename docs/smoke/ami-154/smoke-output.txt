@@ -1,0 +1,15 @@
+      fresh: {"kind":"check_in","current":0,"best":0,"lastActiveDate":null,"freezeRemaining":0,"fire":"cold"}
+PASS  fresh user: cold, 0/0
+      today: {"kind":"check_in","current":1,"best":1,"lastActiveDate":"2026-11-02","freezeRemaining":0,"fire":"lit"}
+PASS  check-in today: lit, 1
+      3-day: {"kind":"check_in","current":3,"best":3,"lastActiveDate":"2026-11-02","freezeRemaining":0,"fire":"lit"}
+PASS  today + 2 backdated days: current 3, best 3
+PASS  same-day re-post is idempotent
+      skipped today: {"kind":"check_in","current":2,"best":3,"lastActiveDate":"2026-11-01","freezeRemaining":0,"fire":"at_risk"}
+PASS  skipped today stops counting: 2, at_risk, best stays 3
+      yesterday only: {"kind":"check_in","current":1,"best":1,"lastActiveDate":"2026-11-01","freezeRemaining":0,"fire":"at_risk"}
+PASS  yesterday only: at_risk, 1
+      broken: {"kind":"check_in","current":0,"best":0,"lastActiveDate":"2026-10-30","freezeRemaining":0,"fire":"cold"}
+PASS  last check-in 3 days ago: cold, 0
+PASS  no auth = 401  - 401
+PASS streaks smoke

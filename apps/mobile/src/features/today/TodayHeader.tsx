@@ -5,7 +5,9 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { s15bTodayCheckinInline } from "../../../assets/stitch";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
+import type { Streak } from "@/lib/api";
 import { CheckInPill } from "./CheckInPill";
+import { StreakFireChip } from "./StreakFireChip";
 import { TodayIconBtn } from "./TodayIconBtn";
 
 type Props = {
@@ -13,10 +15,13 @@ type Props = {
   /** Daily check-in is due: show the small pill. */
   readonly checkInDue?: boolean;
   readonly onCheckIn?: () => void;
+  /** Check-in streak; the crimson fire chip renders once it has loaded. */
+  readonly streak?: Streak | null;
+  readonly onStreak?: () => void;
 };
 
 /** S15c header: Today pill + microcopy (or check-in pill when due), bell, avatar → You. */
-export const TodayHeader = ({ onBell, checkInDue = false, onCheckIn }: Props) => (
+export const TodayHeader = ({ onBell, checkInDue = false, onCheckIn, streak, onStreak }: Props) => (
   <View style={sx("mb-space-md flex-row items-center justify-between gap-space-sm")}>
     <View style={sx("min-w-0 flex-1 flex-row items-center gap-space-sm")}>
       <View style={sx("shrink-0 flex-row items-center gap-space-sm rounded-full bg-surface-container-high px-3 py-1.5")}>
@@ -32,6 +37,7 @@ export const TodayHeader = ({ onBell, checkInDue = false, onCheckIn }: Props) =>
       )}
     </View>
     <View style={sx("flex-row items-center gap-space-sm")}>
+      {streak ? <StreakFireChip streak={streak} onPress={onStreak} /> : null}
       <TodayIconBtn label="Notifications" Icon={Bell} onPress={onBell} />
       <Pressable
         accessibilityRole="button"

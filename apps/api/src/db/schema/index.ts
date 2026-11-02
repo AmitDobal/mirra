@@ -11,3 +11,4 @@ export * from "./attendance";
 export * from "./credits";
 export * from "./recipe-chat";
 export * from "./nutrition";
+export * from "./streaks";

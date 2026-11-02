@@ -41,6 +41,8 @@ const colors = {
   "on-tertiary-container": "#b53354",
   "tertiary-fixed": "#ffd9dd",
   "tertiary-fixed-dim": "#ffb2bd",
+  "streak-fire": "#ff6b8a",
+  "streak-fire-deep": "#b53354",
   "on-tertiary-fixed": "#400013",
   "on-tertiary-fixed-variant": "#8c1037",
   error: "#ffb4ab",

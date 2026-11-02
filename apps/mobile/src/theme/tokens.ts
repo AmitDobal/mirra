@@ -48,6 +48,10 @@ export const color = {
   tertiaryFixedDim: "#ffb2bd",
   onTertiaryFixed: "#400013",
   onTertiaryFixedVariant: "#8c1037",
+  /** Stitch S29 streak fire: crimson tertiary accent (never orange). Gradient base → mid → tip. */
+  streakFireDeep: "#b53354",
+  streakFire: "#ff6b8a",
+  streakFireTip: "#ff9ebb",
   error: "#ffb4ab",
   onError: "#690005",
   errorContainer: "#93000a",

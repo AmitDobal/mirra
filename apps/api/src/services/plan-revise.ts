@@ -13,21 +13,15 @@ import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { dayBoundsMs, todayUtc } from "../lib/dates";
 import { ApiError } from "../lib/errors";
 import { parseJson } from "../lib/json";
-import { filterCatalog } from "../lib/meal-diet";
 import { getPlanReviser } from "../lib/plan-reviser";
-import { hasMealIntent, hasWorkoutIntent } from "../lib/plan-intent";
+import { hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../lib/plan-intent";
+import type { PlanReviseResult } from "../ports/plan-reviser";
 import { withAiCredits } from "./credits-gate";
 import { recordRegen } from "./meal-plan-draft";
-import { generatePlan, getTodayPlan, swapPlannedMeal, type MealPlanCtx } from "./meal-plan";
-import { loadCurrentPlan } from "./plan-loaders";
-import {
-  reviseCuisines,
-  reviseDietTags,
-  reviseEquipment,
-  reviseFoodsAvoid,
-  sameList,
-  snapSessionMinutes,
-} from "./prefs-revise";
+import { getTodayPlan, type MealPlanCtx } from "./meal-plan";
+import { planMealPrefs, runMealRegen } from "./meal-revise";
+import { defaultFuelTargets, loadCurrentPlan } from "./plan-loaders";
+import { reviseEquipment, sameList, snapSessionMinutes } from "./prefs-revise";
 import { reviseWorkout } from "./workout-revise";
 
 const REVISE_ACTION = "coach.revise";
@@ -51,9 +45,6 @@ const assertReviseLimit = async (ctx: MealPlanCtx): Promise<void> => {
 };
 
 const fmtList = (list: readonly string[]): string => list.join(", ").replace(/_/g, " ") || "none";
-
-const asWarning = (err: unknown): string =>
-  err instanceof ApiError ? err.message : "Could not update meals right now";
 
 /**
  * Plan chat: one message → structured intent (PlanReviser port) → edit the EXISTING
@@ -94,27 +85,46 @@ export const revisePlans = async (
     null;
   const workoutIsNextLift = Boolean(workout && !requested && !dayWorkoutId && nextLiftId);
 
-  const result = await withAiCredits(
-    ctx,
-    {
-      feature: "revise",
-      paid: resolveAiProvider(ctx.env) === "openai",
-      wasPaid: (r) => r.source === "openai",
-    },
-    () =>
-      getPlanReviser(ctx.env, ctx.db).propose({
-        userId: ctx.userId,
-        message: body.message,
-        scope,
-        equipment,
-        dietTags,
-        foodsAvoid,
-        cuisineStyles,
-        workoutTitle: workout?.title ?? null,
-        exerciseNames: workout?.exercises.map((e) => e.name) ?? [],
-        persona: toTrainerPersonaId(prefs?.trainerPersona),
-      }),
-  );
+  const existingPlan = await getTodayPlan(ctx, date);
+  const targets = defaultFuelTargets(current.plan?.summary ?? null);
+
+  // Confirm path: apply the exact previewed intent. No free-text re-parse, no LLM, no credits.
+  const result: PlanReviseResult = body.intent
+    ? { intent: sanitizeIntent(body.intent), reply: "Done. Your plan is updated.", warnings: [], source: "heuristic" }
+    : await withAiCredits(
+        ctx,
+        {
+          feature: "revise",
+          paid: resolveAiProvider(ctx.env) === "openai",
+          wasPaid: (r) => r.source === "openai",
+        },
+        () =>
+          getPlanReviser(ctx.env, ctx.db).propose({
+            userId: ctx.userId,
+            message: body.message,
+            scope,
+            equipment,
+            dietTags,
+            foodsAvoid,
+            cuisineStyles,
+            workoutTitle: workout?.title ?? null,
+            exerciseNames: workout?.exercises.map((e) => e.name) ?? [],
+            mealsPerDay: prefs?.mealsPerDay ?? null,
+            meals: (existingPlan?.meals ?? []).map((m) => ({
+              slot: m.slot,
+              title: m.title,
+              kcal: m.kcal,
+              status: m.status,
+            })),
+            nutrition: {
+              goal: prefs?.primaryGoal ?? null,
+              kcalTarget: targets.kcal,
+              proteinGTarget: targets.proteinG,
+              lifestyleNotes: prefs?.lifestyleNotes ?? null,
+            },
+            persona: toTrainerPersonaId(prefs?.trainerPersona),
+          }),
+      );
   const { intent } = result;
   const warnings = [...result.warnings];
   const changes: CoachReviseChange[] = [];
@@ -126,51 +136,14 @@ export const revisePlans = async (
 
   // --- Preferences (persisted unless dryRun) ---------------------------------
   const patch: Record<string, unknown> = {};
-  let foodsChanged = false;
 
-  if (doMeal) {
-    const nextDiet = reviseDietTags(dietTags, intent.dietTagsAdd);
-    const nextAvoid = reviseFoodsAvoid(foodsAvoid, intent.foodsAvoidAdd);
-    const nextCuisines = reviseCuisines(cuisineStyles, intent.cuisineStylesAdd, intent.cuisineStylesOnly);
-    if (filterCatalog(nextDiet, nextAvoid, nextCuisines, prefs?.lifestyleNotes).length === 0) {
-      warnings.push("Those food limits leave nothing to eat; meal prefs unchanged");
-    } else if (
-      !sameList(nextDiet, dietTags) ||
-      nextAvoid !== foodsAvoid ||
-      !sameList(nextCuisines, cuisineStyles)
-    ) {
-      foodsChanged = true;
-      patch.dietTagsJson = JSON.stringify(nextDiet);
-      patch.foodsAvoid = nextAvoid;
-      patch.cuisineJson = JSON.stringify(nextCuisines);
-      if (!sameList(nextCuisines, cuisineStyles)) {
-        changes.push({
-          kind: "cuisine_styles",
-          area: "meal",
-          before: fmtList(cuisineStyles),
-          after: fmtList(nextCuisines),
-          summary: `Cuisines: ${fmtList(nextCuisines)}`,
-        });
-      }
-      if (!sameList(nextDiet, dietTags)) {
-        changes.push({
-          kind: "diet_tags",
-          area: "meal",
-          before: fmtList(dietTags),
-          after: fmtList(nextDiet),
-          summary: `Diet: ${fmtList(nextDiet)}`,
-        });
-      }
-      if (nextAvoid !== foodsAvoid) {
-        changes.push({
-          kind: "foods_avoid",
-          area: "meal",
-          before: foodsAvoid ?? "nothing",
-          after: nextAvoid ?? "nothing",
-          summary: `Avoiding: ${nextAvoid ?? "nothing"}`,
-        });
-      }
-    }
+  const meal = doMeal
+    ? planMealPrefs({ intent, prefs, dietTags, foodsAvoid, cuisineStyles, plan: existingPlan })
+    : null;
+  if (meal) {
+    Object.assign(patch, meal.patch);
+    changes.push(...meal.changes);
+    warnings.push(...meal.warnings);
   }
 
   let nextEquipment = equipment;
@@ -210,30 +183,24 @@ export const revisePlans = async (
   }
 
   // --- Meals -----------------------------------------------------------------
-  let mealPlan: DayMealPlan | null = null;
-  if (doMeal) {
-    const wantsRegen = foodsChanged || intent.forceMealRegen;
-    try {
-      if (wantsRegen && !dryRun) {
-        const existing = await getTodayPlan(ctx, date);
-        const itemId = body.context?.mealItemId;
-        const swapOne = !foodsChanged && itemId && existing;
-        mealPlan = swapOne
-          ? await swapPlannedMeal(ctx, existing.id, { mealItemId: itemId })
-          : await generatePlan(ctx, { date, force: true });
-        changes.push({
-          kind: "meal_regen",
-          area: "meal",
-          summary: swapOne ? "Swapped that meal" : `Rebuilt ${date === todayUtc() ? "today's" : date} meals`,
-        });
-      } else {
-        mealPlan = await getTodayPlan(ctx, date);
-        if (wantsRegen) changes.push({ kind: "meal_regen", area: "meal", summary: "Meals would be rebuilt" });
-      }
-    } catch (err) {
-      warnings.push(asWarning(err));
-      mealPlan = await getTodayPlan(ctx, date).catch(() => null);
-    }
+  let mealPlan: DayMealPlan | null = existingPlan;
+  if (meal) {
+    // "Fresh meals" asks only count when it is not just the meals-per-day request (that has its own target check).
+    const wantsRegen =
+      meal.foodsChanged || meal.mealsChanged || (intent.forceMealRegen && intent.mealsPerDay == null);
+    const out = await runMealRegen(ctx, {
+      body,
+      date,
+      dryRun,
+      wantsRegen,
+      swapAllowed: !meal.foodsChanged && !meal.mealsChanged,
+      mealCount: meal.mealCount,
+      kcalTarget: targets.kcal,
+      existing: existingPlan,
+    });
+    mealPlan = out.mealPlan;
+    changes.push(...out.changes);
+    warnings.push(...out.warnings);
   }
 
   // --- Workout ---------------------------------------------------------------
@@ -264,9 +231,15 @@ export const revisePlans = async (
 
   const applied = !dryRun && changes.length > 0;
   await recordRegen(ctx, REVISE_ACTION, date); // metered even for dryRun (the reviser may call AI)
+  const already = meal?.alreadyNotes ?? [];
   const noop = changes.length === 0 && warnings.length === 0;
+  // Nothing to do: say so plainly instead of the reviser's "Done, now ..." line.
   const message = sanitizeAiCopy(
-    noop ? `${result.reply} Nothing in your plan needed changing.` : result.reply,
+    changes.length === 0 && already.length > 0
+      ? already.join(" ")
+      : noop
+        ? `${result.reply} Nothing in your plan needed changing.`
+        : result.reply,
   );
 
   return {
@@ -275,6 +248,7 @@ export const revisePlans = async (
     applied,
     source: result.source ?? "heuristic",
     mealPlan: doMeal ? mealPlan : undefined,
+    intent,
     workoutTitle: workout?.title ?? null,
     ...(warnings.length > 0 ? { warnings: [...new Set(warnings)].map(sanitizeAiCopy) } : {}),
   };

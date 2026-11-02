@@ -52,6 +52,21 @@ const shortenFrom = (text: string): number | undefined => {
   return undefined;
 };
 
+const COUNT_WORDS: Record<string, number> = {
+  one: 1, once: 1, two: 2, twice: 2, three: 3, thrice: 3, four: 4, "1": 1, "2": 2, "3": 3, "4": 4,
+};
+const COUNT = "one|once|two|twice|three|thrice|four|[1-4]";
+const EAT_CUE = /\b(?:eat|eating|ate|meals?|food|feed|fed|diet|lunch|dinner|breakfast|snacks?)\b/;
+
+/** "I only eat two times a day", "3 meals a day", "just 2 meals". */
+const mealsPerDayFrom = (text: string): number | undefined => {
+  if (!EAT_CUE.test(text)) return undefined;
+  const perDay = new RegExp(`\\b(${COUNT})\\s*(?:x|times?|meals?)?(?:\\s*(?:a|per|each|every)\\s+|\\s*/\\s*)day\\b`).exec(text);
+  const only = new RegExp(`\\b(?:to|only|just|have|eat|down to)\\s+(${COUNT})\\s+meals?\\b`).exec(text);
+  const hit = perDay?.[1] ?? only?.[1];
+  return hit ? COUNT_WORDS[hit] : undefined;
+};
+
 /** Keyword/rule reviser — deterministic, no keys needed. */
 export const heuristicPlanReviser: PlanReviser = {
   propose: async (input): Promise<PlanReviseResult> => {
@@ -110,6 +125,11 @@ export const heuristicPlanReviser: PlanReviser = {
       intent.forceMealRegen = true;
     }
 
+    const mealsPerDay = mealsPerDayFrom(text);
+    if (mealsPerDay) {
+      intent.mealsPerDay = mealsPerDay;
+    }
+
     // Session length.
     intent.shortenMin = shortenFrom(text);
     if (/\b(workout|exercise|routine|session|lift)\b[^.,;]{0,15}\b(change|swap|new|different)\b|\b(change|swap|new|different)\b[^.,;]{0,15}\b(workout|exercise|routine|session|lift)\b/.test(text)) {
@@ -128,13 +148,14 @@ export const heuristicPlanReviser: PlanReviser = {
     if (clean.foodsAvoidAdd.length) notes.push(`removing ${clean.foodsAvoidAdd.join(", ")} from meals`);
     if (clean.dietTagsAdd.length) notes.push(`switching meals to ${clean.dietTagsAdd.join(", ").replace(/_/g, " ")}`);
     if (clean.cuisineStylesAdd.length) notes.push(`${clean.cuisineStylesOnly ? "only " : "adding "}${clean.cuisineStylesAdd.join(", ").replace(/_/g, " ")} food`);
-    if (clean.forceMealRegen && !clean.foodsAvoidAdd.length && !clean.dietTagsAdd.length && !clean.cuisineStylesAdd.length) notes.push("rebuilding today's meals");
+    if (clean.mealsPerDay) notes.push(`planning ${clean.mealsPerDay} meal${clean.mealsPerDay === 1 ? "" : "s"} a day`);
+    if (clean.forceMealRegen && !clean.mealsPerDay && !clean.foodsAvoidAdd.length && !clean.dietTagsAdd.length && !clean.cuisineStylesAdd.length) notes.push("rebuilding today's meals");
 
     if (!hasAnyIntent(clean)) {
       return {
         intent: clean,
         reply:
-          "I couldn't map that to a plan change. Try: \"no cable machines\", \"prefer bench press\", \"no dairy\" or \"shorter session\".",
+          "I couldn't map that to a plan change. Try: \"no cable machines\", \"prefer bench press\", \"no dairy\", \"I eat two meals a day\" or \"shorter session\".",
         warnings: ["No actionable change detected"],
         source: "heuristic",
       };

@@ -17,13 +17,14 @@ import { todayUtc } from "../lib/dates";
 import { conflict, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { SLOT_ORDER, subtractMacros, sumMacros } from "../lib/meal-macros";
-import { MIN_REPLAN_KCAL, pickSlotsToPlan } from "../lib/meal-slots";
+import { MIN_REPLAN_KCAL, pickSlotsToPlan, slotsForMealCount } from "../lib/meal-slots";
 import { withAiCredits } from "./credits-gate";
 import {
   assertRateLimit,
   type Drafted,
   itemValues,
   loadCatalog,
+  loadMealsPerDay,
   materializeDrafts,
   type MealPlanCtx,
   recordRegen,
@@ -105,7 +106,9 @@ export const generatePlan = async (
   const dayMeals = await loadDayMeals(ctx.db, ctx.userId, date);
   const remaining = subtractMacros(targets, sumMacros(dayMeals));
   const coveredSlots = new Set<string>([...kept.map((r) => r.slot), ...dayMeals.map((m) => m.mealSlot)]);
-  const openSlots = SLOT_ORDER.filter((s) => !coveredSlots.has(s));
+  // Only slots in the user's meals-per-day preference are planned; the rest are not created.
+  const allowedSlots = slotsForMealCount(await loadMealsPerDay(ctx));
+  const openSlots = allowedSlots.filter((s) => !coveredSlots.has(s));
   const slots = pickSlotsToPlan(openSlots, remaining.kcal);
   const skippedSlots = openSlots.filter((s) => !slots.includes(s));
 

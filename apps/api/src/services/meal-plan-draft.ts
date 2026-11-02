@@ -53,6 +53,16 @@ export const recordRegen = (ctx: MealPlanCtx, action: string, date: string) =>
     createdAt: new Date(),
   });
 
+/** Saved meals-per-day preference (null = default four slots). */
+export const loadMealsPerDay = async (ctx: MealPlanCtx): Promise<number | null> => {
+  const [row] = await ctx.db
+    .select({ n: preferences.mealsPerDay })
+    .from(preferences)
+    .where(eq(preferences.userId, ctx.userId))
+    .limit(1);
+  return row?.n ?? null;
+};
+
 export const loadCatalog = async (ctx: MealPlanCtx) => {
   const [prefs] = await ctx.db
     .select()

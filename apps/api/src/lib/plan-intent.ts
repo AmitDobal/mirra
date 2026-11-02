@@ -36,6 +36,10 @@ export const sanitizeIntent = (raw: Partial<PlanReviseIntent>): PlanReviseIntent
         .map((x) => x.toLowerCase().replace(/[^a-z ]/g, "").trim())
         .filter((x) => x.length >= 3 && x.length <= 30),
     ).slice(0, 8);
+  const meals =
+    typeof raw.mealsPerDay === "number" && Number.isFinite(raw.mealsPerDay)
+      ? Math.min(4, Math.max(1, Math.round(raw.mealsPerDay)))
+      : undefined;
   const shorten =
     typeof raw.shortenMin === "number" && Number.isFinite(raw.shortenMin)
       ? Math.min(90, Math.max(10, Math.round(raw.shortenMin)))
@@ -57,6 +61,7 @@ export const sanitizeIntent = (raw: Partial<PlanReviseIntent>): PlanReviseIntent
     reviseWorkout: Boolean(raw.reviseWorkout),
     ...(raw.preferBench ? { preferBench: true } : {}),
     ...(shorten ? { shortenMin: shorten } : {}),
+    ...(meals ? { mealsPerDay: meals } : {}),
   };
 };
 
@@ -64,7 +69,8 @@ export const hasMealIntent = (i: PlanReviseIntent): boolean =>
   i.forceMealRegen ||
   i.foodsAvoidAdd.length > 0 ||
   i.dietTagsAdd.length > 0 ||
-  i.cuisineStylesAdd.length > 0;
+  i.cuisineStylesAdd.length > 0 ||
+  i.mealsPerDay != null;
 
 export const hasWorkoutIntent = (i: PlanReviseIntent): boolean =>
   i.reviseWorkout ||

@@ -48,7 +48,7 @@ type PlanChatState = {
   readonly reviseUsage: UsageWindow | null;
   readonly loadUsage: () => Promise<void>;
   readonly send: (text: string) => Promise<void>;
-  /** "Yes, apply" — repeat the same request with dryRun: false, then refresh plans. */
+  /** "Yes, apply" — send the previewed intent with dryRun: false (no re-parse), then refresh plans. */
   readonly confirm: (id: string) => Promise<void>;
   /** "Want to change" — drop the proposal and unlock the composer for a refinement. */
   readonly dismiss: (id: string) => void;
@@ -135,6 +135,12 @@ export const usePlanChatStore = create<PlanChatState>((set, get) => ({
       const res = await postCoachRevise(request);
       const id = nextId("c");
       const proposes = res.changes.length > 0;
+      // Confirm replays the resolved intent so "Yes" applies exactly what was previewed.
+      const confirmRequest: CoachReviseBody = {
+        ...request,
+        dryRun: false,
+        ...(res.intent ? { intent: res.intent } : {}),
+      };
       set((s) => ({
         messages: [
           ...s.messages,
@@ -144,7 +150,7 @@ export const usePlanChatStore = create<PlanChatState>((set, get) => ({
             text: stripPreviewPrefix(res.message),
             warnings: res.warnings,
             ...(proposes
-              ? { proposal: { status: "pending" as const, request: { ...request, dryRun: false }, changes: res.changes } }
+              ? { proposal: { status: "pending" as const, request: confirmRequest, changes: res.changes } }
               : {}),
           },
         ],

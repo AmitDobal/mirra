@@ -1,0 +1,29 @@
+PASS  baseline meal plan generated  - {"id":"GAEl7chJD_--NSfLeokjv","date":"2026-11-02","targets":{"kcal":2584,"proteinG":137,"carbsG":347,"fatG":72},"planned":{"kcal":2511,"proteinG":173.3,"carbsG":292.6,"fatG":80.5},"logged":{"kcal":0,"
+PASS  baseline has 3+ live slots  - breakfast,lunch,snack,dinner
+      preview.message: "Preview: Done, recruit. Now planning 2 meals a day."
+      preview.changes: [{"kind":"meals_per_day","area":"meal","before":"4 meals a day (Breakfast, Lunch, Snack, Dinner)","after":"2 meals a day (Lunch, Dinner)","summary":"Meals per day: 2"},{"kind":"meal_regen","area":"meal","before":"Breakfast · Egg whites with whole wheat bread… · 642 kcal\nLunch · Whole eggs with sweet potato, cuc… · 752 kcal\nSnack · Whey protein with strawberries · 296 kcal\nDinner · Tempeh with potato, asparagus & o… · 821 kcal","after":"Lunch · new dish · ~1230 kcal\nDinner · new dish · ~1354 kcal","summary":"Rebuild today's meals"}]
+PASS  preview does not apply
+PASS  intent.mealsPerDay = 2
+PASS  preview has meals_per_day + meal_regen  - meals_per_day,meal_regen
+PASS  every change has before and after
+PASS  preview wrote nothing  - breakfast,lunch,snack,dinner
+PASS  pref still unset after preview
+      apply.changes: [{"kind":"meals_per_day","area":"meal","before":"4 meals a day (Breakfast, Lunch, Snack, Dinner)","after":"2 meals a day (Lunch, Dinner)","summary":"Meals per day: 2"},{"kind":"meal_regen","area":"meal","before":"Breakfast · Egg whites with whole wheat bread… · 642 kcal\nLunch · Whole eggs with sweet potato, cuc… · 752 kcal\nSnack · Whey protein with strawberries · 296 kcal\nDinner · Tempeh with potato, asparagus & o… · 821 kcal","after":"Lunch · Tempeh with potato, carrots & oli… · 873 kcal\nDinner · Canned tuna with white rice, toma… · 885 kcal","summary":"Rebuilt today's meals"}]
+PASS  confirm applied (garbage text, intent only)
+PASS  plan now has exactly lunch + dinner  - lunch,dinner
+PASS  pref saved: mealsPerDay = 2
+PASS  apply before/after differ (real meals)
+      again.message: "Preview: You're already set to 2 meals a day (Lunch, Dinner). Nothing to change."
+PASS  already at target: no changes
+PASS  already-at-target coach message
+PASS  re-confirm of a stale preview applies nothing
+PASS  dairy preview has changes
+PASS  dairy applied
+PASS  still 2 slots after diet change
+      gear.changes: [{"kind":"equipment","area":"prefs","before":"full gym","after":"dumbbells, barbell, machines, bands, bodyweight, bench","summary":"Equipment: dumbbells, barbell, machines, bands, bodyweight, bench"}]
+PASS  workout preview ok
+PASS  workout confirm matches preview  - 1 changes
+PASS  3 meals parsed
+PASS  3 meals: breakfast,lunch,dinner
+
+ALL PASS

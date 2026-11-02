@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     backgroundColor: alpha(color.outlineVariant, 0.3),
     marginVertical: 12,
   },
-  beforeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  beforeRow: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   beforeText: {
     flexShrink: 1,
     fontFamily: font.body,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   swapRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingLeft: 8, marginVertical: 10 },
   swapLine: { flex: 1, height: 1, backgroundColor: alpha(color.outlineVariant, 0.3) },
-  afterRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  afterRow: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   afterText: {
     flexShrink: 1,
     fontFamily: font.labelBold,

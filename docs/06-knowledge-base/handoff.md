@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — AMI-152/153: Restore + meal revise (2×/day)
+
+**Done:** [PR #63](https://github.com/AmitDobal/mirra/pull/63) Restore resume-after-Google + require Pro (no false unlock). [PR #64](https://github.com/AmitDobal/mirra/pull/64) mealsPerDay prefs, rich meal before/after, deterministic confirm intent, nutrition context in reviser. Main tip `2e568ac`. Worktrees removed. D1 migration `0014_meals_per_day` remote applied. API Worker `8d59a1f0`.
+
+**Smoke:** `docs/smoke/ami-152/` (empty restore alert). `docs/smoke/ami-153/smoke-output.txt` **ALL PASS** (2 meals preview→apply, already-at-target, diet keep 2 slots, equipment swap, 3 meals).
+
+**Phone:** https://u.expo.dev/update/01a19ab1-a171-78da-a001-c053551b00fe (group `1fb12a19-408f-454e-bb95-2fc549b689c6`).
+
+**Watch:** Live Google + real RC sandbox restore NOT RUN. Trial purchase path still finishes on stub purchase `ok` (out of AMI-152 scope).
+
 ## 2026-11-02 — AMI-151: Google auth loading overlay + account matrix
 
 **Done:** [PR #62](https://github.com/AmitDobal/mirra/pull/62) → `origin/main` `82bdaa6`. Auth screen shows S14b blocking overlay (“Signing you in…”) for full Google pending through `finishAfterAuth`; other CTAs disabled. Worktree removed.

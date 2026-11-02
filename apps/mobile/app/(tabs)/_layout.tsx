@@ -1,4 +1,5 @@
 import { Redirect, Slot, usePathname, type Href } from "expo-router";
+import { useLayoutEffect } from "react";
 import { View } from "react-native";
 
 import { useOnboardingStore } from "@/features/onboarding";
@@ -7,7 +8,12 @@ import {
   isEntitledStatus,
   resolveTabGuard,
 } from "@/lib/auth/cold-start-route";
+import {
+  resolveEffectiveEntitlementStatus,
+  syncEntitlementFromMeCache,
+} from "@/lib/auth/tab-entitlement";
 import { useEntitlementStore } from "@/stores/entitlement-store";
+import { useMeStore } from "@/stores/me-store";
 import { sx } from "@/theme/sx";
 import { TabDock } from "@/ui/TabDock";
 
@@ -21,7 +27,18 @@ const hideDock = (path: string) =>
 const TabsLayout = () => {
   const path = usePathname();
   const onboarded = useOnboardingStore((s) => s.completed);
-  const entitlementStatus = useEntitlementStore((s) => s.status);
+  const zustandStatus = useEntitlementStore((s) => s.status);
+  const meStatus = useMeStore((s) => s.me?.entitlement?.status);
+  const cachedStatus = useMeStore((s) => s.cachedEntitlement?.status);
+  const meEntitlement = meStatus ?? cachedStatus;
+  const entitlementStatus = resolveEffectiveEntitlementStatus(
+    zustandStatus,
+    meEntitlement,
+  );
+
+  useLayoutEffect(() => {
+    syncEntitlementFromMeCache();
+  }, [zustandStatus, meEntitlement]);
   const blocked = resolveTabGuard({
     hasSession: hasSession(),
     onboarded,

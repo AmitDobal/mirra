@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   isEntitledStatus,
   resolveColdStartRoute,
+  resolveEffectiveEntitlementStatus,
   resolveTabGuard,
 } from "./cold-start-route.ts";
 
@@ -158,4 +159,10 @@ test("trial counts as entitled", () => {
   assert.equal(isEntitledStatus("expired"), false);
   assert.equal(isEntitledStatus("none"), false);
   assert.equal(isEntitledStatus(undefined), false);
+});
+
+test("AMI-160: effective entitlement prefers me cache when Zustand is none", () => {
+  assert.equal(resolveEffectiveEntitlementStatus("none", "active"), "active");
+  assert.equal(resolveEffectiveEntitlementStatus("none", "trial"), "trial");
+  assert.equal(resolveEffectiveEntitlementStatus("active", "none"), "active");
 });

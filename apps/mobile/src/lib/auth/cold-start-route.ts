@@ -27,6 +27,23 @@ export type EntitlementLike =
 export const isEntitledStatus = (status: EntitlementLike): boolean =>
   status === "trial" || status === "active" || status === "grace";
 
+type KnownEntitlement = Exclude<EntitlementLike, null | undefined>;
+
+/**
+ * Tab guard: Zustand may still be `none` while persisted /v1/me says entitled.
+ * Prefer an entitled local value; otherwise fall back to me cache.
+ */
+export const resolveEffectiveEntitlementStatus = (
+  localStatus: EntitlementLike,
+  meStatus: EntitlementLike,
+): KnownEntitlement => {
+  const local: KnownEntitlement =
+    localStatus === null || localStatus === undefined ? "none" : localStatus;
+  if (isEntitledStatus(local)) return local;
+  if (meStatus && isEntitledStatus(meStatus)) return meStatus;
+  return local;
+};
+
 export type FunnelInput = {
   readonly hasSession: boolean;
   readonly serverOnboarded: boolean | null;

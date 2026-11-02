@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** EAS retention wave AMI-154–157 @ `e8df514` — streak fire, in-app Alerts, Kinetic ranks Spark→Apex, sex-aware body map. D1 through `0017_kinetic_badges`. API Worker `9f584aa8`. Arch: `docs/03-engineering/retention-streaks-badges-anatomy.md`.
+**Latest:** AMI-158–160 @ `c92d8b6` — streak/Kinetic chip padding, plan apply **4/day** + meal regen **2/day** (dryRun free of apply quota), Pro paywall entitlement sync. API Worker `63e8f013`. EAS https://u.expo.dev/update/01a19d30-6062-729d-9704-5f476b97d3ec.
 
 | | |
 | --- | --- |
@@ -8,9 +8,9 @@
 | State | **DAY-TEST LIVE** — hosted API + EAS Update (laptop-off Expo Go) |
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
-| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `9f584aa8` (AMI-154–157) |
-| Mobile | Expo SDK **58** — tip `e8df514` (retention wave) |
-| Mobile day-test | https://u.expo.dev/update/01a19b41-cfa5-70c0-92f9-d80ffc6527c7 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `63e8f013` (AMI-158–160) |
+| Mobile | Expo SDK **58** — tip `c92d8b6` |
+| Mobile day-test | https://u.expo.dev/update/01a19d30-6062-729d-9704-5f476b97d3ec · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

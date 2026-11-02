@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** EAS **`01a19a5d`** (AMI-150 plan-chat confirm S28 @ `580228c`, `ALLOW_DEV_AUTH=true`). Phone: https://u.expo.dev/update/01a19a5d-4f01-78f5-8209-23f5a21bb55a. API Worker `b49d4810`. Smoke `docs/smoke/ami-150/`.
+**Latest:** EAS **`01a19a6b`** (AMI-151 Google auth loading overlay @ `82bdaa6`, `ALLOW_DEV_AUTH=true`). Phone: https://u.expo.dev/update/01a19a6b-25bd-74a4-87cf-d670968baacc. API Worker `b49d4810`. Smoke `docs/smoke/ami-151/`.
 
 | | |
 | --- | --- |
@@ -8,9 +8,9 @@
 | State | **DAY-TEST LIVE** — hosted API + EAS Update (laptop-off Expo Go) |
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
-| API | https://mirra-api.amit-dobalwork.workers.dev — **AMI-150** (`580228c`; Worker `b49d4810`) |
-| Mobile | Expo SDK **58** — EAS **`01a19a5d`** (AMI-150 S28 @ `580228c`) |
-| Mobile day-test | https://u.expo.dev/update/01a19a5d-4f01-78f5-8209-23f5a21bb55a · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `b49d4810` |
+| Mobile | Expo SDK **58** — EAS **`01a19a6b`** (AMI-151 @ `82bdaa6`) |
+| Mobile day-test | https://u.expo.dev/update/01a19a6b-25bd-74a4-87cf-d670968baacc · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

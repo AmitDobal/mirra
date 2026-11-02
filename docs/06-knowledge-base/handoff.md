@@ -1,5 +1,13 @@
 # Handoff
 
+## 2026-11-02 — AMI-151: Google auth loading overlay + account matrix
+
+**Done:** [PR #62](https://github.com/AmitDobal/mirra/pull/62) → `origin/main` `82bdaa6`. Auth screen shows S14b blocking overlay (“Signing you in…”) for full Google pending through `finishAfterAuth`; other CTAs disabled. Worktree removed.
+
+**Smoke:** `docs/smoke/ami-151/` — overlay vs Stitch PASS (seeded). API throwaway create → delete → recreate PASS; `day-test-1` untouched. **Live Google OAuth + You→Delete UI NOT RUN** (no automatable Google / Computer Use).
+
+**Phone:** https://u.expo.dev/update/01a19a6b-25bd-74a4-87cf-d670968baacc (group `d45212c4-364b-418b-86fa-6d19e6b49c1e`).
+
 ## 2026-11-02 — AMI-150: Plan-chat confirm-before-apply (Stitch S28)
 
 **Done:** [PR #61](https://github.com/AmitDobal/mirra/pull/61) → `origin/main` `580228c`. Plan chat first revise uses `dryRun: true`; mutating replies show S28 `ProposalCard` (before→after, **Yes, apply** / **Want to change**); apply only on Yes. Composer locked while pending. Contracts + API fill `before`/`after`/`area`. Worktree removed. API redeployed Worker `b49d4810`.

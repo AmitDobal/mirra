@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — AMI-149: Stitch S13c Pro paywall highlights
+
+**Done:** Stitch S13c generated + exported; [PR #60](https://github.com/AmitDobal/mirra/pull/60) merged → `origin/main` `cb7f346`. Paywall hero (coach image + Live AI + Moti glow) + five highlight rows (AI Trainer, Exercise Hub, Meal Tracker + Camera, Chat with Trainer, Reshuffle Anytime) with icon chips/motion. Hard gate unchanged (no Continue without Pro). Worktree `mirra-wt-ami-149` removed.
+
+**Phone:** https://u.expo.dev/update/01a19a4c-9bcc-7cd1-b10e-1856535f272f (group `7c905cee-3437-42be-b7e4-fa01b23ea898`, tip `cb7f346`).
+
+**Smoke:** `docs/smoke/ami-149/` vs Stitch `stitch_mirra_ai_personal_trainer/s13c_paywall_highlights/`. IDs: `docs/05-project-management/stitch-ami-149-ids.md`. Linear AMI-149 Done.
+
+**Watch:** App fixture smoke crops Chat/Reshuffle below fold; RN list has all five. Coach JPG content-hash matches prior `s13_paywall_hard/coach-athlete.jpg` (EAS asset dedupe OK).
+
 ## 2026-11-02 — AMI-148 residual: female S02c assets + delete API + Google unit coverage
 
 **Done (worktree `mirra-wt-ami-148`, branch `fix/ami-148-residual` off `b7847c0`):** Replaced female `PLACEHOLDER-*` with S02c welcome hero (`0608cba57d2e45e5a1aaa6091a4e397b` → `stitch_mirra_ai_personal_trainer/s02_welcome_hook_female/screen.png`); wired welcome v2 + paywall female coach. Auth units **24/24** (welcome signin + mid-onboarding Google). Prod throwaway `DELETE /v1/me` for `del-ami148-*` PASS; `day-test-1` untouched.

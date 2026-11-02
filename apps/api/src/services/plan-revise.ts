@@ -50,6 +50,8 @@ const assertReviseLimit = async (ctx: MealPlanCtx): Promise<void> => {
   }
 };
 
+const fmtList = (list: readonly string[]): string => list.join(", ").replace(/_/g, " ") || "none";
+
 const asWarning = (err: unknown): string =>
   err instanceof ApiError ? err.message : "Could not update meals right now";
 
@@ -142,12 +144,32 @@ export const revisePlans = async (
       patch.foodsAvoid = nextAvoid;
       patch.cuisineJson = JSON.stringify(nextCuisines);
       if (!sameList(nextCuisines, cuisineStyles)) {
-        changes.push({ kind: "cuisine_styles", summary: `Cuisines: ${nextCuisines.join(", ").replace(/_/g, " ")}` });
+        changes.push({
+          kind: "cuisine_styles",
+          area: "meal",
+          before: fmtList(cuisineStyles),
+          after: fmtList(nextCuisines),
+          summary: `Cuisines: ${fmtList(nextCuisines)}`,
+        });
       }
       if (!sameList(nextDiet, dietTags)) {
-        changes.push({ kind: "diet_tags", summary: `Diet: ${nextDiet.join(", ").replace(/_/g, " ")}` });
+        changes.push({
+          kind: "diet_tags",
+          area: "meal",
+          before: fmtList(dietTags),
+          after: fmtList(nextDiet),
+          summary: `Diet: ${fmtList(nextDiet)}`,
+        });
       }
-      if (nextAvoid !== foodsAvoid) changes.push({ kind: "foods_avoid", summary: `Avoiding: ${nextAvoid ?? "nothing"}` });
+      if (nextAvoid !== foodsAvoid) {
+        changes.push({
+          kind: "foods_avoid",
+          area: "meal",
+          before: foodsAvoid ?? "nothing",
+          after: nextAvoid ?? "nothing",
+          summary: `Avoiding: ${nextAvoid ?? "nothing"}`,
+        });
+      }
     }
   }
 
@@ -156,13 +178,25 @@ export const revisePlans = async (
     nextEquipment = reviseEquipment(equipment, intent);
     if (!sameList(nextEquipment, equipment)) {
       patch.equipmentJson = JSON.stringify(nextEquipment);
-      changes.push({ kind: "equipment", summary: `Equipment: ${nextEquipment.join(", ").replace(/_/g, " ") || "none"}` });
+      changes.push({
+        kind: "equipment",
+        area: "prefs",
+        before: fmtList(equipment),
+        after: fmtList(nextEquipment),
+        summary: `Equipment: ${fmtList(nextEquipment)}`,
+      });
     }
     if (intent.shortenMin != null) {
       const minutes = snapSessionMinutes(intent.shortenMin);
       if (minutes < (prefs?.sessionMinutes ?? 45)) {
         patch.sessionMinutes = minutes;
-        changes.push({ kind: "session_minutes", summary: `Default session: ${minutes} min` });
+        changes.push({
+          kind: "session_minutes",
+          area: "prefs",
+          before: `${prefs?.sessionMinutes ?? 45} min`,
+          after: `${minutes} min`,
+          summary: `Default session: ${minutes} min`,
+        });
       }
     }
   }
@@ -189,11 +223,12 @@ export const revisePlans = async (
           : await generatePlan(ctx, { date, force: true });
         changes.push({
           kind: "meal_regen",
+          area: "meal",
           summary: swapOne ? "Swapped that meal" : `Rebuilt ${date === todayUtc() ? "today's" : date} meals`,
         });
       } else {
         mealPlan = await getTodayPlan(ctx, date);
-        if (wantsRegen) changes.push({ kind: "meal_regen", summary: "Meals would be rebuilt" });
+        if (wantsRegen) changes.push({ kind: "meal_regen", area: "meal", summary: "Meals would be rebuilt" });
       }
     } catch (err) {
       warnings.push(asWarning(err));
@@ -216,6 +251,7 @@ export const revisePlans = async (
       if (workoutIsNextLift) {
         changes.push({
           kind: "workout_target",
+          area: "workout",
           summary: `Today is rest — updated next lift (${workout!.title})`,
         });
       }

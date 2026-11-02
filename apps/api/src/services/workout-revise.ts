@@ -86,10 +86,16 @@ export const reviseWorkout = async (db: AppDB, opts: Opts): Promise<WorkoutRevis
     }
     const dup = list.some((o) => o !== ex && same(o.name, next));
     if (dup && list.length > MIN_MOVES) {
-      changes.push({ kind: "workout_remove", summary: `Dropped ${ex.name} (needs ${need}; ${next} already in session)` });
+      changes.push({
+        kind: "workout_remove",
+        area: "workout",
+        before: ex.name,
+        after: "Removed",
+        summary: `Dropped ${ex.name} (needs ${need}; ${next} already in session)`,
+      });
       return [];
     }
-    changes.push({ kind: "workout_swap", summary: `${ex.name} → ${next}` });
+    changes.push({ kind: "workout_swap", area: "workout", before: ex.name, after: next, summary: `${ex.name} → ${next}` });
     return [{ ...ex, name: next, cue: null }];
   });
   if (stuck.length > 0) warnings.push(`No substitute found for ${stuck.join(", ")}`);
@@ -104,10 +110,22 @@ export const reviseWorkout = async (db: AppDB, opts: Opts): Promise<WorkoutRevis
       const target = list.findIndex((e) => e.swapGroup === "push" || /push-up|chest|fly/i.test(e.name));
       const bump: Draft = { id: null, name: bench, cue: "Retract shoulder blades", targetSets: 3, targetReps: "6-10", restSec: 120, swapGroup: "push" };
       if (target >= 0) {
-        changes.push({ kind: "workout_swap", summary: `${list[target]!.name} → ${bench}` });
+        changes.push({
+          kind: "workout_swap",
+          area: "workout",
+          before: list[target]!.name,
+          after: bench,
+          summary: `${list[target]!.name} → ${bench}`,
+        });
         list[target] = { ...list[target]!, name: bench, cue: bump.cue, targetReps: bump.targetReps, restSec: bump.restSec };
       } else {
-        changes.push({ kind: "workout_add", summary: `Added ${bench} to the top of the session` });
+        changes.push({
+          kind: "workout_add",
+          area: "workout",
+          before: "Not in session",
+          after: bench,
+          summary: `Added ${bench} to the top of the session`,
+        });
         list = [bump, ...list];
       }
     }
@@ -124,6 +142,9 @@ export const reviseWorkout = async (db: AppDB, opts: Opts): Promise<WorkoutRevis
     if (calorieEst != null) calorieEst = Math.round((calorieEst * cap) / durationMin);
     changes.push({
       kind: "workout_shorten",
+      area: "workout",
+      before: `Session ${durationMin} min`,
+      after: `Session ${cap} min`,
       summary: `Session ${durationMin} → ${cap} min${dropped > 0 ? `, dropped ${dropped} move${dropped > 1 ? "s" : ""}` : ""}`,
     });
     durationMin = cap;

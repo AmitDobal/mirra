@@ -32,3 +32,10 @@ All 28 images downloaded successfully (curl -L, 1 retry on failure).
 - Local: `stitch_mirra_ai_personal_trainer/s02_welcome_hook_female/screen.png` + `code.html`
 - Wired: welcome v2 hero + portrait-woman from S02c hero; `s13_paywall/female/coach-cutout.jpg` real crop
 - Also dropped PLACEHOLDER-* under s06/s11/s12 female (same S02c hero until more gendered Stitch people export)
+
+## AMI-150 S28 Plan Chat Proposal Confirm (2026-11-02)
+
+- Screen: Stitch `9a4b513350bf45f7b6363af5f45e118f` (project `16036285274438790381`)
+- Local: `stitch_mirra_ai_personal_trainer/s28_plan_chat_proposal/` + `assets/stitch/s28_plan_chat_proposal/` (`screen.png`, `code.html`)
+- No raster photos in S28 (icons + tokens only), so `index.ts` needs no new `require`
+- Wired in: `features/coach/ProposalCard.tsx` (before/after card, Yes, apply / Want to change)

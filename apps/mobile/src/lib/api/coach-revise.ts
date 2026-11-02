@@ -16,9 +16,14 @@ export type CoachReviseBody = {
   };
 };
 
+export type CoachReviseArea = "workout" | "meal" | "prefs";
+
 export type CoachReviseChange = {
   readonly kind: string;
   readonly summary: string;
+  readonly area?: CoachReviseArea;
+  readonly before?: string;
+  readonly after?: string;
 };
 
 export type CoachReviseResponse = {

@@ -16,6 +16,7 @@ import {
   findCatalogByName,
   heroSource,
 } from "./catalog";
+import { ExerciseBodyMap } from "./body-map/ExerciseBodyMap";
 import { CoachCue, MuscleBars, PrescriptionCard, StepsList } from "./DetailParts";
 import { TagChip } from "./ExercisePills";
 import { useExerciseSheet } from "./use-exercise-sheet";
@@ -120,6 +121,7 @@ export const ExerciseDetailScreen = () => {
         />
         <CoachCue cue={inSession?.cue?.trim() || entry.cue} />
         <StepsList steps={entry.steps} />
+        <ExerciseBodyMap entry={entry} />
         <MuscleBars muscles={entry.muscles} />
       </ScrollView>
 

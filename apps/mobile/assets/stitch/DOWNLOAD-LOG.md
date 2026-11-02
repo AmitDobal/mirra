@@ -20,6 +20,12 @@ All 28 images downloaded successfully (curl -L, 1 retry on failure).
 - Screens use `useOnboardingImagery()` — welcome stays mixed.
 
 
+## AMI-149 S13c Pro Paywall Highlights (2026-11-02)
+
+- Screen: Stitch `fa45df7a53f3448bbaaada55c416af53` (S13c — Pro Paywall Highlights)
+- Local: `stitch_mirra_ai_personal_trainer/s13c_paywall_highlights/` + `apps/mobile/assets/stitch/s13c_paywall_highlights/`
+- Files: `screen.png`, `code.html`, `coach-hero.jpg` (wired as `s13cPaywallHighlights.coachHero`)
+
 ## AMI-148 female Stitch S02c (2026-11-02)
 
 - Screen: Stitch `0608cba57d2e45e5a1aaa6091a4e397b` (S02c — Welcome Hook Photo Female)

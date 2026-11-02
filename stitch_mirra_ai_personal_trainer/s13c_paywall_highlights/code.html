@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>MIRRA PRO</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim from Design System -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed": "#161e00",
+            "primary-fixed": "#cbf150",
+            "on-surface": "#e5e2e1",
+            "on-secondary-container": "#c2b0e0",
+            "on-tertiary-fixed": "#400013",
+            "surface-container-low": "#1c1b1b",
+            "on-secondary-fixed": "#21143a",
+            "on-secondary": "#372950",
+            "inverse-on-surface": "#313030",
+            "surface-container": "#201f1f",
+            "on-surface-variant": "#c5c9b0",
+            "inverse-primary": "#516600",
+            "primary-fixed-dim": "#b0d434",
+            "on-primary-fixed-variant": "#3c4d00",
+            "surface-container-highest": "#353534",
+            "secondary-fixed": "#ebdcff",
+            "surface": "#131313",
+            "surface-tint": "#b0d434",
+            "on-primary": "#293500",
+            "tertiary-container": "#ffd9dd",
+            "on-secondary-fixed-variant": "#4e4068",
+            "on-error-container": "#ffdad6",
+            "surface-variant": "#353534",
+            "outline": "#8f937c",
+            "tertiary-fixed-dim": "#ffb2bd",
+            "surface-bright": "#393939",
+            "secondary-fixed-dim": "#d1beef",
+            "secondary-container": "#50426b",
+            "on-tertiary-container": "#b53354",
+            "on-tertiary": "#670024",
+            "on-tertiary-fixed-variant": "#8c1037",
+            "background": "#131313",
+            "error-container": "#93000a",
+            "surface-container-lowest": "#0e0e0e",
+            "error": "#ffb4ab",
+            "on-background": "#e5e2e1",
+            "outline-variant": "#454936",
+            "tertiary-fixed": "#ffd9dd",
+            "primary-container": "#cbf150",
+            "surface-dim": "#131313",
+            "on-error": "#690005",
+            "inverse-surface": "#e5e2e1",
+            "tertiary": "#ffffff",
+            "primary": "#ffffff",
+            "secondary": "#d1beef",
+            "on-primary-container": "#566c00",
+            "surface-container-high": "#2a2a2a"
+          },
+          "borderRadius": {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-xl": "1.75rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "gutter": "1rem",
+            "space-lg": "1.25rem",
+            "margin": "1.25rem"
+          },
+          "fontFamily": {
+            "label-md": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "display-lg": ["Space Grotesk"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "label-lg": ["Space Grotesk"],
+            "headline-md": ["Space Grotesk"],
+            "body-md": ["Plus Jakarta Sans"],
+            "display-metric": ["Space Grotesk"],
+            "label-caps": ["Space Grotesk"],
+            "headline-lg": ["Space Grotesk"],
+            "body-sm": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "display-lg": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-metric": ["38px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Smooth iOS kinetic feel */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-none {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface min-h-screen antialiased flex justify-center selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- iOS App Viewport Container (Native Single Column Frame) -->
+<div class="relative w-full max-w-[430px] min-h-screen bg-surface-container-lowest flex flex-col justify-between overflow-x-hidden border-x border-surface-container-high/40 shadow-2xl">
+<!-- Top Decorative Glow Orb -->
+<div class="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 bg-primary-fixed/10 rounded-full blur-[100px] pointer-events-none"></div>
+<!-- MAIN SCROLLABLE CONTENT CANVAS -->
+<main class="w-full px-5 pt-3 pb-64 overflow-y-auto scrollbar-none z-10">
+<!-- 1. TOP APP BAR (Mirra Pro Shared Anchors + Modal Navigation) -->
+<header class="flex justify-between items-center w-full pt-3 pb-2 z-50">
+<!-- Brand Pro Pill Badge -->
+<div class="bg-primary-container text-on-primary-fixed font-headline-sm text-headline-sm font-bold uppercase tracking-wider px-3.5 py-1 rounded-full flex items-center gap-1.5 shadow-[0_0_18px_rgba(203,241,80,0.35)] active:scale-95 transition-transform duration-150 cursor-pointer">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span>MIRRA PRO</span>
+</div>
+<div class="flex items-center gap-2">
+<!-- Restore Action Text Button from TopAppBar specification -->
+<button class="text-label-lg font-label-lg text-primary hover:text-primary-fixed transition-colors duration-150 px-2 py-1 active:scale-95" type="button">
+            Restore
+          </button>
+<!-- Dismiss Close Button -->
+<button aria-label="Close" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all duration-150 active:scale-95" type="button">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+</header>
+<!-- 2. HERO CARD -->
+<section class="mt-4 rounded-3xl bg-gradient-to-br from-surface-container-low to-surface border border-white/10 p-5 relative overflow-hidden flex items-center justify-between shadow-xl">
+<!-- Radial accent halo behind athlete -->
+<div class="absolute -right-6 -bottom-6 w-36 h-36 bg-primary-fixed/20 rounded-full blur-2xl pointer-events-none"></div>
+<!-- Left Typography Column -->
+<div class="flex-1 pr-3 z-10">
+<h1 class="text-headline-lg font-headline-lg text-white leading-tight tracking-tight">
+            Unlock your adaptive week
+          </h1>
+<p class="text-body-sm font-body-sm text-stone-300 mt-2 leading-relaxed max-w-[210px]">
+            AI coach, workouts, meals, and chat — rebuilt when life shifts.
+          </p>
+</div>
+<!-- Right Visual Anchor: Athlete Cutout -->
+<div class="relative shrink-0 z-10">
+<div class="absolute inset-0 rounded-2xl bg-primary-fixed/20 blur-md scale-95 pointer-events-none"></div>
+<img alt="MIRRA Elite Pro Coach" class="w-24 h-24 rounded-2xl object-cover border border-primary-fixed/40 shadow-[0_0_25px_rgba(203,241,80,0.25)] relative" src="./coach-hero.jpg"/>
+<!-- Status pill badge -->
+<div class="absolute -bottom-2 -left-2 bg-surface border border-white/10 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></span>
+<span class="text-[9px] font-label-caps text-on-surface uppercase tracking-wider">Live AI</span>
+</div>
+</div>
+</section>
+<!-- 3. FEATURE HIGHLIGHTS (Bento Performance Rows) -->
+<section aria-label="Feature Highlights" class="space-y-3 mt-4">
+<!-- Row 1: AI Trainer -->
+<div class="rounded-2xl bg-surface border border-white/5 p-3.5 flex items-center justify-between gap-3.5 hover:border-white/10 transition-colors">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-full bg-primary-fixed/15 border border-primary-fixed/40 flex items-center justify-center shrink-0 text-primary-fixed shadow-[0_0_12px_rgba(203,241,80,0.15)]">
+<span class="material-symbols-outlined text-xl">record_voice_over</span>
+</div>
+<div class="min-w-0">
+<h2 class="text-label-lg font-label-lg text-white">AI Trainer</h2>
+<p class="text-body-sm font-body-sm text-stone-400 mt-0.5 truncate">Pick a persona voice that coaches you daily</p>
+</div>
+</div>
+<span class="bg-secondary-container/30 border border-secondary/20 text-secondary text-[10px] font-label-caps px-2 py-0.5 rounded-full shrink-0 uppercase">
+            6 Voices
+          </span>
+</div>
+<!-- Row 2: Exercise Hub -->
+<div class="rounded-2xl bg-surface border border-white/5 p-3.5 flex items-center justify-between gap-3.5 hover:border-white/10 transition-colors">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-full bg-secondary/15 border border-secondary/40 flex items-center justify-center shrink-0 text-secondary shadow-[0_0_12px_rgba(209,190,239,0.15)]">
+<span class="material-symbols-outlined text-xl">fitness_center</span>
+</div>
+<div class="min-w-0">
+<h2 class="text-label-lg font-label-lg text-white">Exercise Hub</h2>
+<p class="text-body-sm font-body-sm text-stone-400 mt-0.5 truncate">Your AI week sessions + library + 1-tap swaps</p>
+</div>
+</div>
+<span class="bg-primary-fixed/15 border border-primary-fixed/30 text-primary-fixed text-[10px] font-label-caps px-2 py-0.5 rounded-full shrink-0 uppercase">
+            180+ Moves
+          </span>
+</div>
+<!-- Row 3: Meal Tracker + Camera -->
+<div class="rounded-2xl bg-surface border border-white/5 p-3.5 flex items-center justify-between gap-3.5 hover:border-white/10 transition-colors">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-full bg-primary-fixed/15 border border-primary-fixed/40 flex items-center justify-center shrink-0 text-primary-fixed shadow-[0_0_12px_rgba(203,241,80,0.15)]">
+<span class="material-symbols-outlined text-xl">photo_camera</span>
+</div>
+<div class="min-w-0">
+<h2 class="text-label-lg font-label-lg text-white">Meal Tracker + Camera</h2>
+<p class="text-body-sm font-body-sm text-stone-400 mt-0.5 truncate">Snap food, get macros instantly</p>
+</div>
+</div>
+<span class="bg-secondary-container/30 border border-secondary/20 text-secondary text-[10px] font-label-caps px-2 py-0.5 rounded-full shrink-0 uppercase">
+            Sub-second
+          </span>
+</div>
+<!-- Row 4: Chat with Trainer -->
+<div class="rounded-2xl bg-surface border border-white/5 p-3.5 flex items-center justify-between gap-3.5 hover:border-white/10 transition-colors">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-full bg-secondary/15 border border-secondary/40 flex items-center justify-center shrink-0 text-secondary shadow-[0_0_12px_rgba(209,190,239,0.15)]">
+<span class="material-symbols-outlined text-xl">forum</span>
+</div>
+<div class="min-w-0">
+<h2 class="text-label-lg font-label-lg text-white">Chat with Trainer</h2>
+<p class="text-body-sm font-body-sm text-stone-400 mt-0.5 truncate">Ask form, recovery, plan questions anytime</p>
+</div>
+</div>
+<span class="bg-primary-fixed/15 border border-primary-fixed/30 text-primary-fixed text-[10px] font-label-caps px-2 py-0.5 rounded-full shrink-0 uppercase">
+            24/7 Intel
+          </span>
+</div>
+<!-- Row 5: Reshuffle Anytime -->
+<div class="rounded-2xl bg-surface border border-white/5 p-3.5 flex items-center justify-between gap-3.5 hover:border-white/10 transition-colors">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-11 h-11 rounded-full bg-primary-fixed/15 border border-primary-fixed/40 flex items-center justify-center shrink-0 text-primary-fixed shadow-[0_0_12px_rgba(203,241,80,0.15)]">
+<span class="material-symbols-outlined text-xl">autorenew</span>
+</div>
+<div class="min-w-0">
+<h2 class="text-label-lg font-label-lg text-white">Reshuffle Anytime</h2>
+<p class="text-body-sm font-body-sm text-stone-400 mt-0.5 truncate">Miss a day? Mirra rebuilds the week with zero guilt</p>
+</div>
+</div>
+<span class="bg-primary-fixed/15 border border-primary-fixed/30 text-primary-fixed text-[10px] font-label-caps px-2 py-0.5 rounded-full shrink-0 uppercase">
+            Zero Guilt
+          </span>
+</div>
+</section>
+<!-- 4. SUBSCRIPTION PLANS SELECTION -->
+<section aria-label="Subscription Plans" class="mt-5 space-y-3">
+<!-- Plan Option 1: Annual (SELECTED) -->
+<div class="cursor-pointer border-2 border-primary-fixed bg-surface-container-low rounded-2xl p-4 relative shadow-[0_0_24px_rgba(203,241,80,0.18)] transition-all duration-200" id="plan-annual" onclick="selectPlan('annual')">
+<!-- Discount Pinned Pill Badge -->
+<div class="absolute -top-2.5 left-4 bg-primary-fixed text-on-primary-fixed text-[11px] font-label-caps font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>BEST VALUE · 58% OFF</span>
+</div>
+<div class="flex items-center justify-between mt-1">
+<div>
+<div class="text-label-lg font-headline-sm font-bold text-white flex items-center gap-1.5">
+                Annual
+                <span class="text-[10px] font-label-caps bg-white/10 text-stone-300 px-1.5 py-0.2 rounded">POPULAR</span>
+</div>
+<p class="text-body-sm font-body-sm text-stone-400 mt-0.5">7 days free, then $79.99/yr</p>
+</div>
+<div class="flex items-center">
+<div class="text-right">
+<span class="text-headline-sm font-headline-sm font-bold text-white">$79.99/yr</span>
+<p class="text-body-sm font-body-sm text-primary-fixed font-semibold">$6.67 / mo</p>
+</div>
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center ml-3.5 shrink-0 shadow-sm" id="radio-annual">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Plan Option 2: Monthly (UNSELECTED) -->
+<div class="cursor-pointer border border-white/10 bg-surface-container-lowest/80 rounded-2xl p-4 flex items-center justify-between hover:border-white/20 transition-all duration-200" id="plan-monthly" onclick="selectPlan('monthly')">
+<div>
+<div class="text-label-lg font-headline-sm font-medium text-white/90">Monthly</div>
+<p class="text-body-sm font-body-sm text-stone-400 mt-0.5">Flexible monthly billing</p>
+</div>
+<div class="flex items-center">
+<div class="text-right">
+<span class="text-label-lg font-headline-sm font-bold text-white/90">$12.99 / month</span>
+<p class="text-body-sm font-body-sm text-stone-400">Cancel anytime</p>
+</div>
+<div class="w-6 h-6 rounded-full border border-stone-600 ml-3.5 shrink-0 flex items-center justify-center" id="radio-monthly">
+<!-- Empty state dot -->
+</div>
+</div>
+</div>
+</section>
+<!-- Security / Guarantees Micro-Badges -->
+<div class="mt-4 flex items-center justify-center gap-5 text-stone-400 text-body-sm font-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-primary-fixed">verified_user</span>
+<span>Apple Pay Safe</span>
+</div>
+<div class="w-1 h-1 rounded-full bg-stone-700"></div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-primary-fixed">event_available</span>
+<span>7-Day Free Trial</span>
+</div>
+<div class="w-1 h-1 rounded-full bg-stone-700"></div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-primary-fixed">cancel</span>
+<span>1-Tap Cancel</span>
+</div>
+</div>
+</main>
+<!-- 5. HARD PAYWALL STICKY FOOTER (Shared Anchor Execution) -->
+<footer class="fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 w-full max-w-[430px] z-50 flex flex-col items-center px-5 pt-3 pb-8 space-y-2.5 bg-surface-container-lowest/90 backdrop-blur-md rounded-t-lg border-t border-outline-variant/30 shadow-2xl">
+<!-- Primary Kinetic Action Button -->
+<button class="bg-primary-fixed text-on-primary-fixed font-headline-sm font-bold text-headline-sm py-4 rounded-full w-full flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(203,241,80,0.3)] hover:brightness-105 active:scale-[0.98] transition-all duration-150 cursor-pointer" id="cta-button" type="button">
+<span>Start 7-day free trial</span>
+<span class="material-symbols-outlined text-lg font-bold">arrow_forward</span>
+</button>
+<!-- Legal Links Cluster -->
+<div class="text-body-sm font-body-sm text-on-surface-variant flex justify-center items-center gap-3 pt-1">
+<button class="hover:text-primary-fixed transition-colors underline" type="button">Restore Purchases</button>
+<span class="text-stone-600">•</span>
+<button class="hover:text-primary-fixed transition-colors underline" type="button">Terms of Service</button>
+<span class="text-stone-600">•</span>
+<button class="hover:text-primary-fixed transition-colors underline" type="button">Privacy Policy</button>
+</div>
+<!-- Legal Micro Disclaimer Note (Hard Subscription Gate) -->
+<p class="text-[11px] font-body-sm text-stone-400 text-center leading-tight max-w-[370px]">
+        Recurring billing, cancel anytime in Settings. Terms &amp; Privacy Apply. Plan auto-renews after 7-day trial. Cancel anytime in Apple ID settings at least 24 hours before renewal. No charge today.
+      </p>
+<!-- Safe Area Indicator Bar for iOS -->
+<div class="w-32 h-1 bg-stone-700/60 rounded-full mt-1"></div>
+</footer>
+</div>
+<!-- Interactive State Script for Plan Switching -->
+<script>
+    let currentPlan = 'annual';
+
+    function selectPlan(plan) {
+      currentPlan = plan;
+      const annualCard = document.getElementById('plan-annual');
+      const monthlyCard = document.getElementById('plan-monthly');
+      const annualRadio = document.getElementById('radio-annual');
+      const monthlyRadio = document.getElementById('radio-monthly');
+      const ctaButton = document.getElementById('cta-button');
+
+      if (plan === 'annual') {
+        // Annual Active
+        annualCard.className = 'cursor-pointer border-2 border-primary-fixed bg-surface-container-low rounded-2xl p-4 relative shadow-[0_0_24px_rgba(203,241,80,0.18)] transition-all duration-200';
+        annualRadio.className = 'w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center ml-3.5 shrink-0 shadow-sm';
+        annualRadio.innerHTML = '<span class="material-symbols-outlined text-sm font-bold">check</span>';
+
+        // Monthly Inactive
+        monthlyCard.className = 'cursor-pointer border border-white/10 bg-surface-container-lowest/80 rounded-2xl p-4 flex items-center justify-between hover:border-white/20 transition-all duration-200';
+        monthlyRadio.className = 'w-6 h-6 rounded-full border border-stone-600 ml-3.5 shrink-0 flex items-center justify-center';
+        monthlyRadio.innerHTML = '';
+
+        ctaButton.innerHTML = '<span>Start 7-day free trial</span><span class="material-symbols-outlined text-lg font-bold">arrow_forward</span>';
+      } else {
+        // Monthly Active
+        monthlyCard.className = 'cursor-pointer border-2 border-primary-fixed bg-surface-container-low rounded-2xl p-4 flex items-center justify-between shadow-[0_0_24px_rgba(203,241,80,0.18)] transition-all duration-200';
+        monthlyRadio.className = 'w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center ml-3.5 shrink-0 shadow-sm';
+        monthlyRadio.innerHTML = '<span class="material-symbols-outlined text-sm font-bold">check</span>';
+
+        // Annual Inactive
+        annualCard.className = 'cursor-pointer border border-white/10 bg-surface-container-lowest/80 rounded-2xl p-4 relative hover:border-white/20 transition-all duration-200';
+        annualRadio.className = 'w-6 h-6 rounded-full border border-stone-600 ml-3.5 shrink-0 flex items-center justify-center';
+        annualRadio.innerHTML = '';
+
+        ctaButton.innerHTML = '<span>Continue with Monthly — $12.99</span><span class="material-symbols-outlined text-lg font-bold">arrow_forward</span>';
+      }
+    }
+  </script>
+</body></html>

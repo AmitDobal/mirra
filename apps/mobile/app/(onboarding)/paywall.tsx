@@ -104,15 +104,26 @@ const PaywallScreen = () => {
               {c.badge}
             </Text>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={c.closeLabel}
-            onPress={handleClose}
-            hitSlop={8}
-            style={sx("h-9 w-9 items-center justify-center rounded-full bg-surface-container-high")}
-          >
-            <X color={color.onSurface} size={18} />
-          </Pressable>
+          <View style={sx("flex-row items-center gap-space-sm")}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={c.restore}
+              onPress={() => void handleRestore()}
+              hitSlop={8}
+              style={sx("px-space-sm py-space-xs")}
+            >
+              <Text style={sx("font-label text-label-lg text-primary")}>{c.restoreShort}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={c.closeLabel}
+              onPress={handleClose}
+              hitSlop={8}
+              style={sx("h-9 w-9 items-center justify-center rounded-full bg-surface-container-high")}
+            >
+              <X color={color.onSurface} size={18} />
+            </Pressable>
+          </View>
         </View>
       }
       footer={

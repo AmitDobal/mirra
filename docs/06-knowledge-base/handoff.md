@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-02 — AMI-150: Plan-chat confirm-before-apply (Stitch S28)
+
+**Done:** [PR #61](https://github.com/AmitDobal/mirra/pull/61) → `origin/main` `580228c`. Plan chat first revise uses `dryRun: true`; mutating replies show S28 `ProposalCard` (before→after, **Yes, apply** / **Want to change**); apply only on Yes. Composer locked while pending. Contracts + API fill `before`/`after`/`area`. Worktree removed. API redeployed Worker `b49d4810`.
+
+**Phone:** https://u.expo.dev/update/01a19a5d-4f01-78f5-8209-23f5a21bb55a (group `f1f18960-cf56-4e63-ba62-292a9b740eed`).
+
+**Smoke:** `docs/smoke/ami-150/` vs Stitch S28. Linear AMI-150 Done.
+
+**Watch:** Confirm re-runs reviser (2 credits; applied can differ slightly from preview). App smoke shot had a transient API network toast over the locked composer.
+
 ## 2026-11-02 — AMI-149: Stitch S13c Pro paywall highlights
 
 **Done:** Stitch S13c generated + exported; [PR #60](https://github.com/AmitDobal/mirra/pull/60) merged → `origin/main` `cb7f346`. Paywall hero (coach image + Live AI + Moti glow) + five highlight rows (AI Trainer, Exercise Hub, Meal Tracker + Camera, Chat with Trainer, Reshuffle Anytime) with icon chips/motion. Hard gate unchanged (no Continue without Pro). Worktree `mirra-wt-ami-149` removed.

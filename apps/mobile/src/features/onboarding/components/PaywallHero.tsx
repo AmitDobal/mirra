@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.primaryFixed,
   },
   imageGlow: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 16,
     backgroundColor: color.primaryFixed,
     transform: [{ scale: 0.95 }],

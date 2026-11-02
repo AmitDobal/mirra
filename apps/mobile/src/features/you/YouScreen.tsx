@@ -27,6 +27,8 @@ import { sx } from "@/theme/sx";
 
 import { openAiLimitSheet } from "./AiLimitSheet";
 import { AlertsToggle } from "@/features/alerts/AlertsToggle";
+import { useBadgeStore } from "@/features/rank/badge-store";
+import { KineticRankTeaser } from "@/features/rank/KineticRankTeaser";
 import { CreditsMeter } from "./CreditsMeter";
 import { connectedAccountLabels, experienceLabel } from "./profile-display";
 import { ProfileHero } from "./ProfileHero";
@@ -79,6 +81,7 @@ export const YouScreen = () => {
   const persona = usePersonaStore((s) => s.persona);
   const personaSaving = usePersonaStore((s) => s.saving);
   const choosePersona = usePersonaStore((s) => s.choose);
+  const loadBadges = useBadgeStore((s) => s.load);
 
   const meUser: MeUser | null = me?.user ?? cachedUser;
   const entitlement: MeEntitlement | null = me?.entitlement ?? cachedEntitlement;
@@ -101,8 +104,9 @@ export const YouScreen = () => {
       refreshCredits();
       void ensureMe().catch(() => undefined);
       void ensureCredits().catch(() => undefined);
+      void loadBadges();
     })();
-  }, [ensureCredits, ensureMe, hydrateCredits, hydrateMe, refreshCredits, refreshMe, reloadLocal]);
+  }, [ensureCredits, ensureMe, hydrateCredits, hydrateMe, loadBadges, refreshCredits, refreshMe, reloadLocal]);
 
   useEffect(() => {
     if (me?.preferences?.trainingLocation) {
@@ -113,13 +117,18 @@ export const YouScreen = () => {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([reloadLocal(), ensureMe({ force: true }), ensureCredits({ force: true })]);
+      await Promise.all([
+        reloadLocal(),
+        ensureMe({ force: true }),
+        ensureCredits({ force: true }),
+        loadBadges(),
+      ]);
     } catch {
       /* keep cache */
     } finally {
       setRefreshing(false);
     }
-  }, [ensureCredits, ensureMe, reloadLocal]);
+  }, [ensureCredits, ensureMe, loadBadges, reloadLocal]);
 
   const prefs = profile?.preferences;
   const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
@@ -237,6 +246,8 @@ export const YouScreen = () => {
         fallbackName={fallbackName}
         fallbackMeta={fallbackMeta}
       />
+
+      <KineticRankTeaser />
 
       <Group title="AI credits">
         <CreditsMeter credits={creditsMeter} onPress={handleCreditsPress} />

@@ -1,0 +1,3 @@
+Offline: npm run test:badges -w @mirra/api → PASS badges
+Offline: npm run test:streaks -w @mirra/api → PASS streaks
+API smoke: run apps/api/scripts/smoke-badges.mjs after db:migrate:local (see README)

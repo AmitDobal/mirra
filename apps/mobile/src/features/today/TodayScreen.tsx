@@ -15,6 +15,8 @@ import { useWorkoutStore } from "@/features/workout/workout-store";
 import { type DailyGoal, type NextAction } from "@/lib/api";
 import { kcalStatus } from "@/lib/accountability";
 import { useAttendanceStore } from "./attendance-store";
+import { useBadgeStore } from "@/features/rank/badge-store";
+import { titleForRank } from "@/features/rank/rank-meta";
 import { useStreakStore } from "./streak-store";
 import { adjustedMinutes, useTodayAdjustStore } from "@/features/checkin/adjust-store";
 import { openCheckIn } from "@/features/checkin/open-check-in";
@@ -76,6 +78,9 @@ export const TodayScreen = () => {
   const serverToday = useAttendanceStore((s) => s.today);
   const streak = useStreakStore((s) => s.checkIn);
   const loadStreak = useStreakStore((s) => s.load);
+  const badgeData = useBadgeStore((s) => s.data);
+  const loadBadges = useBadgeStore((s) => s.load);
+  const rankTitle = titleForRank(badgeData?.definitions ?? [], badgeData?.currentRankId ?? null);
   const todayDate = serverToday ?? localTodayIso();
   const weekDates = useMemo(() => weekDays.map((d) => d.date), [weekDays]);
   const { onSelectDay, sheet: dayHistorySheet } = useDayHistory(
@@ -90,6 +95,7 @@ export const TodayScreen = () => {
       void ensureAfterOnboarding();
       void loadAttendance(useTodayStore.getState().weekDays[0]?.date);
       void loadStreak();
+      void loadBadges();
       await loadInsights(force);
     },
     [
@@ -100,6 +106,7 @@ export const TodayScreen = () => {
       refetchActions,
       loadAttendance,
       loadStreak,
+      loadBadges,
       loadInsights,
     ],
   );
@@ -146,14 +153,9 @@ export const TodayScreen = () => {
         checkInDue={checkInDue}
         onCheckIn={openCheckIn}
         streak={streak}
-        onStreak={() =>
-          streak &&
-          setNotice(
-            streak.fire === "cold"
-              ? "Check in to start a streak"
-              : `${streak.current}-day streak · best ${streak.best}`,
-          )
-        }
+        rankTitle={rankTitle}
+        onRank={() => router.push("/kinetic-rank")}
+        onStreak={() => router.push("/kinetic-rank")}
       />
 
       {notice ? (

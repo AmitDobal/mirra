@@ -66,9 +66,16 @@ export const CoachReviseBodySchema = z.object({
     .optional(),
 });
 
+export const CoachReviseAreaSchema = z.enum(["workout", "meal", "prefs"]);
+
 export const CoachReviseChangeSchema = z.object({
   kind: z.string(),
   summary: z.string(),
+  /** Which part of the plan this touches (drives proposal card grouping). */
+  area: CoachReviseAreaSchema.optional(),
+  /** Structured diff for the proposal card; absent when only `summary` is known. */
+  before: z.string().optional(),
+  after: z.string().optional(),
 });
 
 export const CoachReviseResponseSchema = z.object({
@@ -89,5 +96,6 @@ export type CoachPill = z.infer<typeof CoachPillSchema>;
 export type CoachAdviseResponse = z.infer<typeof CoachAdviseResponseSchema>;
 export type CoachReviseScope = z.infer<typeof CoachReviseScopeSchema>;
 export type CoachReviseBody = z.infer<typeof CoachReviseBodySchema>;
+export type CoachReviseArea = z.infer<typeof CoachReviseAreaSchema>;
 export type CoachReviseChange = z.infer<typeof CoachReviseChangeSchema>;
 export type CoachReviseResponse = z.infer<typeof CoachReviseResponseSchema>;

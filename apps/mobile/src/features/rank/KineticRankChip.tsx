@@ -13,7 +13,7 @@ export const KineticRankChip = ({ title, onPress }: Props) => (
     accessibilityRole="button"
     accessibilityLabel={`Kinetic rank ${title}`}
     onPress={onPress}
-    style={sx("rounded-full border border-outline-variant/40 bg-surface-container-high px-2.5 py-1.5")}
+    style={sx("rounded-full border border-outline-variant/40 bg-surface-container-high px-3 py-2")}
   >
     <Text style={sx("font-label-caps text-label-caps text-on-secondary-container")} numberOfLines={1}>
       {title}

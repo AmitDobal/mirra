@@ -104,6 +104,8 @@ const RootLayout = () => {
           <Stack.Screen name="(onboarding)" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="kinetic-rank" options={{ animation: "slide_from_right" }} />
+          <Stack.Screen name="strength" options={{ animation: "slide_from_right" }} />
+          <Stack.Screen name="strength-ladder" options={{ animation: "slide_from_right" }} />
         </Stack>
         <AiLimitSheet />
       </GestureHandlerRootView>

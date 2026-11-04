@@ -3,7 +3,7 @@
  * one drawn region. Slugs not listed (head, hair, neck, hands, feet, knees,
  * ankles) are drawn passive and are not pressable.
  */
-import type { MuscleId } from "./muscle-ids";
+import type { MuscleId } from "@mirra/contracts";
 import type { AnatomySide, VendorSlug } from "./paths";
 
 type SlugMap = Partial<Record<VendorSlug, readonly MuscleId[]>>;

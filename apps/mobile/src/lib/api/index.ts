@@ -29,3 +29,4 @@ export * from "./history";
 export * from "./streaks";
 export * from "./badges";
 export * from "./notifications";
+export * from "./strength";

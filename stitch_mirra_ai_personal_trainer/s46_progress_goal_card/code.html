@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>S46 — Progress tab with Goal timeline card</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "tertiary-fixed": "#ffd9dd",
+            "on-secondary": "#372950",
+            "primary": "#ffffff",
+            "background": "#131313",
+            "surface-variant": "#353534",
+            "secondary": "#d1beef",
+            "on-background": "#e5e2e1",
+            "error-container": "#93000a",
+            "inverse-surface": "#e5e2e1",
+            "inverse-primary": "#516600",
+            "primary-fixed-dim": "#b0d434",
+            "secondary-container": "#50426b",
+            "on-secondary-fixed": "#21143a",
+            "inverse-on-surface": "#313030",
+            "surface-container": "#201f1f",
+            "on-secondary-container": "#c2b0e0",
+            "on-primary": "#293500",
+            "surface-dim": "#131313",
+            "surface-container-high": "#2a2a2a",
+            "secondary-fixed-dim": "#d1beef",
+            "on-secondary-fixed-variant": "#4e4068",
+            "on-primary-container": "#566c00",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-container": "#b53354",
+            "on-surface": "#e5e2e1",
+            "tertiary": "#ffffff",
+            "on-surface-variant": "#c5c9b0",
+            "on-primary-fixed": "#161e00",
+            "tertiary-fixed-dim": "#ffb2bd",
+            "primary-fixed": "#cbf150",
+            "surface-container-highest": "#353534",
+            "outline": "#8f937c",
+            "outline-variant": "#454936",
+            "on-tertiary": "#670024",
+            "on-tertiary-fixed-variant": "#8c1037",
+            "secondary-fixed": "#ebdcff",
+            "primary-container": "#cbf150",
+            "surface-container-lowest": "#0e0e0e",
+            "on-tertiary-fixed": "#400013",
+            "tertiary-container": "#ffd9dd",
+            "surface-bright": "#393939",
+            "surface-container-low": "#1c1b1b",
+            "error": "#ffb4ab",
+            "surface-tint": "#b0d434",
+            "surface": "#131313",
+            "on-error": "#690005",
+            "on-primary-fixed-variant": "#3c4d00"
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px",
+            "card": "24px"
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "gutter": "1rem",
+            "space-md": "1rem",
+            "space-lg": "1.25rem",
+            "margin": "1.25rem",
+            "space-xl": "1.75rem",
+            "space-sm": "0.5rem"
+          },
+          fontFamily: {
+            "display-lg": ["Space Grotesk"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Space Grotesk"],
+            "headline-md": ["Space Grotesk"],
+            "label-lg": ["Space Grotesk"],
+            "display-metric": ["Space Grotesk"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "label-caps": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "headline-lg": ["Space Grotesk"],
+            "body-md": ["Plus Jakarta Sans"]
+          },
+          fontSize: {
+            "display-lg": ["48px", { lineHeight: "52px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "body-lg": ["16px", { lineHeight: "24px", fontWeight: "500" }],
+            "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "600" }],
+            "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "label-lg": ["14px", { lineHeight: "18px", letterSpacing: "0.02em", fontWeight: "600" }],
+            "display-metric": ["38px", { lineHeight: "42px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+            "label-caps": ["11px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "700" }],
+            "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+            "headline-lg": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased flex justify-center min-h-screen selection:bg-primary-fixed selection:text-on-primary-fixed">
+<main class="w-[390px] min-h-[844px] bg-surface relative overflow-x-hidden pb-32 flex flex-col">
+<!-- 1. iOS Status Bar -->
+<header class="w-full pt-3 px-7 flex items-center justify-between z-30 select-none">
+<span class="font-body-md text-[15px] font-semibold text-on-surface tracking-tight">9:41</span>
+<div class="flex items-center space-x-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[17px]" data-icon="signal_cellular_4_bar">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[17px]" data-icon="wifi">wifi</span>
+<span class="material-symbols-outlined text-[20px]" data-icon="battery_full">battery_full</span>
+</div>
+</header>
+<!-- Content Stack -->
+<div class="px-5 flex flex-col space-y-5 pt-3">
+<!-- 2. Header Section -->
+<section class="flex flex-col space-y-1">
+<span class="font-label-caps text-label-caps uppercase text-primary-fixed tracking-wider">MICROCYCLE</span>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Progress Gallery</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">4 check-ins · synced when online</p>
+</section>
+<!-- 3. Goal Timeline Card -->
+<section class="bg-surface-container-low rounded-[24px] border border-surface-container-high p-4 flex flex-col">
+<!-- Top Row -->
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps uppercase text-primary-fixed tracking-wider">GOAL TIMELINE</span>
+<div class="inline-flex items-center gap-1.5"><div class="bg-primary-fixed text-on-primary-fixed rounded-full px-2.5 py-0.5 text-xs font-bold inline-flex items-center"><span>On track</span></div><span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="chevron_right">chevron_right</span></div>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">82 → 75 kg · Steady</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 mb-3">Around Feb 18 · range Feb 11 – Mar 6</p>
+<!-- Compact 56pt Goal Chart (SVG, no axis labels) -->
+<div class="w-full h-[56px] relative overflow-hidden"><svg class="w-full h-full" fill="none" preserveaspectratio="none" viewbox="0 0 326 56"><line stroke="#454936" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="326" y1="48" y2="48"></line><polygon fill="#d1beef" fill-opacity="0.16" points="108,20 326,48 228,48"></polygon><line stroke="#454936" stroke-dasharray="2 2" stroke-width="1" x1="108" x2="108" y1="10" y2="52"></line><path d="M 0,10 L 108,20" stroke="#cbf150" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path><line stroke="#d1beef" stroke-dasharray="4 3" stroke-width="2" x1="108" x2="260" y1="20" y2="48"></line><circle cx="260" cy="48" fill="#d1beef" r="3.5"></circle></svg></div>
+</section>
+<!-- 4. Photo Card -->
+<section class="bg-surface-container-low rounded-[24px] border border-surface-container-high p-4 flex flex-col">
+<!-- Top Row -->
+<div class="flex items-center justify-between mb-3.5">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">CHECK-IN PHOTOS</span>
+<div class="inline-flex items-center gap-1 font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">
+<span class="material-symbols-outlined text-[13px]" data-icon="lock">lock</span>
+<span>PRIVATE</span>
+</div>
+</div>
+<!-- Photo Slots (4:5 Aspect Ratio) -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Left Photo Slot -->
+<div class="flex flex-col">
+<div class="w-full aspect-[4/5] bg-surface-container-highest rounded-[16px] flex items-center justify-center border border-surface-container-high/60">
+<span class="material-symbols-outlined text-[48px] text-on-surface-variant fill-icon" data-icon="person">person</span>
+</div>
+<div class="mt-2.5 flex flex-col text-left px-0.5"><span class="font-label-md text-label-md text-on-surface font-semibold">Baseline</span><span class="font-body-sm text-body-sm text-on-surface-variant">Nov 4</span></div>
+</div>
+<!-- Right Photo Slot -->
+<div class="flex flex-col">
+<div class="w-full aspect-[4/5] bg-surface-container-highest rounded-[16px] flex items-center justify-center border border-surface-container-high/60">
+<span class="material-symbols-outlined text-[48px] text-on-surface-variant fill-icon" data-icon="person">person</span>
+</div>
+<div class="mt-2.5 flex flex-col text-left px-0.5"><span class="font-label-md text-label-md text-on-surface font-semibold">Current</span><span class="font-body-sm text-body-sm text-on-surface-variant">Dec 9</span></div>
+</div>
+</div>
+<!-- Full-width Lime Pill Button -->
+<button class="w-full h-[56px] bg-primary-fixed text-on-primary-fixed rounded-full font-label-lg text-label-lg font-bold flex items-center justify-center mt-4 active:scale-[0.98] transition-transform duration-150" type="button">
+          Compare your photos
+        </button>
+</section>
+<!-- 5. Weight Journey Card -->
+<section class="bg-surface-container-low rounded-[24px] border border-surface-container-high p-4 flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">WEIGHT JOURNEY</span>
+<div class="mt-1 flex items-baseline justify-between">
+<div class="font-display-metric text-[32px] leading-tight font-bold text-primary-fixed">
+            79.4 kg
+          </div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col text-right">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Since start</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">−2.6 kg</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-body-sm text-body-sm text-on-surface-variant">To goal</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">4.4 kg</span>
+</div>
+</div>
+</div>
+<!-- Dot Sparkline Chart (SVG height 72px) -->
+<div class="w-full h-[72px] mt-2 mb-1">
+<svg class="w-full h-full" fill="none" preserveaspectratio="none" viewbox="0 0 318 72">
+<!-- Subtle baseline indicator -->
+<line stroke="#454936" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="318" y1="62" y2="62"></line>
+<!-- Connecting lime downward curve -->
+<path d="M 14,14 L 64,24 L 114,28 L 164,40 L 214,38 L 264,52 L 304,48" stroke="#cbf150" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<!-- Sparkline Dots in #c5c9b0 -->
+<circle cx="14" cy="14" fill="#c5c9b0" r="3"></circle>
+<circle cx="64" cy="24" fill="#c5c9b0" r="3"></circle>
+<circle cx="114" cy="28" fill="#c5c9b0" r="3"></circle>
+<circle cx="164" cy="40" fill="#c5c9b0" r="3"></circle>
+<circle cx="214" cy="38" fill="#c5c9b0" r="3"></circle>
+<circle cx="264" cy="52" fill="#c5c9b0" r="3"></circle>
+<!-- Final current dot -->
+<circle cx="304" cy="48" fill="#cbf150" r="4.5" stroke="#1c1b1b" stroke-width="2"></circle>
+</svg>
+</div>
+<!-- Full-width Lime Pill Button -->
+<button class="w-full py-3.5 bg-primary-fixed text-on-primary-fixed rounded-full font-label-lg text-label-lg font-bold flex items-center justify-center mt-3 active:scale-[0.98] transition-transform duration-150" type="button">
+          Log weight
+        </button>
+</section>
+</div>
+<!-- 6. Floating White Tab Pill (Fixed bottom, centered, ~300pt wide, 64pt height) -->
+<nav class="fixed bottom-[34px] left-1/2 -translate-x-1/2 w-[300px] h-[64px] bg-white rounded-full shadow-[0px_12px_32px_rgba(0,0,0,0.45)] flex items-center justify-around px-3 z-50 select-none">
+<!-- 1: Home -->
+<button aria-label="Home" class="w-10 h-10 flex items-center justify-center text-[#121212] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="home">home</span>
+</button>
+<!-- 2: Dumbbell -->
+<button aria-label="Workouts" class="w-10 h-10 flex items-center justify-center text-[#121212] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="fitness_center">fitness_center</span>
+</button>
+<!-- 3: Fork-knife / Nutrition -->
+<button aria-label="Nutrition" class="w-10 h-10 flex items-center justify-center text-[#121212] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="restaurant">restaurant</span>
+</button>
+<!-- 4: Active Chart (Surrounded by 42pt lime circle with dark icon inside) -->
+<button aria-label="Insights Progress" class="w-[42px] h-[42px] bg-primary-fixed rounded-full flex items-center justify-center text-[#121212] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[22px] fill-icon" data-icon="insights">insights</span>
+</button>
+<!-- 5: Person -->
+<button aria-label="Profile" class="w-10 h-10 flex items-center justify-center text-[#121212] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[24px]" data-icon="person">person</span>
+</button>
+</nav>
+<!-- 7. iOS Home Indicator -->
+<footer class="fixed bottom-2 left-1/2 -translate-x-1/2 w-[134px] h-[5px] bg-[#e5e2e1]/40 rounded-full z-40 pointer-events-none"></footer>
+</main>
+</body></html>

@@ -30,7 +30,7 @@ NO header bar, NO title row, NO refresh button: the page starts with the profile
    - Goal chart, compact 56pt tall, full card width, NO axis labels, NO legend, NO goal label text: lime trend line on the left third ending at a `#454936` vertical hairline (no `Today` text), then the lavender estimate wedge fanning right to the dashed goal hairline.
 3. Two tiles side by side, exactly as S41: left `KINETIC RANK` / `Spark` / `Best streak 9 · Spark → Apex`; right `STRENGTH TIER` / `Locked · 3/8` / `Every muscle ranked Iron → Legendary`.
 4. AI credits card, exactly as S41: `AI CREDITS`, `312 of 400 AI credits left · resets Dec 1`, lime track at 78%, `88 used this month`.
-5. Card with one row (row pattern, but two lines on the left): label `Personal details`, under it body-sm on-surface-variant `Sex, age, height, weight, goal weight, pace, units`; chevron right. No value text.
+5. Card with one row (row pattern, but two lines on the left): label `Personal details`, under it body-sm on-surface-variant `Body, goal weight, units`; chevron right. No value text.
 6. Section label `TRAINING` and the top edge of the S41 training card (caps `ACTIVE PLAN`, label-md lime `Week of Nov 3`), cut off by the tab pill.
 7. Floating white tab pill (64pt tall, ~300pt wide, centered, 24pt above the home indicator), five dark icons: home, dumbbell, fork-knife, chart, person (active, lime 42pt circle behind it). No labels.
 

@@ -28,6 +28,7 @@ const OnboardingLayout = () => (
     <Stack.Screen name="mirror" />
     <Stack.Screen name="generating" />
     <Stack.Screen name="week-reveal" />
+    <Stack.Screen name="timeline" />
     <Stack.Screen name="paywall" />
     <Stack.Screen name="auth" />
   </Stack>

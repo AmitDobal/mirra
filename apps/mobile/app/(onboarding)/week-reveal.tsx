@@ -1,5 +1,3 @@
-import { router } from "expo-router";
-import { TrendingUp } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 
@@ -16,18 +14,21 @@ import {
   WeekRevealWorkoutCard,
   splitTitleFromWorkouts,
 } from "@/features/onboarding/components/WeekRevealParts";
+import {
+  WeekRevealFooter,
+  WeekRevealPaceLine,
+} from "@/features/onboarding/components/WeekRevealFooter";
+import { weekRevealPaceLine } from "@/features/onboarding/goal-preview";
+import { useGoalPreview } from "@/features/onboarding/use-goal-preview";
 import { loadWeekPlanFromDb } from "@/features/onboarding/services/plan-persist";
 import {
   dayTag,
   fromApiPlan,
   goalLabel,
 } from "@/features/onboarding/services/week-reveal-map";
-import { handleWeekRevealStart } from "@/features/onboarding/services/week-reveal-nav";
 import type { OnboardingWeekPlan } from "@/features/onboarding/types";
 import { getCurrentPlan } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
-import { color } from "@/theme/tokens";
-import { Button } from "@/ui";
 import { sx } from "@/theme/sx";
 
 const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"] as const;
@@ -47,6 +48,11 @@ const WeekRevealScreen = () => {
   const setPlan = usePlanStore((s) => s.setPlan);
   const [extra, setExtra] = useState<OnboardingWeekPlan | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const { source, projection } = useGoalPreview();
+  const paceLine = useMemo(
+    () => weekRevealPaceLine(projection, source.weightUnit),
+    [projection, source.weightUnit],
+  );
 
   const dietLabels = useMemo(() => {
     const out: string[] = [];
@@ -185,16 +191,7 @@ const WeekRevealScreen = () => {
 
   return (
     <OnboardingShell
-      footer={
-        <>
-          <Button label={c.start} onPress={handleWeekRevealStart} />
-          <Button
-            label={c.edit}
-            variant="ghost"
-            onPress={() => router.replace("/(onboarding)/goal")}
-          />
-        </>
-      }
+      footer={<WeekRevealFooter />}
     >
       <Text style={sx("font-headline text-headline-md text-on-surface")}>{c.title}</Text>
       <Text style={[sx("font-body text-body-md text-on-surface-variant"), { marginTop: 2 }]}>
@@ -246,20 +243,7 @@ const WeekRevealScreen = () => {
         ))}
       </View>
 
-      {outcome ? (
-        <View style={sx("mt-space-lg mb-space-sm flex-row items-center justify-center gap-2")}>
-          <TrendingUp size={18} color={color.primaryContainer} />
-          <Text
-            numberOfLines={2}
-            style={[
-              sx("text-center font-body-medium text-body-md text-on-surface-variant"),
-              { flexShrink: 1 },
-            ]}
-          >
-            {outcome}
-          </Text>
-        </View>
-      ) : null}
+      <WeekRevealPaceLine pace={paceLine} outcome={outcome} />
 
       <WeekRevealMealTeaser
         dietLabels={dietLabels}

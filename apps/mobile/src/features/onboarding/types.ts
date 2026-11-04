@@ -157,4 +157,6 @@ export type OnboardingAnswers = {
   /** Dual programs after generate; user picks one. */
   planOptions: OnboardingPlanOption[] | null;
   selectedPlanKey: PlanOptionKey;
+  /** S43 hold-to-commit (AMI-180). `null` = not yet / "Not now". */
+  commitment: { committedAt: number } | null;
 };

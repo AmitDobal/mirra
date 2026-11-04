@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-11-04 — Hotfix AMI-177: Cold-start onboarding overwrite + Android keyboard
+
+**Done:** [#73](https://github.com/AmitDobal/mirra/pull/73) `fix/ami-177-coldstart-keyboard` → `main` squash `d497c23`. Root cause: a cold deep link redirected before the funnel hydrated, so onboarded paid users landed in the quiz. Its generating step then sent `PUT /v1/onboarding` with defaults and overwrote the profile and plan. Fix: the tabs guard waits for `GET /v1/me` + SQLite hydration. Generating sends the PUT only when the quiz was walked this session, and never for an onboarded + entitled user. API returns 409 `already_onboarded` over a completed profile unless `reset: true`. Also: Android keyboard (KAV on plan chat, onboarding shell, describe meal, snap sheets), Strength back → You, Play copy, check-in → rebuild preview, onboarding selfie = compare baseline. No migrations. API Worker `49ac06ab` (prev `17a65f69`).
+
+**Smoke:** Root typecheck PASS, mobile 130/130, 18 api `test:*` suites PASS (incl. `test:onboarding-guard`). Prod: `/health`, `/api/auth/ok`, `/v1/me`, `/v1/plans/current` → 200 (`day-test-1`). Guard: `PUT /v1/onboarding` without `reset` for `day-test-1` → 409 `already_onboarded`; `/v1/me` and `/v1/plans/current` byte-identical before/after.
+
+**Phone:** iOS https://u.expo.dev/update/01a1a6ac-11d4-7e68-be9c-8a65790e349a (group `cdc11490-f93d-4688-b32d-3ed776fc1b39`). Android https://u.expo.dev/update/01a1a6ac-e701-7b91-a020-bb00a0169239 (group `43c6a7fe-da7e-487d-8012-7f8a14f89749`). Runtime `exposdk:58.0.0`, branch `day-test`.
+
+**Watch:** Users already overwritten before this fix are not restored. Check D1 Time Travel if a user reports lost answers. Old app bundles without `reset: true` now get 409 on an intentional quiz re-run until they pick up this update.
+
 ## 2026-11-04 — AMI-161–174: Strength tiers, anatomy, chat before/after v2
 
 **Done:** [#72](https://github.com/AmitDobal/mirra/pull/72) integrate/strength-tiers → `main` merge `a50de7f`. AMI-161 exercise library + muscle taxonomy + ExerciseTagger port. AMI-162 real anatomy SVG + tier badges. AMI-163 chat diff v2 core. AMI-164 Kinetic Rank S33 fidelity + S40 Today chips. AMI-165 strength engine (`/v1/strength*`, `/v1/exercises/:canonicalId`, tier-up on complete). AMI-166 chat workout side (swap/add/remove, day moves). AMI-167 proposal v2 UI (S39). AMI-168 strength map / muscle detail / tier ladder (S34/S35/S37). AMI-169 exercise anatomy v2 + workout tier-up. AMI-170 chat quality. AMI-171 regression compat. AMI-172 workout edit routes, RPE save, real volume. AMI-173 chat intents (workout names, relative days, Hinglish). AMI-174 rebuild preview, persona hydrate, SE hero, rank share. Stitch S34–S40. D1 `0018`–`0020` remote applied (additive). API Worker `17a65f69`.

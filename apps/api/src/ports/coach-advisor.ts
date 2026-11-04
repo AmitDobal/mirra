@@ -7,6 +7,8 @@ export type CoachAdviseInput = {
   note?: string;
   vectorId?: string;
   context?: string;
+  /** Trainer persona id from preferences (tone only; facts unchanged). */
+  persona?: string;
 };
 
 export type CoachVector = {

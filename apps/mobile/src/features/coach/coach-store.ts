@@ -4,6 +4,7 @@ import { copy } from "@/content/copy";
 import { listCheckIns } from "@/db";
 import {
   applyRebuild,
+  previewRebuild,
   type CoachPill,
   type CoachVector,
   type CurrentPlan,
@@ -22,6 +23,10 @@ type CoachState = {
   readonly lastCheckInId: string | null;
   readonly previewToken: string | null;
   readonly previewAfter: CurrentPlan | null;
+  /** Plan the preview was computed against (S21 "Original Schedule"). */
+  readonly previewBefore: CurrentPlan | null;
+  readonly previewLoading: boolean;
+  readonly previewError: string | null;
   readonly weekLogged: number;
   readonly notice: string | null;
   readonly adviseMessage: string;
@@ -41,12 +46,33 @@ type CoachState = {
   readonly fetchAdvise: () => Promise<void>;
   /** Corner-refresh: bypass TTL, throttled to once per 60s per key. */
   readonly forceRefreshAdvise: () => Promise<void>;
-  readonly apply: () => Promise<void>;
+  /** POST /v1/plans/rebuild/preview for the selected vector; stores token + before/after. */
+  readonly preview: () => Promise<void>;
+  /** Commits the previewed plan. Resolves true when the server applied it. */
+  readonly apply: () => Promise<boolean>;
   readonly keep: () => Promise<void>;
   readonly clearNotice: () => void;
 };
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
+
+/** Ignore a preview response that lands after Keep / a newer preview. */
+let previewSeq = 0;
+
+const CLEARED_PREVIEW = {
+  previewToken: null,
+  previewAfter: null,
+  previewBefore: null,
+  previewLoading: false,
+  previewError: null,
+} as const;
+
+/** Rebuild reason sent to the API; "missed" wording makes the server shift train days. */
+export const rebuildReason = (vectorId: string): string => {
+  if (vectorId === "deload") return "Deload: low readiness, protect recovery";
+  if (vectorId === "express") return "Express: compress sessions to 20 minutes";
+  return "Missed session: shift the remaining lifts";
+};
 
 export const useCoachStore = create<CoachState>((set, get) => ({
   readiness: "push",
@@ -54,6 +80,9 @@ export const useCoachStore = create<CoachState>((set, get) => ({
   lastCheckInId: null,
   previewToken: null,
   previewAfter: null,
+  previewBefore: null,
+  previewLoading: false,
+  previewError: null,
   weekLogged: 0,
   notice: null,
   adviseMessage: copy.coach.fallbackMessage,
@@ -90,29 +119,54 @@ export const useCoachStore = create<CoachState>((set, get) => ({
   fetchAdvise: () => runAdvise(get, set, false),
   forceRefreshAdvise: () => runAdvise(get, set, true),
 
+  preview: async () => {
+    const seq = ++previewSeq;
+    set({ ...CLEARED_PREVIEW, previewLoading: true, notice: null });
+    try {
+      const res = await previewRebuild({
+        reason: rebuildReason(get().vectorId),
+        ...(get().lastCheckInId ? { checkInId: get().lastCheckInId! } : {}),
+      });
+      if (seq !== previewSeq) return;
+      set({
+        previewLoading: false,
+        previewToken: res.previewToken ?? null,
+        previewAfter: res.after,
+        previewBefore: res.before ?? usePlanStore.getState().plan,
+        previewError: res.previewToken ? null : copy.coach.rebuildPreviewFailed,
+      });
+      logger.info("coach.rebuild.preview.ok", { diffs: res.diffs.length });
+    } catch (err) {
+      if (seq !== previewSeq) return;
+      logger.error("coach.rebuild.preview.failed", {
+        message: errorMessage(err),
+        status: err instanceof MirraApiError ? err.status : undefined,
+      });
+      set({ previewLoading: false, previewError: copy.coach.rebuildPreviewFailed });
+    }
+  },
+
   apply: async () => {
     const { previewToken } = get();
+    if (!previewToken) return false;
     try {
-      if (previewToken && previewToken !== "local_preview") {
-        const plan = await applyRebuild({ previewToken }, `apply_${Date.now()}`);
-        usePlanStore.getState().setPlan(plan);
-        logger.info("coach.rebuild.apply.ok", { planId: plan.id });
-      }
-      set({ notice: "New plan applied", previewToken: null });
+      const plan = await applyRebuild({ previewToken }, `apply_${previewToken}`);
+      usePlanStore.getState().setPlan(plan);
+      logger.info("coach.rebuild.apply.ok", { planId: plan.id, version: plan.version });
+      set({ ...CLEARED_PREVIEW, notice: copy.coach.rebuildApplied });
+      return true;
     } catch (err) {
       logger.error("coach.rebuild.apply.failed", {
         message: errorMessage(err),
         status: err instanceof MirraApiError ? err.status : undefined,
       });
-      set({ notice: "Applied locally", previewToken: null });
+      set({ previewError: copy.coach.rebuildApplyFailed });
+      return false;
     }
   },
 
   keep: async () => {
-    set({
-      notice: "Kept original schedule",
-      previewToken: null,
-      previewAfter: null,
-    });
+    previewSeq += 1;
+    set({ ...CLEARED_PREVIEW, notice: "Kept original schedule" });
   },
 }));

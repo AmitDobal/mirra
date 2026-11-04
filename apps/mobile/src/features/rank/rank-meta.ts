@@ -1,4 +1,4 @@
-import { RANK_UNLOCK_COPY } from "@/content/rank";
+import { RANK_UNLOCK_COPY, rankCopy } from "@/content/rank";
 import type { BadgeDefinition, BadgesResponse } from "@/lib/api/badges";
 
 export type RankIcon = "bolt" | "flame" | "forge" | "volt" | "apex";
@@ -86,4 +86,19 @@ export const rankChipModel = (data: BadgesResponse | null): RankChipModel | null
   const first = byTier(data.definitions)[0];
   const best = Math.min(data.bestStreak, first.thresholdDays);
   return { label: `${first.title} ${best}/${first.thresholdDays}`, locked: true, icon: "bolt" };
+};
+
+/** Plain-text share message: earned rank, streak, next tier. */
+export const rankShareMessage = (input: {
+  readonly currentTitle: string | null;
+  readonly streak: number;
+  readonly bestStreak: number;
+  readonly next: { readonly title: string; readonly thresholdDays: number } | null;
+}): string => {
+  const lines = [rankCopy.shareRank(input.currentTitle), rankCopy.shareStreak(input.streak, input.bestStreak)];
+  if (input.next) {
+    const left = Math.max(0, input.next.thresholdDays - input.bestStreak);
+    if (left > 0) lines.push(rankCopy.shareNext(input.next.title, left));
+  }
+  return lines.join("\n");
 };

@@ -58,4 +58,12 @@ export const rankCopy = {
   nextMilestone: "Next milestone: ",
   nextMilestoneValue: (title: string, days: number) => `${title} · ${days} days`,
   allUnlocked: "Every tier unlocked. Keep the streak alive.",
+
+  /** Share sheet (header share button). */
+  shareTitle: "My Kinetic Rank",
+  shareRank: (title: string | null) => (title ? `Kinetic Rank: ${title}` : "Kinetic Rank: climbing to Spark"),
+  shareStreak: (current: number, best: number) =>
+    `${current}-day check-in streak (best ${best}) on Mirra.`,
+  shareNext: (title: string, left: number) => `${left} ${left === 1 ? "day" : "days"} to ${title}.`,
+  shareFailed: "Couldn't open the share sheet.",
 };

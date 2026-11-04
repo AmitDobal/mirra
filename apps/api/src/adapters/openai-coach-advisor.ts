@@ -1,3 +1,4 @@
+import { personaPromptBlock } from "@mirra/contracts";
 import { z } from "zod";
 
 import type { AppDB } from "../db";
@@ -47,7 +48,7 @@ export const createOpenAiCoachAdvisor = (
         jsonMode: true,
         temperature: 0.6,
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: `${SYSTEM}\n${personaPromptBlock(input.persona)}` },
           {
             role: "user",
             content: JSON.stringify({

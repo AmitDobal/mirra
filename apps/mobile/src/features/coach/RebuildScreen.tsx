@@ -1,78 +1,68 @@
 import { router } from "expo-router";
-import { ArrowRight, X } from "lucide-react-native";
-import { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { ArrowRight, BadgeCheck, RefreshCw, User, X } from "lucide-react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { s21RebuildPreview } from "../../../assets/stitch";
+import { rebuildCopy as t } from "@/content/rebuild";
+import { localTodayIso } from "@/lib/datetime";
+import { usePlanStore } from "@/stores/plan-store";
+import { sx } from "@/theme/sx";
+import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
-import { color } from "@/theme/tokens";
-import { usePlanStore } from "@/stores/plan-store";
 
 import { useCoachStore } from "./coach-store";
-import { sx } from "@/theme/sx";
+import { RebuildAdaptCard, RebuildCoachCard, RebuildMetricsRow } from "./RebuildCards";
+import { RebuildSchedule } from "./RebuildSchedule";
+import { changeSummary, originalRows, rebuildMetrics, rebuildRows } from "./rebuild-view";
 
-/** S21 Rebuild preview — Stitch layout; Apply / Keep preserved. */
+/** S21 Rebuild preview: real POST /v1/plans/rebuild/preview, before vs after, Apply commits. */
 export const RebuildScreen = () => {
+  const preview = useCoachStore((s) => s.preview);
   const apply = useCoachStore((s) => s.apply);
   const keep = useCoachStore((s) => s.keep);
-  const notice = useCoachStore((s) => s.notice);
-  const previewAfter = useCoachStore((s) => s.previewAfter);
-  const plan = usePlanStore((s) => s.plan);
+  const after = useCoachStore((s) => s.previewAfter);
+  const storedBefore = useCoachStore((s) => s.previewBefore);
+  const token = useCoachStore((s) => s.previewToken);
+  const loading = useCoachStore((s) => s.previewLoading);
+  const error = useCoachStore((s) => s.previewError);
+  const current = usePlanStore((s) => s.plan);
   const [busy, setBusy] = useState(false);
 
-  const source = previewAfter ?? plan;
-  const summary = source?.summary as
-    | { kcalTarget?: number; proteinG?: number; outcomeLine?: string }
-    | undefined;
-  const days =
-    source?.days.slice(0, 4).map((d, i) => ({
-      day: d.date.slice(5) || "—",
-      tag: i === 0 ? "Today" : d.kind,
-      title: d.workout?.title ?? d.label ?? d.kind,
-      meta: d.workout ? `${d.workout.durationMin} min` : "Rest",
-      active: i === 0,
-    })) ?? [];
+  useEffect(() => {
+    void preview();
+  }, [preview]);
 
-  const metrics = [
-    {
-      label: "Total Vol",
-      value: String(source?.days.filter((d) => d.workout).length ?? 0),
-      meta: "sessions",
-      tone: "lime" as const,
-    },
-    {
-      label: "Burn Target",
-      value: summary?.kcalTarget != null ? String(summary.kcalTarget) : "—",
-      meta: "kcal",
-      tone: "lav" as const,
-    },
-    {
-      label: "Protein",
-      value: summary?.proteinG != null ? String(summary.proteinG) : "—",
-      meta: "g floor",
-      tone: "neutral" as const,
-    },
-  ];
+  const before = storedBefore ?? current;
+  const today = localTodayIso();
+  const view = useMemo(() => {
+    const rows = rebuildRows(after, before, today);
+    return {
+      rows,
+      original: after ? originalRows(before, after, today) : [],
+      metrics: rebuildMetrics(after ?? before, before, today),
+      summary: changeSummary(rows),
+      shifts: rows.filter((r) => r.changed).length,
+    };
+  }, [after, before, today]);
+  const outcome = after?.summary?.outcomeLine;
 
-  const goToday = () => router.replace("/(tabs)/today");
+  const close = async () => {
+    if (busy) return;
+    await keep();
+    router.replace("/(tabs)/today");
+  };
 
   const handleApply = async () => {
-    if (busy) return;
+    if (busy || !token) return;
     setBusy(true);
-    await apply();
+    const ok = await apply();
     setBusy(false);
-    goToday();
+    if (ok) router.replace("/(tabs)/today");
   };
 
-  const handleKeep = async () => {
-    if (busy) return;
-    setBusy(true);
-    await keep();
-    setBusy(false);
-    goToday();
-  };
+  const ctaLabel = busy ? t.applying : loading ? t.heroLoading : t.apply;
 
   return (
     <ScreenScroll dockPad={false}>
@@ -81,126 +71,95 @@ export const RebuildScreen = () => {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Close"
-            onPress={() => void handleKeep()}
-            style={sx("h-11 w-11 items-center justify-center rounded-full bg-surface-container-high")}
+            onPress={() => void close()}
+            style={sx("h-11 w-11 items-center justify-center rounded-full")}
           >
-            <X size={22} color={color.onSurface} />
+            <X size={24} color={color.onSurface} />
           </Pressable>
           <View>
-            <CapsLabel tone="lime">AI Optimization</CapsLabel>
-            <Text style={sx("font-headline-sm text-headline-sm uppercase text-on-surface")}>
-              Rebuild Preview
-            </Text>
+            <CapsLabel style={styles.secondary}>{t.eyebrow}</CapsLabel>
+            <Text style={sx("font-headline-sm text-headline-sm uppercase text-on-surface")}>{t.title}</Text>
           </View>
+        </View>
+        <View style={sx("h-8 w-8 items-center justify-center rounded-full bg-primary")}>
+          <User size={18} color={color.onPrimary} />
         </View>
       </View>
 
-      <View style={sx("mb-space-md flex-row items-center justify-between")}>
+      <View style={sx("mb-space-md flex-row items-center justify-between py-space-sm")}>
         <View style={sx("flex-row items-center gap-2")}>
           <View style={sx("h-2.5 w-2.5 rounded-full bg-primary-container")} />
-          <Text style={sx("font-headline-sm text-headline-sm uppercase text-on-surface")}>
-            Plan Recalibration
-          </Text>
+          <Text style={sx("font-headline-sm text-headline-sm uppercase text-on-surface")}>{t.metaTitle}</Text>
         </View>
-        <View style={sx("rounded-full bg-surface-container-high px-3 py-1")}>
-          <CapsLabel tone="lime">v2.4 AUTO-SYNC</CapsLabel>
+        <View style={sx("flex-row items-center gap-1.5 rounded-full bg-surface-container-high px-3 py-1")}>
+          <RefreshCw size={14} color={color.secondary} />
+          <CapsLabel style={styles.secondary}>{t.metaBadge}</CapsLabel>
         </View>
       </View>
 
-      <View style={sx("mb-space-lg overflow-hidden rounded-lg bg-surface-container-high p-space-lg")}>
-        <View style={sx("mb-space-sm self-start rounded-full bg-surface-container-lowest px-2.5 py-1")}>
-          <CapsLabel tone="lime">
-            {notice ?? "ZERO GUILT SHIFT · 100% VOLUME"}
-          </CapsLabel>
+      <View style={sx("mb-space-lg gap-space-sm overflow-hidden rounded-lg bg-surface-container-high p-space-lg")}>
+        <View style={sx("flex-row items-center gap-1.5 self-start rounded-full bg-surface-container-lowest px-2.5 py-1")}>
+          <BadgeCheck size={14} color={color.primaryContainer} />
+          <CapsLabel style={styles.lime}>{t.heroPill(view.metrics.volumeMatchPct)}</CapsLabel>
         </View>
-        <Text style={sx("font-headline text-headline-lg text-on-surface")}>
-          Your week, re-calibrated.
+        <Text style={sx("font-headline-lg text-headline-lg text-on-surface")}>{t.heroTitle}</Text>
+        <Text style={sx("font-body text-body-md text-on-surface-variant")}>
+          {loading ? t.heroLoading : typeof outcome === "string" && outcome ? outcome : t.heroFallback}
         </Text>
-        <Text style={sx("mt-space-sm font-body text-body-md text-on-surface-variant")}>
-          {summary?.outcomeLine ||
-            "Missed stimulus redistributed. Hypertrophy strain stays on target."}
-        </Text>
-        <Image
-          source={s21RebuildPreview.athleteStretching}
-          accessibilityLabel="Rebuild preview"
-          style={{ width: "100%", height: 120, borderRadius: 12, marginTop: 12 }}
-          resizeMode="cover"
-        />
-        <Text style={sx("mt-space-sm font-headline-sm text-headline-sm text-on-surface")}>
-          Smarter rhythm, zero punishment.
-        </Text>
-      </View>
-
-      <View style={sx("mb-space-sm flex-row items-center justify-between")}>
-        <CapsLabel tone="lime">Net metric retention</CapsLabel>
-        <CapsLabel>All goals active</CapsLabel>
-      </View>
-      <View style={sx("mb-space-lg flex-row gap-2")}>
-        {metrics.map((met) => (
-          <View key={met.label} style={sx("flex-1 rounded-DEFAULT bg-surface-container p-3")}>
-            <CapsLabel>{met.label}</CapsLabel>
-            <Text style={sx("mt-1 font-headline text-headline-md text-on-surface")}>
-              {met.value}
-            </Text>
-            <Text
-              style={sx(
-                `font-body text-body-sm ${
-                  met.tone === "lime" ? "text-primary-fixed" : "text-on-surface-variant"
-                }`,
-              )}
-            >
-              {met.meta}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      <CapsLabel style={sx("mb-space-sm")}>Rebuilt schedule</CapsLabel>
-      {days.length === 0 ? (
-        <View style={sx("mb-space-sm rounded-lg bg-surface-container-low p-space-md")}>
-          <Text style={sx("font-body text-body-md text-on-surface-variant")}>
-            No plan days to preview yet.
-          </Text>
-        </View>
-      ) : (
-        days.map((d) => (
-          <View
-            key={`${d.day}-${d.title}`}
-            style={sx(
-              `mb-space-sm flex-row gap-space-md rounded-lg p-space-md ${
-                d.active
-                  ? "border border-primary-fixed bg-surface-container-high"
-                  : "bg-surface-container-low"
-              }`,
-            )}
-          >
-            <View style={sx("w-12")}>
-              <Text style={sx("font-label-bold text-label-lg text-primary-fixed")}>{d.day}</Text>
-              <CapsLabel>{d.tag}</CapsLabel>
+        <View style={sx("mt-1 flex-row items-center gap-3 pt-2")}>
+          <View style={sx("flex-row")}>
+            <View style={sx("h-6 w-6 items-center justify-center rounded-full bg-primary-container")}>
+              <Text style={[sx("font-label-bold text-on-primary"), styles.initial]}>P</Text>
             </View>
-            <View style={sx("flex-1")}>
-              <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>{d.title}</Text>
-              <Text style={sx("font-body text-body-sm text-on-surface-variant")}>{d.meta}</Text>
+            <View style={[sx("h-6 w-6 items-center justify-center rounded-full bg-secondary"), styles.overlap]}>
+              <Text style={[sx("font-label-bold text-on-secondary"), styles.initial]}>R</Text>
             </View>
           </View>
-        ))
-      )}
+          <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
+            {t.shiftsLabel}
+            <Text style={sx("font-body-semi text-on-surface")}>{t.shiftsValue(view.shifts)}</Text>
+          </Text>
+        </View>
+      </View>
+
+      <RebuildMetricsRow m={view.metrics} />
+      <RebuildSchedule rows={view.rows} original={view.original} loading={loading} />
+      {error ? (
+        <View style={sx("mb-space-lg gap-space-sm rounded-lg bg-error-container p-space-md")}>
+          <Text style={sx("font-body text-body-md text-on-error-container")}>{error}</Text>
+          {!token ? (
+            <Pressable accessibilityRole="button" onPress={() => void preview()} style={sx("self-start")}>
+              <CapsLabel style={styles.onError}>{t.retry}</CapsLabel>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+      <RebuildCoachCard message={loading ? t.heroLoading : view.summary} />
+      <RebuildAdaptCard />
 
       <LimeCta
-        label={busy ? "Applying…" : "Apply new plan"}
+        label={ctaLabel}
         onPress={() => void handleApply()}
         icon={<ArrowRight size={18} color={color.onPrimaryFixed} />}
+        style={!token || busy ? styles.disabled : undefined}
       />
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Keep current plan"
-        onPress={() => void handleKeep()}
-        style={sx("mt-space-md items-center py-space-sm")}
+        accessibilityLabel={t.customize}
+        onPress={() => router.push("/(tabs)/plan-chat")}
+        style={sx("mt-space-sm h-14 items-center justify-center rounded-full bg-surface-container-high")}
       >
-        <Text style={sx("font-label text-label-md text-on-surface-variant")}>
-          Keep current plan
-        </Text>
+        <Text style={sx("font-label-bold text-label-lg text-on-surface")}>{t.customize}</Text>
       </Pressable>
     </ScreenScroll>
   );
 };
+
+const styles = StyleSheet.create({
+  secondary: { color: color.secondary },
+  lime: { color: color.primaryContainer },
+  onError: { color: color.onErrorContainer },
+  initial: { fontSize: 10, lineHeight: 12 },
+  overlap: { marginLeft: -6 },
+  disabled: { opacity: 0.5 },
+});

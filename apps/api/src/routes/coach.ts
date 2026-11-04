@@ -4,9 +4,11 @@ import {
   ReviseApplyBodySchema,
   type CoachAdviseResponse,
 } from "@mirra/contracts";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 import { createDb } from "../db";
+import { preferences } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { getCoachAdvisor } from "../lib/coach-advisor";
 import { parseBody } from "../lib/validate";
@@ -46,6 +48,11 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
   const db = createDb(c.env.DB);
   const forceHeuristic = c.req.header("x-mirra-ai-mode")?.toLowerCase() === "heuristic";
   const advisor = getCoachAdvisor(c.env, db, { forceHeuristic });
+  const [prefs] = await db
+    .select({ trainerPersona: preferences.trainerPersona })
+    .from(preferences)
+    .where(eq(preferences.userId, userId))
+    .limit(1);
   const result = await withAiCredits(
     { env: c.env, db, userId },
     {
@@ -61,6 +68,7 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
         note: body.note,
         vectorId: body.vectorId,
         context: body.context ?? body.localDate,
+        persona: prefs?.trainerPersona ?? undefined,
       }),
   );
   const response: CoachAdviseResponse = {

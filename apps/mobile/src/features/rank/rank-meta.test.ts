@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { BadgeDefinition, BadgesResponse } from "../../lib/api/badges.ts";
-import { activeTier, earnedRankId, ladderRows, rankChipModel, unlockedSet } from "./rank-meta.ts";
+import {
+  activeTier,
+  earnedRankId,
+  ladderRows,
+  rankChipModel,
+  rankShareMessage,
+  unlockedSet,
+} from "./rank-meta.ts";
 
 /** AMI-171: tier state comes from the server's unlocked set (`user_badges`), never best streak. */
 const def = (id: string, tier: number, title: string, thresholdDays: number): BadgeDefinition => ({
@@ -48,4 +55,20 @@ test("no awarded badge -> locked Spark chip with progress, even when best >= 7",
 test("complete ladder has no active tier", () => {
   assert.equal(activeTier(DEFS, new Set(ALL)), null);
   assert.equal(earnedRankId(DEFS, new Set(ALL)), "rank_apex");
+});
+
+test("share message: earned rank, streak and days to the next tier", () => {
+  assert.equal(
+    rankShareMessage({
+      currentTitle: "Spark",
+      streak: 10,
+      bestStreak: 10,
+      next: { title: "Ember", thresholdDays: 14 },
+    }),
+    "Kinetic Rank: Spark\n10-day check-in streak (best 10) on Mirra.\n4 days to Ember.",
+  );
+  assert.equal(
+    rankShareMessage({ currentTitle: null, streak: 0, bestStreak: 0, next: null }),
+    "Kinetic Rank: climbing to Spark\n0-day check-in streak (best 0) on Mirra.",
+  );
 });

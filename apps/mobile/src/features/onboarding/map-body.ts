@@ -7,7 +7,7 @@ import type {
   SexId,
 } from "./types";
 
-const GOAL_MAP: Record<GoalId, OnboardingPutBody["preferences"]["primaryGoal"]> =
+export const GOAL_MAP: Record<GoalId, OnboardingPutBody["preferences"]["primaryGoal"]> =
   {
     lose_fat: "lose_fat",
     build_muscle: "build_muscle",
@@ -16,7 +16,7 @@ const GOAL_MAP: Record<GoalId, OnboardingPutBody["preferences"]["primaryGoal"]> 
     performance: "performance",
   };
 
-const EXP_MAP: Record<
+export const EXP_MAP: Record<
   ExperienceId,
   OnboardingPutBody["preferences"]["experience"]
 > = {
@@ -85,5 +85,7 @@ export const toOnboardingBody = (
       physiqueTarget: answers.physiqueTarget,
       lifestyleNotes: lifestyleParts.length ? lifestyleParts.join("\n") : null,
     },
+    // S43 hold-to-commit (AMI-180); null = "Not now" / not reached.
+    commitment: answers.commitment ?? null,
   };
 };

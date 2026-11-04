@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { Minus, Plus } from "lucide-react-native";
+import { useMemo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
 import { onboardingCopy } from "@/content/onboarding";
@@ -10,8 +11,11 @@ import {
   useOnboardingImagery,
   useOnboardingStore,
 } from "@/features/onboarding";
+import { TargetPaceCards } from "@/features/onboarding/components/TargetPaceCards";
+import { buildTargetPaceView } from "@/features/onboarding/goal-preview";
+import { goalToday, useGoalSource } from "@/features/onboarding/use-goal-preview";
 import { color } from "@/theme/tokens";
-import { Button, Chip } from "@/ui";
+import { Button } from "@/ui";
 import { sx } from "@/theme/sx";
 
 /** S06 — Goal weight + pace. */
@@ -25,12 +29,19 @@ const TargetScreen = () => {
   const setPace = useOnboardingStore((s) => s.setPace);
 
   const kg = goalWeightKg ?? 70;
+  const source = useGoalSource();
+  // Live engine numbers for the displayed goal weight (AMI-180); pace changes re-run it.
+  const paceView = useMemo(() => buildTargetPaceView(source, kg, goalToday()), [source, kg]);
   const display =
     weightUnit === "kg"
       ? `${Math.round(kg)}`
       : `${Math.round(kg * 2.2046)}`;
 
-  const handleContinue = () => router.push("/(onboarding)/physique");
+  const handleContinue = () => {
+    // The stepper shows a value even after "Skip" (null); Continue commits what is shown.
+    if (goalWeightKg === null) setGoalWeightKg(kg);
+    router.push("/(onboarding)/physique");
+  };
   const handleSkip = () => {
     setGoalWeightKg(null);
     router.push("/(onboarding)/physique");
@@ -55,7 +66,7 @@ const TargetScreen = () => {
       </Text>
       <Image
         source={targetAthlete}
-        accessibilityLabel="Athlete tying shoes"
+        accessibilityLabel={c.imageLabel}
         style={{ width: "100%", height: 140, borderRadius: 12, marginTop: 16 }}
         resizeMode="cover"
       />
@@ -70,7 +81,7 @@ const TargetScreen = () => {
         <View style={sx("flex-row items-center justify-between")}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Decrease goal weight"
+            accessibilityLabel={c.decrease}
             onPress={() => setGoalWeightKg(Math.max(40, kg - 1))}
             style={sx(
               "h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest",
@@ -83,7 +94,7 @@ const TargetScreen = () => {
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Increase goal weight"
+            accessibilityLabel={c.increase}
             onPress={() => setGoalWeightKg(Math.min(200, kg + 1))}
             style={sx(
               "h-touch w-touch items-center justify-center rounded-full bg-surface-container-highest",
@@ -92,23 +103,19 @@ const TargetScreen = () => {
             <Plus color={color.onSurface} size={18} />
           </Pressable>
         </View>
-      </View>
-      <Text
-        style={sx("mt-space-lg font-label text-label-md text-on-surface-variant")}
-      >
-        {c.pace}
-      </Text>
-      <View style={sx("mt-space-sm flex-row gap-space-sm")}>
-        <Chip
-          label={c.steady}
-          selected={pace === "steady"}
-          onPress={() => setPace("steady")}
-        />
-        <Chip
-          label={c.aggressive}
-          selected={pace === "aggressive"}
-          onPress={() => setPace("aggressive")}
-        />
+        <View style={sx("mt-space-sm flex-row items-center justify-between px-space-xs")}>
+          <Text style={sx("font-body text-body-sm text-on-surface-variant")}>
+            {c.current(paceView.current)}
+          </Text>
+          {paceView.overall ? (
+            <Text style={sx("font-label text-label-md text-primary-fixed")}>
+              {c.overall(paceView.overall)}
+            </Text>
+          ) : null}
+        </View>
+        <View style={sx("mt-space-lg")}>
+          <TargetPaceCards pace={pace} view={paceView} onSelect={setPace} />
+        </View>
       </View>
     </OnboardingShell>
   );

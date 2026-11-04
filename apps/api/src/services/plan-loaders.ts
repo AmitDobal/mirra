@@ -5,6 +5,7 @@ import type { AppDB } from "../db";
 import { planDays, plans, workoutExercises, workouts } from "../db/schema";
 import { msToUnix } from "../lib/dates";
 import { parseJson } from "../lib/json";
+import { libraryFocus, musclesForCanonicalIds } from "./exercise-resolve";
 
 const emptySummary = (): PlanSummary => ({
   kcalTarget: 2000,
@@ -40,13 +41,29 @@ export const loadCurrentPlan = async (
     .where(eq(workouts.planId, plan.id))
     .orderBy(asc(workouts.sortOrder));
 
-  const workoutOut: CurrentPlanResponse["workouts"] = [];
+  const exerciseRows: (typeof workoutExercises.$inferSelect)[][] = [];
   for (const w of workoutRows) {
-    const exercises = await db
-      .select()
-      .from(workoutExercises)
-      .where(eq(workoutExercises.workoutId, w.id))
-      .orderBy(asc(workoutExercises.sortOrder));
+    exerciseRows.push(
+      await db
+        .select()
+        .from(workoutExercises)
+        .where(eq(workoutExercises.workoutId, w.id))
+        .orderBy(asc(workoutExercises.sortOrder)),
+    );
+  }
+  const muscles = await musclesForCanonicalIds(
+    db,
+    exerciseRows.flat().flatMap((ex) => (ex.canonicalId ? [ex.canonicalId] : [])),
+  );
+  /** Stored id first; rows written without one (chat swaps) get a library-only match. */
+  const exerciseFocus = (ex: typeof workoutExercises.$inferSelect) =>
+    ex.canonicalId
+      ? { canonicalId: ex.canonicalId, muscles: muscles.get(ex.canonicalId) ?? [] }
+      : libraryFocus(ex.name);
+
+  const workoutOut: CurrentPlanResponse["workouts"] = [];
+  for (const [i, w] of workoutRows.entries()) {
+    const exercises = exerciseRows[i] ?? [];
     workoutOut.push({
       id: w.id,
       title: w.title,
@@ -63,6 +80,7 @@ export const loadCurrentPlan = async (
         restSec: ex.restSec,
         sortOrder: ex.sortOrder,
         swapGroup: ex.swapGroup,
+        ...exerciseFocus(ex),
       })),
     });
   }

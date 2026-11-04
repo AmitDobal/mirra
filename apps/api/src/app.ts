@@ -32,6 +32,7 @@ import { todayActionsRoutes } from "./routes/today-actions";
 import { todayRoutes } from "./routes/today";
 import { weightRoutes } from "./routes/weight";
 import { workoutRoutes } from "./routes/workouts";
+import { exerciseRoutes } from "./routes/exercises";
 
 export const createApp = () => {
   const app = new Hono<{ Bindings: MirraEnv; Variables: AuthVars }>();
@@ -85,6 +86,7 @@ export const createApp = () => {
   app.route("/", creditsRoutes);
   app.route("/", creditsDevRoutes);
   app.route("/", notificationRoutes);
+  app.route("/", exerciseRoutes);
 
   app.onError((err, c) => {
     if (err instanceof ApiError) {

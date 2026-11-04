@@ -18,6 +18,7 @@
     "test:meal-revise": "tsx scripts/assert-meal-revise.ts",
     "test:revise-caps": "tsx scripts/assert-revise-caps.ts",
     "test:revise-drafts": "tsx scripts/assert-revise-drafts.ts",
+    "test:exercise-resolve": "tsx scripts/assert-exercise-resolve.ts",
     "smoke:meal-revise": "node scripts/smoke-meal-revise.mjs",
     "smoke:revise-caps": "node scripts/smoke-revise-caps.mjs",
     "smoke:streaks": "node scripts/smoke-streaks.mjs",

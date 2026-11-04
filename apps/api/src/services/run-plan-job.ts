@@ -83,6 +83,7 @@ export const runPlanGenerateJob = async ({
       weekStart,
       source: "onboarding",
       generated,
+      env,
     });
 
     await db

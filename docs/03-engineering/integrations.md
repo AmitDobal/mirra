@@ -26,6 +26,7 @@ Feature / route
 | `CoachAdvisor` | `getCoachAdvisor(env)` | OpenAI | Heuristic |
 | `PersonalizationContextPort` | `getPersonalizationContext(env, db)` | D1 (`preferences` + `profiles`) | n/a. Envelope feeds `PlanGenerator` (`workout_plan`). See `ai-context-and-credits-architecture.md` §A |
 | `MealEstimator` (v2: ingredients, fiber/sugar/sodium, warnings) | `getMealEstimator(env, db)` | OpenAI vision (strict `json_schema` structured output, `OPENAI_MODEL`) | Heuristic (no key, budget hit, or parse fail). `anthropic` source reserved |
+| `ExerciseTagger` (unknown plan lifts → muscles, scoring, pattern; AMI-161) | `getExerciseTagger(env, db)` | OpenAI (strict `json_schema`, one batched call per plan, results cached in D1 `exercise_tags`, usage logged as system cost with `user_id` null) | Heuristic keyword table (no key, API error, or per-item Zod fail: unknown muscle id, pcts not 100 ±2) |
 | `ObjectStore` | `getObjectStore(env)` | R2 (when wired) | Stub |
 | `PurchasesPort` (mobile) | `getPurchases()` / `createPurchases()` | RevenueCat | Stub |
 

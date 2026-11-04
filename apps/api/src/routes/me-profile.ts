@@ -6,6 +6,7 @@ import type { MirraEnv } from "../env";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
+import { applyProfileEditSafe } from "../services/goal-refresh";
 import { updateProfile } from "../services/profile-update";
 
 export const meProfileRoutes = new Hono<{
@@ -20,6 +21,10 @@ export const meProfileRoutes = new Hono<{
 meProfileRoutes.patch("/v1/me/profile", requireAuth, async (c) => {
   const raw: unknown = await c.req.json().catch(() => null);
   const body = parseBody(UpdateProfileBodySchema, raw);
-  const out = await updateProfile(createDb(c.env.DB), c.get("userId"), body);
+  const db = createDb(c.env.DB);
+  const userId = c.get("userId");
+  const out = await updateProfile(db, userId, body);
+  // AMI-179: new goal version only for goal inputs; else snapshot refresh. Never fails the PATCH.
+  await applyProfileEditSafe(db, userId, body);
   return c.json(out);
 });

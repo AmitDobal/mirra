@@ -9,6 +9,7 @@
 import type { CoachReviseResponse, ReviseItem } from "@mirra/contracts";
 import { eq } from "drizzle-orm";
 
+import { seedHeuristicMealPicks } from "../src/adapters/heuristic-meal-plan-generator";
 import * as schema from "../src/db/schema";
 import type { MirraEnv } from "../src/env";
 import { ApiError } from "../src/lib/errors";
@@ -19,6 +20,12 @@ import { applyDraft, revisePlans } from "../src/services/plan-revise";
 import { DAILY_PROPOSE_LIMIT } from "../src/services/revise/limits";
 import { PREVIEW_REPLY } from "../src/services/revise/orchestrator";
 import { createMemoryDb } from "./lib/memory-d1";
+import { seedCryptoRandom } from "./lib/seeded-random";
+
+// Same flake class as test:chat-intents: random ids + date picked the seeded meals, so
+// "no chicken" sometimes also hit a chicken dinner. Seeded picks repeat run to run.
+seedHeuristicMealPicks("chat-quality");
+seedCryptoRandom(170);
 
 let failures = 0;
 const check = (ok: boolean, label: string, detail = "") => {

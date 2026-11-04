@@ -8,12 +8,20 @@
  */
 import type { CoachReviseResponse, ReviseItem } from "@mirra/contracts";
 
+import { seedHeuristicMealPicks } from "../src/adapters/heuristic-meal-plan-generator";
 import * as schema from "../src/db/schema";
 import type { MirraEnv } from "../src/env";
 import { newId } from "../src/lib/id";
 import { generatePlan } from "../src/services/meal-plan";
 import { revisePlans } from "../src/services/plan-revise";
 import { createMemoryDb } from "./lib/memory-d1";
+import { seedCryptoRandom } from "./lib/seeded-random";
+
+// Heuristic meal picks hash userId|date|item ids: random ids (and the calendar date) once made
+// "high protein lunch" flaky when the seeded lunch was already the most protein-dense option.
+// Fixed salt + seeded ids make every pick repeat run to run and day to day.
+seedHeuristicMealPicks("chat-intents");
+seedCryptoRandom(173);
 
 const { db } = createMemoryDb();
 const env = { AI_PROVIDER: "heuristic", AI_CREDITS_MODE: "off" } as unknown as MirraEnv;

@@ -15,6 +15,7 @@ import { validationError } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseBody } from "../lib/validate";
 import { type AuthVars, requireAuth } from "../middleware/auth";
+import { refreshGoalSafe } from "../services/goal-refresh";
 
 export const weightRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -34,6 +35,7 @@ weightRoutes.post("/v1/weight", requireAuth, async (c) => {
     .update(profiles)
     .set({ weightKg: body.kg, updatedAt: new Date() })
     .where(eq(profiles.userId, userId));
+  await refreshGoalSafe(db, userId, "weight");
 
   const response: WeightEntry = { id, kg: body.kg, loggedAt: loggedAt.getTime() };
   return c.json(response, 201);

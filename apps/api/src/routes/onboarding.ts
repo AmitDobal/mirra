@@ -9,6 +9,7 @@ import { ApiError } from "../lib/errors";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
+import { startGoalFromOnboardingSafe } from "../services/goal-refresh";
 
 export const onboardingRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -146,6 +147,9 @@ onboardingRoutes.put("/v1/onboarding", requireAuth, async (c) => {
         updatedAt: now,
       },
     });
+
+  // AMI-179: goal plan v1 (or a new version on reset) with the S43 commitment. Never fails the write.
+  await startGoalFromOnboardingSafe(db, userId, body.commitment?.committedAt ?? null, now);
 
   return c.json({ ok: true as const, onboardingCompleted: true });
 });

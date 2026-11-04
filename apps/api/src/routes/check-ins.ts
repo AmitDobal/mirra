@@ -11,6 +11,7 @@ import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { recordAttendanceSafe } from "../services/attendance";
+import { refreshGoalSafe } from "../services/goal-refresh";
 import { recomputeCheckInStreakSafe } from "../services/streaks";
 
 export const checkInRoutes = new Hono<{
@@ -48,6 +49,7 @@ checkInRoutes.post("/v1/check-ins", requireAuth, async (c) => {
 
   await recordAttendanceSafe(db, userId, "checkedIn");
   await recomputeCheckInStreakSafe(db, userId);
+  await refreshGoalSafe(db, userId, "check_in");
 
   let coachMessage: string | undefined;
   if (hasOpenAi(c.env)) {

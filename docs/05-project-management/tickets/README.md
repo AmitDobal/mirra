@@ -1,3 +1,19 @@
+# Wave: Goal timeline (AMI-178..182)
+
+Architecture: `docs/03-engineering/goal-timeline.md`. Stitch prompts: `stitch/prompts/s43..s46_*.md` (exports land in `stitch_mirra_ai_personal_trainer/s43_*`..`s46_*`). Wave 0 = PM generates + approves S43-S46.
+
+| ID | Title | Wave | Depends on | Area |
+| --- | --- | --- | --- | --- |
+| AMI-178 | Goal projection engine + contracts (shared, pure) | 1 | none | contracts (+ api assert script) |
+| AMI-179 | Goal API: D1 `0021`, GET /v1/goal, restart, recompute triggers | 2 | AMI-178, AMI-176 | API |
+| AMI-180 | Onboarding timeline: S06 rates, S12 line, S43 + commit, chart primitive | 2 | AMI-178, S43 | mobile |
+| AMI-181 | GoalContext in every AI port + plan-chat goal impact | 3 | AMI-179 | API |
+| AMI-182 | Goal screen (S44), You goal card (S45), Progress entry (S46) | 3 | AMI-179, AMI-180, AMI-176, S44-S46 | mobile |
+
+Migration `0021` is reserved for AMI-179 (AMI-176 needs none; if it ever does, it takes `0022`). Locks: same list as below plus `apps/api/src/db/migrations/meta/_journal.json` and `apps/mobile/app/(onboarding)/_layout.tsx`.
+
+---
+
 # Wave: Strength Tiers + anatomy + plan-chat diff v2 (AMI-161..169)
 
 Architecture: `docs/03-engineering/strength-tiers-and-chat-diff.md` (read your ticket's sections only).

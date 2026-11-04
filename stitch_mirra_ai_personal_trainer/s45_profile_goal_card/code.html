@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>S41 — You / Profile v2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: '#131313',
+            'surface-container-lowest': '#0e0e0e',
+            'surface-container-low': '#1c1b1b',
+            'surface-container': '#201f1f',
+            'surface-container-high': '#2a2a2a',
+            'surface-container-highest': '#353534',
+            'outline-variant': '#454936',
+            'on-surface': '#e5e2e1',
+            'on-surface-variant': '#c5c9b0',
+            lime: {
+              DEFAULT: '#cbf150',
+              container: '#cbf150',
+              text: '#161e00'
+            },
+            lavender: {
+              DEFAULT: '#d1beef',
+              secondary: '#d1beef'
+            },
+            error: '#ffb4ab'
+          },
+          fontFamily: {
+            space: ['"Space Grotesk"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-[#131313] text-[#e5e2e1] antialiased">
+<div class="w-[390px] h-[844px] max-h-[844px] relative bg-[#131313] px-4 mx-auto overflow-hidden flex flex-col justify-between select-none">
+<!-- Scrollable / Upper Viewport Content Container -->
+<div class="w-full flex-1 overflow-hidden">
+<!-- iOS Status Bar (9:41) -->
+<div class="pt-3 pb-2 flex justify-between items-center text-[#e5e2e1] font-space font-semibold text-[14px]">
+<span>9:41</span>
+<div class="flex items-center space-x-1.5 text-[#e5e2e1]">
+<span class="material-symbols-outlined text-[16px]">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-[18px]">battery_full</span>
+</div>
+</div>
+<!-- 1. Profile Card (without 4 chips) -->
+<div class="mt-1 bg-[#1c1b1b] rounded-3xl p-4 border border-[#2a2a2a]">
+<div class="flex items-center space-x-3.5">
+<div class="w-14 h-14 rounded-full border-2 border-[#cbf150] bg-[#353534] flex items-center justify-center flex-shrink-0">
+<span class="font-space font-semibold text-base text-[#e5e2e1] tracking-tight">AC</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center space-x-2">
+<h1 class="font-space font-semibold text-[20px] leading-6 text-[#e5e2e1] truncate">Alex Chen</h1>
+<span class="bg-[#cbf150] text-[#161e00] font-space font-bold text-[9px] px-2 py-0.5 rounded-full tracking-wide">PRO</span>
+</div>
+<p class="text-xs text-[#c5c9b0] leading-4 truncate mt-0.5">alex.chen@gmail.com</p>
+</div>
+</div>
+</div>
+<!-- 2. Goal Timeline Card -->
+<div class="mt-3 bg-[#1c1b1b] rounded-3xl p-4 border border-[#2a2a2a]">
+<!-- Header row -->
+<div class="flex items-center justify-between">
+<span class="font-space font-bold text-[11px] text-[#cbf150] tracking-wider uppercase">GOAL TIMELINE</span>
+<div class="flex items-center space-x-1">
+<span class="font-space font-semibold text-[11px] bg-[#cbf150] text-[#161e00] px-2 py-0.5 rounded-full">On track</span>
+<span class="material-symbols-outlined text-[16px] text-[#c5c9b0]">chevron_right</span>
+</div>
+</div>
+<!-- Values & Dates -->
+<div class="mt-1.5">
+<div class="font-space font-semibold text-[18px] leading-6 text-[#e5e2e1]">82 → 75 kg · Steady</div>
+<div class="text-[12px] leading-4 text-[#c5c9b0] mt-0.5">Around Feb 18 · range Feb 11 – Mar 6</div>
+</div>
+<!-- Compact Flat SVG Chart -->
+<div class="mt-3 w-full">
+<svg class="w-full h-[56px] overflow-visible" preserveaspectratio="none" viewbox="0 0 326 56">
+<!-- Horizontal dashed goal hairline -->
+<line stroke="#454936" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="326" y1="48" y2="48"></line>
+<!-- Vertical hairline separator -->
+<line stroke="#454936" stroke-width="1" x1="105" x2="105" y1="0" y2="56"></line>
+<!-- Soft lavender filled wedge (16% opacity) -->
+<polygon fill="#d1beef" fill-opacity="0.16" points="105,20 326,48 228,48"></polygon>
+<!-- Solid lime trend line -->
+<line stroke="#cbf150" stroke-linecap="round" stroke-width="2.5" x1="10" x2="105" y1="10" y2="20"></line>
+<!-- Projected dashed lavender trajectory -->
+<line stroke="#d1beef" stroke-dasharray="3 3" stroke-width="2" x1="105" x2="260" y1="20" y2="48"></line>
+<!-- Lavender endpoint dot on goal line -->
+<circle cx="260" cy="48" fill="#d1beef" r="3.5"></circle>
+</svg>
+</div>
+</div>
+<!-- 3. Kinetic Rank & Strength Tier Tiles (12px gap) -->
+<div class="mt-3 grid grid-cols-2 gap-3">
+<!-- Kinetic Rank Tile -->
+<div class="bg-[#1c1b1b] rounded-3xl p-3.5 border border-[#2a2a2a] relative flex flex-col justify-between">
+<span class="material-symbols-outlined text-[16px] text-[#c5c9b0] absolute top-3.5 right-3.5">chevron_right</span>
+<div>
+<span class="font-space font-bold text-[11px] text-[#cbf150] tracking-wider uppercase">KINETIC RANK</span>
+<div class="font-space font-semibold text-[17px] text-[#e5e2e1] mt-0.5">Spark</div>
+</div>
+<div class="text-[11px] text-[#c5c9b0] leading-4 mt-2">Best streak 9 · Spark → Apex</div>
+</div>
+<!-- Strength Tier Tile -->
+<div class="bg-[#1c1b1b] rounded-3xl p-3.5 border border-[#2a2a2a] relative flex flex-col justify-between">
+<span class="material-symbols-outlined text-[16px] text-[#c5c9b0] absolute top-3.5 right-3.5">chevron_right</span>
+<div>
+<span class="font-space font-bold text-[11px] text-[#cbf150] tracking-wider uppercase">STRENGTH TIER</span>
+<div class="font-space font-semibold text-[17px] text-[#e5e2e1] mt-0.5">Locked · 3/8</div>
+</div>
+<div class="text-[11px] text-[#c5c9b0] leading-4 mt-2">Every muscle ranked Iron → Legendary</div>
+</div>
+</div>
+<!-- 4. AI Credits Card -->
+<div class="mt-3 bg-[#1c1b1b] rounded-3xl p-3.5 border border-[#2a2a2a]">
+<span class="font-space font-bold text-[11px] text-[#8e9282] tracking-wider uppercase">AI CREDITS</span>
+<div class="text-[13px] text-[#e5e2e1] font-medium mt-0.5">312 of 400 AI credits left · resets Dec 1</div>
+<!-- Progress Bar -->
+<div class="w-full h-1.5 bg-[#353534] rounded-full overflow-hidden mt-2">
+<div class="h-full bg-[#cbf150] rounded-full" style="width: 78%;"></div>
+</div>
+<div class="text-[11px] text-[#8e9282] mt-1">88 used this month</div>
+</div>
+<!-- 5. Personal Details Card (replaces BODY section) -->
+<div class="mt-3 bg-[#1c1b1b] rounded-3xl border border-[#2a2a2a] px-4 py-3">
+<div class="h-[44px] flex items-center justify-between">
+<div>
+<div class="text-[15px] font-medium text-[#e5e2e1] leading-tight">Personal details</div>
+<div class="text-[12px] text-[#c5c9b0] leading-tight mt-0.5">Body, goal weight, units</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-[#c5c9b0]">chevron_right</span>
+</div>
+</div>
+<!-- 6. Training Section Header & Card Top (Naturally cut off) -->
+<div class="mt-3">
+<div class="font-space font-bold text-[11px] text-[#8e9282] tracking-wider uppercase px-1 mb-1.5">TRAINING</div>
+<div class="bg-[#1c1b1b] rounded-3xl border border-[#2a2a2a] p-4">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-space font-bold text-[11px] text-[#8e9282] tracking-wider uppercase">ACTIVE PLAN</span>
+<div class="font-space text-xs font-semibold text-[#cbf150] mt-0.5">Week of Nov 3</div>
+<div class="font-space font-semibold text-lg text-[#e5e2e1] mt-0.5">Push Day</div>
+<div class="text-xs text-[#c5c9b0] mt-0.5">2,250 kcal · 165g protein</div>
+</div>
+<a class="font-space text-xs font-semibold text-[#cbf150] hover:underline mt-0.5" href="#">Open coach →</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating White Tab Pill (Fixed 24px above indicator at bottom-[30px]) -->
+<div class="absolute bottom-[30px] left-0 right-0 z-50 flex justify-center pointer-events-none">
+<div class="w-[300px] h-[64px] bg-white rounded-full shadow-[0px_16px_36px_rgba(0,0,0,0.6)] flex items-center justify-around px-4 pointer-events-auto">
+<!-- Home -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-[#1c1b1b] hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-[24px]">home</span>
+</button>
+<!-- Workout / Dumbbell -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-[#1c1b1b] hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-[24px]">fitness_center</span>
+</button>
+<!-- Fuel / Restaurant -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-[#1c1b1b] hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-[24px]">restaurant</span>
+</button>
+<!-- Analytics / Chart -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-[#1c1b1b] hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-[24px]">bar_chart</span>
+</button>
+<!-- Profile / Person (Active Lime circle) -->
+<button class="w-[42px] h-[42px] rounded-full bg-[#cbf150] text-[#131313] flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[22px] filled">person</span>
+</button>
+</div>
+</div>
+<!-- iOS Home Indicator -->
+<div class="absolute bottom-1.5 left-0 right-0 flex justify-center pointer-events-none z-50">
+<div class="w-32 h-1 bg-white/30 rounded-full"></div>
+</div>
+</div>
+</body></html>

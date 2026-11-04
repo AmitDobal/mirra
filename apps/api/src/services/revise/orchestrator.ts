@@ -5,10 +5,10 @@ import { resolveAiProvider } from "../../lib/ai/resolve-provider";
 import { todayUtc } from "../../lib/dates";
 import { ApiError } from "../../lib/errors";
 import { getPlanReviser } from "../../lib/plan-reviser";
-import { hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../../lib/plan-intent";
+import { hasAnyIntent, hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../../lib/plan-intent";
 import type { PlanReviseResult } from "../../ports/plan-reviser";
 import { withAiCredits } from "../credits-gate";
-import { recordRegen, type MealPlanCtx } from "../meal-plan-draft";
+import { assertRateLimit, recordRegen, type MealPlanCtx } from "../meal-plan-draft";
 import type { MealDraft } from "../meal-plan-targeted";
 import { applyDraft } from "./apply";
 import { loadReviseState, reviserInput, type ReviseState } from "./context";
@@ -30,6 +30,24 @@ type Proposal = {
   schedule: ScheduleDraft | null;
   touch: DraftTouch;
   doMeal: boolean;
+  /** Title of the workout the edit lands on (not always today's). */
+  workoutTitle: string | null;
+};
+
+/** S39 coach line for a preview: nothing is applied yet, so never "Done". */
+export const PREVIEW_REPLY = "Here is the change. Nothing updates until you apply.";
+export const APPLIED_REPLY = "Done. Your plan is updated.";
+export const MEAL_CAP_WARNING = "You've used today's meal changes, so meals stay as they are. Try again tomorrow";
+
+/** Meal drafting counts against the 2/day meal cap at propose time (apply never does). */
+const mealQuotaOk = async (ctx: MealPlanCtx): Promise<boolean> => {
+  try {
+    await assertRateLimit(ctx);
+    return true;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 429) return false;
+    throw err;
+  }
 };
 
 /** Meal drafting problems become warnings; credit/paywall errors still reach the client. */
@@ -61,7 +79,8 @@ const buildProposal = async (
 
   const prefs = prefsStep(state, intent, { doMeal, doWorkout });
   warnings.push(...prefs.warnings);
-  const mealPrefs = prefs.meal;
+  const mealPrefs = prefs.meal && (await mealQuotaOk(ctx)) ? prefs.meal : null;
+  if (prefs.meal && !mealPrefs) warnings.push(MEAL_CAP_WARNING);
   const meal = mealPrefs
     ? await safeMealStep(() => mealStep(ctx, { state, intent, prefs: mealPrefs, mealItemId: body.context?.mealItemId }))
     : null;
@@ -90,6 +109,8 @@ const buildProposal = async (
     ...prefs.items.filter((i) => i.kind === "pref"),
   ];
   const wholeDay = meal?.draft?.wholeDay ?? false;
+  const editedId = workout?.draft?.workoutId ?? schedule?.items.flatMap((i) => (i.kind === "schedule_day_move" ? [i.workoutId] : []))[0];
+  const edited = state.plan.workouts.find((w) => w.id === editedId) ?? state.workout;
   return {
     items,
     warnings,
@@ -106,13 +127,21 @@ const buildProposal = async (
       ...(schedule?.dayIds.length ? { dayIds: schedule.dayIds } : {}),
     },
     doMeal,
+    workoutTitle: edited?.title ?? null,
   };
 };
 
-const replyFor = (reply: string, p: Proposal): string => {
-  if (p.items.length === 0 && p.alreadyNotes.length > 0) return p.alreadyNotes.join(" ");
-  if (p.items.length === 0 && p.warnings.length === 0) return `${reply} Nothing in your plan needed changing.`;
-  return reply;
+/**
+ * Coach line. A preview with rows says only what S39 says (nothing is applied yet); the
+ * reviser's own reply is kept for direct applies and for "couldn't map" help. A turn that
+ * changed nothing never claims it did.
+ */
+const replyFor = (result: PlanReviseResult, p: Proposal, dryRun: boolean): string => {
+  if (p.items.length > 0) return dryRun ? PREVIEW_REPLY : result.reply;
+  if (p.alreadyNotes.length > 0) return p.alreadyNotes.join(" ");
+  if (!hasAnyIntent(result.intent)) return result.reply;
+  if (p.warnings.length > 0) return "I couldn't change that yet. See the note below.";
+  return "Nothing in your plan needed changing.";
 };
 
 /**
@@ -134,7 +163,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
 
   const state = await loadReviseState(ctx, body);
   const result: PlanReviseResult = echoed
-    ? { intent: echoed, reply: "Done. Your plan is updated.", warnings: [], source: "heuristic" }
+    ? { intent: echoed, reply: APPLIED_REPLY, warnings: [], source: "heuristic" }
     : await withAiCredits(
         ctx,
         { feature: "revise", paid: resolveAiProvider(ctx.env) === "openai", wasPaid: (r) => r.source === "openai" },
@@ -142,8 +171,10 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
       );
   const p = await buildProposal(ctx, state, body, result);
   if (dryRun) await recordRegen(ctx, PROPOSE_ACTION, date);
+  // The meals were generated now, so the meal cap is spent now (AMI-170), never on apply.
+  if ((p.meal?.ops.length ?? 0) > 0) await recordRegen(ctx, "meal_plan.generate", date);
 
-  const message = sanitizeAiCopy(replyFor(result.reply, p));
+  const message = sanitizeAiCopy(replyFor(result, p, dryRun));
   const source = result.source ?? "heuristic";
   const warnings = [...new Set(p.warnings)].map(sanitizeAiCopy);
   const base: CoachReviseResponse = {
@@ -154,7 +185,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     source,
     mealPlan: p.doMeal ? state.mealPlan : undefined,
     intent: result.intent,
-    workoutTitle: state.workout?.title ?? null,
+    workoutTitle: p.workoutTitle,
     draftId: null,
     expiresAt: null,
     ...(warnings.length > 0 ? { warnings } : {}),
@@ -166,10 +197,10 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     meta: {
       intent: result.intent,
       intentKey: intentKeyOf(result.intent),
-      reply: dryRun ? "Done. Your plan is updated." : message,
+      reply: dryRun ? APPLIED_REPLY : message,
       source,
       warnings,
-      workoutTitle: state.workout?.title ?? null,
+      workoutTitle: p.workoutTitle,
       context: body.context ?? null,
       touch: p.touch,
     },

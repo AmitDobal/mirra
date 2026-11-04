@@ -88,6 +88,7 @@ Rules:
 - Use current.meals, current.nutrition (goal, kcal and protein targets, lifestyle notes) and current.mealsPerDay to judge what is possible.
 - reviseWorkout true whenever equipment, exercises or session length changes. shortenMin = target minutes (10-90).
 - Do not add anything the user did not ask for. If the message asks for nothing actionable, return empty intent and say what you can change.
+- One message can ask for several edits ("swap my lunch and replace X with Y, no chicken"): return ALL of them. Any part you cannot map goes in warnings as "I couldn't map \"<part>\" to a plan change".
 - reply: one sentence in the voice of PERSONA, max 30 words, no numbers you were not given. PERSONA changes the reply wording only, never the intent.
 - Never use em dashes or semicolons. Prefer short sentences.`;
 

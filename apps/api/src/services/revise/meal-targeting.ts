@@ -59,7 +59,10 @@ export const targetMeals = (a: TargetArgs): MealTargets => {
   return { wholeDay: false, targets, warnings };
 };
 
-type Candidate = { title: string; meal: { totals: { kcal: number; proteinG: number; carbsG: number } } };
+type Totals = { kcal: number; proteinG: number; carbsG: number };
+type Candidate = { title: string; meal: { totals: Totals } };
+/** The dish being replaced: its name and macros (the bias must beat these). */
+export type CurrentMeal = { title: string } & Totals;
 
 const score = (c: Candidate, bias: PlanReviseMealBias | undefined): number => {
   if (bias === "high_protein") return c.meal.totals.proteinG;
@@ -69,18 +72,38 @@ const score = (c: Candidate, bias: PlanReviseMealBias | undefined): number => {
 };
 
 /**
+ * Does `after` actually deliver the bias against `before`? Strictly: more protein, fewer
+ * carbs, fewer kcal. A "higher protein" swap that lands on less protein is never offered.
+ */
+export const meetsBias = (before: Totals, after: Totals, bias: PlanReviseMealBias | undefined): boolean => {
+  if (bias === "high_protein") return after.proteinG > before.proteinG;
+  if (bias === "low_carb") return after.carbsG < before.carbsG;
+  if (bias === "lighter") return after.kcal < before.kcal;
+  return true;
+};
+
+/** User-facing bias words for warnings ("a higher-protein lunch"). */
+export const BIAS_LABEL: Record<PlanReviseMealBias, string> = {
+  high_protein: "higher-protein",
+  low_carb: "lower-carb",
+  lighter: "lighter",
+};
+
+/**
  * Best candidate for one slot: a different dish than the current one and not already
- * picked for another slot; the bias (more protein, fewer carbs, lighter) ranks the rest.
- * Ties keep generator order, so no bias = the first fresh dish.
+ * picked for another slot. With a bias, only dishes that beat the current one on it qualify
+ * (null when none does), then the bias ranks them. Ties keep generator order, so no bias =
+ * the first fresh dish.
  */
 export const pickCandidate = <T extends Candidate>(
   candidates: readonly T[],
   bias: PlanReviseMealBias | undefined,
-  currentTitle: string,
+  current: CurrentMeal,
   used: ReadonlySet<string>,
 ): T | null => {
-  const fresh = candidates.filter((c) => c.title !== currentTitle && !used.has(c.title));
-  const pool = fresh.length > 0 ? fresh : candidates.filter((c) => c.title !== currentTitle);
+  const ok = candidates.filter((c) => c.title !== current.title && meetsBias(current, c.meal.totals, bias));
+  const fresh = ok.filter((c) => !used.has(c.title));
+  const pool = fresh.length > 0 ? fresh : ok;
   if (pool.length === 0) return null;
   return pool.reduce((best, c) => (score(c, bias) > score(best, bias) ? c : best), pool[0]!);
 };

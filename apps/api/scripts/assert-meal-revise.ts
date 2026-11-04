@@ -11,7 +11,7 @@ import { slotsForMealCount } from "../src/lib/meal-slots";
 import { sanitizeIntent } from "../src/lib/plan-intent";
 import type { PlanReviseInput } from "../src/ports/plan-reviser";
 import { legacyChanges } from "../src/services/revise/legacy";
-import { pickCandidate, targetMeals } from "../src/services/revise/meal-targeting";
+import { meetsBias, pickCandidate, targetMeals } from "../src/services/revise/meal-targeting";
 import { mealDelta, mealSwapReason, mealSwapTags } from "../src/services/revise/tags";
 import { planWorkoutEdits } from "../src/services/workout-revise";
 
@@ -91,10 +91,18 @@ const targeting = () => {
 const picking = () => {
   const c = (title: string, proteinG: number, carbsG = 40, kcal = 500) => ({ title, meal: { totals: { kcal, proteinG, carbsG, fatG: 10 } } });
   const list = [c("Chicken & rice", 60), c("Tofu bowl", 25), c("Salmon plate", 45), c("Turkey wrap", 40)];
-  check(pickCandidate(list, "high_protein", "Chicken & rice", new Set())?.title === "Salmon plate", "high_protein picks the most protein fresh dish");
-  check(pickCandidate(list, undefined, "Chicken & rice", new Set())?.title === "Tofu bowl", "no bias keeps generator order");
-  check(pickCandidate(list, "low_carb", "x", new Set(["Chicken & rice"]))?.title === "Tofu bowl", "used titles are skipped");
-  check(pickCandidate([c("Same", 30)], undefined, "Same", new Set()) === null, "never 'swaps' to the same dish");
+  const cur = (title: string, proteinG: number, carbsG = 40, kcal = 500) => ({ title, proteinG, carbsG, kcal });
+  check(pickCandidate(list, "high_protein", cur("Chicken & rice", 60), new Set()) === null, "high_protein: nothing beats 60g -> null (never less protein)");
+  check(pickCandidate(list, "high_protein", cur("Beans", 30), new Set())?.title === "Chicken & rice", "high_protein picks the most protein dish above the current");
+  check(pickCandidate(list, undefined, cur("Chicken & rice", 60), new Set())?.title === "Tofu bowl", "no bias keeps generator order");
+  check(pickCandidate(list, "high_protein", cur("x", 30), new Set(["Chicken & rice"]))?.title === "Salmon plate", "used titles are skipped");
+  check(pickCandidate([c("Same", 30)], undefined, cur("Same", 30), new Set()) === null, "never 'swaps' to the same dish");
+  const carbs = [c("A", 30, 50), c("B", 30, 45)];
+  check(pickCandidate(carbs, "low_carb", cur("x", 30, 40), new Set()) === null, "low_carb: never more carbs than now");
+  check(pickCandidate(carbs, "low_carb", cur("x", 30, 60), new Set())?.title === "B", "low_carb: fewest carbs below the current");
+  const kcal = [c("A", 30, 40, 520), c("B", 30, 40, 480)];
+  check(pickCandidate(kcal, "lighter", cur("x", 30, 40, 500), new Set())?.title === "B", "lighter: only dishes with fewer kcal");
+  check(meetsBias({ kcal: 500, proteinG: 40, carbsG: 50 }, { kcal: 500, proteinG: 40, carbsG: 50 }, "high_protein") === false, "meetsBias is strict (equal protein is not higher)");
 };
 
 const tagsAndLegacy = () => {

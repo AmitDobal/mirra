@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** AMI-158–160 @ `c92d8b6` — streak/Kinetic chip padding, plan apply **4/day** + meal regen **2/day** (dryRun free of apply quota), Pro paywall entitlement sync. API Worker `63e8f013`. EAS https://u.expo.dev/update/01a19d30-6062-729d-9704-5f476b97d3ec.
+**Latest:** AMI-161–174 @ `a50de7f` ([#72](https://github.com/AmitDobal/mirra/pull/72)) — strength tiers + engine, real anatomy SVG, exercise library, plan-chat before/after v2, Stitch S34–S40. D1 `0018`–`0020` remote. API Worker `17a65f69`. EAS iOS https://u.expo.dev/update/01a1a64d-4669-7078-980b-f63c842cfdd3 · Android https://u.expo.dev/update/01a1a64e-0f27-7782-8f21-0798bfdb51c3.
 
 | | |
 | --- | --- |
@@ -8,9 +8,9 @@
 | State | **DAY-TEST LIVE** — hosted API + EAS Update (laptop-off Expo Go) |
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
-| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `63e8f013` (AMI-158–160) |
-| Mobile | Expo SDK **58** — tip `c92d8b6` |
-| Mobile day-test | https://u.expo.dev/update/01a19d30-6062-729d-9704-5f476b97d3ec · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `17a65f69` (AMI-161–174) |
+| Mobile | Expo SDK **58** — tip `a50de7f` |
+| Mobile day-test | iOS https://u.expo.dev/update/01a1a64d-4669-7078-980b-f63c842cfdd3 · Android https://u.expo.dev/update/01a1a64e-0f27-7782-8f21-0798bfdb51c3 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

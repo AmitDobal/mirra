@@ -1,5 +1,17 @@
 # Handoff
 
+## 2026-11-04 — AMI-161–174: Strength tiers, anatomy, chat before/after v2
+
+**Done:** [#72](https://github.com/AmitDobal/mirra/pull/72) integrate/strength-tiers → `main` merge `a50de7f`. AMI-161 exercise library + muscle taxonomy + ExerciseTagger port. AMI-162 real anatomy SVG + tier badges. AMI-163 chat diff v2 core. AMI-164 Kinetic Rank S33 fidelity + S40 Today chips. AMI-165 strength engine (`/v1/strength*`, `/v1/exercises/:canonicalId`, tier-up on complete). AMI-166 chat workout side (swap/add/remove, day moves). AMI-167 proposal v2 UI (S39). AMI-168 strength map / muscle detail / tier ladder (S34/S35/S37). AMI-169 exercise anatomy v2 + workout tier-up. AMI-170 chat quality. AMI-171 regression compat. AMI-172 workout edit routes, RPE save, real volume. AMI-173 chat intents (workout names, relative days, Hinglish). AMI-174 rebuild preview, persona hydrate, SE hero, rank share. Stitch S34–S40. D1 `0018`–`0020` remote applied (additive). API Worker `17a65f69`.
+
+**Backup:** D1 export `~/mirra-backups/mirra-db-pre-0018-20261104T112159Z.sql` (617K). Pre-migration Time Travel bookmark `000000bc-00000000-00005119-45c14a3d8972c2c7c1d3b54da182c77b`.
+
+**Smoke:** Root typecheck PASS, mobile 120/120, 17 api `test:*` suites PASS. Prod: `/health`, `/api/auth/ok`, `/v1/me`, `/v1/plans/current`, `/v1/strength`, `/v1/exercises/bench_press`, `/v1/strength/exercises/bench_press` → 200 (`day-test-1`).
+
+**Phone:** iOS https://u.expo.dev/update/01a1a64d-4669-7078-980b-f63c842cfdd3 (group `9a8ec44a-680b-411c-8ccb-44d936cd9706`). Android https://u.expo.dev/update/01a1a64e-0f27-7782-8f21-0798bfdb51c3 (group `3be81925-2230-45d1-a746-f604ec26656e`). Runtime `exposdk:58.0.0`, branch `day-test`.
+
+**Watch:** Strength standards (`2026.11-v1`) need coach review before real users. Android Google sign-in: no `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` (Dev Tester works). Avoid paneer/cheese edge in chat ingredient-avoid. OpenAI reviser path smoke only via typecheck (no live call).
+
 ## 2026-11-02 — AMI-158–160: Chip padding, revise caps, Pro paywall
 
 **Done:** [#70](https://github.com/AmitDobal/mirra/pull/70) streak+Kinetic chip padding. [#69](https://github.com/AmitDobal/mirra/pull/69) plan apply 4/day, meal regen 2/day, dryRun skips apply quota. [#71](https://github.com/AmitDobal/mirra/pull/71) tab guard mirrors me-cache entitlement; RC fail → `none` not fake trial. Main `c92d8b6` (+ docs `9f771d6`). Worktrees removed. API Worker `63e8f013`.

@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { ArrowLeft, ArrowRight, Share2, Trophy } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { rankCopy } from "@/content/rank";
@@ -14,7 +14,7 @@ import { ScreenScroll } from "@/ui/ScreenScroll";
 
 import { useBadgeStore } from "./badge-store";
 import { RankLadder } from "./RankLadder";
-import { activeTier, earnedRankId, titleForRank, unlockedSet } from "./rank-meta";
+import { activeTier, earnedRankId, rankShareMessage, titleForRank, unlockedSet } from "./rank-meta";
 import { StreakRankHero } from "./StreakRankHero";
 
 /** Room under the scroll content for the sticky footer (milestone line + 56pt CTA). */
@@ -52,6 +52,20 @@ export const KineticRankScreen = () => {
   const active = activeTier(data.definitions, unlocked);
   const currentTitle = titleForRank(data.definitions, earnedRankId(data.definitions, unlocked));
 
+  const share = async () => {
+    const message = rankShareMessage({
+      currentTitle,
+      streak: streak?.current ?? 0,
+      bestStreak: data.bestStreak,
+      next: active?.def ?? null,
+    });
+    try {
+      await Share.share({ title: rankCopy.shareTitle, message });
+    } catch {
+      Alert.alert(rankCopy.shareFailed);
+    }
+  };
+
   return (
     <View style={[sx("flex-1 bg-surface-container-lowest"), { paddingTop: insets.top }]}>
       <View style={sx("h-14 flex-row items-center justify-between px-5")}>
@@ -67,7 +81,8 @@ export const KineticRankScreen = () => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Share rank"
-          style={sx("h-10 w-10 items-center justify-center rounded-full border border-outline-variant/40 bg-surface-container-low opacity-40")}
+          onPress={() => void share()}
+          style={sx("h-10 w-10 items-center justify-center rounded-full border border-outline-variant/40 bg-surface-container-low")}
         >
           <Share2 size={18} color={color.onSurface} />
         </Pressable>

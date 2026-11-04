@@ -33,7 +33,10 @@ export type PlanReviseIntent = {
   exerciseRemoves: string[];
   /** Exercise names to favour ("prefer bench press"). Supersedes `preferBench`. */
   preferExercises: string[];
-  /** "move Tuesday's workout to Thursday": weekday names or YYYY-MM-DD. */
+  /**
+   * "move Tuesday's workout to Thursday", "move legs to tomorrow": day refs (weekday,
+   * today/tomorrow, "next monday", weekend, YYYY-MM-DD) or a workout name ("legs").
+   */
   scheduleMoves: { from: string; to: string }[];
   /** Short reason per item key (e.g. "lunch", "exercise:bench press"); ≤80 chars, sanitized. */
   reasons: Record<string, string>;
@@ -46,6 +49,9 @@ export type PlanReviseMeal = { id?: string; slot: string; title: string; kcal: n
 
 /** One exercise of the target workout (for "replace X with Y"). */
 export type PlanReviseExercise = { id: string; name: string; sets: number; reps: string };
+
+/** One plan day as the reviser sees it (workout title, null on rest days). */
+export type PlanReviseDay = { date: string; weekday: string; workout: string | null };
 
 /** Targets + personal context so replies/intent fit the user's actual nutrition. */
 export type PlanReviseNutrition = {
@@ -72,6 +78,9 @@ export type PlanReviseInput = {
   /** Today's current meals (empty when no plan yet). */
   meals: PlanReviseMeal[];
   nutrition: PlanReviseNutrition;
+  /** Plan date of this turn (YYYY-MM-DD) and the plan's days, for "move legs to tomorrow". */
+  today?: string;
+  schedule?: PlanReviseDay[];
   /** Trainer character voice for the reply; defaults to drill. */
   persona?: TrainerPersona;
 };

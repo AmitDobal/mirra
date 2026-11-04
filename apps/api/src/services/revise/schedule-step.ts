@@ -8,6 +8,7 @@ import { ApiError } from "../../lib/errors";
 import type { PlanReviseIntent } from "../../ports/plan-reviser";
 import { weekdayOf, type ReviseState } from "./context";
 import { dateForRef } from "./weekday";
+import { dayForWorkoutRef, workoutsForRef } from "./workout-ref";
 
 /**
  * "Move Tuesday's workout to Thursday" (arch §8.5, AMI-166): swap the two `plan_days` rows'
@@ -51,6 +52,31 @@ const loggedDates = async (ctx: ScheduleCtx, first: string, last: string): Promi
 
 const label = (d: { date: string }): string => weekdayOf(d.date);
 
+type Resolved = { fromDate: string | null; toDate: string | null; missing?: string };
+
+/**
+ * Both ends of a move (AMI-173). Day refs ("tomorrow", "next monday", "weekend") resolve
+ * against the plan dates; workout refs ("legs", "upper body") to that workout's nearest
+ * upcoming day. "This weekend" prefers a rest day that is not the moved workout's own day.
+ */
+const resolveMove = (state: Pick<ReviseState, "date" | "plan">, days: readonly DaySlot[], mv: { from: string; to: string }): Resolved => {
+  const dates = days.map((d) => d.date);
+  const cur = { date: state.date, plan: { days, workouts: state.plan.workouts } };
+  const fromDay = dateForRef(mv.from, state.date, dates);
+  const fromIds = new Set(fromDay ? [] : workoutsForRef(mv.from, state.plan.workouts).map((w) => w.id));
+  const rank = (date: string) => {
+    const d = days.find((x) => x.date === date);
+    if (!d || date === fromDay || (d.workoutId && fromIds.has(d.workoutId))) return 2;
+    return d.workoutId ? 1 : 0;
+  };
+  const toDate = dateForRef(mv.to, state.date, dates, { rank }) ?? dayForWorkoutRef(cur, mv.to, fromDay)?.date ?? null;
+  const fromDate = fromDay ?? dayForWorkoutRef(cur, mv.from, toDate)?.date ?? null;
+  const names = state.plan.workouts.map((w) => w.title).join(", ");
+  if (!fromDate) return { fromDate, toDate, missing: `No '${mv.from}' workout in this week's plan. Your workouts: ${names}` };
+  if (!toDate) return { fromDate, toDate, missing: `${mv.to} isn't in this week's plan` };
+  return { fromDate, toDate };
+};
+
 /** Pure planner over the plan's days (sessions already looked up). */
 export const planScheduleMoves = (
   state: Pick<ReviseState, "date" | "plan">,
@@ -60,20 +86,25 @@ export const planScheduleMoves = (
   const items: ReviseItem[] = [];
   const warnings: string[] = [];
   const days: DaySlot[] = state.plan.days.map((d) => ({ id: d.id, date: d.date, kind: d.kind, label: d.label, workoutId: d.workoutId }));
-  const dates = days.map((d) => d.date);
   const touched = new Set<string>();
   const titleOf = (id: string | null) => state.plan.workouts.find((w) => w.id === id)?.title ?? "Workout";
 
   for (const mv of moves) {
-    const fromDate = dateForRef(mv.from, state.date, dates);
-    const toDate = dateForRef(mv.to, state.date, dates);
+    const { fromDate, toDate, missing } = resolveMove(state, days, mv);
+    if (missing) {
+      warnings.push(missing);
+      continue;
+    }
     const a = days.find((d) => d.date === fromDate);
     const b = days.find((d) => d.date === toDate);
     if (!a || !b) {
       warnings.push(`${!a ? mv.from : mv.to} isn't in this week's plan`);
       continue;
     }
-    if (a.id === b.id) continue;
+    if (a.id === b.id) {
+      warnings.push(`${titleOf(a.workoutId)} is already on ${label(a)}`);
+      continue;
+    }
     const past = [a, b].find((d) => d.date < state.date);
     if (past) {
       warnings.push(`Can't move ${label(past)}: that day has passed`);

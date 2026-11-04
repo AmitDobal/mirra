@@ -12,6 +12,7 @@ import {
   slotFor,
   type Resolved,
 } from "./revise/exercise-pick";
+import { capSession } from "./revise/session-cap";
 import { exerciseRowReason, exerciseSwapTags, gearTag } from "./revise/tags-exercise";
 import { gearAllows, gearNeeded, hasGear, pickSwap } from "./workout-swaps";
 
@@ -65,6 +66,9 @@ type PlanExercise = CurrentPlanResponse["workouts"][number]["exercises"][number]
 
 const MIN_MOVES = 2;
 
+/** Which step swapped a slot: gear loss (can be overridden), a named swap, a prefer. */
+type SwapBy = "gear" | "named" | "prefer";
+
 const snap = (r: Pick<DraftRow, "name" | "targetSets" | "targetReps" | "canonicalId">): ExerciseSnap => ({
   name: r.name,
   sets: r.targetSets,
@@ -92,8 +96,20 @@ export const planWorkoutEdits = (input: WorkoutPlanInput): WorkoutPlanResult => 
   const why = (...keys: string[]) =>
     keys.map((k) => k.toLowerCase()).map((k) => intent.reasons[`exercise:${k}`] ?? intent.reasons[k]).find(Boolean);
 
-  const swapAt = (at: number, to: Resolved, keepDose: boolean, reasonKeys: string[]) => {
+  /**
+   * One slot, one swap row (AMI-173): a later step that swaps the same slot again folds into
+   * the first row (original before -> final after) instead of chaining. A named swap never
+   * re-swaps a slot another named swap took; a soft (prefer) swap never touches a named one.
+   */
+  const swapped = new Map<string, { index: number; before: DraftRow; by: SwapBy }>();
+  const undone = new Set<number>();
+  const swapAt = (at: number, to: Resolved, keepDose: boolean, reasonKeys: string[], by: SwapBy = "named") => {
     const prev = rows[at]!;
+    const seen = swapped.get(prev.id);
+    if (seen && seen.by !== "gear") {
+      if (by === "named") warnings.push(`${seen.before.name} is already being swapped`);
+      return;
+    }
     const dose = defaultDose(to.entry);
     const next: DraftRow = {
       ...prev,
@@ -103,15 +119,27 @@ export const planWorkoutEdits = (input: WorkoutPlanInput): WorkoutPlanResult => 
       ...(keepDose ? {} : { targetSets: dose.sets, targetReps: dose.reps, restSec: dose.restSec }),
     };
     rows[at] = next;
-    items.push({
+    const before = seen?.before ?? prev;
+    const item: ReviseItem = {
       ...ref,
-      id: `exercise:swap:${items.length}`,
+      id: seen ? items[seen.index]!.id : `exercise:swap:${items.length}`,
       kind: "exercise_swap",
-      before: snap(prev),
+      before: snap(before),
       after: snap(next),
-      tags: exerciseSwapTags(prev, next),
-      reason: exerciseRowReason(why(prev.name, next.name, ...reasonKeys), next, workout.focus),
-    });
+      tags: exerciseSwapTags(before, next),
+      reason: exerciseRowReason(why(before.name, next.name, ...reasonKeys), next, workout.focus),
+    };
+    if (!seen) {
+      swapped.set(next.id, { index: items.length, before: prev, by });
+      items.push(item);
+      return;
+    }
+    items[seen.index] = item;
+    seen.by = by;
+    const back = (before.canonicalId && before.canonicalId === next.canonicalId) || before.name.toLowerCase() === next.name.toLowerCase();
+    if (!back) return;
+    rows[at] = before;
+    undone.add(seen.index);
   };
   /** Same pattern keeps sets x reps; a different (known) pattern takes library defaults. */
   const keepsDose = (prev: DraftRow, to: Resolved) => {
@@ -139,7 +167,7 @@ export const planWorkoutEdits = (input: WorkoutPlanInput): WorkoutPlanResult => 
       i -= 1;
       continue;
     }
-    swapAt(i, { ...to, name: to.entry ? to.name : next }, true, []);
+    swapAt(i, { ...to, name: to.entry ? to.name : next }, true, [], "gear");
   }
   if (stuck.length > 0) warnings.push(`No substitute found for ${stuck.join(", ")}`);
 
@@ -251,34 +279,18 @@ export const planWorkoutEdits = (input: WorkoutPlanInput): WorkoutPlanResult => 
       continue;
     }
     const slot = to.entry ? slotFor(rows, to.entry) : -1;
-    if (slot >= 0) swapAt(slot, to, true, [spoken]);
+    if (slot >= 0) swapAt(slot, to, true, [spoken], "prefer");
     else insert(to.name, 0, {}, [spoken]);
   }
 
   // 6. Shorter session: cap duration, drop tail moves proportionally.
-  let durationMin = workout.durationMin;
-  let calorieEst = workout.calorieEst;
-  const cap = intent.shortenMin;
-  if (cap != null && cap < durationMin) {
-    const keep = Math.min(rows.length, Math.max(MIN_MOVES, Math.round((rows.length * cap) / durationMin)));
-    const dropped = rows.slice(keep).map((r) => r.name);
-    rows = rows.slice(0, keep);
-    if (calorieEst != null) calorieEst = Math.round((calorieEst * cap) / durationMin);
-    items.push({
-      id: "session_minutes",
-      kind: "session_minutes",
-      before: durationMin,
-      after: cap,
-      droppedExercises: dropped,
-      tags: [],
-      reason: dropped.length > 0 ? `Drops ${dropped.join(", ")}` : null,
-    });
-    durationMin = cap;
-  } else if (cap != null) {
-    warnings.push(`Session is already ${durationMin} min`);
-  }
+  const capped = capSession(rows, workout, intent.shortenMin, MIN_MOVES);
+  rows = capped.rows;
+  if (capped.item) items.push(capped.item);
+  if (capped.warning) warnings.push(capped.warning);
+  const { durationMin, calorieEst } = capped;
 
   const kept = new Set(rows.map((r) => r.id));
   removedIds.push(...workout.exercises.map((e) => e.id).filter((id) => !kept.has(id)));
-  return { items, warnings, rows, removedIds, durationMin, calorieEst };
+  return { items: items.filter((_, i) => !undone.has(i)), warnings, rows, removedIds, durationMin, calorieEst };
 };

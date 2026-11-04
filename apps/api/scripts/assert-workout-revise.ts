@@ -193,7 +193,37 @@ const avoidChickenOnly = () => {
   check(!veg.has("turkey_breast_cooked") && !veg.has("lean_beef_cooked"), "vegetarian stays broad");
 };
 
+/** AMI-173 QA: a workout name + relative day moves the day; an explicit swap is one row. */
+const qaRegressions = async () => {
+  const s = await seedUser();
+  const mv = await propose(s, "move legs to tomorrow");
+  const m = first(mv, "schedule_day_move");
+  check(m?.title === "Legs day" && m.fromDate === addDays(2) && m.toDate === addDays(1) && !/needed changing/.test(mv.message), "'move legs to tomorrow' -> Legs day moves to tomorrow", dump(mv));
+  await applyDraft(s.ctx, mv.draftId!);
+  const days = await db.select().from(schema.planDays).where(eq(schema.planDays.planId, s.planId));
+  check(days.find((d) => d.date === addDays(1))?.workoutId === s.ids["Legs day"], "apply: tomorrow is legs");
+
+  const b = await seedUser();
+  await db.insert(schema.workoutExercises).values({ id: newId(), workoutId: b.ids["Push day"]!, name: "Bench press", targetSets: 4, targetReps: "6-8", sortOrder: 9 });
+  const sw = await propose(b, "replace bench press with dumbbell bench press");
+  const one = first(sw, "exercise_swap");
+  check(kinds(sw) === "exercise_swap" && one?.before.name === "Bench press" && one.after.canonicalId === "dumbbell_bench_press" && one.after.sets === 4,
+    "'replace bench press with dumbbell bench press' -> exactly one swap to Dumbbell Bench Press", dump(sw));
+  check(!sw.intent?.preferBench && (sw.intent?.preferExercises ?? []).length === 0, "explicit swap suppresses prefer-bench", JSON.stringify(sw.intent));
+  await applyDraft(b.ctx, sw.draftId!);
+  const names = (await rowsOf(b.ids["Push day"]!)).map((r) => r.name);
+  check(names.includes("Dumbbell Bench Press") && !names.some((n) => /^(?:bench press|barbell bench press|smith)/i.test(n)), "apply: bench row is Dumbbell Bench Press", names.join());
+
+  const g = await seedUser(["dumbbells", "cables", "bench"]);
+  await db.insert(schema.workoutExercises).values({ id: newId(), workoutId: g.ids["Push day"]!, name: "Bench press", targetSets: 4, targetReps: "6-8", sortOrder: 9 });
+  const both = await propose(g, "prefer bench press, replace bench press with dumbbell bench press");
+  const swaps = (both.items ?? []).filter((i) => i.kind === "exercise_swap");
+  const chained = swaps.some((x) => swaps.some((y) => x !== y && x.kind === "exercise_swap" && y.kind === "exercise_swap" && x.after.name === y.before.name));
+  check(!chained && swaps.length === 1, "gear-loss + named swap on one slot -> one row, never chained", dump(both));
+};
+
 const main = async () => {
+  await qaRegressions();
   await namedSwap();
   await preferBench();
   await removeAndAdd();

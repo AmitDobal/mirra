@@ -2,6 +2,8 @@ import { CUISINE_STYLE_IDS, type MealSlot } from "@mirra/contracts";
 
 import type { PlanReviseIntent, PlanReviseMealBias } from "../ports/plan-reviser";
 import { sanitizeAiCopy } from "./ai-copy";
+import { matchExerciseName, normalize } from "./exercise-library";
+import { moveRef } from "./plan-refs";
 
 export const EQUIPMENT_IDS = [
   "full_gym",
@@ -36,7 +38,6 @@ const uniq = (xs: string[]): string[] => [...new Set(xs)];
 
 const SLOTS: readonly MealSlot[] = ["breakfast", "lunch", "snack", "dinner"];
 const BIASES: readonly PlanReviseMealBias[] = ["high_protein", "low_carb", "lighter"];
-const DAY_REF = /^(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*$|^\d{4}-\d{2}-\d{2}$|^(?:today|tomorrow)$/;
 const REPS = /^[\d\- ]{1,12}$/;
 
 const uniqCi = (xs: string[]): string[] => {
@@ -59,8 +60,19 @@ const exName = (x: unknown): string | null => {
 const names = (xs: unknown): string[] =>
   Array.isArray(xs) ? uniqCi(xs.map(exName).filter((x): x is string => x != null)).slice(0, 6) : [];
 
-const dayRef = (x: unknown): string | null =>
-  typeof x === "string" && DAY_REF.test(x.trim().toLowerCase()) ? x.trim().toLowerCase() : null;
+/** Library id of a spoken lift, else its normalized words (for "same lift" checks). */
+const liftKey = (name: string): string => matchExerciseName(name)?.entry.id ?? normalize(name);
+
+/**
+ * An explicit edit ("replace X with Y", "add X", "drop X") owns the lifts it names: a
+ * prefer flag naming one of them (the phrase "bench press" inside the swap) is dropped, so
+ * the slot is never swapped twice.
+ */
+const notInEdits = (named: readonly string[]) => {
+  const keys = new Set(named.map(liftKey));
+  const words = named.map((x) => ` ${normalize(x)} `);
+  return (name: string): boolean => !keys.has(liftKey(name)) && !words.some((w) => w.includes(` ${normalize(name)} `));
+};
 
 const clampInt = (n: unknown, lo: number, hi: number): number | undefined =>
   typeof n === "number" && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : undefined;
@@ -92,7 +104,7 @@ const sanitizeV2 = (raw: Partial<PlanReviseIntent>): V2 => {
     exerciseAdds.push({ name, ...(sets ? { sets } : {}), ...(reps ? { reps } : {}) });
   }
   const scheduleMoves = (raw.scheduleMoves ?? [])
-    .map((m) => ({ from: dayRef(m?.from), to: dayRef(m?.to) }))
+    .map((m) => ({ from: moveRef(m?.from), to: moveRef(m?.to) }))
     .filter((m): m is { from: string; to: string } => m.from != null && m.to != null && m.from !== m.to)
     .slice(0, 3);
   const reasons: Record<string, string> = {};
@@ -101,15 +113,21 @@ const sanitizeV2 = (raw: Partial<PlanReviseIntent>): V2 => {
     const text = sanitizeAiCopy(v).trim().slice(0, 80);
     if (text) reasons[k.toLowerCase()] = text;
   }
-  const preferExercises = names(raw.preferExercises);
-  if (raw.preferBench && !preferExercises.some((n) => /bench/i.test(n))) preferExercises.push("Bench press");
+  const exerciseRemoves = names(raw.exerciseRemoves);
+  const free = notInEdits([
+    ...exerciseSwaps.flatMap((sw) => (sw.to ? [sw.from, sw.to] : [sw.from])),
+    ...exerciseAdds.map((a) => a.name),
+    ...exerciseRemoves,
+  ]);
+  const preferExercises = names(raw.preferExercises).filter(free);
+  if (raw.preferBench && free("bench press") && !preferExercises.some((n) => /bench/i.test(n))) preferExercises.push("Bench press");
   const mealBias = BIASES.find((b) => b === raw.mealBias);
   return {
     mealSlots: SLOTS.filter((s) => (raw.mealSlots ?? []).includes(s)),
     ...(mealBias ? { mealBias } : {}),
     exerciseSwaps,
     exerciseAdds,
-    exerciseRemoves: names(raw.exerciseRemoves),
+    exerciseRemoves,
     preferExercises,
     scheduleMoves,
     reasons,
@@ -129,7 +147,7 @@ export const sanitizeIntent = (raw: Partial<PlanReviseIntent>): PlanReviseIntent
   const meals = clampInt(raw.mealsPerDay, 1, 4);
   const shorten = clampInt(raw.shortenMin, 10, 90);
   const v2 = sanitizeV2(raw);
-  const bench = Boolean(raw.preferBench) || v2.preferExercises.some((n) => /bench/i.test(n));
+  const bench = v2.preferExercises.some((n) => /bench/i.test(n));
   return {
     equipmentAdd: equip(raw.equipmentAdd),
     equipmentRemove: equip(raw.equipmentRemove),

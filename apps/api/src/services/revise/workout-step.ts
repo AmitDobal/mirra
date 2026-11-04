@@ -10,6 +10,7 @@ import { planWorkoutEdits, type DraftRow } from "../workout-revise";
 import { weekdayOf, type PlanWorkout, type ReviseState } from "./context";
 import { findRow, resolveName, slotFor } from "./exercise-pick";
 import { dayIndexOf, namedDayIn } from "./weekday";
+import { workoutNamedIn } from "./workout-ref";
 
 /**
  * Workout side of a proposal (AMI-166): pick the target workout (context id, day named in
@@ -78,6 +79,9 @@ const DAY_TITLE: Record<ExercisePattern, RegExp> = {
 /** Target workout for exercise edits (arch §8.4 "Workout day"). */
 export const targetWorkout = (state: ReviseState, intent: PlanReviseIntent, opts: StepOpts): Target => {
   if (opts.contextWorkoutId || !hasEdits(intent)) return { workout: state.workout };
+  // "add calf raises to leg day": a workout named after to/on/in wins over a weekday (AMI-173).
+  const byName = workoutNamedIn(opts.message ?? "", state.plan.workouts);
+  if (byName) return { workout: byName };
   const named = intent.scheduleMoves.length > 0 ? null : namedDayIn(opts.message ?? "");
   if (named != null) {
     const idx = dayIndexOf(named, state.date);

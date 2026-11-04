@@ -7,24 +7,6 @@ const PROVIDER_LABELS: Record<string, string> = {
   email: "Email",
 };
 
-const EXP_LABELS: Record<string, string> = {
-  new: "New",
-  months: "Some months",
-  some_months: "Some months",
-  y1_2: "1–2 years",
-  one_two_years: "1–2 years",
-  y3_plus: "3+ years",
-  three_plus: "3+ years",
-};
-
-export const experienceLabel = (experience: string | undefined): string => {
-  if (!experience) return "Member";
-  return (
-    EXP_LABELS[experience] ??
-    experience.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())
-  );
-};
-
 /** Human label for Better Auth `providerId`; unknown ids title-cased. */
 export const providerLabel = (providerId: string): string => {
   const known = PROVIDER_LABELS[providerId.toLowerCase()];
@@ -69,6 +51,18 @@ export const initialsFrom = (user: MeUser | null): string => {
   const letters = parts.map((p) => p[0]?.toUpperCase() ?? "").filter(Boolean);
   return letters.slice(0, 2).join("");
 };
+
+const SUB_LABELS: Record<MeEntitlement["status"], string> = {
+  trial: "Pro · Trial",
+  active: "Pro · Active",
+  grace: "Pro · Grace period",
+  expired: "Pro · Expired",
+  none: "Free",
+};
+
+/** S41 Account → Subscription second line, from `me.entitlement.status`. */
+export const subscriptionLabel = (ent: MeEntitlement | null | undefined): string =>
+  ent ? SUB_LABELS[ent.status] : "Checking…";
 
 /** PRO badge when entitlement is trial/active/grace. */
 export const showProBadge = (ent: MeEntitlement | null | undefined): boolean => {

@@ -20,6 +20,7 @@ import { insightsRoutes } from "./routes/insights";
 import { mealPlanRoutes } from "./routes/meal-plan";
 import { mediaRoutes } from "./routes/media";
 import { meRoutes } from "./routes/me";
+import { meProfileRoutes } from "./routes/me-profile";
 import { notificationRoutes } from "./routes/notifications";
 import { nutritionRoutes } from "./routes/nutrition";
 import { onboardingRoutes } from "./routes/onboarding";
@@ -65,6 +66,7 @@ export const createApp = () => {
   app.route("/", devAuthRoutes);
   app.route("/", healthRoutes);
   app.route("/", meRoutes);
+  app.route("/", meProfileRoutes);
   app.route("/", onboardingRoutes);
   app.route("/", planRoutes);
   app.route("/", todayRoutes);

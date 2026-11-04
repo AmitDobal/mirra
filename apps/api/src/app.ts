@@ -36,6 +36,7 @@ import { workoutRoutes } from "./routes/workouts";
 import { workoutExerciseRoutes } from "./routes/workout-exercises";
 import { exerciseRoutes } from "./routes/exercises";
 import { strengthRoutes } from "./routes/strength";
+import { goalRoutes } from "./routes/goal";
 
 export const createApp = () => {
   const app = new Hono<{ Bindings: MirraEnv; Variables: AuthVars }>();
@@ -56,8 +57,9 @@ export const createApp = () => {
         "x-user-id",
         "x-mirra-ai-mode",
         "expo-origin",
+        "If-None-Match",
       ],
-      exposeHeaders: ["x-request-id", "Set-Cookie", "set-auth-token"],
+      exposeHeaders: ["x-request-id", "Set-Cookie", "set-auth-token", "ETag"],
       credentials: true,
     }),
   );
@@ -93,6 +95,7 @@ export const createApp = () => {
   app.route("/", notificationRoutes);
   app.route("/", exerciseRoutes);
   app.route("/", strengthRoutes);
+  app.route("/", goalRoutes);
 
   app.onError((err, c) => {
     if (err instanceof ApiError) {

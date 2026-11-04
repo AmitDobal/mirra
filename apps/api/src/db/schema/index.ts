@@ -17,3 +17,4 @@ export * from "./badges";
 export * from "./exercise-tags";
 export * from "./revise-drafts";
 export * from "./strength";
+export * from "./goal";

@@ -51,6 +51,16 @@ const run = async () => {
     await exec("INSERT INTO muscle_scores (user_id, muscle_id, pct, display_step, updated_at) VALUES (?, 'chest', 50, 11, ?)", uid, now);
     await exec("INSERT INTO strength_summary (user_id, updated_at) VALUES (?, ?)", uid, now);
     await exec("INSERT INTO strength_events (id, user_id, scope, ref_id, to_step, created_at) VALUES (?, ?, 'muscle', 'chest', 11, ?)", `se-${uid}`, uid, now);
+    await exec(
+      `INSERT INTO goal_plans (id, user_id, version, status, goal_type, primary_goal, direction, mode, start_date, pace_rate_pct, pace_rate_kg, planned_line_json, inputs_json, engine_version, reason, created_at)
+       VALUES (?, ?, 1, 'active', 'fat_loss', 'lose_fat', 'down', 'eta', '2026-11-04', 0.6, 0.49, '[82]', '{}', 'v', 'onboarding', ?)`,
+      `gp-${uid}`, uid, now,
+    );
+    await exec(
+      `INSERT INTO goal_snapshots (id, user_id, goal_plan_id, local_date, adherence, adherence_json, status, milestones_json, trigger, engine_version, updated_at)
+       VALUES (?, ?, ?, '2026-11-04', 0.625, '{}', 'calibrating', '[]', 'onboarding', 'v', ?)`,
+      `gs-${uid}`, uid, `gp-${uid}`, now,
+    );
   };
 
   await seed(victim);
@@ -93,7 +103,7 @@ const run = async () => {
   assert.equal(await count("SELECT COUNT(*) n FROM users WHERE id = ?", bystander), 1);
   assert.equal(await count("SELECT COUNT(*) n FROM meals WHERE user_id = ?", bystander), 1);
   assert.equal(await count("SELECT COUNT(*) n FROM ai_credit_ledger WHERE user_id = ?", bystander), 1);
-  for (const t of ["exercise_scores", "muscle_scores", "strength_summary", "strength_events"]) {
+  for (const t of ["exercise_scores", "muscle_scores", "strength_summary", "strength_events", "goal_plans", "goal_snapshots"]) {
     assert.equal(await count(`SELECT COUNT(*) n FROM ${t} WHERE user_id = ?`, victim), 0, `${t} victim rows`);
     assert.equal(await count(`SELECT COUNT(*) n FROM ${t} WHERE user_id = ?`, bystander), 1, `${t} bystander rows`);
   }

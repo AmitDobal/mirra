@@ -6,6 +6,7 @@ import { workoutSessions } from "../db/schema";
 import { msToUnix } from "../lib/dates";
 import { notFound } from "../lib/errors";
 import { recordAttendanceSafe } from "./attendance";
+import { refreshGoalSafe } from "./goal-refresh";
 import { rebuildDaysSafe } from "./nutrition-rollup";
 import { recomputeStrengthSafe } from "./strength-recompute";
 
@@ -20,12 +21,15 @@ export const toSessionResponse = (row: SessionRow): WorkoutSessionResponse => ({
   notes: row.notes,
 });
 
-/** Side effects of the first complete. Injectable so tests can count strength recomputes. */
+/** Side effects of the first complete. Injectable so tests can count strength / goal recomputes. */
 export type CompleteEffects = {
   recompute: (db: AppDB, userId: string, sessionId: string) => Promise<TierChange[]>;
+  /** AMI-179 goal snapshot refresh (must never throw). Omitted = `refreshGoalSafe`. */
+  goal?: (db: AppDB, userId: string) => Promise<void>;
 };
 
-const defaultEffects: CompleteEffects = { recompute: recomputeStrengthSafe };
+const refreshGoalOnComplete = (db: AppDB, userId: string) => refreshGoalSafe(db, userId, "workout");
+const defaultEffects: CompleteEffects = { recompute: recomputeStrengthSafe, goal: refreshGoalOnComplete };
 
 export const loadOwnedSession = async (db: AppDB, userId: string, sessionId: string): Promise<SessionRow> => {
   const [session] = await db
@@ -88,5 +92,7 @@ export const completeSession = async (
   await recordAttendanceSafe(db, userId, "workoutDone");
   await rebuildDaysSafe(db, userId, [session.startedAt]);
   const tierChanges = await effects.recompute(db, userId, sessionId);
+  // After strength so a step-up this session counts toward the goal's strength milestone.
+  await (effects.goal ?? refreshGoalOnComplete)(db, userId);
   return { ...toSessionResponse({ ...session, ...patch }), tierChanges };
 };

@@ -18,6 +18,13 @@ const hash = (s: string): number => {
   return h >>> 0;
 };
 
+/** Test seam: a fixed salt replaces `userId|date` in every pick hash. Never set in production. */
+let pickSalt: string | null = null;
+export const seedHeuristicMealPicks = (salt: string | null): void => {
+  pickSalt = salt;
+};
+const pickKey = (input: MealPlanInput): string => pickSalt ?? `${input.userId}|${input.date}`;
+
 const lowerFirst = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
 
 const titleFor = (names: string[]): string => {
@@ -63,7 +70,7 @@ const makePicker = (input: MealPlanInput): Picker => {
     ];
     const pool = tiers.find((t) => t.length > 0);
     if (!pool) return null;
-    const h = hash(`${input.userId}|${input.date}|${input.seed ?? ""}|${slot}|${role}`);
+    const h = hash(`${pickKey(input)}|${input.seed ?? ""}|${slot}|${role}`);
     const chosen = pool[h % pool.length]!;
     dayUsed.add(chosen.id);
     return chosen;
@@ -117,7 +124,7 @@ export const heuristicMealPlanGenerator: MealPlanGenerator = {
   generate: async (input) => {
     const budgets = slotBudgets(input.remaining, input.slots);
     const pick = makePicker(input);
-    const flip = hash(`${input.userId}|${input.date}|${input.seed ?? ""}|snack`) % 2 === 0;
+    const flip = hash(`${pickKey(input)}|${input.seed ?? ""}|snack`) % 2 === 0;
     const meals: MealPlanDraftMeal[] = [];
     for (const slot of input.slots) {
       const budget = budgets[slot];

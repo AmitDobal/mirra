@@ -8,6 +8,7 @@ import type { PlanReviseIntent } from "../../ports/plan-reviser";
 import type { MealPlanCtx } from "../meal-plan-draft";
 import type { MealDraft } from "../meal-plan-targeted";
 import type { ReviseState } from "./context";
+import type { ScheduleDraft } from "./schedule-step";
 import type { WorkoutDraft } from "./workout-step";
 
 /** Drafts live 30 min; one pending draft per user (arch §8.2). */
@@ -19,6 +20,8 @@ export type DraftTouch = {
   mealItemIds: string[];
   workoutId: string | null;
   prefs: boolean;
+  /** plan_days ids a schedule move swaps (AMI-166). */
+  dayIds?: string[];
 };
 
 /** Echoed on apply so the response matches the preview without re-running the reviser. */
@@ -42,6 +45,7 @@ export type StoredDraft = {
   prefsPatch: Record<string, unknown> | null;
   meal: MealDraft | null;
   workout: WorkoutDraft | null;
+  schedule: ScheduleDraft | null;
   baseHash: string;
   expiresAt: number;
 };
@@ -61,6 +65,10 @@ export const touchHash = (s: ReviseState, t: DraftTouch): string => {
   if (t.workoutId) {
     const w = s.plan.workouts.find((x) => x.id === t.workoutId);
     parts.push(`w:${t.workoutId}|${w?.durationMin ?? "missing"}`, ...(w?.exercises ?? []).map((e) => `${e.id}|${e.name}|${e.targetSets}|${e.targetReps}`));
+  }
+  for (const id of t.dayIds ?? []) {
+    const d = s.plan.days.find((x) => x.id === id);
+    parts.push(d ? `d:${d.id}|${d.date}|${d.kind}|${d.label ?? ""}|${d.workoutId ?? ""}` : `d:${id}|missing`);
   }
   if (t.prefs) parts.push(`prefs:${s.prefs?.updatedAt?.getTime() ?? 0}`);
   let h = 2166136261;
@@ -94,7 +102,7 @@ export const createDraft = async (ctx: MealPlanCtx, d: NewDraft): Promise<{ id: 
       prefsPatchJson: d.prefsPatch ? JSON.stringify(d.prefsPatch) : null,
       mealDraftJson: d.meal ? JSON.stringify(d.meal) : null,
       workoutDraftJson: d.workout ? JSON.stringify(d.workout) : null,
-      scheduleDraftJson: null,
+      scheduleDraftJson: d.schedule ? JSON.stringify(d.schedule) : null,
       baseHash: d.baseHash,
       createdAt: new Date(now),
       expiresAt: new Date(expiresAt),
@@ -113,6 +121,7 @@ const toStored = (row: typeof reviseDrafts.$inferSelect): StoredDraft => ({
   prefsPatch: row.prefsPatchJson ? parseJson<Record<string, unknown>>(row.prefsPatchJson, {}) : null,
   meal: row.mealDraftJson ? parseJson<MealDraft | null>(row.mealDraftJson, null) : null,
   workout: row.workoutDraftJson ? parseJson<WorkoutDraft | null>(row.workoutDraftJson, null) : null,
+  schedule: row.scheduleDraftJson ? parseJson<ScheduleDraft | null>(row.scheduleDraftJson, null) : null,
   baseHash: row.baseHash,
   expiresAt: row.expiresAt.getTime(),
 });

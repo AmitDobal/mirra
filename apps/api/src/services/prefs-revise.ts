@@ -16,7 +16,10 @@ export const reviseEquipment = (
     list = uniq([...list.filter((e) => e !== "full_gym"), ...FULL_GYM_EXPANDED]);
   }
   list = list.filter((e) => !intent.equipmentRemove.includes(e));
-  return uniq([...list, ...intent.equipmentAdd]);
+  // "Prefer bench press" on a full gym adds nothing: full_gym already has the bench (AMI-166).
+  const fullGym = list.includes("full_gym");
+  const add = intent.equipmentAdd.filter((g) => !(fullGym && FULL_GYM_EXPANDED.includes(g)));
+  return uniq([...list, ...add]);
 };
 
 /** Comma list for `foods_avoid`; keeps existing words, appends new ones. */

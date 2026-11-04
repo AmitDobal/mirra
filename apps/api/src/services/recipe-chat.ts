@@ -11,7 +11,6 @@ import type { MirraEnv } from "../env";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { CREDIT_COSTS, resolveCreditsMode } from "../lib/ai-credits";
 import type { AiFeature } from "../lib/ai-quotas";
-import { todayUtc } from "../lib/dates";
 import { ApiError, conflict } from "../lib/errors";
 import { parseJson } from "../lib/json";
 import { getPersonalizationContext } from "../lib/personalization-context";
@@ -23,6 +22,7 @@ import { withAiCredits } from "./credits-gate";
 import { loadOwnedItem } from "./meal-plan-items";
 import { toPlannedMeal } from "./meal-plan-store";
 import { guardMessage } from "./recipe-chat-guard";
+import { userToday } from "./user-day";
 import {
   claimUserTurn,
   countRecentUserTurns,
@@ -77,7 +77,7 @@ const loadContext = async (ctx: RecipeCtx, itemId: string) => {
     userId: ctx.userId,
     feature: "recipe_chat",
     subjectId: item.id,
-    localDate: todayUtc(),
+    localDate: await userToday(ctx.db, ctx.userId),
   });
   const rules = buildSafetyRules(envelope, meal.items.map((i) => i.name));
   return { item, meal, envelope, rules, recipeKey: `${envelope.contextHash}:${item.updatedAt.getTime()}` };

@@ -1,3 +1,4 @@
+import { localTodayIso } from "@/lib/datetime";
 import type { RollupDay } from "@/db";
 import type { HistoryRange, NutritionSummary, WorkoutSummary } from "@/lib/api";
 
@@ -39,7 +40,7 @@ export type MacroAverages = {
 
 const DAY_MS = 86_400_000;
 
-export const todayIso = (): string => new Date().toISOString().slice(0, 10);
+export const todayIso = localTodayIso;
 
 export const addDays = (iso: string, days: number): string =>
   new Date(Date.parse(`${iso}T00:00:00.000Z`) + days * DAY_MS).toISOString().slice(0, 10);

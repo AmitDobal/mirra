@@ -1,3 +1,4 @@
+import { localTodayIso } from "@/lib/datetime";
 import { create } from "zustand";
 
 import { planChatCopy } from "@/content/plan-chat";
@@ -75,7 +76,7 @@ const WELCOME: PlanChatMessage = {
   text: planChatCopy.welcome,
 };
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = localTodayIso;
 
 let seq = 0;
 const nextId = (prefix: string) => `${prefix}-${Date.now()}-${(seq += 1)}`;

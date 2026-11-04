@@ -1,12 +1,13 @@
 import { and, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
-import { meals, profiles } from "../db/schema";
-import { dayBoundsMs } from "../lib/dates";
+import { meals } from "../db/schema";
+import { dayBoundsIn } from "../lib/dates";
 import { loadHydration } from "./hydration";
 import { buildPersonalDayContext } from "./personal-context";
 import { defaultFuelTargets, loadCurrentPlan } from "./plan-loaders";
 import type { TodayActionsInput } from "./today-actions";
+import { userTz } from "./user-day";
 
 /** I/O for `GET /v1/today/actions`: one personal-day pack plus carbs, fat, workout, water. */
 export const loadTodayActionsInput = async (
@@ -14,8 +15,9 @@ export const loadTodayActionsInput = async (
   userId: string,
   date: string,
 ): Promise<TodayActionsInput> => {
-  const { start, end } = dayBoundsMs(date);
-  const [ctx, current, dayMeals, profileRows, hydration] = await Promise.all([
+  const tz = await userTz(db, userId);
+  const { start, end } = dayBoundsIn(tz, date);
+  const [ctx, current, dayMeals, hydration] = await Promise.all([
     buildPersonalDayContext(db, userId, date),
     loadCurrentPlan(db, userId),
     db
@@ -28,11 +30,6 @@ export const loadTodayActionsInput = async (
           lt(meals.eatenAt, new Date(end)),
         ),
       ),
-    db
-      .select({ timezone: profiles.timezone })
-      .from(profiles)
-      .where(eq(profiles.userId, userId))
-      .limit(1),
     loadHydration(db, userId, date),
   ]);
 
@@ -45,7 +42,7 @@ export const loadTodayActionsInput = async (
 
   return {
     date,
-    tz: profileRows[0]?.timezone ?? "UTC",
+    tz,
     scenario: ctx.scenario,
     facts: ctx.facts,
     mealCount: ctx.fuel.mealCount,

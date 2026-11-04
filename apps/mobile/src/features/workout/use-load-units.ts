@@ -26,9 +26,14 @@ export const useLoadUnit = (): LoadUnit => {
   return unitFor(serverUnits ?? localUnits);
 };
 
-/** Library scoring for a plan lift ("bodyweight" → HUD logs added load). Null until known. */
-export const useExerciseScoring = (ex: PlanExercise | undefined): ExerciseScoring | null => {
-  const [scoring, setScoring] = useState<{ id: string; value: ExerciseScoring } | null>(null);
+export type ExerciseLoadMeta = { readonly scoring: ExerciseScoring; readonly perHand: boolean };
+
+/**
+ * Library scoring for a plan lift ("bodyweight" → HUD logs added load) and whether the
+ * load is per hand (dumbbells, AMI-183). Null until known.
+ */
+export const useExerciseLoadMeta = (ex: PlanExercise | undefined): ExerciseLoadMeta | null => {
+  const [scoring, setScoring] = useState<{ id: string; value: ExerciseLoadMeta } | null>(null);
   useEffect(() => {
     if (!ex) return;
     let alive = true;
@@ -37,7 +42,7 @@ export const useExerciseScoring = (ex: PlanExercise | undefined): ExerciseScorin
       const canonicalId = meta?.canonicalId ?? findCatalogByName(ex.name)?.canonicalId ?? null;
       if (!canonicalId) return;
       const lib = await getLibraryExercise(canonicalId);
-      if (alive) setScoring({ id: ex.id, value: lib.scoring });
+      if (alive) setScoring({ id: ex.id, value: { scoring: lib.scoring, perHand: lib.loadPerHand === true } });
     })().catch(() => undefined);
     return () => {
       alive = false;

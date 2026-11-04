@@ -2,7 +2,8 @@ import { and, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { meals, nutritionDayRollup } from "../db/schema";
-import { dayBoundsMs, toDateString } from "../lib/dates";
+import { dayBoundsIn, localDateIn } from "../lib/dates";
+import { userTz } from "./user-day";
 import { defaultFuelTargets, loadCurrentPlan } from "./plan-loaders";
 import { loadSessionStats } from "./workout-stats";
 
@@ -23,8 +24,11 @@ export const rebuildDayRollup = async (
   userId: string,
   date: string,
   kcalTarget?: number,
+  tz?: string,
 ): Promise<RollupRow> => {
-  const { start, end } = dayBoundsMs(date);
+  // AMI-183: the day is the user's profile-timezone calendar day, not UTC.
+  const zone = tz ?? (await userTz(db, userId));
+  const { start, end } = dayBoundsIn(zone, date);
   const rows = await db
     .select({
       kcal: meals.kcal,
@@ -45,7 +49,7 @@ export const rebuildDayRollup = async (
     }),
     { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 },
   );
-  const done = (await loadSessionStats(db, userId, start, end)).filter((s) => s.endedAt != null);
+  const done = (await loadSessionStats(db, userId, start, end, zone)).filter((s) => s.endedAt != null);
 
   const row: RollupRow = {
     userId,
@@ -73,10 +77,11 @@ export const rebuildDaysSafe = async (
   userId: string,
   dates: Array<string | Date>,
 ): Promise<void> => {
-  const unique = [...new Set(dates.map((d) => (typeof d === "string" ? d : toDateString(d))))];
   try {
+    const tz = await userTz(db, userId);
+    const unique = [...new Set(dates.map((d) => (typeof d === "string" ? d : localDateIn(tz, d))))];
     const target = await loadKcalTarget(db, userId);
-    for (const date of unique) await rebuildDayRollup(db, userId, date, target);
+    for (const date of unique) await rebuildDayRollup(db, userId, date, target, tz);
   } catch (err) {
     console.warn("[nutrition-rollup] rebuild failed", err instanceof Error ? err.message : String(err));
   }

@@ -62,7 +62,7 @@ export const runEdgeAsserts = (check: Check, { near, within }: Helpers) => {
 
   // ── Direction / modes ──
   const mm = run({ goalType: "muscle_gain", targetWeightKg: 78 });
-  check(mm.direction === "down" && mm.flags.includes("direction_mismatch") && near(mm.paceRatePct, 0.4, 1e-6) && mm.milestones[0]?.id === "first_change",
+  check(mm.direction === "down" && mm.flags.includes("direction_mismatch") && near(mm.paceRatePct, 0.4, 1e-6) && mm.milestones.some((m) => m.id === "first_change"),
     "build_muscle with lower goal → cut at slow-cut 0.4 %, direction_mismatch", `${mm.direction} ${mm.paceRatePct}`);
   check(run({ targetWeightKg: 88 }).flags.includes("direction_mismatch"), "lose_fat with higher goal → direction_mismatch");
   const same = run({ targetWeightKg: 82 });
@@ -123,7 +123,18 @@ export const runEdgeAsserts = (check: Check, { near, within }: Helpers) => {
     "general_fitness habit 14/30/66", hb.map((m) => `${m.id}:${m.date}:${m.done}`).join(","));
   check(gf.status === "on_track" && hb[2]?.detail?.includes("66 days") === true, "habit status on_track at ≥75 %; 66-day copy");
   const rc = run({ goalType: "recomp", targetWeightKg: null }, { today: "2026-12-09", sessions: sess(14, () => true), checkInDates: Array.from({ length: 28 }, (_, i) => G.addDays("2026-11-12", i)), photoDates: ["2026-12-03"] });
-  check(rc.milestones[0]?.id === "first_change" && JSON.stringify(rc.milestones[0]?.window) === '["2026-12-30","2027-01-27"]', "recomp first change window weeks 8–12 when A ≥ 0.75");
+  const rcFirst = rc.milestones.find((m) => m.id === "first_change");
+  check(JSON.stringify(rcFirst?.window) === '["2026-12-30","2027-01-27"]', "recomp first change window weeks 8–12 when A ≥ 0.75");
+  // AMI-183: every list is chronological (date, else window start); goal last on a tie.
+  type Ms = { date: string | null; window: [string, string] | null };
+  const keyOf = (m: Ms) => m.date ?? m.window?.[0] ?? "9999-12-31";
+  const sorted = (ms: readonly Ms[]) => ms.every((m, i) => i === 0 || keyOf(ms[i - 1]!) <= keyOf(m));
+  const cut76 = run({ sex: "female", ageYears: 28, heightCm: 175, startWeightKg: 76, targetWeightKg: 66 });
+  const p5 = cut76.milestones.findIndex((m) => m.id === "pct5");
+  check(p5 >= 0 && p5 < cut76.milestones.findIndex((m) => m.id === "halfway") && sorted(cut76.milestones),
+    "76→66 kg: 5 % (72.2) before halfway (71), date order (QA R16)", cut76.milestones.map((m) => `${m.id}:${m.date}`).join(","));
+  check([mm, rc, gf, cut76, run({ units: "imperial", startWeightKg: 76.2, targetWeightKg: 72.1 })].every((p) => sorted(p.milestones)), "milestones sorted by date");
+  check(cut76.milestones.at(-1)?.id === "goal", "goal milestone last");
   check(rc.milestones.find((m) => m.id === "photo_w4")?.done === true && !run({ goalType: "recomp", targetWeightKg: null }).milestones.some((m) => m.id === "first_change"), "photo checkpoint done ±7 days; no first change at prior A");
   check(run({}, { strength: { stepUps28d: 0, next: { label: "Squat Gold III", detail: null, sessions: 2, perWeek: 0 } } }).milestones.at(-1)?.date === null, "next_division appended to any goal; perWeek 0 → no date");
   check(run({ startWeightKg: 120, targetWeightKg: 70, heightCm: 190 }).milestones.length <= 8, "milestones ≤ 8");
@@ -132,8 +143,11 @@ export const runEdgeAsserts = (check: Check, { near, within }: Helpers) => {
   const lb = run({ units: "imperial" });
   const kg = run();
   check(lb.band.expected === kg.band.expected && lb.chart?.unit === "lb" && JSON.stringify(lb.chart?.planned) === JSON.stringify(kg.chart?.planned), "imperial: same math, chart unit lb (values stay kg)");
-  check(lb.milestones.find((m) => m.id === "halfway")?.label === "Halfway · 173.1 lb" && lb.milestones[0]?.detail === "−5.4 lb", "imperial labels in lb", lb.milestones.map((m) => m.label).join(" | "));
-  check(near(G.lbToKg(180.78), 82, 0.01) && near(G.kgToLb(G.lbToKg(165)), 165, 1e-9) && G.formatWeight(75, "imperial") === "165.3 lb", "lb ↔ kg conversions");
+  check(lb.milestones.find((m) => m.id === "halfway")?.label === "Halfway · 173 lb" && lb.milestones[0]?.detail === "−5.4 lb", "imperial labels in lb", lb.milestones.map((m) => m.label).join(" | "));
+  check(near(G.lbToKg(180.78), 82, 0.01) && near(G.kgToLb(G.lbToKg(165)), 165, 1e-9) && G.formatWeight(75, "imperial") === "165 lb", "lb ↔ kg conversions");
+  // AMI-183 one rule: lb whole, kg 0.1 trimmed (iOS #78: header 159 lb vs milestone 158.7 lb).
+  check(G.formatWeight(G.lbToKg(158.7), "imperial") === "159 lb" && G.formatWeightNumber(72.6, "metric") === "72.6" && G.formatWeight(82, "metric") === "82 kg" && G.formatWeight(78.46, "metric") === "78.5 kg",
+    "goal weight formatter: lb whole, kg 0.1 trimmed");
 
   // ── Shape invariants ──
   for (const p of [kg, mg, zero, run({ pace: "aggressive" })]) {

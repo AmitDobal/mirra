@@ -9,4 +9,6 @@ const manageIn = android ? "Google Play subscriptions" : "Apple ID settings";
 export const storeCopy = {
   legal: `Plan auto-renews after 7-day trial. Cancel anytime in ${manageIn} at least 24 hours before renewal.`,
   restoreNoneBody: `We couldn't find an active Mirra Pro plan on this ${account}. Start the free trial or try a different account.`,
+  /** You > Connected health row (AMI-183): Health Connect on Android. */
+  healthRow: android ? "Health Connect" : "Apple Health / Watch",
 } as const;

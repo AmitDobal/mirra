@@ -103,7 +103,7 @@ test("S43 lb: every weight in lb", () => {
   const v = view({ ...src, weightUnit: "lb" });
   assert.equal(v.headline, "181 → 165 lb,\naround Mar 6");
   assert.equal(v.picked[1]!.value, "181 → 165 lb");
-  assert.equal(v.milestones[1]!.detail, "173.1 lb");
+  assert.equal(v.milestones[1]!.detail, "173 lb");
   assert.equal(v.chart!.data.unit, "lb");
   assert.ok(!JSON.stringify(v).includes(" kg"));
 });

@@ -2,7 +2,7 @@ import { and, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { setLogs, workoutSessions, workouts } from "../db/schema";
-import { toDateString } from "../lib/dates";
+import { localDateIn } from "../lib/dates";
 
 /** Guards against sessions left open overnight skewing minutes. */
 const MAX_SESSION_MINUTES = 240;
@@ -15,7 +15,7 @@ export type SessionStat = {
   endedAt: number | null;
   rpe: number | null;
   notes: string | null;
-  /** UTC calendar day the session started on. */
+  /** Calendar day the session started on, in `tz` (profile timezone; UTC by default). */
   date: string;
   minutes: number;
   setsCompleted: number;
@@ -33,6 +33,7 @@ export const loadSessionStats = async (
   userId: string,
   startMs: number,
   endMs: number,
+  tz = "UTC",
 ): Promise<SessionStat[]> => {
   const inRange = and(
     eq(workoutSessions.userId, userId),
@@ -75,7 +76,7 @@ export const loadSessionStats = async (
         endedAt,
         rpe: s.rpe,
         notes: s.notes,
-        date: toDateString(s.startedAt),
+        date: localDateIn(tz, s.startedAt),
         minutes: minutesBetween(startedAt, endedAt),
         setsCompleted: t?.sets ?? 0,
         volumeKg: Math.round((t?.volume ?? 0) * 10) / 10,

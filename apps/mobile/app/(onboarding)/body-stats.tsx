@@ -10,6 +10,7 @@ import {
   QuizEyebrow,
   useOnboardingStore,
 } from "@/features/onboarding";
+import { heightA11y, heightDisplay, stepHeightCm } from "@/features/onboarding/height-input";
 import { color } from "@/theme/tokens";
 import { Button, Chip } from "@/ui";
 import { sx } from "@/theme/sx";
@@ -19,10 +20,11 @@ type StepperProps = {
   value: string;
   onDec: () => void;
   onInc: () => void;
+  valueA11y?: string;
   trailing?: ReactNode;
 };
 
-const Stepper = ({ label, value, onDec, onInc, trailing }: StepperProps) => (
+const Stepper = ({ label, value, valueA11y, onDec, onInc, trailing }: StepperProps) => (
   <View style={sx("rounded-DEFAULT bg-surface-container-high p-space-md")}>
     <View style={sx("mb-space-sm flex-row items-center justify-between")}>
       <Text style={sx("font-label text-label-md text-on-surface-variant")}>
@@ -41,7 +43,10 @@ const Stepper = ({ label, value, onDec, onInc, trailing }: StepperProps) => (
       >
         <Minus color={color.onSurface} size={18} />
       </Pressable>
-      <Text style={sx("font-display text-display-metric text-on-surface")}>
+      <Text
+        accessibilityLabel={valueA11y}
+        style={sx("font-display text-display-metric text-on-surface")}
+      >
         {value}
       </Text>
       <Pressable
@@ -74,8 +79,7 @@ const BodyStatsScreen = () => {
   const setWeightKg = useOnboardingStore((s) => s.setWeightKg);
   const setWeightUnit = useOnboardingStore((s) => s.setWeightUnit);
 
-  const heightDisplay =
-    heightUnit === "cm" ? `${heightCm}` : `${(heightCm / 30.48).toFixed(1)}`;
+  const shownHeight = heightDisplay(heightCm, heightUnit);
   const weightDisplay =
     weightUnit === "kg"
       ? `${Math.round(weightKg)}`
@@ -123,9 +127,10 @@ const BodyStatsScreen = () => {
         />
         <Stepper
           label={c.height}
-          value={heightDisplay}
-          onDec={() => setHeightCm(Math.max(120, heightCm - 1))}
-          onInc={() => setHeightCm(Math.min(230, heightCm + 1))}
+          value={shownHeight}
+          valueA11y={heightA11y(heightCm, heightUnit)}
+          onDec={() => setHeightCm(stepHeightCm(heightCm, heightUnit, -1))}
+          onInc={() => setHeightCm(stepHeightCm(heightCm, heightUnit, 1))}
           trailing={
             <View style={sx("flex-row gap-space-xs")}>
               {(["cm", "ft"] as const).map((u) => (

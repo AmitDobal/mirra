@@ -1,5 +1,5 @@
 import { getDb } from "../client";
-import { mondayOf, todayUtc } from "../dates";
+import { mondayOf, todayLocal } from "../dates";
 import { getLocalUserId, newId, nowMs } from "../ids";
 import { parseJson, toJson } from "../json";
 import type {
@@ -131,7 +131,7 @@ export const savePlan = async (input: SavePlanInput): Promise<LocalPlan> => {
   const userId = input.userId ?? getLocalUserId();
   const db = await getDb();
   const ts = nowMs();
-  const weekStart = input.weekStart ?? mondayOf(todayUtc());
+  const weekStart = input.weekStart ?? mondayOf(todayLocal());
 
   const prev = await db.getFirstAsync<{ version: number }>(
     "SELECT MAX(version) AS version FROM plans WHERE user_id = ?",
@@ -229,7 +229,7 @@ export const getCurrentPlan = async (
 
 export const getToday = async (
   userId: string = getLocalUserId(),
-  date: string = todayUtc(),
+  date: string = todayLocal(),
 ): Promise<TodayBundle> => {
   const plan = await getCurrentPlan(userId);
   if (!plan) {

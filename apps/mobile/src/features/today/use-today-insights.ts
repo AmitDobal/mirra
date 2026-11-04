@@ -1,3 +1,4 @@
+import { localTodayIso } from "@/lib/datetime";
 import { useCallback, useRef, useState } from "react";
 
 import { withAiCache } from "@/lib/ai";
@@ -9,7 +10,7 @@ import { useTodayStore } from "./today-store";
 /** GET /v1/insights/today is not LLM; this TTL only stops tab-focus churn. */
 export const INSIGHTS_TTL_MS = 2 * 60_000;
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = localTodayIso;
 
 /**
  * Soft-cached daily insights (2 min TTL). `load(true)` (pull-to-refresh) forces

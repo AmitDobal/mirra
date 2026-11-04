@@ -6,7 +6,6 @@ import { toCatalogRow } from "../data/vetted-foods";
 import type { AppDB } from "../db";
 import { auditLog, preferences } from "../db/schema";
 import type { MirraEnv } from "../env";
-import { dayBoundsMs, todayUtc } from "../lib/dates";
 import { ApiError, conflict } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseJson } from "../lib/json";
@@ -21,6 +20,7 @@ import { getMealPlanGenerator, getSwapMealPlanGenerator } from "../lib/meal-plan
 import type { MealPlanInput } from "../ports/meal-plan-generator";
 import { goalContextFor } from "./goal-context";
 import { goalPromptOf } from "./goal-copy";
+import { userDayBounds, userToday } from "./user-day";
 
 export type MealPlanCtx = { env: MirraEnv; db: AppDB; userId: string };
 
@@ -31,7 +31,8 @@ export const MEAL_REGEN_ACTIONS: readonly string[] = REGEN_ACTIONS;
 export type Drafted = { title: string; meal: MaterializedMeal };
 
 export const assertRateLimit = async (ctx: MealPlanCtx): Promise<void> => {
-  const { start } = dayBoundsMs(todayUtc());
+  // "For today" = the user's local day (AMI-183).
+  const { start } = await userDayBounds(ctx.db, ctx.userId, await userToday(ctx.db, ctx.userId));
   const [row] = await ctx.db
     .select({ n: count() })
     .from(auditLog)

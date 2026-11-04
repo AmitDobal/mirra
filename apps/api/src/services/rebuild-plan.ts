@@ -8,7 +8,7 @@ import { and, eq } from "drizzle-orm";
 import type { AppDB } from "../db";
 import { planJobs, preferences, profiles } from "../db/schema";
 import type { MirraEnv } from "../env";
-import { mondayOf, todayUtc } from "../lib/dates";
+import { localDateIn, mondayOf } from "../lib/dates";
 import { badRequest, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseJson } from "../lib/json";
@@ -135,7 +135,8 @@ export const previewRebuild = async (
   const before = await loadCurrentPlan(db, userId);
   if (!before.plan) throw badRequest("No current plan — generate first");
 
-  const weekStart = before.plan.weekStart || mondayOf(todayUtc());
+  const today = localDateIn(profile.timezone);
+  const weekStart = before.plan.weekStart || mondayOf(today);
   // AMI-184: a rebuild keeps the user's chosen train days. (The old "missed → shift every
   // train day +1" moved lifts onto days the user never picked.)
   const trainDays = parseJson<number[]>(prefs.trainDaysJson, []);
@@ -144,7 +145,7 @@ export const previewRebuild = async (
     userId,
     feature: "workout_plan",
     subjectId: weekStart,
-    localDate: todayUtc(),
+    localDate: today,
     overrides: { trainDays },
   });
   const generated = await generator.generate({

@@ -2,7 +2,6 @@ import { Hono } from "hono";
 
 import { createDb } from "../db";
 import type { MirraEnv } from "../env";
-import { todayUtc } from "../lib/dates";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { getUsageSummary } from "../services/ai-budget";
@@ -31,12 +30,10 @@ aiRoutes.get("/v1/ai/usage", requireAuth, async (c) => {
 });
 
 aiRoutes.get("/v1/voice/cue/today", requireAuth, async (c) => {
-  const date = c.req.query("date")?.match(/^\d{4}-\d{2}-\d{2}$/)?.[0] ?? todayUtc();
+  // No date: the service uses the user's profile-timezone today (AMI-183).
+  const date = c.req.query("date")?.match(/^\d{4}-\d{2}-\d{2}$/)?.[0];
   try {
-    const cue = await getTodayVoiceCue(
-      { env: c.env, db: createDb(c.env.DB), userId: c.get("userId") },
-      date,
-    );
+    const cue = await getTodayVoiceCue({ env: c.env, db: createDb(c.env.DB), userId: c.get("userId") }, date);
     return c.json(cue);
   } catch (err) {
     // Rate limit stays 429; schema/migrate gaps become a silent text cue.

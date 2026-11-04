@@ -19,6 +19,13 @@ test("bodyweight lifts read '+ kg added' / '+ lb added'", () => {
   assert.equal(loadLabel("kg", null), "KG");
 });
 
+test("dumbbell lifts say the load is per hand (AMI-183)", () => {
+  assert.equal(loadLabel("kg", "load", true), "KG PER HAND");
+  assert.equal(loadLabel("lb", "load", true), "LB PER HAND");
+  assert.equal(loadLabel("kg", "load", false), "KG");
+  assert.equal(loadLabel("kg", "bodyweight", true), "+ kg added");
+});
+
 test("units preference → stepper unit", () => {
   assert.equal(unitFor("imperial"), "lb");
   assert.equal(unitFor("metric"), "kg");

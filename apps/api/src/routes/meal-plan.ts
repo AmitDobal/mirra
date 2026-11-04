@@ -13,7 +13,6 @@ import { Hono } from "hono";
 
 import { createDb } from "../db";
 import type { MirraEnv } from "../env";
-import { todayUtc } from "../lib/dates";
 import { requirePro } from "../lib/entitlement";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
@@ -27,6 +26,7 @@ import {
   swapPlannedMeal,
 } from "../services/meal-plan";
 import { createPlannedItem, deletePlannedItem, updatePlannedItem } from "../services/meal-plan-items";
+import { dateOrUserToday } from "../services/user-day";
 
 export const mealPlanRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -54,9 +54,10 @@ mealPlanRoutes.post("/v1/meal-plan/generate", requireAuth, async (c) => {
 });
 
 mealPlanRoutes.get("/v1/meal-plan/today", requireAuth, async (c) => {
-  const date = c.req.query("date") || todayUtc();
+  const ctx = ctxOf(c);
+  const date = await dateOrUserToday(ctx.db, ctx.userId, c.req.query("date"));
   const response: GetTodayMealPlanResponse = {
-    plan: await getTodayPlan(ctxOf(c), date),
+    plan: await getTodayPlan(ctx, date),
   };
   return c.json(response);
 });

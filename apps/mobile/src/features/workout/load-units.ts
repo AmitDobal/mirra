@@ -11,9 +11,18 @@ export const KG_PER_LB = 0.45359237;
 export const unitFor = (units: string | null | undefined): LoadUnit =>
   units === "imperial" ? "lb" : "kg";
 
-/** Stepper caption: "KG" / "LB", or "+ kg added" / "+ lb added" for bodyweight lifts. */
-export const loadLabel = (unit: LoadUnit, scoring: LoadScoring | null | undefined): string =>
-  scoring === "bodyweight" ? `+ ${unit} added` : unit.toUpperCase();
+/**
+ * Stepper caption: "KG" / "LB", "+ kg added" / "+ lb added" for bodyweight lifts, and
+ * "KG PER HAND" for dumbbell lifts (one dumbbell is logged, AMI-183; server scores per hand).
+ */
+export const loadLabel = (
+  unit: LoadUnit,
+  scoring: LoadScoring | null | undefined,
+  perHand = false,
+): string => {
+  if (scoring === "bodyweight") return `+ ${unit} added`;
+  return perHand ? `${unit.toUpperCase()} PER HAND` : unit.toUpperCase();
+};
 
 /** kg → shown value: kg to 0.01, lb to the nearest 0.5. */
 export const toDisplayLoad = (kg: number, unit: LoadUnit): number =>

@@ -1,6 +1,8 @@
+import { localDateIso } from "@/lib/datetime";
+
 import type { ProgressPhoto } from "./progress-store";
 
-const dayKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+const dayKey = (ms: number) => localDateIso(ms);
 
 /** Distinct check-in days in the loaded page (honest, not fabricated). */
 export const streakishDays = (photos: readonly ProgressPhoto[]): number => {

@@ -36,6 +36,7 @@ exerciseRoutes.get("/v1/exercises/:canonicalId", requireAuth, async (c) => {
     scoring: ExerciseScoringSchema.catch("reps").parse(row.scoring),
     bwFactor: null,
     ranked: false,
+    loadPerHand: false,
     source: row.source === "ai" ? "ai" : "heuristic",
   };
   return c.json(body);

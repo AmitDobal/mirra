@@ -70,8 +70,12 @@ export const GoalHero = ({ view }: { readonly view: GoalView }) => (
 export const GoalChartCard = ({ chart }: { readonly chart: NonNullable<GoalView["chart"]> }) => (
   <View style={[styles.card, styles.chartCard]}>
     <View style={styles.between}>
-      <CapsLabel style={styles.bright}>{c.chartTitle}</CapsLabel>
-      <Text style={styles.caption}>{chart.caption}</Text>
+      <CapsLabel numberOfLines={1} style={[styles.bright, styles.titleShrink]}>
+        {c.chartTitle}
+      </CapsLabel>
+      <Text numberOfLines={1} style={styles.caption}>
+        {chart.caption}
+      </Text>
     </View>
     <View style={styles.chart}>
       <GoalChart
@@ -151,9 +155,11 @@ const styles = StyleSheet.create({
     borderColor: color.surfaceContainerHigh,
   },
   chartCard: { marginTop: space.xl, padding: space.md },
-  between: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  between: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.sm },
   bright: { color: color.onSurface },
-  caption: { fontFamily: font.label, fontSize: type.labelMd.size, lineHeight: type.labelMd.line, color: color.onSurfaceVariant },
+  titleShrink: { flexShrink: 1 },
+  /** Never clipped (QA R17): the caption keeps its width; the title side shrinks. */
+  caption: { flexShrink: 0, fontFamily: font.label, fontSize: type.labelMd.size, lineHeight: type.labelMd.line, color: color.onSurfaceVariant },
   chart: { marginTop: 12 },
   legend: {
     marginTop: space.md,

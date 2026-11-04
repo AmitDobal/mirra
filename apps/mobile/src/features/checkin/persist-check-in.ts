@@ -1,3 +1,4 @@
+import { localTodayIso } from "@/lib/datetime";
 import { submitCheckIn } from "@/db";
 import { useFuelStore } from "@/features/fuel/fuel-store";
 import { useCoachStore } from "@/features/coach/coach-store";
@@ -7,7 +8,7 @@ import { MirraApiError } from "@/lib/api/client";
 import { errorMessage, logger } from "@/lib/logger";
 import { invalidateGoal } from "@/features/goal/goal-store";
 
-export const todayIso = (): string => new Date().toISOString().slice(0, 10);
+export const todayIso = localTodayIso;
 
 export const SYNC_FAILED_NOTICE =
   "Check-in failed to sync — not saved. Check your connection and try again.";

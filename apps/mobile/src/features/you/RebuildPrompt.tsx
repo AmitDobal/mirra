@@ -1,8 +1,8 @@
-import { router } from "expo-router";
 import { RefreshCw } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 
 import { profileCopy } from "@/content/profile";
+import { openRebuild } from "@/features/coach/open-rebuild";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 
@@ -36,7 +36,7 @@ export const RebuildPrompt = ({ onDismiss }: Props) => {
           accessibilityLabel="Rebuild your plan"
           onPress={() => {
             onDismiss();
-            router.push("/rebuild");
+            openRebuild("/rebuild");
           }}
           style={sx("h-10 items-center justify-center rounded-full bg-primary-fixed px-5")}
         >

@@ -5,9 +5,10 @@
  * milliseconds**. Never persist a formatted string. Convert to the device
  * timezone only at display time via the helpers below.
  *
- * NOTE: `localDate` buckets sent to the API stay UTC `YYYY-MM-DD` (the server
- * day-bounds are UTC). `localTodayIso()` is for *display* and device-calendar
- * logic only.
+ * Calendar days (AMI-183): "today" is always the **device-local** `YYYY-MM-DD`
+ * from `localTodayIso()`, never `toISOString().slice(0, 10)`. UTC is wrong for
+ * US evenings and for IST/APAC just past midnight. `localDate` fields sent to
+ * the API use it too; the server buckets timestamps by the profile timezone.
  */
 
 const pad = (n: number): string => String(n).padStart(2, "0");
@@ -32,3 +33,9 @@ export const localDateIso = (ms: number = Date.now()): string => {
 
 /** Today's `YYYY-MM-DD` on the device calendar (not UTC). */
 export const localTodayIso = (): string => localDateIso();
+
+/** Epoch-ms bounds `[start, end)` of device-local calendar day `iso` (DST-safe). */
+export const localDayBoundsMs = (iso: string): { start: number; end: number } => {
+  const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
+  return { start: new Date(y, m - 1, d).getTime(), end: new Date(y, m - 1, d + 1).getTime() };
+};

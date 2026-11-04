@@ -9,7 +9,9 @@ import { PaywallFeatureList } from "@/features/onboarding/components/PaywallFeat
 import { PaywallHero } from "@/features/onboarding/components/PaywallHero";
 import { PaywallPlanCard } from "@/features/onboarding/components/PaywallPlanCard";
 import { completeOnboardingFunnel } from "@/features/onboarding/services/complete-funnel";
+import { grantDevEntitlement } from "@/lib/api/credits";
 import {
+  canDevTrial,
   hasSession,
   requireSignedInUser,
   setPostAuthIntent,
@@ -21,6 +23,8 @@ import {
   MIRRA_PRO_ENTITLEMENT,
   usePurchases,
 } from "@/lib/purchases";
+import { useEntitlementStore } from "@/stores/entitlement-store";
+import { useMeStore } from "@/stores/me-store";
 import { color } from "@/theme/tokens";
 import { LimeCta } from "@/ui";
 import { sx } from "@/theme/sx";
@@ -67,6 +71,18 @@ const PaywallScreen = () => {
   };
 
   const handleTrial = async () => {
+    // Dev/day-test Dev Tester: no store, no Google. Grant the API dev entitlement (AMI-183).
+    if (canDevTrial()) {
+      try {
+        await grantDevEntitlement();
+        useEntitlementStore.getState().setStatus("active");
+        void useMeStore.getState().ensureMe({ force: true }).catch(() => undefined);
+        finishPro();
+      } catch {
+        Alert.alert(c.devTrialFailedTitle, c.devTrialFailedBody);
+      }
+      return;
+    }
     if (!ensureGoogleForPurchase()) return;
     const result = await purchase(packageId);
     if (result?.ok) finishPro();

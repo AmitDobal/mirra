@@ -112,7 +112,7 @@ type AnchorId = "back_squat" | "bench_press" | "deadlift" | "overhead_press" | "
 
 Today: `LiveWorkoutScreen` steppers → `workout-store.logSet` → `persistSet` → `POST /v1/workouts/sessions/:id/sets` (`routes/workouts.ts:79`) → D1 `set_logs(weight_kg, reps, exercise_id, exercise_name)`. Per-set weight and reps **are** captured. `exercise_id` is the plan row id (`workout_exercises.id`), not a canonical id.
 
-Gaps: (a) API failure falls back to local SQLite only, so those sets never reach scoring (accepted v1: tiers count server sets only). (b) Bodyweight lifts: `weight_kg` = **added** load; HUD labels it "+ kg added" (AMI-169).
+Gaps: (a) API failure falls back to local SQLite only, so those sets never reach scoring (accepted v1: tiers count server sets only). (b) Bodyweight lifts: `weight_kg` = **added** load; HUD labels it "+ kg added" (AMI-169). (c) Dumbbell lifts (AMI-183): `weight_kg` = **one dumbbell (per hand)**, never the pair. The library response carries `loadPerHand` (`isLoadPerHand` in `lib/exercise-library/types.ts`: dumbbell-first load lifts, minus one-dumbbell lifts such as goblet squat). The HUD shows "KG PER HAND". Derived standards are per hand too: the pair (per hand × 2) scores like a barbell lift of pair ÷ (2 × ratio).
 
 ## 5. D1 schema
 

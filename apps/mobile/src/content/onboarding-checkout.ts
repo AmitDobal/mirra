@@ -69,6 +69,8 @@ export const checkoutCopy = {
     restoreNoneTitle: "No purchases found",
     restoreNoneBody: storeCopy.restoreNoneBody,
     restoreErrorTitle: "Couldn't restore purchases",
+    devTrialFailedTitle: "Dev trial unavailable",
+    devTrialFailedBody: "The API dev entitlement route is off (ALLOW_DEV_USER_HEADER). Check the API and try again.",
     restoreErrorFallback: "Something went wrong. Check your connection and try again.",
     purchaseErrorFallback: "That purchase didn't go through. Please try again.",
     blockedTitle: "Start your trial to continue",
@@ -102,7 +104,7 @@ export const checkoutCopy = {
     comingSoonBody: "This sign-in method is not available yet. Use Google to save your plan.",
     googleMissingTitle: "Google sign-in not configured",
     googleMissingBody:
-      "Add EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (a Google OAuth web client ID) to apps/mobile/.env. In the simulator, sign in to a Google account in the browser sheet that opens (Expo Go cannot use the native Google account picker).",
+      "Add EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (a Google OAuth web client ID) to apps/mobile/.env. On a test device, sign in to a Google account in the browser sheet that opens (Expo Go cannot use the native Google account picker).",
     googlePendingTitle: "Google account verified",
     googlePendingBody:
       "The API cannot accept Google sessions until Better Auth is connected, so you are not signed in yet.",

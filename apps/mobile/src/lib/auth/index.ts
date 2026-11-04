@@ -1,4 +1,5 @@
 export {
+  canDevTrial,
   canSoftSkipPaywall,
   clearSession,
   getAuthMode,

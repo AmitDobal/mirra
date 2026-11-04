@@ -3,7 +3,7 @@ import { muscleRoleOf } from "@mirra/contracts";
 
 import { EXERCISE_LIBRARY } from "../../data/exercises";
 import { buildLibraryIndex, matchLibrary, type LibraryIndex, type LibraryMatch } from "./match";
-import type { LibraryExercise } from "./types";
+import { isLoadPerHand, type LibraryExercise } from "./types";
 
 export * from "./match";
 export * from "./normalize";
@@ -47,5 +47,6 @@ export const libraryResponse = (entry: LibraryExercise): LibraryExerciseResponse
   scoring: entry.scoring,
   bwFactor: entry.bwFactor ?? null,
   ranked: entry.standard != null,
+  loadPerHand: isLoadPerHand(entry),
   source: "library",
 });

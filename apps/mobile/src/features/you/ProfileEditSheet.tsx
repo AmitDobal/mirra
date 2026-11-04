@@ -17,14 +17,17 @@ export const SheetModal = ({
   visible,
   label,
   onClose,
+  onRequestClose,
   children,
 }: {
   visible: boolean;
   label: string;
   onClose: () => void;
+  /** Android hardware back; defaults to `onClose` (a nested editor steps back instead). */
+  onRequestClose?: () => void;
   children: ReactNode;
 }) => (
-  <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+  <Modal visible={visible} transparent animationType="fade" onRequestClose={onRequestClose ?? onClose}>
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={sx("flex-1")}>
       <Pressable
         accessibilityRole="button"

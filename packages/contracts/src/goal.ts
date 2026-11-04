@@ -151,6 +151,7 @@ export {
   GOAL_TYPES,
   displayWeight,
   formatWeight,
+  formatWeightNumber,
   kgToLb,
   lbToKg,
   previewGoal,

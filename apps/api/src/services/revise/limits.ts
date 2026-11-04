@@ -1,9 +1,10 @@
 import { and, count, eq, gte } from "drizzle-orm";
 
 import { auditLog } from "../../db/schema";
-import { dayBoundsMs, todayUtc } from "../../lib/dates";
+import { localDateIn, dayBoundsIn } from "../../lib/dates";
 import { ApiError } from "../../lib/errors";
 import type { MealPlanCtx } from "../meal-plan-draft";
+import { userTz } from "../user-day";
 
 /** Applied plan-chat edits (AMI-159 cap, unchanged). */
 export const REVISE_ACTION = "coach.revise";
@@ -20,8 +21,10 @@ export const MEAL_DAY_ACTION = "coach.revise.meal_day";
 export const DAILY_MEAL_DAY_LIMIT = 2;
 export const MEAL_CAP_WARNING = "You've used today's full-day meal rebuilds, so meals stay as they are. Try again tomorrow";
 
+/** Daily caps reset at the user's local midnight (profile timezone, AMI-183), not UTC. */
 const countToday = async (ctx: MealPlanCtx, action: string): Promise<number> => {
-  const { start } = dayBoundsMs(todayUtc());
+  const tz = await userTz(ctx.db, ctx.userId);
+  const { start } = dayBoundsIn(tz, localDateIn(tz));
   const [row] = await ctx.db
     .select({ n: count() })
     .from(auditLog)

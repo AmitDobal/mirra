@@ -67,6 +67,8 @@ export const CHART_PAD = {
 export const MONTH_GAP = 30;
 /** Rough glyph width for 12 pt Space Grotesk labels (no text measuring in SVG). */
 export const GLYPH_W = 6.6;
+/** Half the width of an 11 pt caps month label ("APR" ~25 pt): keeps it inside the right edge. */
+export const MONTH_HALF_W = 13;
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
@@ -94,6 +96,8 @@ export const monthLabels = (
   y: number,
   /** Keeps the first label clear of the y-axis column. */
   minX = 0,
+  /** Chart width: a centered label never runs past it (iOS #78 "APR" clip). */
+  maxX = Number.POSITIVE_INFINITY,
 ): AxisLabel[] => {
   const startDay = goalEngine.dayNumber(start);
   const endDay = startDay + Math.round(lastWeek * 7);
@@ -103,7 +107,8 @@ export const monthLabels = (
     // The 15th, or the start date when the series begins after mid-month.
     const mid = Math.max(goalEngine.dayNumber(`${year}-${String(month).padStart(2, "0")}-15`), startDay);
     if (mid > endDay) break;
-    raw.push({ x: Math.max(xOf((mid - startDay) / 7), raw.length ? 0 : minX), y, text: monthCaps(month) });
+    const x = Math.max(xOf((mid - startDay) / 7), raw.length ? 0 : minX);
+    raw.push({ x: Math.min(x, maxX - MONTH_HALF_W), y, text: monthCaps(month) });
     month += 1;
     if (month > 12) {
       month = 1;
@@ -184,7 +189,14 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
 
   const weekOfDate = (iso: string) => goalEngine.diffDays(iso, data.start) / 7;
   // Weigh-in dots only on S44; the S45/S46 sparkline shows the trend alone.
-  const dots = variant === "full" ? data.actual.map((a) => ({ x: xOf(weekOfDate(a.date)), y: yOf(a.kg) })) : [];
+  // Start day (today = week 0) with a weigh-in: one today marker on the trend start, not two (iOS #80).
+  const firstActual = data.actual[0] ?? null;
+  const anchorKg = data.todayIndex === 0 && firstActual && weekOfDate(firstActual.date) <= 0 ? firstActual.trendKg : null;
+  const dots = variant === "full"
+    ? data.actual
+        .filter((a) => !(labeled && anchorKg !== null && weekOfDate(a.date) <= 0))
+        .map((a) => ({ x: xOf(weekOfDate(a.date)), y: yOf(a.kg) }))
+    : [];
   const trend = data.actual.length > 1
     ? pathOf(data.actual.map((a) => ({ x: xOf(weekOfDate(a.date)), y: yOf(a.trendKg) })))
     : null;
@@ -200,14 +212,15 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
     target = { y: ty, x1: labeled ? pad.left - 4 : 0, x2, label: text ? { x: width, y: ty + 4, text } : null };
   }
 
-  const todayDot = labeled && startKg !== null && data.todayIndex === 0
+  const todayKg = anchorKg ?? startKg;
+  const todayDot = labeled && todayKg !== null && data.todayIndex === 0
     ? {
         x: xOf(0),
-        y: yOf(startKg),
+        y: yOf(todayKg),
         label: input.todayLabel
-          ? data.targetKg !== null && data.targetKg > startKg
-            ? { x: xOf(0) + 10, y: yOf(startKg) + 4, text: input.todayLabel(`${fmt(startKg)} ${data.unit}`) }
-            : { x: xOf(0), y: Math.max(10, yOf(startKg) - 10), text: input.todayLabel(`${fmt(startKg)} ${data.unit}`) }
+          ? data.targetKg !== null && data.targetKg > todayKg
+            ? { x: xOf(0) + 10, y: yOf(todayKg) + 4, text: input.todayLabel(`${fmt(todayKg)} ${data.unit}`) }
+            : { x: xOf(0), y: Math.max(10, yOf(todayKg) - 10), text: input.todayLabel(`${fmt(todayKg)} ${data.unit}`) }
           : null,
       }
     : null;
@@ -224,7 +237,7 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
       yLabels.push({ x: pad.left - 12, y: yOf(data.targetKg) + 4, text: fmt(data.targetKg) });
     }
   }
-  const xLabels = labeled ? monthLabels(data.start, lastWeek, xOf, height - 5, pad.left + 10) : [];
+  const xLabels = labeled ? monthLabels(data.start, lastWeek, xOf, height - 5, pad.left + 10, width) : [];
 
   return {
     width, height, band, expected: pathOf(exp), expectedEnd, trend, dots, target, todayDot, todayLine, todayCaps, trendEnd, yLabels, xLabels,

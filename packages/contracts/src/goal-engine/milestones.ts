@@ -141,6 +141,19 @@ const strengthMilestone = (m: MilestoneInput, next: StrengthNext): GoalMilestone
   return ms("next_division", "strength", next.label, next.detail, weeks === null ? null : addDays(m.today, weeks * 7), null, false);
 };
 
+/** Sort key: the milestone date, else its window start; undated rows go last. */
+const sortKey = (x: GoalMilestone): number => {
+  const d = x.date ?? x.window?.[0] ?? null;
+  return d === null ? Number.POSITIVE_INFINITY : dayNumber(d);
+};
+
+/** Chronological (AMI-183). Stable; on a date tie the goal row stays last. */
+export const sortMilestones = (rows: readonly GoalMilestone[]): GoalMilestone[] =>
+  rows
+    .map((row, i) => ({ row, i }))
+    .sort((a, b) => sortKey(a.row) - sortKey(b.row) || Number(a.row.id === "goal") - Number(b.row.id === "goal") || a.i - b.i)
+    .map((x) => x.row);
+
 export const buildMilestones = (m: MilestoneInput): GoalMilestone[] => {
   const out: GoalMilestone[] = [];
   const s = m.startKg;
@@ -155,5 +168,5 @@ export const buildMilestones = (m: MilestoneInput): GoalMilestone[] => {
   }
   const capped = out.slice(0, m.strengthNext ? MAX_MILESTONES - 1 : MAX_MILESTONES);
   if (m.strengthNext) capped.push(strengthMilestone(m, m.strengthNext));
-  return capped;
+  return sortMilestones(capped);
 };

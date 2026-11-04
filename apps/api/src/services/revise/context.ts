@@ -9,12 +9,12 @@ import {
 import { eq } from "drizzle-orm";
 
 import { preferences } from "../../db/schema";
-import { todayUtc } from "../../lib/dates";
 import { parseJson } from "../../lib/json";
 import type { PlanReviseInput } from "../../ports/plan-reviser";
 import { goalContextFor } from "../goal-context";
 import { getTodayPlan, type MealPlanCtx } from "../meal-plan";
 import { defaultFuelTargets, loadCurrentPlan } from "../plan-loaders";
+import { dateOrUserToday } from "../user-day";
 
 export type PrefsRow = typeof preferences.$inferSelect;
 export type PlanWorkout = CurrentPlanResponse["workouts"][number];
@@ -44,7 +44,8 @@ export const weekdayOf = (date: string): string => WEEKDAY[new Date(`${date}T00:
 
 /** Load prefs, plan, target workout and the day's meals. Workout: context id, today, then next lift. */
 export const loadReviseState = async (ctx: MealPlanCtx, body: CoachReviseBody): Promise<ReviseState> => {
-  const date = body.date ?? todayUtc();
+  // AMI-183: the client sends its local date; fallback is the profile-timezone today, never UTC.
+  const date = await dateOrUserToday(ctx.db, ctx.userId, body.date);
   const [prefs] = await ctx.db
     .select()
     .from(preferences)

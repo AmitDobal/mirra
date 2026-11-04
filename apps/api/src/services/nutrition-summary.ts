@@ -3,24 +3,26 @@ import { and, eq, gte, lt, between } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { meals, nutritionDayRollup } from "../db/schema";
-import { toDateString } from "../lib/dates";
+import { localDateIn } from "../lib/dates";
 import { historyWindow, windowBoundsMs, type HistoryRange } from "../lib/history-window";
 import { loadKcalTarget, rebuildDayRollup, type RollupRow } from "./nutrition-rollup";
 import { loadSessionStats } from "./workout-stats";
+import { userTz } from "./user-day";
 
 /** Days that have data but no cached rollup row yet (pre-rollup history). Empty users cost two cheap queries. */
 const daysWithData = async (
   db: AppDB,
   userId: string,
   window: { from: string; to: string },
+  tz: string,
 ): Promise<Set<string>> => {
-  const { start, end } = windowBoundsMs(window);
+  const { start, end } = windowBoundsMs(window, tz);
   const mealRows = await db
     .select({ eatenAt: meals.eatenAt })
     .from(meals)
     .where(and(eq(meals.userId, userId), gte(meals.eatenAt, new Date(start)), lt(meals.eatenAt, new Date(end))));
-  const sessions = await loadSessionStats(db, userId, start, end);
-  return new Set([...mealRows.map((m) => toDateString(m.eatenAt)), ...sessions.map((s) => s.date)]);
+  const sessions = await loadSessionStats(db, userId, start, end, tz);
+  return new Set([...mealRows.map((m) => localDateIn(tz, m.eatenAt)), ...sessions.map((s) => s.date)]);
 };
 
 export const loadNutritionSummary = async (
@@ -31,6 +33,7 @@ export const loadNutritionSummary = async (
 ): Promise<NutritionSummaryResponse> => {
   const window = historyWindow(range, anchor);
   const target = await loadKcalTarget(db, userId);
+  const tz = await userTz(db, userId);
 
   const cached = await db
     .select()
@@ -44,10 +47,10 @@ export const loadNutritionSummary = async (
   const byDate = new Map<string, RollupRow>(cached.map((r) => [r.localDate, r]));
 
   if (byDate.size < window.dates.length) {
-    const withData = await daysWithData(db, userId, window);
+    const withData = await daysWithData(db, userId, window, tz);
     for (const date of window.dates) {
       if (byDate.has(date) || !withData.has(date)) continue;
-      byDate.set(date, await rebuildDayRollup(db, userId, date, target));
+      byDate.set(date, await rebuildDayRollup(db, userId, date, target, tz));
     }
   }
 

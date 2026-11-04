@@ -4,44 +4,40 @@ import { StyleSheet, Text, View } from "react-native";
 import { color, font, radius } from "@/theme/tokens";
 
 import type { CatalogEntry } from "./catalog";
-
-type Metric = { readonly value: string; readonly unit?: string; readonly label: string; readonly tone: string };
+import type { MuscleBar } from "./exercise-muscles";
 
 type PrescriptionProps = {
   readonly sets: number;
   readonly reps: string;
   readonly loadKg: number | null;
   readonly restSec: number;
-  readonly caption: string;
+  /** Load shown in the user's unit ("175" / "LB TARGET"). */
+  readonly unit: "kg" | "lb";
 };
 
-/** S26 "Today's target prescription": sets / reps / load / rest. */
-export const PrescriptionCard = ({ sets, reps, loadKg, restSec, caption }: PrescriptionProps) => {
-  const metrics: Metric[] = [
-    { value: String(sets), label: "Sets", tone: color.onSurface },
-    { value: reps, label: "Reps", tone: color.primaryFixed },
-    { value: loadKg ? String(loadKg) : "—", unit: loadKg ? "kg" : undefined, label: "Target", tone: color.onSurface },
-    { value: String(restSec), unit: "s", label: "Rest", tone: color.secondary },
+const KG_PER_LB = 0.45359237;
+
+/** S36 prescription card: sets / reps / target load / rest in four columns. */
+export const PrescriptionCard = ({ sets, reps, loadKg, restSec, unit }: PrescriptionProps) => {
+  const load = loadKg ? Math.round(unit === "kg" ? loadKg : loadKg / KG_PER_LB) : null;
+  const metrics = [
+    { value: String(sets), label: "Sets" },
+    { value: reps, label: "Reps" },
+    { value: load ? String(load) : "—", label: `${unit} target` },
+    { value: `${restSec}s`, label: "Rest" },
   ];
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHead}>
-        <Text style={styles.cardLabel}>Today&apos;s target prescription</Text>
-        <View style={styles.cycle}>
-          <Text style={styles.cycleText}>{caption}</Text>
+    <View style={styles.metrics}>
+      {metrics.map((m, i) => (
+        <View key={m.label} style={[styles.metric, i > 0 ? styles.metricDivider : null]}>
+          <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
+            {m.value}
+          </Text>
+          <Text style={styles.metricLabel} numberOfLines={1}>
+            {m.label.toUpperCase()}
+          </Text>
         </View>
-      </View>
-      <View style={styles.metrics}>
-        {metrics.map((m, i) => (
-          <View key={m.label} style={[styles.metric, i > 0 ? styles.metricDivider : null]}>
-            <Text style={[styles.metricValue, { color: m.tone }]} numberOfLines={1}>
-              {m.value}
-              {m.unit ? <Text style={styles.metricUnit}> {m.unit}</Text> : null}
-            </Text>
-            <Text style={styles.metricLabel}>{m.label.toUpperCase()}</Text>
-          </View>
-        ))}
-      </View>
+      ))}
     </View>
   );
 };
@@ -62,19 +58,16 @@ export const CoachCue = ({ cue }: { readonly cue: string }) => (
   </View>
 );
 
-/** S26 "Execution protocol": numbered how-to steps. */
+/** S36 "Execution protocol": numbered how-to steps. */
 export const StepsList = ({ steps }: { readonly steps: CatalogEntry["steps"] }) => (
   <View style={styles.section}>
-    <View style={styles.sectionHead}>
-      <Text style={styles.sectionTitle}>HOW TO</Text>
-      <Text style={styles.sectionNote}>{steps.length} steps</Text>
-    </View>
+    <Text style={styles.sectionTitle}>Execution protocol</Text>
     {steps.map((step, i) => (
       <View key={step.title} style={styles.step}>
         <View style={styles.stepNum}>
           <Text style={styles.stepNumText}>{i + 1}</Text>
         </View>
-        <View style={styles.flex1}>
+        <View style={styles.stepCopy}>
           <Text style={styles.stepTitle}>{step.title}</Text>
           <Text style={styles.stepBody}>{step.body}</Text>
         </View>
@@ -84,7 +77,7 @@ export const StepsList = ({ steps }: { readonly steps: CatalogEntry["steps"] }) 
 );
 
 /** S26 target musculature bars (first bar lime, rest lavender). */
-export const MuscleBars = ({ muscles }: { readonly muscles: CatalogEntry["muscles"] }) => {
+export const MuscleBars = ({ muscles }: { readonly muscles: readonly MuscleBar[] }) => {
   if (muscles.length === 0) return null;
   return (
     <View style={styles.card}>
@@ -128,21 +121,25 @@ const styles = StyleSheet.create({
   },
   cardHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   cardLabel: { flexShrink: 1, fontFamily: font.label, fontSize: 10, letterSpacing: 0.6, color: color.onSurfaceVariant, textTransform: "uppercase" },
-  cycle: {
-    borderRadius: radius.full,
+  metrics: {
+    flexDirection: "row",
+    padding: 16,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: color.onPrimaryFixedVariant,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: color.onPrimaryFixed,
+    borderColor: color.surfaceContainerHigh,
+    backgroundColor: color.surfaceContainerLow,
   },
-  cycleText: { fontFamily: font.label, fontSize: 10, color: color.primaryFixed },
-  metrics: { flexDirection: "row" },
-  metric: { flex: 1, alignItems: "center", gap: 2 },
-  metricDivider: { borderLeftWidth: 1, borderLeftColor: color.outlineVariant },
-  metricValue: { fontFamily: font.headline, fontSize: 24, lineHeight: 30 },
-  metricUnit: { fontFamily: font.label, fontSize: 11, color: color.onSurfaceVariant },
-  metricLabel: { fontFamily: font.label, fontSize: 9, letterSpacing: 1, color: color.onSurfaceVariant },
+  metric: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 },
+  metricDivider: { borderLeftWidth: 1, borderLeftColor: color.surfaceContainerHigh },
+  metricValue: { fontFamily: font.headline, fontSize: 24, lineHeight: 28, color: color.onSurface },
+  metricLabel: {
+    marginTop: 4,
+    fontFamily: font.labelBold,
+    fontSize: 10,
+    lineHeight: 14,
+    letterSpacing: 0.8,
+    color: color.onSurfaceVariant,
+  },
   cue: {
     flexDirection: "row",
     gap: 12,
@@ -165,31 +162,36 @@ const styles = StyleSheet.create({
   cueSource: { fontFamily: font.label, fontSize: 10, color: color.onSurfaceVariant },
   cueText: { fontFamily: font.bodyMedium, fontSize: 13, lineHeight: 19, color: color.onSurface },
   section: { gap: 10 },
-  sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sectionTitle: { fontFamily: font.labelBold, fontSize: 12, letterSpacing: 1, color: color.onSurface },
-  sectionNote: { fontFamily: font.label, fontSize: 10, color: color.onSurfaceVariant },
+  sectionTitle: {
+    fontFamily: font.labelBold,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.88,
+    textTransform: "uppercase",
+    color: color.onSurfaceVariant,
+  },
   step: {
     flexDirection: "row",
-    gap: 12,
-    padding: 14,
-    borderRadius: radius.DEFAULT,
+    alignItems: "flex-start",
+    gap: 14,
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: color.outlineVariant,
+    borderColor: color.surfaceContainerHigh,
     backgroundColor: color.surfaceContainerLow,
   },
   stepNum: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: color.outline,
     backgroundColor: color.surfaceContainerHigh,
   },
-  stepNumText: { fontFamily: font.labelBold, fontSize: 11, color: color.primaryFixed },
-  stepTitle: { fontFamily: font.headlineSemi, fontSize: 13, color: color.onSurface },
-  stepBody: { fontFamily: font.body, fontSize: 13, lineHeight: 19, color: color.onSurfaceVariant, marginTop: 2 },
+  stepNumText: { fontFamily: font.headline, fontSize: 12, color: color.onSurface },
+  stepCopy: { flex: 1, gap: 4 },
+  stepTitle: { fontFamily: font.headlineSemi, fontSize: 14, lineHeight: 20, color: color.onSurface },
+  stepBody: { fontFamily: font.body, fontSize: 12, lineHeight: 18, color: color.onSurfaceVariant },
   primaryFocus: { fontFamily: font.labelBold, fontSize: 10, color: color.primaryFixed },
   bar: { gap: 5 },
   barHead: { flexDirection: "row", justifyContent: "space-between", gap: 8 },

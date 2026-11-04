@@ -1,20 +1,16 @@
 import { create } from "zustand";
 
-import {
-  getLastSetForExercise,
-  startSession as dbStartSession,
-} from "@/db";
-import {
-  startSession as apiStartSession,
-  type PlanExercise,
-  type PlanWorkout,
-} from "@/lib/api";
+import { getLastSetForExercise } from "@/db";
+import type { PlanExercise, PlanWorkout } from "@/lib/api";
+import type { ApiTierChange } from "@/lib/api/strength-exercise";
 import { errorMessage, logger } from "@/lib/logger";
 
 import {
+  activeSeconds,
   DEFAULT_REPS,
   buildSets,
   clampValue,
+  openSession,
   persistComplete,
   persistSet,
   planDraft,
@@ -45,6 +41,8 @@ type WorkoutState = {
   readonly rpe: number | null;
   readonly finished: boolean;
   readonly durationMin: number;
+  /** Tier promotions from the complete response (S38); empty = plain S17. */
+  readonly tierChanges: readonly ApiTierChange[];
   readonly start: (workout: PlanWorkout | null, focusExerciseId?: string) => Promise<void>;
   /** Jump to one exercise; starts a session first if none is active. */
   readonly openExercise: (workout: PlanWorkout | null, exerciseId: string) => Promise<void>;
@@ -81,9 +79,11 @@ const empty = {
   rpe: null as number | null,
   finished: false,
   durationMin: 0,
+  tierChanges: [] as readonly ApiTierChange[],
 };
 
 export const useWorkoutStore = create<WorkoutState>((set, get) => {
+  let finishing: Promise<void> | null = null;
   /** Prefill: plan target → last logged set (SQLite) → 0 kg × plan reps; only if untouched. */
   const hydrateDraft = async (ex: PlanExercise): Promise<void> => {
     if (ex.targetLoadKg != null) return;
@@ -133,26 +133,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
         workout.exercises.findIndex((e) => e.id === focusExerciseId),
       );
       const first = workout.exercises[focusIdx]!;
-      let sessionId: string | null = null;
-      let sessionSource: SessionSource = "none";
-      try {
-        const sess = await apiStartSession({ workoutId: workout.id });
-        sessionId = sess.id;
-        sessionSource = "api";
-      } catch (err) {
-        logger.warn("workout.start.api_failed_using_local", {
-          message: errorMessage(err),
-        });
-        try {
-          const sess = await dbStartSession({ workoutId: workout.id });
-          sessionId = sess.id;
-          sessionSource = "local";
-        } catch (localErr) {
-          logger.error("workout.start.local_failed", {
-            message: errorMessage(localErr),
-          });
-        }
-      }
+      const { sessionId, sessionSource } = await openSession(workout.id);
       set({
         sessionId,
         sessionSource,
@@ -166,6 +147,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
         kcal: 0,
         rpe: null,
         finished: false,
+        tierChanges: [],
         durationMin: workout.durationMin,
       });
     },
@@ -179,13 +161,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
 
     elapsedSec: () => {
       const { startedAt, pausedTotalMs, pauseStartedAt } = get();
-      if (!startedAt) return 0;
-      const now = Date.now();
-      const currentPause = pauseStartedAt ? now - pauseStartedAt : 0;
-      return Math.max(
-        0,
-        Math.floor((now - startedAt - pausedTotalMs - currentPause) / 1000),
-      );
+      return activeSeconds(startedAt, pausedTotalMs, pauseStartedAt);
     },
 
     adjustDraft: (field, delta) =>
@@ -283,13 +259,21 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
 
     setRpe: (rpe) => set({ rpe }),
 
-    finish: async () => {
+    finish: () => {
+      // Live HUD + logSet can both call finish: share one in-flight complete.
+      if (finishing) return finishing;
       const { sessionId, rpe } = get();
-      const durationMin = Math.max(1, Math.round(get().elapsedSec() / 60));
-      set({ finished: true, durationMin });
-      if (sessionId) {
-        await persistComplete(get().sessionSource, sessionId, rpe);
-      }
+      set({ finished: true, durationMin: Math.max(1, Math.round(get().elapsedSec() / 60)) });
+      if (!sessionId) return Promise.resolve();
+      finishing = persistComplete(get().sessionSource, sessionId, rpe)
+        .then((changes) => {
+          // A repeat complete (RPE save) returns none: keep the first promotions.
+          if (changes.length && get().sessionId === sessionId) set({ tierChanges: changes });
+        })
+        .finally(() => {
+          finishing = null;
+        });
+      return finishing;
     },
 
     reset: () => set({ ...empty }),

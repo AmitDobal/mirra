@@ -29,3 +29,5 @@ export * from "./badges";
 export * from "./muscles";
 export * from "./exercise-library";
 export * from "./strength";
+export * from "./goal";
+export * from "./goal-prompt";

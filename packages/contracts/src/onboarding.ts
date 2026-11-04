@@ -83,9 +83,13 @@ export const OnboardingProfileSchema = z.object({
   mirrorMediaId: z.string().min(1).nullable().optional(),
 });
 
+/** S43 hold-to-commit (AMI-178). Null = "Not now"; omitted by older clients. */
+export const OnboardingCommitmentSchema = z.object({ committedAt: z.number().int() });
+
 export const OnboardingBodySchema = z.object({
   profile: OnboardingProfileSchema,
   preferences: OnboardingPreferencesSchema,
+  commitment: OnboardingCommitmentSchema.nullable().optional(),
 });
 
 export const OnboardingResponseSchema = z.object({
@@ -103,5 +107,6 @@ export type TrainingLocation = z.infer<typeof TrainingLocationSchema>;
 export type Units = z.infer<typeof UnitsSchema>;
 export type OnboardingPreferences = z.infer<typeof OnboardingPreferencesSchema>;
 export type OnboardingProfile = z.infer<typeof OnboardingProfileSchema>;
+export type OnboardingCommitment = z.infer<typeof OnboardingCommitmentSchema>;
 export type OnboardingBody = z.infer<typeof OnboardingBodySchema>;
 export type OnboardingResponse = z.infer<typeof OnboardingResponseSchema>;

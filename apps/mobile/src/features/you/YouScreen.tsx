@@ -1,14 +1,14 @@
 import { router } from "expo-router";
 import { RefreshCw } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Linking, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Linking, Pressable, View } from "react-native";
 
 import type { TrainerPersonaId } from "@/content/trainer-personas";
 import { getCurrentPlan, getProfile, type LocalPlan, type LocalProfile } from "@/db";
 import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useOnboardingStore } from "@/features/onboarding";
-import { PersonaGrid, usePersonaStore } from "@/features/trainer";
+import { usePersonaStore } from "@/features/trainer";
 import { creditsPool } from "@/lib/api/credits";
 import type { MeEntitlement, MeUser } from "@/lib/api/me";
 import {
@@ -21,27 +21,24 @@ import { useCreditsStore } from "@/stores/credits-store";
 import { useMeStore } from "@/stores/me-store";
 import { usePlanStore } from "@/stores/plan-store";
 import { color } from "@/theme/tokens";
-import { CapsLabel } from "@/ui/CapsLabel";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { sx } from "@/theme/sx";
 
 import { openAiLimitSheet } from "./AiLimitSheet";
-import { AlertsToggle } from "@/features/alerts/AlertsToggle";
 import { useBadgeStore } from "@/features/rank/badge-store";
-import { KineticRankTeaser } from "@/features/rank/KineticRankTeaser";
-import { CreditsMeter } from "./CreditsMeter";
+import { useStrengthStore } from "@/features/strength";
 import { connectedAccountLabels, experienceLabel } from "./profile-display";
 import { ProfileHero } from "./ProfileHero";
-import { SpeakCuesToggle } from "./SpeakCuesToggle";
 import {
   formatCreditsRefreshed,
   persistTrainingLocation,
   toTrainingLocationId,
 } from "./training-location";
 import { useDeleteAccount } from "./use-delete-account";
+import { YouCards, YouCoachingGroup } from "./YouCards";
 import { YouFooterGroups } from "./YouFooterGroups";
 import { YouTrainingCard, type TrainingLocationId } from "./YouTrainingCard";
-import { Divider, Group, Row, ToggleRow } from "./you-settings";
+import { Group, Row } from "./you-settings";
 
 const PRIVACY_URL = "https://adtechservices.in/privacy";
 const TERMS_URL = "https://adtechservices.in/terms";
@@ -82,6 +79,7 @@ export const YouScreen = () => {
   const personaSaving = usePersonaStore((s) => s.saving);
   const choosePersona = usePersonaStore((s) => s.choose);
   const loadBadges = useBadgeStore((s) => s.load);
+  const loadStrength = useStrengthStore((s) => s.loadOverview);
 
   const meUser: MeUser | null = me?.user ?? cachedUser;
   const entitlement: MeEntitlement | null = me?.entitlement ?? cachedEntitlement;
@@ -122,13 +120,14 @@ export const YouScreen = () => {
         ensureMe({ force: true }),
         ensureCredits({ force: true }),
         loadBadges(),
+        loadStrength(),
       ]);
     } catch {
       /* keep cache */
     } finally {
       setRefreshing(false);
     }
-  }, [ensureCredits, ensureMe, loadBadges, reloadLocal]);
+  }, [ensureCredits, ensureMe, loadBadges, loadStrength, reloadLocal]);
 
   const prefs = profile?.preferences;
   const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
@@ -247,23 +246,12 @@ export const YouScreen = () => {
         fallbackMeta={fallbackMeta}
       />
 
-      <KineticRankTeaser />
-
-      <Group title="AI credits">
-        <CreditsMeter credits={creditsMeter} onPress={handleCreditsPress} />
-      </Group>
-
-      <View style={sx("mb-space-sm flex-row items-end justify-between gap-space-sm")}>
-        <CapsLabel>Your trainer</CapsLabel>
-        <Text numberOfLines={1} style={sx("shrink font-body text-[11px] text-on-surface-variant")}>
-          Swipe to choose
-        </Text>
-      </View>
-      <PersonaGrid
-        compact
-        value={persona}
-        disabled={personaSaving}
-        onSelect={(id) => void handleChoosePersona(id)}
+      <YouCards
+        credits={creditsMeter}
+        onCreditsPress={handleCreditsPress}
+        persona={persona}
+        personaSaving={personaSaving}
+        onChoosePersona={(id) => void handleChoosePersona(id)}
       />
 
       <YouTrainingCard
@@ -274,19 +262,7 @@ export const YouScreen = () => {
         onFoodPrefs={() => setPrefsOpen(true)}
       />
 
-      <Group title="Coaching">
-        <SpeakCuesToggle embedded />
-        <Divider />
-        <AlertsToggle />
-        <Divider />
-        <ToggleRow
-          title="Adaptive rebuild"
-          detail="Coming soon — redistributes missed sets after check-in"
-          value={false}
-          disabled
-          onChange={() => undefined}
-        />
-      </Group>
+      <YouCoachingGroup />
 
       <Group title="Subscription">
         <Row

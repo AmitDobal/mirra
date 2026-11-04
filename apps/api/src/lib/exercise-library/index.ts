@@ -24,8 +24,18 @@ export const TAG_PREFIX = "tag:";
 
 export const isTagId = (id: string): boolean => id.startsWith(TAG_PREFIX);
 
-export const withRoles = (muscles: readonly { id: MuscleId; pct: number }[]): ExerciseMuscle[] =>
-  muscles.map((m) => ({ id: m.id, pct: m.pct, role: muscleRoleOf(m.pct) }));
+/**
+ * Roles by `PRIMARY_MUSCLE_PCT`. A split with no muscle at the threshold (an AI-tagged
+ * lift) still gets one primary: its top muscle, so the S36 anatomy always shows lime.
+ */
+export const withRoles = (muscles: readonly { id: MuscleId; pct: number }[]): ExerciseMuscle[] => {
+  const out = muscles.map((m) => ({ id: m.id, pct: m.pct, role: muscleRoleOf(m.pct) }));
+  if (out.length && !out.some((m) => m.role === "primary")) {
+    const top = out.reduce((best, m) => (m.pct > best.pct ? m : best));
+    top.role = "primary";
+  }
+  return out;
+};
 
 export const libraryResponse = (entry: LibraryExercise): LibraryExerciseResponse => ({
   canonicalId: entry.id,

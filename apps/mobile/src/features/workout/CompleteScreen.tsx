@@ -11,7 +11,9 @@ import { color } from "@/theme/tokens";
 import { useTodayStore } from "@/features/today/today-store";
 
 import { TierUpList } from "./TierUpList";
+import { useLoadUnit } from "./use-load-units";
 import { useWorkoutStore } from "./workout-store";
+import { formatVolume, sessionVolumeKg } from "./workout-volume";
 import { sx } from "@/theme/sx";
 
 const RPE_LABELS: Record<number, string> = {
@@ -39,6 +41,8 @@ export const CompleteScreen = () => {
   const setRpe = useWorkoutStore((s) => s.setRpe);
   const reset = useWorkoutStore((s) => s.reset);
   const tierChanges = useWorkoutStore((s) => s.tierChanges);
+  const logged = useWorkoutStore((s) => s.logged);
+  const unit = useLoadUnit();
   const buzzed = useRef(false);
   const weekDays = useTodayStore((s) => s.weekDays);
   const dayIndex = useTodayStore((s) => s.dayIndex);
@@ -57,7 +61,7 @@ export const CompleteScreen = () => {
       : rpe != null && rpe >= 5
         ? "36–48 hours"
         : "24–36 hours";
-  const volumeKg = Math.max(1, exercises.length * 1400);
+  const volume = formatVolume(sessionVolumeKg(logged), unit);
 
   // S38: one success haptic when a tier moved.
   useEffect(() => {
@@ -113,10 +117,7 @@ export const CompleteScreen = () => {
         </View>
         <View style={sx("flex-row gap-2 py-2")}>
           <Metric value={String(minutes)} label="MINUTES" />
-          <Metric
-            value={volumeKg >= 1000 ? `${(volumeKg / 1000).toFixed(1)}k` : String(volumeKg)}
-            label="KG VOLUME"
-          />
+          <Metric value={volume} label={`${unit.toUpperCase()} VOLUME`} />
           <Metric
             value={String(exercises.length).padStart(2, "0")}
             label="EXERCISES"

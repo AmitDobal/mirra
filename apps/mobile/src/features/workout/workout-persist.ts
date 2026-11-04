@@ -6,6 +6,7 @@ import {
 import {
   completeSession as apiCompleteSession,
   logSet as apiLogSet,
+  patchSession as apiPatchSession,
   startSession as apiStartSession,
   type LogSetBody,
   type PlanExercise,
@@ -106,6 +107,20 @@ export const persistComplete = async (
     logger.error("workout.complete.local_failed", { message: errorMessage(err) });
   }
   return [];
+};
+
+/** RPE picked on S17 after the session was already completed (no second complete). */
+export const persistRpe = async (
+  source: SessionSource,
+  sessionId: string,
+  rpe: number,
+): Promise<void> => {
+  try {
+    if (source === "api") await apiPatchSession(sessionId, { rpe });
+    else if (source === "local") await dbCompleteSession({ sessionId, rpe });
+  } catch (err) {
+    logger.warn("workout.rpe.save_failed", { source, message: errorMessage(err) });
+  }
 };
 
 /** Active seconds since start, excluding finished and current pauses. */

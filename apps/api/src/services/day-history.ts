@@ -9,11 +9,12 @@ import {
   weightLogs,
   workoutSessions,
 } from "../db/schema";
-import { dayBoundsMs, msToUnix } from "../lib/dates";
+import { msToUnix } from "../lib/dates";
 import { attendanceState } from "./attendance";
 import { loadHydration } from "./hydration";
 import { loadDayMeals } from "./meals";
 import { loadCurrentPlan } from "./plan-loaders";
+import { userDayBounds } from "./user-day";
 
 /** Compact read of one day, composed from existing tables. Every query filters by `userId`. */
 export const loadDayHistory = async (
@@ -21,7 +22,7 @@ export const loadDayHistory = async (
   userId: string,
   date: string,
 ): Promise<HistoryDayResponse> => {
-  const { start, end } = dayBoundsMs(date);
+  const { start, end } = await userDayBounds(db, userId, date);
   const [presence, dayMeals, hydration, sessions, checkIn, weight, current] =
     await Promise.all([
       db

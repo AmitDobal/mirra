@@ -29,6 +29,7 @@
     "test:goal": "tsx scripts/assert-goal.ts",
     "test:goal-api": "tsx scripts/assert-goal-api.ts",
     "test:goal-impact": "tsx scripts/assert-goal-impact.ts",
+    "test:local-dates": "tsx scripts/assert-local-dates.ts",
     "smoke:meal-revise": "node scripts/smoke-meal-revise.mjs",
     "smoke:revise-caps": "node scripts/smoke-revise-caps.mjs",
     "smoke:streaks": "node scripts/smoke-streaks.mjs",

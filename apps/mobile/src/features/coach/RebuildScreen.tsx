@@ -5,11 +5,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { rebuildCopy as t } from "@/content/rebuild";
 import { localTodayIso } from "@/lib/datetime";
+import { openProUpsell } from "@/features/you/AiLimitSheet";
 import { usePlanStore } from "@/stores/plan-store";
+import { useIsPro } from "@/stores/pro-access";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
+import { useColdBackFallback } from "@/ui/nav/use-cold-back";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 
 import { useCoachStore } from "./coach-store";
@@ -30,8 +33,17 @@ export const RebuildScreen = () => {
   const current = usePlanStore((s) => s.plan);
   const [busy, setBusy] = useState(false);
 
+  const pro = useIsPro();
   useEffect(() => {
+    // Cold link / stale entry by a free user: upsell instead of a preview the API won't apply.
+    if (!pro) {
+      openProUpsell();
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)/today");
+      return;
+    }
     void preview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preview]);
 
   const before = storedBefore ?? current;
@@ -53,6 +65,8 @@ export const RebuildScreen = () => {
     await keep();
     router.replace("/(tabs)/today");
   };
+  // Cold /rebuild (no history): hardware back behaves like Close instead of exiting the app.
+  useColdBackFallback(() => void close());
 
   const handleApply = async () => {
     if (busy || !token) return;

@@ -24,6 +24,6 @@ export { A_PRIOR, M_PRIOR, adherenceMultiplier, computeAdherence, type Adherence
 export { bandRates, trendWeight, OPTIMISTIC_SPREAD, CONSERVATIVE_SPREAD, type BandRates } from "./band";
 export { resolveStatus, goalTolerance, type StatusInput } from "./status";
 export { buildMilestones, MAX_MILESTONES, type MilestoneInput } from "./milestones";
-export { displayWeight, formatDelta, formatWeight, kgToLb, lbToKg } from "./units";
+export { displayWeight, formatDelta, formatWeight, formatWeightNumber, kgToLb, lbToKg } from "./units";
 export { projectGoal } from "./project";
 export { previewGoal, toGoalType, type GoalPreviewAnswers } from "./preview";

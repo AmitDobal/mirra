@@ -5,6 +5,7 @@ import { env } from "@/lib/config/env";
 import { errorMessage, logger } from "@/lib/logger";
 
 import { devTesterAllowed } from "./dev-tester";
+import { canDevTrialFor } from "./dev-tester-policy";
 import { resetPaywallSoftSkip } from "./paywall-skip";
 
 export type AuthMode = "dev" | "google";
@@ -71,6 +72,9 @@ export const requireSignedInUser = (): boolean =>
  */
 export const canSoftSkipPaywall = (): boolean =>
   devTesterAllowed() && cachedUserId !== null;
+
+/** Dev Tester in a dev/day-test build: paywall "Start trial" grants the API dev entitlement (AMI-183). */
+export const canDevTrial = (): boolean => canDevTrialFor(__DEV__, env.allowDevAuth, cachedMode);
 
 /** Point SQLite at the active identity, moving rows from the previous owner. */
 const syncLocalUser = async (nextUserId: string): Promise<void> => {

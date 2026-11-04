@@ -6,11 +6,12 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import { checkIns, meals } from "../db/schema";
 import type { MirraEnv } from "../env";
-import { dayBoundsMs, todayUtc } from "../lib/dates";
+import { dayBoundsIn, localDateIn } from "../lib/dates";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { defaultFuelTargets, loadCurrentPlan } from "../services/plan-loaders";
+import { userTz } from "../services/user-day";
 
 export const todayRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -21,9 +22,10 @@ todayRoutes.get("/v1/today", requireAuth, async (c) => {
   const query = parseBody(TodayQuerySchema, {
     date: c.req.query("date") || undefined,
   });
-  const date = query.date ?? todayUtc();
   const userId = c.get("userId");
   const db = createDb(c.env.DB);
+  const tz = await userTz(db, userId);
+  const date = query.date ?? localDateIn(tz);
   const current = await loadCurrentPlan(db, userId);
   // Prefer exact date; else same weekday in the stored week (plan kept until rebuild).
   const utcDay = new Date(`${date}T12:00:00.000Z`).getUTCDay();
@@ -37,7 +39,7 @@ todayRoutes.get("/v1/today", requireAuth, async (c) => {
       ? (current.workouts.find((w) => w.id === day.workoutId) ?? null)
       : null;
 
-  const { start, end } = dayBoundsMs(date);
+  const { start, end } = dayBoundsIn(tz, date);
   const mealRows = await db.select().from(meals).where(eq(meals.userId, userId));
   const todayMeals = mealRows.filter((m) => {
     const t = m.eatenAt instanceof Date ? m.eatenAt.getTime() : Number(m.eatenAt);

@@ -17,9 +17,17 @@ export const displayWeight = (kg: number, units: GoalUnits): number => {
 
 const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1));
 
-/** "78.5 kg" / "173.1 lb". */
+/**
+ * The one rule for a goal / body weight shown to the user (AMI-183):
+ * kg to 0.1 with a trailing ".0" trimmed ("78.5", "82"), lb as a whole number ("159").
+ * Header, milestones, chart labels and the S06 stepper all use it.
+ */
+export const formatWeightNumber = (kg: number, units: GoalUnits): string =>
+  units === "imperial" ? String(Math.round(kgToLb(kg))) : fmt(displayWeight(kg, units));
+
+/** "78.5 kg" / "173 lb". */
 export const formatWeight = (kg: number, units: GoalUnits): string =>
-  `${fmt(displayWeight(kg, units))} ${units === "imperial" ? "lb" : "kg"}`;
+  `${formatWeightNumber(kg, units)} ${units === "imperial" ? "lb" : "kg"}`;
 
 /** Signed change: "−2.5 kg", "+2.2 lb". */
 export const formatDelta = (kg: number, units: GoalUnits): string => {

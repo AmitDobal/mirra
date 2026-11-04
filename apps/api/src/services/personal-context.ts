@@ -3,7 +3,7 @@ import { and, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { checkIns, meals, workoutSessions } from "../db/schema";
-import { dayBoundsMs, todayUtc } from "../lib/dates";
+import { dayBoundsIn, localDateIn, localHourIn, mondayOf } from "../lib/dates";
 import { accountabilityTips } from "./accountability-copy";
 import {
   isFuelWin,
@@ -17,6 +17,7 @@ import { buildGoalContextSafe } from "./goal-context";
 import { buildHistorySummary } from "./history-summary";
 import { defaultFuelTargets, loadCurrentPlan } from "./plan-loaders";
 import { historyWindowDays, loadUserTenure, tenureLine } from "./user-tenure";
+import { userTz } from "./user-day";
 import { loadWeightLine } from "./weight-line";
 
 /** Compact personal day snapshot for coach / insights (no secrets). */
@@ -74,32 +75,26 @@ export type PersonalDayContext = {
   goal: GoalContext | null;
 };
 
-/** Hour used for time-of-day rules: UTC hour today, 24 for past days, 0 for future days. */
-const hourFor = (localDate: string): number => {
-  const today = todayUtc();
+/** Hour used for time-of-day rules: user-local hour today, 24 for past days, 0 for future days. */
+const hourFor = (localDate: string, tz: string): number => {
+  const today = localDateIn(tz);
   if (localDate < today) return 24;
   if (localDate > today) return 0;
-  return new Date().getUTCHours();
-};
-
-const startOfWeekUtc = (isoDate: string): number => {
-  const d = new Date(`${isoDate}T12:00:00.000Z`);
-  const day = d.getUTCDay(); // 0 Sun
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  d.setUTCDate(d.getUTCDate() + mondayOffset);
-  d.setUTCHours(0, 0, 0, 0);
-  return d.getTime();
+  return localHourIn(tz);
 };
 
 /** Build personalized context from D1 for the authenticated user. */
 export const buildPersonalDayContext = async (
   db: AppDB,
   userId: string,
-  localDate = todayUtc(),
+  date?: string,
 ): Promise<PersonalDayContext> => {
+  // AMI-183: "today" and the day bounds follow the profile timezone; a client date wins.
+  const tz = await userTz(db, userId);
+  const localDate = date ?? localDateIn(tz);
   const current = await loadCurrentPlan(db, userId);
   const targets = defaultFuelTargets(current.plan?.summary ?? null);
-  const { start, end } = dayBoundsMs(localDate);
+  const { start, end } = dayBoundsIn(tz, localDate);
 
   const todayMeals = await db
     .select()
@@ -120,7 +115,7 @@ export const buildPersonalDayContext = async (
       ? (current.workouts.find((w) => w.id === day.workoutId) ?? null)
       : null;
 
-  const weekStart = startOfWeekUtc(localDate);
+  const weekStart = dayBoundsIn(tz, mondayOf(localDate)).start;
   const sessions = await db
     .select()
     .from(workoutSessions)
@@ -147,6 +142,7 @@ export const buildPersonalDayContext = async (
     windowDays,
     kcalTarget: targets.kcal,
     plannedDays: current.days.map((d) => ({ date: d.date, workoutId: d.workoutId })),
+    tz,
   });
 
   const plannedLiftDays = current.days.filter(
@@ -159,7 +155,7 @@ export const buildPersonalDayContext = async (
   const proteinGRemaining = Math.max(0, Math.round(targets.proteinG - proteinGLogged));
 
   const facts: ScenarioFacts = {
-    hourLocal: hourFor(localDate),
+    hourLocal: hourFor(localDate, tz),
     kcalTarget: targets.kcal,
     kcalLogged,
     proteinGTarget: targets.proteinG,

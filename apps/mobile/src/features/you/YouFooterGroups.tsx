@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { profileCopy } from "@/content/profile";
+import { storeCopy } from "@/content/store-copy";
 import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { sx } from "@/theme/sx";
@@ -57,7 +58,7 @@ export const YouFooterGroups = ({
     </Group>
 
     <Group title="Connected">
-      <StatusRow title="Apple Health / Watch" meta="Soon" soon />
+      <StatusRow title={storeCopy.healthRow} meta="Soon" soon />
       <Divider />
       <StatusRow title="Withings Body Scan" meta="Soon" soon />
       <Divider />

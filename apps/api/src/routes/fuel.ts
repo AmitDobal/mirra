@@ -15,7 +15,7 @@ import { meals } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { sanitizeAiCopy } from "../lib/ai-copy";
 import { notFound } from "../lib/errors";
-import { dayBoundsMs, todayUtc } from "../lib/dates";
+import { dayBoundsIn, localDateIn } from "../lib/dates";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { getMealEstimator } from "../lib/meal-estimator";
 import { decodeCursor, olderThan, parsePageQuery, toPage } from "../lib/pagination";
@@ -27,6 +27,7 @@ import { loadHydration } from "../services/hydration";
 import { enqueueMealAnalysis, findMealAnalysisJob } from "../services/meal-analysis-jobs";
 import { deleteMeal, insertMeal, toMealResponse, updateMeal } from "../services/meals";
 import { defaultFuelTargets, loadCurrentPlan } from "../services/plan-loaders";
+import { userTz } from "../services/user-day";
 
 export const fuelRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -34,12 +35,13 @@ export const fuelRoutes = new Hono<{
 }>();
 
 fuelRoutes.get("/v1/fuel/today", requireAuth, async (c) => {
-  const date = c.req.query("date") || todayUtc();
   const userId = c.get("userId");
   const db = createDb(c.env.DB);
+  const tz = await userTz(db, userId);
+  const date = c.req.query("date") || localDateIn(tz);
   const current = await loadCurrentPlan(db, userId);
   const targets = defaultFuelTargets(current.plan?.summary ?? null);
-  const { start, end } = dayBoundsMs(date);
+  const { start, end } = dayBoundsIn(tz, date);
   // Day-bounded in SQL (uses meals_user_eaten_idx) — never scan the whole history.
   const rows = await db
     .select()

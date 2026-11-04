@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import { previewGoal, type GoalPreviewAnswers } from "@mirra/contracts";
 
-import { buildGoalChartModel, monthLabels, sampleSeries, type GoalChartData, MONTH_GAP } from "./goal-chart-model";
+import { buildGoalChartModel, monthLabels, sampleSeries, type GoalChartData, MONTH_GAP, MONTH_HALF_W } from "./goal-chart-model";
 
 const TODAY = "2026-11-04";
 const fixture: GoalPreviewAnswers = {
@@ -131,6 +131,25 @@ test("full variant: actual dots, trend path and today hairline", () => {
   assert.match(m.trend!, /^M/);
   assert.equal(m.todayLine, m.dots[2]!.x);
   assert.equal(m.todayDot, null);
+});
+
+test("first weigh-in on the start day: one today marker on the trend start (iOS #80)", () => {
+  const data: GoalChartData = { ...base, unit: "lb", todayIndex: 0, actual: [{ date: TODAY, kg: 82.4, trendKg: 82.4 }] };
+  const m = buildGoalChartModel({ data, width: 350, height: 180, variant: "full", etaWeeks: 17.5, todayLabel: today, goalLabel: goal });
+  const yAt = (kg: number) => buildGoalChartModel({ data: { ...data, planned: [kg, ...data.planned.slice(1)], actual: [] }, width: 350, height: 180, variant: "full", etaWeeks: 17.5 }).todayDot!.y;
+  assert.equal(m.dots.length, 0, "weigh-in dot merges into the today marker");
+  assert.equal(m.todayDot!.label!.text, "Today 182 lb");
+  assert.ok(Math.abs(m.todayDot!.y - yAt(82.4)) < 0.01);
+  assert.equal(m.trendEnd, null);
+});
+
+test("month labels stay inside the right edge (APR clip, iOS #78)", () => {
+  for (const w of [300, 326, 390]) {
+    const m = model(base, w);
+    for (const l of m.xLabels) assert.ok(l.x + MONTH_HALF_W <= w, `${l.text} at ${l.x} in ${w}`);
+  }
+  const ls = monthLabels("2026-11-04", 12, (wk) => wk * 30, 0, 0, 330);
+  assert.ok(ls.every((l) => l.x <= 330 - MONTH_HALF_W));
 });
 
 test("spark variant: no labels, tight pads", () => {

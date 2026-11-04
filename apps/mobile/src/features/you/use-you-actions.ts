@@ -1,13 +1,16 @@
+import Constants from "expo-constants";
 import { router } from "expo-router";
-import { Alert, Linking } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 
 import { useOnboardingStore } from "@/features/onboarding";
 import { creditsPool, type CreditsSnapshot } from "@/lib/api/credits";
 import { clearSession, requireSignedInUser, setPostAuthIntent } from "@/lib/auth";
 import { authClient } from "@/lib/auth/auth-client";
+import { ANDROID_PACKAGE, manageSubscriptionUrl } from "@/lib/purchases/pro-access";
 import { useCreditsStore } from "@/stores/credits-store";
 import { useMeStore } from "@/stores/me-store";
 import { usePlanStore } from "@/stores/plan-store";
+import { isProNow } from "@/stores/pro-access";
 
 import { openAiLimitSheet } from "./AiLimitSheet";
 import { formatCreditsRefreshed } from "./training-location";
@@ -32,6 +35,13 @@ export const useYouActions = (opts: {
   const clearPlan = usePlanStore((s) => s.clear);
 
   const manageSub = () => {
+    // Pro: the store owns the subscription (cancel / change plan). The paywall would just bounce.
+    if (isProNow()) {
+      const pkg = Constants.expoConfig?.android?.package ?? ANDROID_PACKAGE;
+      const url = manageSubscriptionUrl(Platform.OS, pkg);
+      Linking.openURL(url).catch(() => Alert.alert("Manage subscription", url));
+      return;
+    }
     if (!requireSignedInUser()) {
       setPostAuthIntent("paywall");
       router.push("/(onboarding)/auth");

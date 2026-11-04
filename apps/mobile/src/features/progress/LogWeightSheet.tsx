@@ -6,8 +6,9 @@ import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 
-import { parseKgInput } from "./weight-journey";
-import { WEIGHT_MAX_KG, WEIGHT_MIN_KG } from "./weight-store";
+import { useLoadUnit } from "@/features/workout/use-load-units";
+
+import { validWeightKg, weightInputText, weightRangeText } from "./body-weight-input";
 
 type Props = {
   readonly visible: boolean;
@@ -17,21 +18,22 @@ type Props = {
   readonly onSubmit: (kg: number) => void;
 };
 
-/** Bottom sheet with a single kg field. */
+/** Bottom sheet with one weight field in the user's unit (kg or lb); always submits kg. */
 export const LogWeightSheet = ({ visible, saving, initialKg, onClose, onSubmit }: Props) => {
+  const unit = useLoadUnit();
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!visible) return;
-    setText(initialKg === null ? "" : String(initialKg));
+    setText(weightInputText(initialKg, unit));
     setError(null);
-  }, [visible, initialKg]);
+  }, [visible, initialKg, unit]);
 
   const handleSave = () => {
-    const kg = parseKgInput(text);
-    if (kg === null || kg < WEIGHT_MIN_KG || kg > WEIGHT_MAX_KG) {
-      setError(`Enter a weight between ${WEIGHT_MIN_KG} and ${WEIGHT_MAX_KG} kg.`);
+    const kg = validWeightKg(text, unit);
+    if (kg === null) {
+      setError(`Enter a weight between ${weightRangeText(unit)}.`);
       return;
     }
     setError(null);
@@ -56,7 +58,7 @@ export const LogWeightSheet = ({ visible, saving, initialKg, onClose, onSubmit }
           </Text>
           <View style={sx("mt-space-md flex-row items-center gap-space-sm")}>
             <TextInput
-              accessibilityLabel="Weight in kilograms"
+              accessibilityLabel={unit === "kg" ? "Weight in kilograms" : "Weight in pounds"}
               value={text}
               onChangeText={setText}
               keyboardType="decimal-pad"
@@ -67,7 +69,7 @@ export const LogWeightSheet = ({ visible, saving, initialKg, onClose, onSubmit }
               onSubmitEditing={handleSave}
               style={sx("flex-1 rounded-lg bg-surface-container-high px-space-md py-space-sm font-display text-headline-md text-on-surface")}
             />
-            <CapsLabel>kg</CapsLabel>
+            <CapsLabel>{unit}</CapsLabel>
           </View>
           {error ? <CapsLabel tone="alert" style={sx("mt-space-sm")}>{error}</CapsLabel> : null}
           <LimeCta

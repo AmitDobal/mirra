@@ -4,8 +4,10 @@ import type { BatchItem } from "drizzle-orm/batch";
 
 import type { AppDB } from "../../db";
 import { planDays, workoutSessions } from "../../db/schema";
+import { dayBoundsIn, localDateIn } from "../../lib/dates";
 import { ApiError } from "../../lib/errors";
 import type { PlanReviseIntent } from "../../ports/plan-reviser";
+import { userTz } from "../user-day";
 import { weekdayOf, type ReviseState } from "./context";
 import { dateForRef } from "./weekday";
 import { dayForWorkoutRef, workoutsForRef } from "./workout-ref";
@@ -32,22 +34,20 @@ export type ScheduleStepResult = {
 type Session = { startedAt: Date };
 type ScheduleCtx = { db: AppDB; userId: string };
 
-const DAY_MS = 86_400_000;
-const startOf = (date: string): number => Date.parse(`${date}T00:00:00Z`);
-
-/** Dates (UTC) between first and last that have a logged workout session. */
+/** Dates (user's profile timezone, AMI-183) between first and last that have a logged workout session. */
 const loggedDates = async (ctx: ScheduleCtx, first: string, last: string): Promise<Set<string>> => {
+  const tz = await userTz(ctx.db, ctx.userId);
   const rows: Session[] = await ctx.db
     .select({ startedAt: workoutSessions.startedAt })
     .from(workoutSessions)
     .where(
       and(
         eq(workoutSessions.userId, ctx.userId),
-        gte(workoutSessions.startedAt, new Date(startOf(first))),
-        lt(workoutSessions.startedAt, new Date(startOf(last) + DAY_MS)),
+        gte(workoutSessions.startedAt, new Date(dayBoundsIn(tz, first).start)),
+        lt(workoutSessions.startedAt, new Date(dayBoundsIn(tz, last).end)),
       ),
     );
-  return new Set(rows.map((r) => r.startedAt.toISOString().slice(0, 10)));
+  return new Set(rows.map((r) => localDateIn(tz, r.startedAt)));
 };
 
 const label = (d: { date: string }): string => weekdayOf(d.date);

@@ -86,6 +86,8 @@ export const WeekStripCard = ({
                 {day.letter}
               </Text>
               <View
+                // Remount on state change: Android drops borderRadius when a fill is added late.
+                key={day.selected ? "selected" : ring ? "ring" : "plain"}
                 style={[
                   styles.circle,
                   day.selected ? styles.selected : null,
@@ -116,18 +118,25 @@ const CIRCLE = 32;
 
 /**
  * Explicit radius (not `rounded-full` 9999) + no iOS shadow props on Android:
- * Android QA saw the selected past day drawn as a square.
+ * Android QA saw the selected past day drawn as a square. Every state keeps the same
+ * box (fixed size, radius, 1.5 border, background) so only colors change, and the
+ * view remounts per state; Android also clips to the circle.
  */
 const styles = StyleSheet.create({
   circle: {
     width: CIRCLE,
     height: CIRCLE,
     borderRadius: CIRCLE / 2,
+    borderWidth: 1.5,
+    borderColor: "transparent",
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
+    ...Platform.select({ android: { overflow: "hidden" as const }, default: {} }),
   },
   selected: {
     backgroundColor: color.primaryFixed,
+    borderColor: color.primaryFixed,
     ...Platform.select({
       ios: {
         shadowColor: color.primaryFixed,
@@ -139,7 +148,6 @@ const styles = StyleSheet.create({
     }),
   },
   todayRing: {
-    borderWidth: 1.5,
     borderColor: color.primaryFixed,
   },
 });

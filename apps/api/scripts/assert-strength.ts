@@ -3,6 +3,7 @@
  *   npm run test:strength -w @mirra/api
  */
 import { STANDARDS } from "../src/data/strength-standards";
+import { libraryResponse } from "../src/lib/exercise-library";
 import {
   anchorsAt,
   anchorsFromRows,
@@ -212,6 +213,25 @@ const tPlank = nextTarget({
 check(tPlank.display.endsWith(" s hold") && tPlank.reps > 60, "time target in seconds (plank 60 s)", tPlank.display);
 check(nextTarget({ ...tgtInput("metric", null), targetPct: 99.5 }) === null, "unreachable within 3 sessions → null");
 check(near(contributorTargetPct(50, 50, 55, 100, 50), 60) && contributorTargetPct(50, 50, 90, 100, 10) === 99, "muscle target → contributor pct, capped 99");
+
+// ── Dumbbell per-hand convention (AMI-183) ──────────────────────────────────
+// QA: one "20 kg × 8" DB bench made a ~60 kg female Chest Elite I. The HUD only said "KG", so
+// 20 was the pair (2 × 10 kg). Logged load is now one dumbbell ("KG PER HAND"); the standard
+// is per hand (bench × 0.37 ⇒ pair ≈ 74% of the barbell bench).
+const dbBench = rankedLift("dumbbell_bench_press")!;
+check(libraryResponse(dbBench.entry).loadPerHand === true, "DB bench logs per hand");
+check(libraryResponse(bench.entry).loadPerHand === false, "barbell bench is not per hand");
+check(libraryResponse(rankedLift("goblet_squat")!.entry).loadPerHand === false, "goblet squat (one dumbbell) is not per hand");
+const dbScore = (perHandKg: number) =>
+  scoreSession({ sets: [{ canonicalId: "dumbbell_bench_press", weightKg: perHandKg, reps: 8 }], prev: new Map(), sex: "female", bw: 60 })
+    .get("dumbbell_bench_press")!;
+const pair20 = dbScore(10);
+check(pair20.displayStep >= stepOfPct(25) && pair20.displayStep <= stepOfPct(54.99), "20 kg pair × 8 (10 kg per hand), female 60 kg → Silver/Gold, not Elite", label(pair20.displayStep));
+// Barbell-equivalent check: per hand × 2 ÷ (2 × 0.37) gives the same pct as a barbell bench of that load.
+const barbellEq = scoreSession({ sets: [{ canonicalId: "bench_press", weightKg: (10 * 2) / (2 * 0.37), reps: 8 }], prev: new Map(), sex: "female", bw: 60 }).get("bench_press")!;
+check(near(exercisePctOf(pair20), exercisePctOf(barbellEq), 0.01), "DB pair scores like its barbell equivalent (pair ÷ 0.74)", `${exercisePctOf(pair20).toFixed(1)} vs ${exercisePctOf(barbellEq).toFixed(1)}`);
+const perHand20 = dbScore(20);
+check(perHand20.displayStep > pair20.displayStep + 6, "20 kg PER HAND × 8 (≈68 kg barbell, 1.1 × bw) ranks far above the pair reading", label(perHand20.displayStep));
 
 console.log(`\n${passes} passed, ${failures} failed`);
 if (failures > 0) process.exit(1);

@@ -4,7 +4,6 @@ import { eq, inArray } from "drizzle-orm";
 import type { AppDB } from "../db";
 import { mealPlanDays, mealPlanItems } from "../db/schema";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
-import { todayUtc } from "../lib/dates";
 import { conflict } from "../lib/errors";
 import { newId } from "../lib/id";
 import { SLOT_ORDER, subtractMacros, sumMacros } from "../lib/meal-macros";
@@ -30,6 +29,7 @@ import {
   type ItemRow,
 } from "./meal-plan-store";
 import { defaultFuelTargets, loadCurrentPlan } from "./plan-loaders";
+import { dateOrUserToday } from "./user-day";
 
 export type { MealPlanCtx };
 
@@ -47,7 +47,7 @@ export const generatePlan = async (
   ctx: MealPlanCtx,
   body: GenerateMealPlanBody,
 ): Promise<DayMealPlan> => {
-  const date = body.date ?? todayUtc();
+  const date = await dateOrUserToday(ctx.db, ctx.userId, body.date);
   const current = await loadCurrentPlan(ctx.db, ctx.userId);
   if (!current.plan) throw conflict("No active plan. Finish onboarding first.");
 

@@ -1,4 +1,3 @@
-import { router } from "expo-router";
 import { ArrowRight, BadgeCheck, SlidersHorizontal, X } from "lucide-react-native";
 import { MotiView } from "moti";
 import { Easing } from "react-native-reanimated";
@@ -6,6 +5,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { s20cAdjustToday } from "../../../assets/stitch";
+import { openRebuild } from "@/features/coach/open-rebuild";
 import { timing } from "@/features/fuel/snap/motion";
 import { color, space } from "@/theme/tokens";
 
@@ -162,7 +162,7 @@ export const CheckInResult = ({ onDone }: Props) => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Preview rebuilt week"
-          onPress={() => router.push("/(tabs)/rebuild")}
+          onPress={() => openRebuild("/(tabs)/rebuild")}
           hitSlop={8}
           style={styles.keep}
         >

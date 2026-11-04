@@ -2,7 +2,7 @@
  * Goal display formatting (pure, no RN imports → `node --test`). Engine values are kg
  * and `YYYY-MM-DD`; these helpers convert at the edge. Shared by S06/S12/S43 and AMI-182.
  */
-import { kgToLb, lbToKg } from "@mirra/contracts";
+import { formatWeightNumber, kgToLb, lbToKg } from "@mirra/contracts";
 
 import { goalCopy } from "@/content/goal";
 
@@ -16,9 +16,8 @@ const trim1 = (v: number) => {
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
 };
 
-/** Headline / summary number: lb whole (matches the S06 stepper), kg to 0.1. */
-export const weightNumber = (kg: number, unit: WeightUnit): string =>
-  unit === "lb" ? String(Math.round(kgToLb(kg))) : trim1(kg);
+/** Headline / summary number: lb whole (matches the S06 stepper), kg to 0.1. Same rule as engine labels. */
+export const weightNumber = (kg: number, unit: WeightUnit): string => formatWeightNumber(kg, unitsFor(unit));
 
 /** "82 kg" / "181 lb". */
 export const weightText = (kg: number, unit: WeightUnit): string => `${weightNumber(kg, unit)} ${unit}`;

@@ -18,12 +18,13 @@ import {
 import { errorMessage, logger } from "@/lib/logger";
 import { invalidateGoal } from "@/features/goal/goal-store";
 
+import { WEIGHT_MAX_KG, WEIGHT_MIN_KG } from "./body-weight-input";
+
 export type WeightEntry = LocalWeightLog;
 
 const LOCAL_ID_PREFIX = "wt_";
 
-export const WEIGHT_MIN_KG = 30;
-export const WEIGHT_MAX_KG = 400;
+export { WEIGHT_MAX_KG, WEIGHT_MIN_KG };
 
 type WeightState = {
   /** Newest first. */

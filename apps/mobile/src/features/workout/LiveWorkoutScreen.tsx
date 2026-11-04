@@ -23,7 +23,7 @@ import { formatLoad, fromDisplayLoad, loadLabel, loadStepKg, toDisplayLoad } fro
 import { formatClock, HudChip, Stat, TextLink } from "./HudParts";
 import { SetChips } from "./SetChips";
 import { SetStepper } from "./SetStepper";
-import { useExerciseScoring, useLoadUnit } from "./use-load-units";
+import { useExerciseLoadMeta, useLoadUnit } from "./use-load-units";
 import { useOpenTiming } from "./use-open-timing";
 import { useWorkoutStore } from "./workout-store";
 import { sx } from "@/theme/sx";
@@ -81,8 +81,8 @@ export const LiveWorkoutScreen = () => {
 
   const ex = exercises[exerciseIndex];
   const unit = useLoadUnit();
-  // Bodyweight lifts log added load: "+ kg added" / "+ lb added".
-  const scoring = useExerciseScoring(ex);
+  // Bodyweight lifts log added load ("+ kg added"); dumbbell lifts log one dumbbell ("KG PER HAND").
+  const loadMeta = useExerciseLoadMeta(ex);
   const elapsed = formatClock(useWorkoutStore.getState().elapsedSec());
   const rest = formatClock(restLeft);
   const resting = restLeft > 0 && restLeft < restTargetSec;
@@ -196,7 +196,7 @@ export const LiveWorkoutScreen = () => {
 
           <View style={sx("mb-space-sm flex-row gap-space-sm")}>
             <SetStepper
-              label={loadLabel(unit, scoring)}
+              label={loadLabel(unit, loadMeta?.scoring, loadMeta?.perHand)}
               unit={unit === "kg" ? "kilograms" : "pounds"}
               value={toDisplayLoad(draft.weightKg, unit)}
               onStep={(dir) => adjustDraft("weightKg", dir * loadStepKg(unit))}

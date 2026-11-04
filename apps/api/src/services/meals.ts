@@ -10,12 +10,13 @@ import { and, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { mealPlanItems, meals } from "../db/schema";
-import { dayBoundsMs, msToUnix } from "../lib/dates";
+import { msToUnix } from "../lib/dates";
 import { parseJsonColumn } from "../lib/json";
 import { notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { recordAttendanceSafe } from "./attendance";
 import { rebuildDaysSafe } from "./nutrition-rollup";
+import { userDayBounds } from "./user-day";
 
 export const toMealResponse = (m: typeof meals.$inferSelect): MealResponse => ({
   id: m.id,
@@ -96,13 +97,13 @@ export const findMeal = async (
   return row ? toMealResponse(row) : null;
 };
 
-/** All meals eaten on a UTC calendar day. */
+/** All meals eaten on calendar day `date` in the user's profile timezone. */
 export const loadDayMeals = async (
   db: AppDB,
   userId: string,
   date: string,
 ): Promise<MealResponse[]> => {
-  const { start, end } = dayBoundsMs(date);
+  const { start, end } = await userDayBounds(db, userId, date);
   const rows = await db
     .select()
     .from(meals)

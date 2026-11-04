@@ -20,6 +20,8 @@ export const LibraryExerciseResponseSchema = z.object({
   bwFactor: z.number().nullable(),
   /** True when the lift has a strength standard (counts toward tiers). */
   ranked: z.boolean(),
+  /** AMI-183: logged load is ONE dumbbell (per hand), not the pair total. Old servers omit it. */
+  loadPerHand: z.boolean().optional(),
   source: ExerciseSourceSchema,
 });
 

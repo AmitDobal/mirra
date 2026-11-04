@@ -60,7 +60,13 @@ export const PersonalDetailsSheet = ({ visible, rows, units, profile, prefs, onS
   }, [visible]);
 
   return (
-    <SheetModal visible={visible} label={c.personal.title} onClose={onClose}>
+    <SheetModal
+      visible={visible}
+      label={c.personal.title}
+      onClose={onClose}
+      // Hardware back in a field editor returns to the details list, not out of the sheet.
+      onRequestClose={editing ? () => setEditing(null) : onClose}
+    >
       {editing ? (
         <ProfileEditBody
           field={editing}

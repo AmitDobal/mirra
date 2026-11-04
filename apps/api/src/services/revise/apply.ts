@@ -4,7 +4,7 @@ import type { BatchItem } from "drizzle-orm/batch";
 import { preferences } from "../../db/schema";
 import { sanitizeAiCopy } from "../../lib/ai-copy";
 import { ApiError, notFound } from "../../lib/errors";
-import { assertRateLimit, recordRegen, type MealPlanCtx } from "../meal-plan-draft";
+import { recordRegen, type MealPlanCtx } from "../meal-plan-draft";
 import { getTodayPlan } from "../meal-plan";
 import { commitMealDraft } from "../meal-plan-targeted";
 import { loadReviseState } from "./context";
@@ -38,9 +38,9 @@ export const applyDraft = async (ctx: MealPlanCtx, draftId: string): Promise<Coa
     throw gone("That preview expired. Send it again");
   }
 
+  // Only the apply cap: the meals were generated (and counted) when the draft was proposed.
   await assertReviseLimit(ctx);
   const hasMeals = (draft.meal?.ops.length ?? 0) > 0;
-  if (hasMeals) await assertRateLimit(ctx);
 
   const state = await loadReviseState(ctx, {
     message: "apply",
@@ -66,7 +66,7 @@ export const applyDraft = async (ctx: MealPlanCtx, draftId: string): Promise<Coa
   const statements: BatchItem<"sqlite">[] = [];
   if (draft.prefsPatch && Object.keys(draft.prefsPatch).length > 0) statements.push(prefsUpsert(ctx, draft.prefsPatch));
   if (draft.meal && hasMeals) {
-    statements.push(...commitMealDraft(ctx, draft.meal), recordRegen(ctx, "meal_plan.generate", draft.date));
+    statements.push(...commitMealDraft(ctx, draft.meal));
   }
   if (draft.workout) statements.push(...commitWorkoutDraft(ctx.db, draft.workout));
   if (draft.schedule) statements.push(...commitScheduleDraft(ctx.db, draft.schedule));

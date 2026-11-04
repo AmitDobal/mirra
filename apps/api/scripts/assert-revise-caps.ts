@@ -11,6 +11,7 @@ import {
   REVISE_ACTION,
 } from "../src/services/plan-revise";
 import { DRAFT_TTL_MS } from "../src/services/revise/drafts";
+import { DAILY_MEAL_DAY_LIMIT, MEAL_DAY_ACTION } from "../src/services/revise/limits";
 
 let failures = 0;
 const check = (ok: boolean, label: string) => {
@@ -26,5 +27,6 @@ check(MEAL_REGEN_ACTIONS.includes("meal_plan.rebalance"), "meal regen includes m
 check(DAILY_PROPOSE_LIMIT === 6, "plan chat propose cap = 6/day");
 check(PROPOSE_ACTION === "coach.revise.propose" && PROPOSE_ACTION !== REVISE_ACTION, "propose has its own meter key");
 check(DRAFT_TTL_MS === 30 * 60 * 1000, "draft TTL = 30 min");
+check(DAILY_MEAL_DAY_LIMIT === 2 && MEAL_DAY_ACTION === "coach.revise.meal_day" && !MEAL_REGEN_ACTIONS.includes(MEAL_DAY_ACTION), "chat whole-day redraft cap = 2/day, own meter (plan generation not counted)");
 
 process.exit(failures === 0 ? 0 : 1);

@@ -1,5 +1,19 @@
 /** Plan chat copy (Stitch S28 / S39). Screens import labels, never hardcode strings. */
 export const planChatCopy = {
+  /** S39 top bar + chat chrome. */
+  title: "Plan chat",
+  coachInitial: "M",
+  composer: {
+    placeholder: "e.g. no cable machines, prefer bench press",
+    locked: "Reply after you decide…",
+    inputLabel: "Message your coach",
+    send: "Send message",
+    mic: "Dictate a message",
+    micHint: "Opens the keyboard. Tap the keyboard mic to dictate.",
+  },
+  preparing: "Preparing your preview…",
+  /** Coach line on a preview (S39): nothing is applied until "Yes, apply". */
+  preview: "Here is the change. Nothing updates until you apply.",
   welcome:
     "Tell me what to change: equipment you don't have, lifts you prefer, foods to avoid, or a shorter session. I'll show you the change first. Nothing updates until you say yes.",
   card: {

@@ -22,7 +22,6 @@ const KEYWORD_TAGS: Record<string, string> = {
   dairy: "dairy",
   milk: "dairy",
   lactose: "dairy",
-  cheese: "dairy",
   egg: "egg",
   eggs: "egg",
   gluten: "gluten",
@@ -36,15 +35,16 @@ const KEYWORD_TAGS: Record<string, string> = {
 };
 
 /**
- * Single ingredients inside a broad tag. "Avoid chicken" bans chicken only (the name match in
- * `filterCatalog`), never every `meat` food. Used to widen a banned tag to words for recipe
- * checks ("vegetarian" still forbids "chicken").
+ * Single ingredients inside a broad tag. "Avoid chicken" bans chicken only and "avoid cheese"
+ * bans cheeses only (the name match in `filterCatalog`), never every `meat` / `dairy` food.
+ * Used to widen a banned tag to words for recipe checks ("vegetarian" still forbids "chicken").
  */
 const INGREDIENT_TAGS: Record<string, string> = {
   beef: "meat",
   chicken: "meat",
   turkey: "meat",
   pork: "meat",
+  cheese: "dairy",
 };
 
 const tokens = (text: string | null | undefined): string[] =>

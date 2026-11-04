@@ -177,10 +177,9 @@ const legacyConfirm = async () => {
   const preview = swaps(res)[0]?.after.name;
   const confirm = await revisePlans(ctx, { message: "swap my breakfast", scope: "auto", date: today, dryRun: false, intent: res.intent });
   check(confirm.applied && (await titles(ctx)).breakfast === preview, "v1 confirm (intent echo) applies the previewed draft");
-  // generate + one meal apply = the 2/day meal cap (AMI-159 kept).
-  const capped = await propose(ctx, "swap my dinner");
-  const cap = await errorOf(() => applyDraft(ctx, capped.draftId!));
-  check(cap?.status === 429 && /Meal limit/.test(cap.message), "3rd meal write of the day -> 429 Meal limit");
+  // Slot swaps use the heuristic generator (no AI) and never hit the meal cap (AMI-170).
+  const more = await propose(ctx, "swap my dinner");
+  check(swaps(more).length === 1, "more slot swaps after generate + one swap still draft (no meal cap)", JSON.stringify(more.warnings));
   const fresh = await seedUser();
   const direct = await revisePlans(fresh, { message: "swap my dinner", scope: "auto", date: today });
   check(direct.applied && swaps(direct)[0]?.after.name === (await titles(fresh)).dinner, "v1 direct apply (no preview) still works");

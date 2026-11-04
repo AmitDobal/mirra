@@ -6,6 +6,7 @@ import type { ReviseItem } from "../../../lib/api/coach-revise.ts";
 import {
   buildProposalSections,
   mealDeltaReason,
+  previewReplyText,
   rowOfItem,
   stripPreviewPrefix,
 } from "./proposal-model.ts";
@@ -170,4 +171,11 @@ test("legacy changes: structured, arrow summary, summary-only", () => {
 test("empty items fall back to changes; none → no sections; preview prefix stripped", () => {
   assert.deepEqual(buildProposalSections({ items: [], changes: [] }, l), []);
   assert.equal(stripPreviewPrefix("Preview: Done."), "Done.");
+});
+
+test("preview reply never says Done before apply (S39 copy); plain replies pass through", () => {
+  const legacy = "Preview: Done, recruit. Now swapping your lunch.";
+  assert.equal(previewReplyText(legacy, true, l.preview), "Here is the change. Nothing updates until you apply.");
+  assert.doesNotMatch(previewReplyText(legacy, true, l.preview), /\bdone\b/i);
+  assert.equal(previewReplyText("Preview: I couldn't map that.", false, l.preview), "I couldn't map that.");
 });

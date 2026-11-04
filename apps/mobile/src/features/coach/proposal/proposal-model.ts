@@ -253,3 +253,10 @@ export const buildProposalSections = (
 
 /** API prefixes dry-run replies with "Preview: "; the card already says it's a proposal. */
 export const stripPreviewPrefix = (message: string): string => message.replace(/^Preview:\s*/i, "");
+
+/**
+ * Coach line above a pending proposal: always the S39 conditional copy, so a preview never
+ * reads "Done" (older APIs sent the reviser's "Done, …" reply). Plain replies pass through.
+ */
+export const previewReplyText = (message: string, proposes: boolean, previewCopy: string): string =>
+  proposes ? previewCopy : stripPreviewPrefix(message);

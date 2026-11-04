@@ -20,7 +20,7 @@ import { MirraApiError } from "@/lib/api/client";
 import { errorMessage, logger } from "@/lib/logger";
 import { usePlanStore } from "@/stores/plan-store";
 
-import { stripPreviewPrefix } from "./proposal/proposal-model";
+import { previewReplyText } from "./proposal/proposal-model";
 
 /** `stale`: the server refused the draft (409 plan_changed / 410 draft_gone). */
 export type ProposalStatus = "pending" | "applied" | "dismissed" | "stale";
@@ -180,7 +180,7 @@ export const usePlanChatStore = create<PlanChatState>((set, get) => ({
           {
             id,
             role: "coach",
-            text: stripPreviewPrefix(res.message),
+            text: previewReplyText(res.message, proposes, planChatCopy.preview),
             warnings: res.warnings,
             ...(proposes
               ? {

@@ -5,7 +5,7 @@ import { resolveAiProvider } from "../../lib/ai/resolve-provider";
 import { todayUtc } from "../../lib/dates";
 import { ApiError } from "../../lib/errors";
 import { getPlanReviser } from "../../lib/plan-reviser";
-import { hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../../lib/plan-intent";
+import { hasAnyIntent, hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../../lib/plan-intent";
 import type { PlanReviseResult } from "../../ports/plan-reviser";
 import { withAiCredits } from "../credits-gate";
 import { recordRegen, type MealPlanCtx } from "../meal-plan-draft";
@@ -14,7 +14,7 @@ import { applyDraft } from "./apply";
 import { loadReviseState, reviserInput, type ReviseState } from "./context";
 import { createDraft, findPendingForIntent, intentKeyOf, touchHash, type DraftTouch } from "./drafts";
 import { legacyChanges } from "./legacy";
-import { assertProposeLimit, assertReviseLimit, PROPOSE_ACTION } from "./limits";
+import { assertProposeLimit, assertReviseLimit, MEAL_DAY_ACTION, mealDayQuotaOk, PROPOSE_ACTION } from "./limits";
 import { mealStep, type MealStepResult } from "./meal-step";
 import { prefsStep } from "./prefs-step";
 import { scheduleStep, type ScheduleDraft } from "./schedule-step";
@@ -30,7 +30,14 @@ type Proposal = {
   schedule: ScheduleDraft | null;
   touch: DraftTouch;
   doMeal: boolean;
+  /** Title of the workout the edit lands on (not always today's). */
+  workoutTitle: string | null;
 };
+
+/** S39 coach line for a preview: nothing is applied yet, so never "Done". */
+export const PREVIEW_REPLY = "Here is the change. Nothing updates until you apply.";
+export const APPLIED_REPLY = "Done. Your plan is updated.";
+
 
 /** Meal drafting problems become warnings; credit/paywall errors still reach the client. */
 const safeMealStep = async (run: () => Promise<MealStepResult>): Promise<MealStepResult> => {
@@ -62,8 +69,9 @@ const buildProposal = async (
   const prefs = prefsStep(state, intent, { doMeal, doWorkout });
   warnings.push(...prefs.warnings);
   const mealPrefs = prefs.meal;
+  const allowWholeDay = mealPrefs ? await mealDayQuotaOk(ctx) : true;
   const meal = mealPrefs
-    ? await safeMealStep(() => mealStep(ctx, { state, intent, prefs: mealPrefs, mealItemId: body.context?.mealItemId }))
+    ? await safeMealStep(() => mealStep(ctx, { state, intent, prefs: mealPrefs, mealItemId: body.context?.mealItemId, allowWholeDay }))
     : null;
   const workout = doWorkout
     ? workoutStep(state, intent, prefs.nextEquipment, {
@@ -90,6 +98,8 @@ const buildProposal = async (
     ...prefs.items.filter((i) => i.kind === "pref"),
   ];
   const wholeDay = meal?.draft?.wholeDay ?? false;
+  const editedId = workout?.draft?.workoutId ?? schedule?.items.flatMap((i) => (i.kind === "schedule_day_move" ? [i.workoutId] : []))[0];
+  const edited = state.plan.workouts.find((w) => w.id === editedId) ?? state.workout;
   return {
     items,
     warnings,
@@ -106,13 +116,21 @@ const buildProposal = async (
       ...(schedule?.dayIds.length ? { dayIds: schedule.dayIds } : {}),
     },
     doMeal,
+    workoutTitle: edited?.title ?? null,
   };
 };
 
-const replyFor = (reply: string, p: Proposal): string => {
-  if (p.items.length === 0 && p.alreadyNotes.length > 0) return p.alreadyNotes.join(" ");
-  if (p.items.length === 0 && p.warnings.length === 0) return `${reply} Nothing in your plan needed changing.`;
-  return reply;
+/**
+ * Coach line. A preview with rows says only what S39 says (nothing is applied yet); the
+ * reviser's own reply is kept for direct applies and for "couldn't map" help. A turn that
+ * changed nothing never claims it did.
+ */
+const replyFor = (result: PlanReviseResult, p: Proposal, dryRun: boolean): string => {
+  if (p.items.length > 0) return dryRun ? PREVIEW_REPLY : result.reply;
+  if (p.alreadyNotes.length > 0) return p.alreadyNotes.join(" ");
+  if (!hasAnyIntent(result.intent)) return result.reply;
+  if (p.warnings.length > 0) return "I couldn't change that yet. See the note below.";
+  return "Nothing in your plan needed changing.";
 };
 
 /**
@@ -134,7 +152,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
 
   const state = await loadReviseState(ctx, body);
   const result: PlanReviseResult = echoed
-    ? { intent: echoed, reply: "Done. Your plan is updated.", warnings: [], source: "heuristic" }
+    ? { intent: echoed, reply: APPLIED_REPLY, warnings: [], source: "heuristic" }
     : await withAiCredits(
         ctx,
         { feature: "revise", paid: resolveAiProvider(ctx.env) === "openai", wasPaid: (r) => r.source === "openai" },
@@ -142,8 +160,10 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
       );
   const p = await buildProposal(ctx, state, body, result);
   if (dryRun) await recordRegen(ctx, PROPOSE_ACTION, date);
+  // Only a whole-day AI redraft spends the chat meal budget, and only now (never on apply).
+  if (p.meal?.wholeDay && p.meal.ops.length > 0) await recordRegen(ctx, MEAL_DAY_ACTION, date);
 
-  const message = sanitizeAiCopy(replyFor(result.reply, p));
+  const message = sanitizeAiCopy(replyFor(result, p, dryRun));
   const source = result.source ?? "heuristic";
   const warnings = [...new Set(p.warnings)].map(sanitizeAiCopy);
   const base: CoachReviseResponse = {
@@ -154,7 +174,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     source,
     mealPlan: p.doMeal ? state.mealPlan : undefined,
     intent: result.intent,
-    workoutTitle: state.workout?.title ?? null,
+    workoutTitle: p.workoutTitle,
     draftId: null,
     expiresAt: null,
     ...(warnings.length > 0 ? { warnings } : {}),
@@ -166,10 +186,10 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     meta: {
       intent: result.intent,
       intentKey: intentKeyOf(result.intent),
-      reply: dryRun ? "Done. Your plan is updated." : message,
+      reply: dryRun ? APPLIED_REPLY : message,
       source,
       warnings,
-      workoutTitle: state.workout?.title ?? null,
+      workoutTitle: p.workoutTitle,
       context: body.context ?? null,
       touch: p.touch,
     },

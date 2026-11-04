@@ -5,13 +5,14 @@ import { newId } from "../../lib/id";
 import { filterCatalog } from "../../lib/meal-diet";
 import { SLOT_ORDER, slotBudgets, subtractMacros, sumMacros } from "../../lib/meal-macros";
 import { pickSlotsToPlan, slotsForMealCount } from "../../lib/meal-slots";
-import type { PlanReviseIntent } from "../../ports/plan-reviser";
+import type { PlanReviseIntent, PlanReviseMealBias } from "../../ports/plan-reviser";
 import type { Drafted, MealPlanCtx } from "../meal-plan-draft";
 import type { MealPrefsPlan } from "../meal-revise";
 import { draftMeals, toItemValues, type MealDraft, type MealOp } from "../meal-plan-targeted";
 import { loadDayMeals } from "../meals";
 import type { ReviseState } from "./context";
-import { pickCandidate, targetMeals } from "./meal-targeting";
+import { MEAL_CAP_WARNING } from "./limits";
+import { BIAS_LABEL, pickCandidate, targetMeals } from "./meal-targeting";
 import { mealDelta, mealSnapReason, mealSwapReason, mealSwapTags } from "./tags";
 
 export type MealStepResult = {
@@ -55,6 +56,8 @@ type Args = {
   intent: PlanReviseIntent;
   prefs: MealPrefsPlan;
   mealItemId?: string;
+  /** False when today's whole-day AI redraft budget is spent (slot swaps are always allowed). */
+  allowWholeDay?: boolean;
 };
 
 /** Foods the post-revision prefs allow; null when no food pref changed. */
@@ -63,10 +66,25 @@ const catalogFor = (a: Args) => {
   return filterCatalog(dietTags, foodsAvoid, cuisines, a.state.prefs?.lifestyleNotes);
 };
 
-const bannedFoodIds = (a: Args, allowed: ReadonlySet<string>): Set<string> | null => {
+/**
+ * Foods the new prefs newly ban, ingredient-level: allowed by the old diet/avoid rules and
+ * not by the new ones. Cuisine is ignored on purpose: a dish built under older cuisine
+ * picks still has to be swapped when it holds the banned food. Null = food prefs unchanged.
+ */
+const bannedFoodIds = (a: Args): Set<string> | null => {
   if (!a.prefs.foodsChanged) return null;
-  const before = filterCatalog(a.state.dietTags, a.state.foodsAvoid, a.state.cuisineStyles, a.state.prefs?.lifestyleNotes);
-  return new Set(before.map((f) => f.id).filter((id) => !allowed.has(id)));
+  const { dietTags, foodsAvoid } = a.prefs.next;
+  const before = new Set(filterCatalog(a.state.dietTags, a.state.foodsAvoid, []).map((f) => f.id));
+  const after = new Set(filterCatalog(dietTags, foodsAvoid, []).map((f) => f.id));
+  return new Set([...before].filter((id) => !after.has(id)));
+};
+
+/** Budget tilted toward the bias, for a second round when no first-round dish beats the current one. */
+const tilted = (b: Macros, bias: PlanReviseMealBias | undefined): Macros => {
+  if (bias === "high_protein") return { ...b, proteinG: b.proteinG * 1.35, carbsG: Math.max(10, b.carbsG - b.proteinG * 0.35) };
+  if (bias === "low_carb") return { ...b, carbsG: b.carbsG * 0.55, proteinG: b.proteinG * 1.15 };
+  if (bias === "lighter") return { kcal: Math.round(b.kcal * 0.7), proteinG: b.proteinG * 0.85, carbsG: b.carbsG * 0.6, fatG: b.fatG * 0.6 };
+  return b;
 };
 
 /** Swap only the targeted slots: heuristic candidates per slot, bias picks the winner. */
@@ -77,25 +95,36 @@ const draftSlots = async (ctx: MealPlanCtx, a: Args, targets: PlannedMeal[], cat
   const used = new Set<string>();
   for (const target of targets) {
     const budget: Macros = { kcal: target.kcal, proteinG: target.proteinG, carbsG: target.carbsG, fatG: target.fatG };
-    const scaled = a.intent.mealBias === "lighter" ? { ...budget, kcal: Math.round(budget.kcal * 0.8) } : budget;
-    const candidates: Drafted[] = [];
-    for (let i = 0; i < CANDIDATE_SEEDS; i++) {
-      const { meals } = await draftMeals(ctx, {
-        date: a.state.date,
-        slots: [target.slot],
-        budget: scaled,
-        targets: day.targets,
-        catalog,
-        avoidFoodIds: foodIdsOf(target),
-        seed: `${target.id}|revise|${i}`,
-        useAi: false,
-      });
-      const d = meals.get(target.slot);
-      if (d) candidates.push(d);
-    }
-    const pick = pickCandidate(candidates, a.intent.mealBias, target.title, used);
+    const bias = a.intent.mealBias;
+    const current = { title: target.title, kcal: target.kcal, proteinG: target.proteinG, carbsG: target.carbsG };
+    const round = async (b: Macros, tag: string): Promise<Drafted[]> => {
+      const list: Drafted[] = [];
+      for (let i = 0; i < CANDIDATE_SEEDS; i++) {
+        const { meals } = await draftMeals(ctx, {
+          date: a.state.date,
+          slots: [target.slot],
+          budget: b,
+          targets: day.targets,
+          catalog,
+          avoidFoodIds: foodIdsOf(target),
+          seed: `${target.id}|revise|${tag}${i}`,
+          useAi: false,
+        });
+        const d = meals.get(target.slot);
+        if (d) list.push(d);
+      }
+      return list;
+    };
+    const scaled = bias === "lighter" ? { ...budget, kcal: Math.round(budget.kcal * 0.8) } : budget;
+    let pick = pickCandidate(await round(scaled, ""), bias, current, used);
+    // The bias is a promise ("higher protein" means more protein): tilt the budget once more.
+    if (!pick && bias) pick = pickCandidate(await round(tilted(budget, bias), "tilt"), bias, current, used);
     if (!pick) {
-      out.warnings.push(`No other ${SLOT_NAME[target.slot]} fits your food settings right now`);
+      out.warnings.push(
+        bias
+          ? `No ${BIAS_LABEL[bias]} ${SLOT_NAME[target.slot]} fits your targets and food settings, so ${SLOT_NAME[target.slot]} stays as is`
+          : `No other ${SLOT_NAME[target.slot]} fits your food settings right now`,
+      );
       continue;
     }
     used.add(pick.title);
@@ -172,26 +201,40 @@ const draftDay = async (ctx: MealPlanCtx, a: Args, catalog: ReturnType<typeof to
   return out;
 };
 
+const human = (xs: readonly string[]): string => xs.map((x) => x.replace(/_/g, " ")).join(", ");
+
 /** Meal side of a proposal: target slots, draft real dishes in memory, build typed rows. */
 export const mealStep = async (ctx: MealPlanCtx, a: Args): Promise<MealStepResult> => {
   const foods = catalogFor(a);
   const catalog = foods.map(toCatalogRow);
-  const allowed = new Set(foods.map((f) => f.id));
+  const { intent } = a;
+  const noSlot = intent.mealSlots.length === 0 && !a.mealItemId;
+  // "More protein in my meals": every planned slot, each held to the bias (no blind whole-day redraft).
+  const biasAllDay = noSlot && intent.forceMealRegen && intent.mealBias != null && intent.cuisineStylesAdd.length === 0;
+  const meals = a.state.mealPlan?.meals ?? [];
+  const banned = bannedFoodIds(a);
   const plan = targetMeals({
-    meals: a.state.mealPlan?.meals ?? [],
+    meals,
     mealItemId: a.mealItemId,
-    mealSlots: a.intent.mealSlots,
-    wholeDay: a.prefs.mealsChanged || (a.intent.forceMealRegen && a.intent.mealSlots.length === 0 && !a.mealItemId),
-    banned: bannedFoodIds(a, allowed),
+    mealSlots: biasAllDay ? meals.filter((m) => m.status === "planned").map((m) => m.slot) : intent.mealSlots,
+    wholeDay: a.prefs.mealsChanged || (intent.forceMealRegen && noSlot && !biasAllDay),
+    banned,
   });
   if (catalog.length === 0) return { items: [], draft: null, warnings: ["No foods match your diet settings"], touchedIds: [] };
   if (plan.wholeDay) {
+    if (a.allowWholeDay === false) return { items: [], draft: null, warnings: [...plan.warnings, MEAL_CAP_WARNING], touchedIds: [] };
     const out = await draftDay(ctx, a, catalog);
     return { ...out, warnings: [...plan.warnings, ...out.warnings] };
   }
+  const warnings = [...plan.warnings];
+  const holds = (m: PlannedMeal) => m.items.some((i) => banned?.has(i.foodId));
+  if (banned && banned.size > 0 && !meals.some((m) => m.status === "planned" && holds(m))) {
+    const what = human([...intent.foodsAvoidAdd, ...intent.dietTagsAdd]) || "that";
+    warnings.push(`None of today's planned meals have ${what}, so no meal needs swapping`);
+  }
   if (plan.targets.length === 0 || !a.state.mealPlan) {
-    return { items: [], draft: null, warnings: plan.warnings, touchedIds: [] };
+    return { items: [], draft: null, warnings, touchedIds: [] };
   }
   const out = await draftSlots(ctx, a, plan.targets, catalog);
-  return { ...out, warnings: [...plan.warnings, ...out.warnings] };
+  return { ...out, warnings: [...warnings, ...out.warnings] };
 };

@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { ArrowRight, BadgeCheck, SlidersHorizontal, X } from "lucide-react-native";
 import { MotiView } from "moti";
 import { Easing } from "react-native-reanimated";
@@ -156,6 +157,16 @@ export const CheckInResult = ({ onDone }: Props) => {
           style={styles.keep}
         >
           <Text style={styles.keepText}>Keep original plan</Text>
+        </Pressable>
+        {/* S20 "Preview rebuilt week" → S21 rebuild preview (only in-app entry, AMI-177). */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Preview rebuilt week"
+          onPress={() => router.push("/(tabs)/rebuild")}
+          hitSlop={8}
+          style={styles.keep}
+        >
+          <Text style={styles.rebuildText}>Preview rebuilt week →</Text>
         </Pressable>
       </View>
     </View>

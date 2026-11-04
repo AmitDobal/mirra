@@ -1,8 +1,14 @@
 import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { color, space } from "@/theme/tokens";
+import { KEYBOARD_BEHAVIOR } from "@/ui/keyboard";
 
 type OnboardingShellProps = {
   header?: ReactNode;
@@ -11,7 +17,7 @@ type OnboardingShellProps = {
   scroll?: boolean;
 };
 
-/** Safe-area shell with optional sticky footer for quiz CTAs. */
+/** Safe-area shell with optional sticky footer for quiz CTAs (footer rides above the keyboard). */
 export const OnboardingShell = ({
   header,
   footer,
@@ -21,30 +27,32 @@ export const OnboardingShell = ({
   const insets = useSafeAreaInsets();
 
   return (
-    <View
-      style={[
-        styles.root,
-        {
-          paddingTop: insets.top + space.sm,
-          paddingBottom: insets.bottom + space.md,
-        },
-      ]}
-    >
-      {header ? <View style={styles.pad}>{header}</View> : null}
-      {scroll ? (
-        <ScrollView
-          style={styles.flex}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
-      ) : (
-        <View style={[styles.flex, styles.pad]}>{children}</View>
-      )}
-      {footer ? <View style={styles.footer}>{footer}</View> : null}
-    </View>
+    <KeyboardAvoidingView behavior={KEYBOARD_BEHAVIOR} style={styles.root}>
+      <View
+        style={[
+          styles.root,
+          {
+            paddingTop: insets.top + space.sm,
+            paddingBottom: insets.bottom + space.md,
+          },
+        ]}
+      >
+        {header ? <View style={styles.pad}>{header}</View> : null}
+        {scroll ? (
+          <ScrollView
+            style={styles.flex}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {children}
+          </ScrollView>
+        ) : (
+          <View style={[styles.flex, styles.pad]}>{children}</View>
+        )}
+        {footer ? <View style={styles.footer}>{footer}</View> : null}
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 

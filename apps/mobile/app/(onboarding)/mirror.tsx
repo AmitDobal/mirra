@@ -75,12 +75,13 @@ const MirrorScreen = () => {
           saveUri(result.assets[0].uri);
           return;
         }
-        if (!result.canceled) return;
+        // User closed the camera: stay on this screen, no alert (AMI-177).
+        return;
       }
 
       Alert.alert(
         "Camera unavailable",
-        "Use a photo from your library instead? (Simulator has no camera — use a real iPhone for live capture.)",
+        "Allow camera access in Settings, or use a photo from your library instead.",
         [
           { text: "Cancel", style: "cancel" },
           {

@@ -17,6 +17,8 @@ export type ApiErrorCode =
   | "plan_changed"
   /** Plan chat draft: already applied or expired (410). */
   | "draft_gone"
+  /** PUT /v1/onboarding over a completed profile without `reset: true` (409). */
+  | "already_onboarded"
   | "internal";
 
 export class ApiError extends Error {

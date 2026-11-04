@@ -4,7 +4,7 @@ export type WeightStats = {
   readonly latestKg: number | null;
   /** latest − first of the series (negative = lost). */
   readonly deltaFromFirstKg: number | null;
-  /** latest − goal (negative = below goal). */
+  /** Change still needed: goal − latest (negative = lose, positive = gain). AMI-177. */
   readonly deltaToGoalKg: number | null;
   /** Oldest → newest, for charting. */
   readonly series: readonly number[];
@@ -26,7 +26,7 @@ export const computeWeightStats = (
   return {
     latestKg: latest,
     deltaFromFirstKg: series.length >= 2 ? round1(latest - first) : null,
-    deltaToGoalKg: goalKg === null ? null : round1(latest - goalKg),
+    deltaToGoalKg: goalKg === null ? null : round1(goalKg - latest),
     series,
   };
 };

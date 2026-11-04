@@ -6,6 +6,7 @@ import { useFuelStore } from "@/features/fuel";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useHistoryStore } from "@/features/history";
 import { useOnboardingStore } from "@/features/onboarding";
+import { clearQuizWalked } from "@/features/onboarding/services/submit-guard";
 import { useProgressStore, useWeightStore } from "@/features/progress";
 import { useAttendanceStore } from "@/features/today/attendance-store";
 import { useTodayStore } from "@/features/today";
@@ -75,5 +76,6 @@ export const wipeLocalUserData = async (): Promise<void> => {
     clearVoiceCuePrefs(),
   ]);
   resetStores();
+  clearQuizWalked();
   await clearSession();
 };

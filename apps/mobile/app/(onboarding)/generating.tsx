@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { Gauge, Dumbbell } from "lucide-react-native";
 import { MotiView, type MotiTransition } from "moti";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +8,15 @@ import { onboardingCopy } from "@/content/onboarding";
 import { OnboardingShell, useOnboardingStore } from "@/features/onboarding";
 import { GeneratingBlueprintCard } from "@/features/onboarding/components/GeneratingBlueprintCard";
 import { GeneratingHeader } from "@/features/onboarding/components/GeneratingHeader";
-import { runOnboardingGenerate } from "@/features/onboarding/services/run-generate";
+import {
+  loadFunnelSnapshot,
+  resolveFunnelDestination,
+} from "@/features/onboarding/services/funnel-state";
+import {
+  checkOnboardingSubmit,
+  runOnboardingGenerate,
+} from "@/features/onboarding/services/run-generate";
+import { logger } from "@/lib/logger";
 import type { OnboardingWeekPlan } from "@/features/onboarding/types";
 import type { CurrentPlan } from "@/lib/api";
 import { usePlanStore } from "@/stores/plan-store";
@@ -84,8 +92,17 @@ const GeneratingScreen = () => {
     const answers = useOnboardingStore.getState();
 
     void (async () => {
+      // AMI-177: no quiz this session / onboarded + paid → never PUT or regenerate.
+      // Snapshot failure after a walked quiz: submit (API 409s over a completed profile).
+      const decision = await checkOnboardingSubmit().catch(() => "submit" as const);
+      if (decision === "skip") {
+        logger.warn("onboarding.generate_skipped");
+        const dest = await resolveFunnelDestination(await loadFunnelSnapshot());
+        router.replace(dest as Href);
+        return;
+      }
       try {
-        const plan = await runOnboardingGenerate(answers);
+        const plan = await runOnboardingGenerate(answers, { reset: decision === "reset" });
         setWeekPlan(plan);
         setPlan(toCurrentPlan(plan));
       } catch {

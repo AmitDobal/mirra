@@ -88,14 +88,30 @@ export type TabGuardInput = {
   readonly entitled: boolean;
   /** `__DEV__` soft-skip of the paywall only. */
   readonly devPaywallSkip?: boolean;
+  /**
+   * Funnel resolver result (server /v1/me + SQLite) once hydrated; `undefined` = still
+   * loading. Cold deep links skip `app/index.tsx`, so the in-memory `onboarded` flag is
+   * false until this resolves (AMI-177).
+   */
+  readonly hydratedDest?: ColdStartDest;
 };
 
 export type TabGuardDest = Exclude<ColdStartDest, "/(tabs)/today">;
 
-/** `null` = allowed into tabs. */
-export const resolveTabGuard = (opts: TabGuardInput): TabGuardDest | null => {
+/**
+ * `null` = allowed into tabs, `"pending"` = wait (render nothing, never redirect).
+ * Only a hydrated funnel decision may send a user out of tabs, so an onboarded,
+ * paid user is never bounced to onboarding by unhydrated local state.
+ */
+export const resolveTabGuard = (
+  opts: TabGuardInput,
+): TabGuardDest | "pending" | null => {
   if (!opts.hasSession) return "/(onboarding)/splash";
-  if (!opts.onboarded) return "/(onboarding)/welcome";
-  if (!opts.entitled && !opts.devPaywallSkip) return "/(onboarding)/paywall";
-  return null;
+  const unlocked = opts.entitled || Boolean(opts.devPaywallSkip);
+  if (opts.onboarded && unlocked) return null;
+  if (opts.hydratedDest === undefined) return "pending";
+  if (opts.hydratedDest === "/(tabs)/today") {
+    return unlocked ? null : "/(onboarding)/paywall";
+  }
+  return opts.hydratedDest;
 };

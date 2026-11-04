@@ -1,9 +1,17 @@
 import { Sparkles, X } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CapsLabel } from "@/ui/CapsLabel";
+import { KEYBOARD_BEHAVIOR } from "@/ui/keyboard";
 import { LimeCta } from "@/ui/LimeCta";
 import { color, font, radius, space } from "@/theme/tokens";
 
@@ -26,66 +34,76 @@ export const DescribeView = ({ initial, onSubmit, onClose }: Props) => {
   const ready = text.trim().length > 1;
 
   return (
-    <View
-      style={[
-        styles.root,
-        { paddingTop: insets.top + space.md, paddingBottom: insets.bottom + space.md },
-      ]}
-    >
-      <View style={styles.top}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-          onPress={onClose}
-          style={styles.close}
-        >
-          <X size={20} color={color.onSurface} />
-        </Pressable>
-        <Text style={styles.title}>Describe meal</Text>
-        <View style={styles.closeGap} />
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHead}>
-          <Sparkles size={14} color={color.primaryFixed} />
-          <CapsLabel tone="lime">What did you eat?</CapsLabel>
+    <KeyboardAvoidingView behavior={KEYBOARD_BEHAVIOR} style={styles.avoid}>
+      <View
+        style={[
+          styles.root,
+          {
+            paddingTop: insets.top + space.md,
+            paddingBottom: insets.bottom + space.md,
+          },
+        ]}
+      >
+        <View style={styles.top}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            onPress={onClose}
+            style={styles.close}
+          >
+            <X size={20} color={color.onSurface} />
+          </Pressable>
+          <Text style={styles.title}>Describe meal</Text>
+          <View style={styles.closeGap} />
         </View>
-        <TextInput
-          accessibilityLabel="Meal description"
-          autoFocus
-          multiline
-          value={text}
-          onChangeText={setText}
-          placeholder="e.g. grilled chicken, jasmine rice, avocado"
-          placeholderTextColor={color.onSurfaceVariant}
-          style={styles.input}
+
+        <View style={styles.card}>
+          <View style={styles.cardHead}>
+            <Sparkles size={14} color={color.primaryFixed} />
+            <CapsLabel tone="lime">What did you eat?</CapsLabel>
+          </View>
+          <TextInput
+            accessibilityLabel="Meal description"
+            autoFocus
+            multiline
+            value={text}
+            onChangeText={setText}
+            placeholder="e.g. grilled chicken, jasmine rice, avocado"
+            placeholderTextColor={color.onSurfaceVariant}
+            style={styles.input}
+          />
+          <View style={styles.examples}>
+            {EXAMPLES.map((e) => (
+              <Pressable
+                key={e}
+                accessibilityRole="button"
+                onPress={() => setText(e)}
+                style={styles.example}
+              >
+                <Text style={styles.exampleText}>{e}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.spacer} />
+        <LimeCta
+          label="Analyze meal"
+          onPress={() => ready && onSubmit(text.trim())}
+          style={ready ? undefined : styles.disabled}
         />
-        <View style={styles.examples}>
-          {EXAMPLES.map((e) => (
-            <Pressable
-              key={e}
-              accessibilityRole="button"
-              onPress={() => setText(e)}
-              style={styles.example}
-            >
-              <Text style={styles.exampleText}>{e}</Text>
-            </Pressable>
-          ))}
-        </View>
       </View>
-
-      <View style={styles.spacer} />
-      <LimeCta
-        label="Analyze meal"
-        onPress={() => ready && onSubmit(text.trim())}
-        style={ready ? undefined : styles.disabled}
-      />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.surface, paddingHorizontal: space.margin },
+  avoid: { flex: 1, backgroundColor: color.surface },
+  root: {
+    flex: 1,
+    backgroundColor: color.surface,
+    paddingHorizontal: space.margin,
+  },
   top: {
     flexDirection: "row",
     alignItems: "center",
@@ -126,7 +144,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
-  exampleText: { fontFamily: font.body, fontSize: 12, color: color.onSurfaceVariant },
+  exampleText: {
+    fontFamily: font.body,
+    fontSize: 12,
+    color: color.onSurfaceVariant,
+  },
   spacer: { flex: 1 },
   disabled: { opacity: 0.45 },
 });

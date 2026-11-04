@@ -8,6 +8,8 @@ import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 
+import { pickComparePair } from "./compare-pair";
+import { useMirrorBaseline } from "./mirror-baseline";
 import { useProgressStore } from "./progress-store";
 import { sx } from "@/theme/sx";
 
@@ -15,8 +17,10 @@ import { sx } from "@/theme/sx";
 export const CompareScreen = () => {
   const photos = useProgressStore((s) => s.photos);
   const hydratePhotos = useProgressStore((s) => s.hydrate);
-  const a = photos[0] ?? null;
-  const b = photos[1] ?? null;
+  const mirror = useMirrorBaseline();
+  const pair = pickComparePair(photos, mirror);
+  const a = pair.current;
+  const b = pair.baseline;
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -36,11 +40,10 @@ export const CompareScreen = () => {
   const left = a ?? { label: "Current · add a photo", uri: null as string | null };
   const right = b ?? { label: "Baseline · add a photo", uri: null as string | null };
 
-  const daysApart =
-    a && b ? Math.round(Math.abs(a.takenAt - b.takenAt) / 86_400_000) : 0;
+  const daysApart = pair.daysApart ?? 0;
 
   const metrics =
-    a && b
+    a && b && pair.daysApart !== null
       ? [
           {
             label: "Time between",
@@ -92,7 +95,7 @@ export const CompareScreen = () => {
       </View>
 
       <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>
-        {photos.length >= 2 ? "Latest two check-ins" : "Add two photos to compare"}
+        {a && b ? "Baseline vs latest" : "Add two photos to compare"}
       </Text>
       <View style={sx("mb-space-md mt-space-sm flex-row gap-space-sm")}>
         <CompareSlot label={left.label} uri={left.uri} />

@@ -174,6 +174,11 @@ export const s26ExerciseDetail = {
   hero: require("./s26_exercise_detail/hero.jpg"),
 } as const;
 
+/** S36 — Exercise detail anatomy v2 hero (bench press, 800px). */
+export const s36ExerciseAnatomyV2 = {
+  hero: require("./s36_exercise_anatomy_v2/hero.jpg"),
+} as const;
+
 /** S27 — Swap / add sheet alternative thumbs (320px). */
 export const s27ExerciseSwapAdd = {
   dbPress: require("./s27_exercise_swap_add/db-press.jpg"),

@@ -14,3 +14,4 @@ export * from "./nutrition";
 export * from "./streaks";
 export * from "./notifications";
 export * from "./badges";
+export * from "./exercise-tags";

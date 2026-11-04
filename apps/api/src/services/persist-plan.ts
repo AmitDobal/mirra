@@ -3,8 +3,11 @@ import { and, desc, eq } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { planDays, plans, workoutExercises, workouts } from "../db/schema";
+import type { MirraEnv } from "../env";
+import { getExerciseTagger } from "../lib/exercise-tagger";
 import { newId } from "../lib/id";
 import type { PlanGenerateResult } from "../ports/plan-generator";
+import { resolveExerciseNames } from "./exercise-resolve";
 
 type PersistOpts = {
   db: AppDB;
@@ -13,6 +16,24 @@ type PersistOpts = {
   source: string;
   generated: PlanGenerateResult;
   parentPlanId?: string | null;
+  /** Picks the ExerciseTagger. Omitted → heuristic tagger (library + cache still apply). */
+  env?: MirraEnv;
+};
+
+/** name → canonical id for every plan exercise. One tagger call per plan; never fails the write. */
+const canonicalIdsFor = async (
+  db: AppDB,
+  env: MirraEnv | undefined,
+  generated: PlanGenerateResult,
+): Promise<Map<string, string>> => {
+  const names = generated.workouts.flatMap((w) => w.exercises.map((e) => e.name.trim()));
+  try {
+    const { byName } = await resolveExerciseNames({ db, tagger: getExerciseTagger(env, db), names });
+    return new Map([...byName].map(([name, r]) => [name, r.canonicalId]));
+  } catch (err) {
+    console.warn("[persist-plan] exercise resolve failed", err instanceof Error ? err.message : String(err));
+    return new Map();
+  }
 };
 
 /** Insert ready plan + days/workouts/exercises; supersede prior ready plans. */
@@ -23,8 +44,10 @@ export const persistGeneratedPlan = async ({
   source,
   generated,
   parentPlanId = null,
+  env,
 }: PersistOpts): Promise<{ planId: string; version: number }> => {
   const now = new Date();
+  const canonicalIds = await canonicalIdsFor(db, env, generated);
   const [latest] = await db
     .select({ version: plans.version })
     .from(plans)
@@ -78,6 +101,7 @@ export const persistGeneratedPlan = async ({
         restSec: ex.restSec ?? null,
         sortOrder: j,
         swapGroup: ex.swapGroup ?? null,
+        canonicalId: canonicalIds.get(ex.name.trim()) ?? null,
       });
     }
   }

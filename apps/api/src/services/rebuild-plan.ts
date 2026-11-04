@@ -15,6 +15,7 @@ import { parseJson } from "../lib/json";
 import { getPersonalizationContext } from "../lib/personalization-context";
 import { getPlanGenerator } from "../lib/plan-generator";
 import type { PlanGenerateResult } from "../ports/plan-generator";
+import { libraryFocus } from "./exercise-resolve";
 import { loadCurrentPlan } from "./plan-loaders";
 import { persistGeneratedPlan } from "./persist-plan";
 import { buildPlanPrefsJson, buildPlanProfileJson } from "./plan-input";
@@ -69,6 +70,7 @@ const materializeAfter = (
         restSec: ex.restSec ?? null,
         sortOrder: j,
         swapGroup: ex.swapGroup ?? null,
+        ...libraryFocus(ex.name),
       })),
     })),
   };

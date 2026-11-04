@@ -120,6 +120,13 @@
       "when": 1763233200000,
       "tag": "0017_kinetic_badges",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1763319600000,
+      "tag": "0018_exercise_library",
+      "breakpoints": true
     }
   ]
 }

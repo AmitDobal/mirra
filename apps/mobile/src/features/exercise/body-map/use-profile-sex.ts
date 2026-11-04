@@ -1,19 +1,33 @@
 import { useEffect, useState } from "react";
 
 import { getProfile } from "@/db";
-import type { SexId } from "@/features/onboarding/types";
+import { useMeStore } from "@/stores/me-store";
 
-/** Local profile sex for sex-aware imagery (falls back null until hydrated). */
-export const useProfileSex = (): SexId | null => {
-  const [sex, setSex] = useState<SexId | null>(null);
+import { pickProfileSex, toProfileSex, type ProfileSex } from "./profile-sex";
+
+/** Last local read, so later mounts start on the right figure (no male flash). */
+let lastLocal: ProfileSex | null = null;
+
+/**
+ * Profile sex for sex-aware imagery (anatomy maps): server /me profile, else the
+ * local SQLite profile; null until either is known (figures fall back to male).
+ */
+export const useProfileSex = (): ProfileSex | null => {
+  const remote = useMeStore((s) => s.me?.profile?.sex);
+  const [local, setLocal] = useState<ProfileSex | null>(lastLocal);
   useEffect(() => {
     let alive = true;
-    void getProfile().then((p) => {
-      if (alive) setSex((p?.sex as SexId | undefined) ?? null);
-    });
+    void getProfile()
+      .then((p) => {
+        lastLocal = toProfileSex(p?.sex);
+        if (alive) setLocal(lastLocal);
+      })
+      .catch(() => undefined);
+    // Signed in on a new device: no local row; /me carries the onboarding sex.
+    if (!useMeStore.getState().me) void useMeStore.getState().ensureMe().catch(() => undefined);
     return () => {
       alive = false;
     };
   }, []);
-  return sex;
+  return pickProfileSex(remote, local);
 };

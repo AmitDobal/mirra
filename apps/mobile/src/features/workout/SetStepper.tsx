@@ -53,11 +53,14 @@ export const SetStepper = ({ label, unit, value, onStep, onCommit, disabled }: P
     setTyping(true);
   };
 
-  const handleEndTyping = () => {
-    setTyping(false);
-    const parsed = Number.parseFloat(text.replace(",", "."));
+  /** Commit as you type: "Log Set" tapped with the keyboard up must log the typed value. */
+  const handleChangeText = (next: string) => {
+    setText(next);
+    const parsed = Number.parseFloat(next.replace(",", "."));
     if (Number.isFinite(parsed)) onCommit(parsed);
   };
+
+  const handleEndTyping = () => setTyping(false);
 
   return (
     <View style={sx("flex-1 rounded-lg bg-surface-container-high p-space-sm")}>
@@ -74,9 +77,10 @@ export const SetStepper = ({ label, unit, value, onStep, onCommit, disabled }: P
             autoFocus
             selectTextOnFocus
             keyboardType="decimal-pad"
+            returnKeyType="done"
             accessibilityLabel={`${label} value`}
             value={text}
-            onChangeText={setText}
+            onChangeText={handleChangeText}
             onBlur={handleEndTyping}
             onSubmitEditing={handleEndTyping}
             style={sx("min-w-0 flex-1 text-center font-headline text-headline-md text-primary-fixed")}

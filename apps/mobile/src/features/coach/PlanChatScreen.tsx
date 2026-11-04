@@ -20,7 +20,7 @@ import { AiBadge } from "@/ui/AiBadge";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { Chip } from "@/ui/Chip";
 
-import { ProposalCard } from "./ProposalCard";
+import { ProposalCard } from "./proposal/ProposalCard";
 import { usePlanChatStore, type PlanChatMessage } from "./plan-chat-store";
 
 const QUICK_PROMPTS = [

@@ -8,12 +8,13 @@ import { rankCopy } from "@/content/rank";
 import { CapsLabel } from "@/ui/CapsLabel";
 
 import { useBadgeStore } from "./badge-store";
-import { titleForRank } from "./rank-meta";
+import { earnedRankId, titleForRank, unlockedSet } from "./rank-meta";
 
 /** Compact Kinetic Rank entry on You tab (S33 teaser). */
 export const KineticRankTeaser = () => {
   const data = useBadgeStore((s) => s.data);
-  const rank = titleForRank(data?.definitions ?? [], data?.currentRankId ?? null);
+  const defs = data?.definitions ?? [];
+  const rank = titleForRank(defs, earnedRankId(defs, unlockedSet(data?.unlocked ?? [])));
 
   return (
     <Pressable

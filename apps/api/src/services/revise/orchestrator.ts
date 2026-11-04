@@ -133,19 +133,43 @@ const replyFor = (result: PlanReviseResult, p: Proposal, dryRun: boolean): strin
   return "Nothing in your plan needed changing.";
 };
 
+/** Stale-draft errors a v2 client handles; old installed builds never see them (AMI-171). */
+const LEGACY_FALLBACK_CODES = new Set(["plan_changed", "draft_gone", "not_found"]);
+
+/**
+ * Legacy v1 confirm (no draftId): commit the matching pending draft. When it is stale or
+ * already gone, return null so the caller re-runs the revise and applies fresh (pre-v2
+ * behaviour) instead of surfacing 409/410 to a build that cannot handle them.
+ */
+const applyLegacyPending = async (
+  ctx: MealPlanCtx,
+  date: string,
+  echoed: PlanReviseResult["intent"],
+): Promise<CoachReviseResponse | null> => {
+  const pending = await findPendingForIntent(ctx, date, intentKeyOf(echoed));
+  if (!pending) return null;
+  try {
+    return await applyDraft(ctx, pending.id);
+  } catch (err) {
+    // applyDraft already marked a drifted draft expired; never touch an applied one here.
+    if (err instanceof ApiError && LEGACY_FALLBACK_CODES.has(err.code)) return null;
+    throw err;
+  }
+};
+
 /**
  * Plan chat (arch §8): message -> intent (PlanReviser port) -> full edit drafted in memory
  * -> stored draft with real before/after rows. `dryRun` returns the preview + `draftId`;
  * POST /v1/coach/revise/apply commits it. Legacy v1 confirm (`intent` echo) applies the
- * matching pending draft, else drafts and commits in one go.
+ * matching pending draft; when none is live (or it went stale) it drafts and commits in one go.
  */
 export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Promise<CoachReviseResponse> => {
   const dryRun = body.dryRun === true;
   const date = body.date ?? todayUtc();
   const echoed = body.intent ? sanitizeIntent(body.intent) : null;
   if (!dryRun && echoed) {
-    const pending = await findPendingForIntent(ctx, date, intentKeyOf(echoed));
-    if (pending) return applyDraft(ctx, pending.id);
+    const applied = await applyLegacyPending(ctx, date, echoed);
+    if (applied) return applied;
   }
   if (dryRun) await assertProposeLimit(ctx);
   else await assertReviseLimit(ctx);

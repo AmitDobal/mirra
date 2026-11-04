@@ -14,7 +14,7 @@ import { ScreenScroll } from "@/ui/ScreenScroll";
 
 import { useBadgeStore } from "./badge-store";
 import { RankLadder } from "./RankLadder";
-import { activeTier, titleForRank } from "./rank-meta";
+import { activeTier, earnedRankId, titleForRank, unlockedSet } from "./rank-meta";
 import { StreakRankHero } from "./StreakRankHero";
 
 /** Room under the scroll content for the sticky footer (milestone line + 56pt CTA). */
@@ -48,8 +48,9 @@ export const KineticRankScreen = () => {
     );
   }
 
-  const active = activeTier(data.definitions, data.bestStreak);
-  const currentTitle = titleForRank(data.definitions, data.currentRankId);
+  const unlocked = unlockedSet(data.unlocked);
+  const active = activeTier(data.definitions, unlocked);
+  const currentTitle = titleForRank(data.definitions, earnedRankId(data.definitions, unlocked));
 
   return (
     <View style={[sx("flex-1 bg-surface-container-lowest"), { paddingTop: insets.top }]}>
@@ -100,7 +101,7 @@ export const KineticRankScreen = () => {
           <CapsLabel style={styles.onSurface}>{rankCopy.tiersCount(data.definitions.length)}</CapsLabel>
         </View>
 
-        <RankLadder definitions={data.definitions} bestStreak={data.bestStreak} />
+        <RankLadder definitions={data.definitions} bestStreak={data.bestStreak} unlocked={unlocked} />
         <View style={{ height: FOOTER_CLEARANCE }} />
       </ScreenScroll>
 

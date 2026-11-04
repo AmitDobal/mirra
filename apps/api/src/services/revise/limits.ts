@@ -8,9 +8,9 @@ import type { MealPlanCtx } from "../meal-plan-draft";
 /** Applied plan-chat edits (AMI-159 cap, unchanged). */
 export const REVISE_ACTION = "coach.revise";
 export const DAILY_REVISE_LIMIT = 4;
-/** Proposals (each one drafts real meals). */
+/** Previews (AMI-171: 20/day so free quick prompts are not blocked; main had none). */
 export const PROPOSE_ACTION = "coach.revise.propose";
-export const DAILY_PROPOSE_LIMIT = 6;
+export const DAILY_PROPOSE_LIMIT = 20;
 /**
  * Whole-day AI meal redrafts from chat (AMI-170): 2/day, counted at propose. Single-slot
  * and avoid swaps use the heuristic generator (no AI call) and never count; the plan's

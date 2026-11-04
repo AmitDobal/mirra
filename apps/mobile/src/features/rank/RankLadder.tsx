@@ -9,6 +9,8 @@ import { RankTierRow } from "./RankTierRow";
 type Props = {
   readonly definitions: readonly BadgeDefinition[];
   readonly bestStreak: number;
+  /** Server-awarded badge ids (`user_badges`): the only source of tier state. */
+  readonly unlocked: ReadonlySet<string>;
 };
 
 /** Connector below a row takes that row's state color (S33: lime after cleared tiers, crimson after the active one). */
@@ -20,8 +22,8 @@ const LINE: Record<TierState, string> = {
 };
 
 /** S33 vertical milestone ladder: Spark at the top, Apex at the bottom, joined by a left rail. */
-export const RankLadder = ({ definitions, bestStreak }: Props) => {
-  const rows = ladderRows(definitions, bestStreak);
+export const RankLadder = ({ definitions, bestStreak, unlocked }: Props) => {
+  const rows = ladderRows(definitions, unlocked);
   return (
     <View>
       {rows.map((row, i) => (

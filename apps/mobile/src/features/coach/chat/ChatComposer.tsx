@@ -22,8 +22,9 @@ type Props = {
 
 /**
  * S39 bottom composer: dark pill input (lock while a proposal is pending), 48pt mic and
- * send circles on surface-container-low. The mic opens the keyboard, whose own mic key
- * dictates (no speech SDK in the app yet).
+ * send circles on surface-container-low. Send turns lime (primary-fixed) once there is
+ * text to send and nothing is pending, as on main (AMI-171); S39 only draws the locked
+ * state. The mic opens the keyboard, whose own mic key dictates (no speech SDK yet).
  */
 export const ChatComposer = ({ value, onChange, onSend, locked, canSend, bottomInset }: Props) => {
   const input = useRef<TextInputInstance>(null);
@@ -63,9 +64,9 @@ export const ChatComposer = ({ value, onChange, onSend, locked, canSend, bottomI
         accessibilityState={{ disabled: !canSend }}
         disabled={!canSend}
         onPress={onSend}
-        style={({ pressed }) => [styles.circle, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.circle, canSend && styles.sendReady, pressed && styles.pressed]}
       >
-        <ArrowUp size={20} color={color.onSurface} />
+        <ArrowUp size={20} color={canSend ? color.onPrimaryFixed : color.onSurface} />
       </Pressable>
     </View>
   );
@@ -111,5 +112,6 @@ const styles = StyleSheet.create({
     borderColor: hairline,
     backgroundColor: color.surfaceContainerLow,
   },
+  sendReady: { backgroundColor: color.primaryFixed, borderColor: color.primaryFixed },
   pressed: { transform: [{ scale: 0.95 }] },
 });

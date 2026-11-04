@@ -134,6 +134,13 @@
       "when": 1763406000000,
       "tag": "0019_revise_drafts",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1763492400000,
+      "tag": "0020_strength_scores",
+      "breakpoints": true
     }
   ]
 }

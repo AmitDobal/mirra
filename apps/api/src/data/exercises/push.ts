@@ -1,4 +1,4 @@
-/** Push lifts: chest, shoulders, triceps. Muscles sum to 100. Ratios are provisional (AMI-165). */
+/** Push lifts: chest, shoulders, triceps. Muscles sum to 100. Ratios calibrated in AMI-165 (effective e1RM vs parent e1RM). */
 import { anchor, defineExercise as ex, derived, type LibraryExercise } from "../../lib/exercise-library/types";
 
 const BB = ["barbell", "bench"];
@@ -33,7 +33,7 @@ export const PUSH_EXERCISES: LibraryExercise[] = [
   ex("knee_push_up", "Knee Push-Up", "push", BW, { chest: 55, triceps: 25, front_delts: 15, abs: 5 }, "bodyweight",
     ["knee push up", "kneeling push up", "push up knee", "modified push up"], { bwFactor: 0.5 }),
   ex("decline_push_up", "Decline Push-Up", "push", BW, { chest: 50, front_delts: 25, triceps: 20, abs: 5 }, "bodyweight",
-    ["decline push up", "feet elevated push up"], { bwFactor: 0.75, standard: derived("push_up", 0.85) }),
+    ["decline push up", "feet elevated push up"], { bwFactor: 0.75, standard: derived("push_up", 1.15) }),
   ex("diamond_push_up", "Diamond Push-Up", "push", BW, { triceps: 45, chest: 40, front_delts: 15 }, "bodyweight",
     ["diamond push up", "close grip push up", "triangle push up"], { bwFactor: 0.65 }),
   ex("weighted_push_up", "Deficit Weighted Push-Up", "push", BW, { chest: 55, triceps: 25, front_delts: 15, abs: 5 }, "bodyweight",
@@ -77,7 +77,7 @@ export const PUSH_EXERCISES: LibraryExercise[] = [
     ["front raise", "dumbbell front raise", "plate front raise"]),
   ex("triceps_dip", "Triceps Dip", "push", BW, { triceps: 55, chest: 30, front_delts: 15 }, "bodyweight",
     ["tricep dip", "dip", "parallel bar dip", "chest dip", "weighted dip", "bar dip"],
-    { bwFactor: 0.95, standard: derived("bench_press", 0.9) }),
+    { bwFactor: 0.95, standard: derived("bench_press", 1.25) }),
   ex("bench_dip", "Bench Dip", "push", ["bodyweight", "bench"], { triceps: 70, front_delts: 15, chest: 15 }, "bodyweight",
     ["bench dip", "chair dip", "tricep dip chair", "tricep bench dip"], { bwFactor: 0.5 }),
   ex("triceps_pushdown", "Cable Triceps Pushdown", "push", ["cables"], { triceps: 90, forearms: 10 }, "load",

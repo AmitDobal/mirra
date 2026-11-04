@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { PlanExerciseSchema } from "./plans";
+import { TierChangeSchema } from "./strength";
 
 export const CreateWorkoutSessionBodySchema = z.object({
   workoutId: z.string().min(1),
@@ -13,6 +14,8 @@ export const WorkoutSessionResponseSchema = z.object({
   endedAt: z.number().int().nullable(),
   rpe: z.number().int().nullable(),
   notes: z.string().nullable(),
+  /** Tier promotions from this session (complete only; max 6, overall > group > muscle > exercise). */
+  tierChanges: z.array(TierChangeSchema).optional(),
 });
 
 export const LogSetBodySchema = z.object({

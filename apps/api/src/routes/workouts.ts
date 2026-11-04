@@ -24,6 +24,7 @@ import { requireAuth } from "../middleware/auth";
 import { recordAttendanceSafe } from "../services/attendance";
 import { rebuildDaysSafe } from "../services/nutrition-rollup";
 import { loadCurrentPlan } from "../services/plan-loaders";
+import { recomputeStrengthSafe } from "../services/strength-recompute";
 import { loadWorkoutHistory, loadWorkoutSummary } from "../services/workout-summary";
 
 export const workoutRoutes = new Hono<{
@@ -144,15 +145,13 @@ workoutRoutes.post("/v1/workouts/sessions/:id/complete", requireAuth, async (c) 
     .where(eq(workoutSessions.id, sessionId));
   await recordAttendanceSafe(db, userId, "workoutDone");
   await rebuildDaysSafe(db, userId, [session.startedAt]);
+  const tierChanges = await recomputeStrengthSafe(db, userId, sessionId);
 
-  return c.json(
-    toSession({
-      ...session,
-      endedAt: now,
-      rpe: body.rpe ?? null,
-      notes: body.notes ?? null,
-    }),
-  );
+  const response: WorkoutSessionResponse = {
+    ...toSession({ ...session, endedAt: now, rpe: body.rpe ?? null, notes: body.notes ?? null }),
+    tierChanges,
+  };
+  return c.json(response);
 });
 
 /** Session history list (`from` / `to` are YYYY-MM-DD, default last 30 days). */

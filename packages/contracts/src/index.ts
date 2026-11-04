@@ -28,3 +28,4 @@ export * from "./notifications";
 export * from "./badges";
 export * from "./muscles";
 export * from "./exercise-library";
+export * from "./strength";

@@ -8,14 +8,17 @@ type Props = {
   readonly applying: boolean;
   readonly onApply: () => void;
   readonly onChange: () => void;
+  /** AMI-181 goal-estimate line (already mapped by `goalImpactLine`). */
+  readonly impact?: string | null;
 };
 
 const copy = planChatCopy.card;
 
 /** S39 footer: "Apply these to your plan?" + lavender "Change it" / lime "Yes, apply". */
-export const ProposalActions = ({ applying, onApply, onChange }: Props) => (
+export const ProposalActions = ({ applying, onApply, onChange, impact = null }: Props) => (
   <View style={styles.wrap}>
     <Text style={styles.prompt}>{copy.prompt}</Text>
+    {impact ? <Text style={styles.impact}>{impact}</Text> : null}
     <View style={styles.buttons}>
       <Pressable
         accessibilityRole="button"
@@ -55,6 +58,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: color.onSurface,
   },
+  // Same type as the S39 reason line (body 12/16, on-surface), centered under the prompt.
+  impact: { marginTop: -6, fontFamily: font.body, fontSize: 12, lineHeight: 16, textAlign: "center", color: color.onSurface },
   buttons: { flexDirection: "row", gap: 12 },
   btn: {
     flex: 1,

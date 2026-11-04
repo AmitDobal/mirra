@@ -3,7 +3,7 @@
  * A new version supersedes the active one in a single `db.batch` (partial unique index keeps one active).
  */
 import { goalEngine, projectGoal, type GoalProjection } from "@mirra/contracts";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { goalPlans, goalSnapshots } from "../db/schema";
@@ -89,6 +89,19 @@ export const writePlanVersion = async (db: AppDB, input: NewPlanInput): Promise<
     db.insert(goalPlans).values(row),
   ]);
   return row;
+};
+
+/** Record the S43 commitment on a plan that has none (first commitment wins). */
+export const setPlanCommitment = async (
+  db: AppDB,
+  userId: string,
+  planId: string,
+  committedAt: number,
+): Promise<void> => {
+  await db
+    .update(goalPlans)
+    .set({ committedAt })
+    .where(and(eq(goalPlans.id, planId), eq(goalPlans.userId, userId), isNull(goalPlans.committedAt)));
 };
 
 export const snapshotRowOf = (

@@ -31,3 +31,4 @@ export * from "./badges";
 export * from "./notifications";
 export * from "./strength";
 export * from "./profile";
+export * from "./goal";

@@ -1,4 +1,4 @@
-import { ChevronRight, UserRound } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 import { Fragment, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -16,22 +16,21 @@ import { Card, Divider, ValueRow } from "./you-settings";
  * listing Sex · Age · Height · Weight · Goal weight · Pace · Units; each row edits in place.
  */
 export const PersonalDetailsRow = ({ onPress }: { onPress: () => void }) => (
-  <View style={sx("mt-7")}>
+  <View style={sx("mt-4")}>
     <Card>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${c.personal.title}. ${c.personal.sub}`}
         onPress={onPress}
         style={({ pressed }) => [
-          sx("flex-row items-center gap-3 p-4"),
+          sx("flex-row items-center gap-3 px-4 py-3"),
+          { minHeight: 68 },
           pressed ? sx("bg-surface-container") : null,
         ]}
       >
-        <View style={[sx("items-center justify-center bg-surface-container-high"), { width: 36, height: 36, borderRadius: 18 }]}>
-          <UserRound size={18} color={color.secondary} />
-        </View>
+        {/* S45: text-only row (no avatar glyph), 15/12 type, chevron right. */}
         <View style={sx("min-w-0 flex-1")}>
-          <Text style={sx("font-body text-body-md text-on-surface")}>{c.personal.title}</Text>
+          <Text style={[sx("font-body-medium text-on-surface"), { fontSize: 15, lineHeight: 19 }]}>{c.personal.title}</Text>
           <Text numberOfLines={1} style={[sx("font-body text-body-sm text-on-surface-variant"), { marginTop: 2 }]}>
             {c.personal.sub}
           </Text>

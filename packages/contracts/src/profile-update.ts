@@ -44,6 +44,11 @@ export const UpdateProfileBodySchema = z
     sessionMinutes: SessionMinutesSchema.optional(),
     equipment: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
     mealsPerDay: z.number().int().min(1).max(4).nullable().optional(),
+    /**
+     * S43 hold-to-commit (AMI-182). Sets `goal_plans.committed_at` on the active plan when it has
+     * none yet (first commitment wins). Used when post-auth sync skips the onboarding PUT.
+     */
+    commitment: z.object({ committedAt: z.number().int().positive() }).strict().optional(),
   })
   .strict()
   .refine((v) => Object.values(v).some((x) => x !== undefined), {

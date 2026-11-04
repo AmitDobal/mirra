@@ -75,11 +75,19 @@ export const GoalPlanSummarySchema = z.object({
   originalEta: GoalIsoDateSchema.nullable(),
 });
 
+/** Raw 28-day counts behind the ratios (S44 "10 / 12" rows). Optional: older cached bodies lack it. */
+export const GoalAdherenceCountsSchema = z.object({
+  training: z.object({ done: z.number().int(), planned: z.number().int() }),
+  fuel: z.object({ onTarget: z.number().int(), logged: z.number().int() }).nullable(),
+  checkIn: z.object({ days: z.number().int(), of: z.number().int() }),
+});
+
 export const GoalAdherenceSummarySchema = z.object({
   score: z.number().min(0).max(1),
   training: z.number().nullable(),
   fuel: z.number().nullable(),
   checkIn: z.number().nullable(),
+  counts: GoalAdherenceCountsSchema.optional(),
 });
 
 export const GoalResponseSchema = z.object({

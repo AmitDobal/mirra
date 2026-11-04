@@ -147,3 +147,25 @@ test("sampleSeries interpolates and clamps", () => {
   assert.equal(sampleSeries([10, 20], 5), 20);
   assert.equal(sampleSeries([10, 20], -1), 10);
 });
+
+test("live (after onboarding): estimate starts at today's trend and ends on the goal at the ETA", () => {
+  const data: GoalChartData = {
+    ...base,
+    todayIndex: 2,
+    actual: [
+      { date: "2026-11-04", kg: 82, trendKg: 82 },
+      { date: "2026-11-18", kg: 81, trendKg: 81.3 },
+    ],
+  };
+  const m = buildGoalChartModel({ data, width: 350, height: 180, variant: "full", etaWeeks: 15, todayCaps: "Today" });
+  const pts = nums(m.expected);
+  assert.equal(pts.length, 4);
+  assert.ok(Math.abs(pts[0]! - m.todayLine!) < 0.1);
+  assert.ok(Math.abs(pts[3]! - m.target!.y) < 0.1);
+  assert.equal(m.trendEnd!.x, m.todayLine);
+  assert.deepEqual({ x: m.todayCaps!.x, text: m.todayCaps!.text }, { x: m.todayLine, text: "Today" });
+  const spark = buildGoalChartModel({ data, width: 300, height: 56, variant: "spark", etaWeeks: 15, todayCaps: "Today" });
+  assert.ok(spark.todayLine !== null);
+  assert.equal(spark.todayCaps, null);
+  assert.equal(spark.trendEnd, null);
+});

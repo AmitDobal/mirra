@@ -127,6 +127,21 @@ export const buildProfileView = (p: ProfileSource | null, q: PrefsSource | null)
   };
 };
 
+type ServerMe = { readonly profile?: unknown; readonly preferences?: unknown } | null | undefined;
+type LocalMe = { readonly preferences?: unknown } | null | undefined;
+
+/**
+ * Which profile to render (QA AMI-182): once `/v1/me` answered with any onboarding data, the server
+ * wins for BOTH profile and prefs; never mix in on-device quiz values. Local SQLite only paints
+ * before the server answers (offline / first frame).
+ */
+export const pickProfileSources = (me: ServerMe, local: LocalMe): { profile: ProfileSource | null; prefs: PrefsSource | null } => {
+  if (me && (me.profile || me.preferences)) {
+    return { profile: (me.profile ?? null) as ProfileSource | null, prefs: (me.preferences ?? null) as PrefsSource | null };
+  }
+  return { profile: (local ?? null) as ProfileSource | null, prefs: (local?.preferences ?? null) as PrefsSource | null };
+};
+
 /** Fields whose change should offer a plan rebuild (never auto-run). */
 const PLAN_FIELDS: readonly string[] = [
   "trainDays", "sessionMinutes", "equipment", "primaryGoal", "experience", "mealsPerDay", "dietTags",

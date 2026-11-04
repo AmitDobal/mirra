@@ -60,6 +60,7 @@ export const toGoalResponse = (plan: PlanSummaryRow, g: GoalProjection): GoalRes
     training: g.adherence.training,
     fuel: g.adherence.fuel,
     checkIn: g.adherence.checkIn,
+    counts: g.adherence.counts,
   },
   milestones: g.milestones.slice(0, 8),
   flags: g.flags,

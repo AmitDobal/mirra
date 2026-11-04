@@ -14,6 +14,7 @@ import {
 } from "@/lib/api";
 import type { ApiTierChange } from "@/lib/api/strength-exercise";
 import { errorMessage, logger } from "@/lib/logger";
+import { invalidateGoal } from "@/features/goal/goal-store";
 
 /** Where the active session row lives. */
 export type SessionSource = "api" | "local" | "none";
@@ -129,6 +130,7 @@ export const persistComplete = async (
   if (source === "api") {
     try {
       const res = await apiCompleteSession(sessionId, { rpe });
+      invalidateGoal();
       return res.tierChanges ?? [];
     } catch (err) {
       logger.warn("workout.complete.api_failed_using_local", {

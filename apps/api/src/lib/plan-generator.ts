@@ -4,6 +4,7 @@ import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
 import type { PlanGenerateResult, PlanGenerator } from "../ports/plan-generator";
 import { resolveAiProvider, type AiProviderId } from "./ai/resolve-provider";
+import { enforceTrainDays, trainDaysOf } from "./plan-train-days";
 
 const withGeneratorTag = (
   base: PlanGenerator,
@@ -22,6 +23,18 @@ const withGeneratorTag = (
   },
 });
 
+/**
+ * AMI-184: every adapter's week is fitted to the user's train days (generate and rebuild).
+ * Idempotent; logs when a correction was needed.
+ */
+export const withTrainDays = (base: PlanGenerator, where: string): PlanGenerator => ({
+  generate: async (input) => {
+    const result = await base.generate(input);
+    const tag = `${where}.${result.summary.generator ?? "unknown"}.${input.kind}`;
+    return enforceTrainDays(result, trainDaysOf(input), input.weekStart, tag);
+  },
+});
+
 type FactoryOpts = { db?: AppDB; userId?: string };
 
 /**
@@ -31,7 +44,9 @@ type FactoryOpts = { db?: AppDB; userId?: string };
 export const getPlanGenerator = (
   env: MirraEnv,
   opts?: FactoryOpts,
-): PlanGenerator => {
+): PlanGenerator => withTrainDays(pickPlanGenerator(env, opts), "plan-generator");
+
+const pickPlanGenerator = (env: MirraEnv, opts?: FactoryOpts): PlanGenerator => {
   const provider = resolveAiProvider(env);
   switch (provider) {
     case "openai":

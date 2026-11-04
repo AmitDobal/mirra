@@ -7,6 +7,7 @@ import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { mondayOf, todayUtc } from "../lib/dates";
 import { badRequest } from "../lib/errors";
 import { newId } from "../lib/id";
+import { parseJson } from "../lib/json";
 import { getPersonalizationContext } from "../lib/personalization-context";
 import { getPlanGenerator } from "../lib/plan-generator";
 import { withAiCredits } from "./credits-gate";
@@ -84,6 +85,7 @@ export const runPlanGenerateJob = async ({
       source: "onboarding",
       generated,
       env,
+      trainDays: parseJson<number[]>(prefs.trainDaysJson, []),
     });
 
     await db

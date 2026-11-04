@@ -115,16 +115,6 @@ const computeDiffs = (
   return diffs;
 };
 
-/** Rebuild: shift train days forward one slot when reason mentions skip/miss. */
-const rebuildTrainDays = (trainDays: number[], reason: string): number[] => {
-  const lower = reason.toLowerCase();
-  if (!lower.includes("skip") && !lower.includes("miss")) return trainDays;
-  return trainDays
-    .map((d) => (d >= 7 ? 1 : d + 1))
-    .filter((d, i, arr) => arr.indexOf(d) === i)
-    .sort((a, b) => a - b);
-};
-
 export const previewRebuild = async (
   db: AppDB,
   env: MirraEnv,
@@ -146,10 +136,9 @@ export const previewRebuild = async (
   if (!before.plan) throw badRequest("No current plan — generate first");
 
   const weekStart = before.plan.weekStart || mondayOf(todayUtc());
-  const trainDays = rebuildTrainDays(
-    JSON.parse(prefs.trainDaysJson) as number[],
-    reason,
-  );
+  // AMI-184: a rebuild keeps the user's chosen train days. (The old "missed → shift every
+  // train day +1" moved lifts onto days the user never picked.)
+  const trainDays = parseJson<number[]>(prefs.trainDaysJson, []);
   const generator = getPlanGenerator(env, { db, userId });
   const context = await getPersonalizationContext(env, db).build({
     userId,
@@ -223,6 +212,11 @@ export const applyRebuild = async (
   const store = parseJson<PreviewStore | null>(job.inputJson, null);
   if (!store?.generated) throw badRequest("Invalid preview token payload");
 
+  const [prefs] = await db
+    .select({ trainDaysJson: preferences.trainDaysJson })
+    .from(preferences)
+    .where(eq(preferences.userId, userId))
+    .limit(1);
   await persistGeneratedPlan({
     db,
     userId,
@@ -230,6 +224,7 @@ export const applyRebuild = async (
     source: "rebuild",
     generated: store.generated,
     parentPlanId: store.parentPlanId,
+    trainDays: parseJson<number[]>(prefs?.trainDaysJson ?? "[]", []),
   });
 
   return loadCurrentPlan(db, userId);

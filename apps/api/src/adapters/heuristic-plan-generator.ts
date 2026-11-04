@@ -1,5 +1,6 @@
 import { addDays } from "../lib/dates";
 import { parseJson } from "../lib/json";
+import { trainDaysOf } from "../lib/plan-train-days";
 import {
   ageRecoveryHint,
   cuisineHint,
@@ -18,7 +19,6 @@ import type {
 type Prefs = {
   primaryGoal?: string;
   experience?: string;
-  trainDays?: number[];
   sessionMinutes?: number;
   equipment?: string[];
   cuisineStyles?: string[];
@@ -130,9 +130,8 @@ export const heuristicPlanGenerator: PlanGenerator = {
   generate: async (input: PlanGenerateInput): Promise<PlanGenerateResult> => {
     const prefs = parseJson<Prefs>(input.prefsJson, {});
     const profile = parseJson<Profile>(input.profileJson, {});
-    const trainDays = new Set(
-      (prefs.trainDays?.length ? prefs.trainDays : [1, 3, 5]).filter((d) => d >= 1 && d <= 7),
-    );
+    const chosen = trainDaysOf(input);
+    const trainDays = new Set(chosen.length > 0 ? chosen : [1, 3, 5]);
     const minutes = prefs.sessionMinutes ?? 45;
     const rotation = rotationFor(prefs);
     const summary = macroTargets(profile, prefs, input.context?.profile.goalKcalHint);

@@ -7,11 +7,12 @@ import { ApiError, notFound } from "../../lib/errors";
 import { assertRateLimit, recordRegen, type MealPlanCtx } from "../meal-plan-draft";
 import { getTodayPlan } from "../meal-plan";
 import { commitMealDraft } from "../meal-plan-targeted";
-import { reviseWorkout } from "../workout-revise";
 import { loadReviseState } from "./context";
 import { claimDraft, loadDraft, setDraftStatus, touchHash, type StoredDraft } from "./drafts";
 import { legacyChanges } from "./legacy";
 import { assertReviseLimit, REVISE_ACTION } from "./limits";
+import { assertScheduleFree, commitScheduleDraft } from "./schedule-step";
+import { commitWorkoutDraft, isRowDraft } from "./workout-step";
 
 const gone = (message: string) => new ApiError("draft_gone", message, 410);
 
@@ -25,8 +26,8 @@ const prefsUpsert = (ctx: MealPlanCtx, patch: Record<string, unknown>) => {
 
 /**
  * Commit a stored draft exactly as previewed: no reviser / generator call. Prefs + meal
- * rows + audit go in one D1 batch; the workout bridge re-runs non-dry after (AMI-166
- * moves it into the batch). 410 when applied/expired, 409 `plan_changed` on drift.
+ * rows + workout rows + plan-day moves + audit go in one D1 batch (AMI-166).
+ * 410 when applied/expired, 409 `plan_changed` on drift or a session logged on a moved day.
  */
 export const applyDraft = async (ctx: MealPlanCtx, draftId: string): Promise<CoachReviseResponse> => {
   const draft: StoredDraft | null = await loadDraft(ctx, draftId);
@@ -50,6 +51,16 @@ export const applyDraft = async (ctx: MealPlanCtx, draftId: string): Promise<Coa
     await setDraftStatus(ctx, draft.id, "expired");
     throw new ApiError("plan_changed", "Your plan changed. Send that again?", 409);
   }
+  if (draft.workout && !isRowDraft(draft.workout)) {
+    await setDraftStatus(ctx, draft.id, "expired");
+    throw gone("That preview expired. Send it again");
+  }
+  if (draft.schedule) {
+    await assertScheduleFree(ctx, draft.schedule).catch(async (err: unknown) => {
+      await setDraftStatus(ctx, draft.id, "expired");
+      throw err;
+    });
+  }
   if (!(await claimDraft(ctx, draft.id))) throw gone("That change is already applied");
 
   const statements: BatchItem<"sqlite">[] = [];
@@ -57,6 +68,8 @@ export const applyDraft = async (ctx: MealPlanCtx, draftId: string): Promise<Coa
   if (draft.meal && hasMeals) {
     statements.push(...commitMealDraft(ctx, draft.meal), recordRegen(ctx, "meal_plan.generate", draft.date));
   }
+  if (draft.workout) statements.push(...commitWorkoutDraft(ctx.db, draft.workout));
+  if (draft.schedule) statements.push(...commitScheduleDraft(ctx.db, draft.schedule));
   try {
     await ctx.db.batch([recordRegen(ctx, REVISE_ACTION, draft.date), ...statements]);
   } catch (err) {
@@ -65,10 +78,6 @@ export const applyDraft = async (ctx: MealPlanCtx, draftId: string): Promise<Coa
   }
 
   const warnings = [...draft.meta.warnings];
-  if (draft.workout) {
-    const out = await reviseWorkout(ctx.db, { ...draft.workout, dryRun: false });
-    if (!out) warnings.push("That workout is no longer in your plan");
-  }
 
   return {
     message: sanitizeAiCopy(draft.meta.reply),

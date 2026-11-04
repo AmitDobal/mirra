@@ -110,7 +110,8 @@ const v2From = (text: string): V2Pieces => {
 /** Keyword/rule reviser — deterministic, no keys needed. */
 export const heuristicPlanReviser: PlanReviser = {
   propose: async (input): Promise<PlanReviseResult> => {
-    const text = input.message.toLowerCase().replace(/cable machines?/g, "cables");
+    // iOS keyboards send curly apostrophes ("Thursday’s workout").
+    const text = input.message.toLowerCase().replace(/[‘’]/g, "'").replace(/cable machines?/g, "cables");
     const intent = emptyIntent();
     const notes: string[] = [];
 

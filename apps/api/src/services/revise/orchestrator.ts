@@ -17,6 +17,7 @@ import { legacyChanges } from "./legacy";
 import { assertProposeLimit, assertReviseLimit, PROPOSE_ACTION } from "./limits";
 import { mealStep, type MealStepResult } from "./meal-step";
 import { prefsStep } from "./prefs-step";
+import { scheduleStep, type ScheduleDraft } from "./schedule-step";
 import { workoutStep, type WorkoutDraft } from "./workout-step";
 
 type Proposal = {
@@ -26,6 +27,7 @@ type Proposal = {
   patch: Record<string, unknown>;
   meal: MealDraft | null;
   workout: WorkoutDraft | null;
+  schedule: ScheduleDraft | null;
   touch: DraftTouch;
   doMeal: boolean;
 };
@@ -64,19 +66,25 @@ const buildProposal = async (
     ? await safeMealStep(() => mealStep(ctx, { state, intent, prefs: mealPrefs, mealItemId: body.context?.mealItemId }))
     : null;
   const workout = doWorkout
-    ? await workoutStep(ctx.db, state, intent, prefs.nextEquipment, body.context?.exerciseId)
+    ? workoutStep(state, intent, prefs.nextEquipment, {
+        message: body.message,
+        ...(body.context?.exerciseId ? { exerciseId: body.context.exerciseId } : {}),
+        ...(body.context?.workoutId ? { contextWorkoutId: body.context.workoutId } : {}),
+      })
     : null;
-  warnings.push(...(meal?.warnings ?? []), ...(workout?.warnings ?? []));
+  const schedule = doWorkout ? await scheduleStep(ctx, state, intent) : null;
+  warnings.push(...(meal?.warnings ?? []), ...(workout?.warnings ?? []), ...(schedule?.warnings ?? []));
 
   const workoutItems = [...(workout?.items ?? [])];
   if (prefs.sessionDefault && !workoutItems.some((i) => i.kind === "session_minutes")) {
     workoutItems.push({ id: "session_minutes", kind: "session_minutes", ...prefs.sessionDefault, droppedExercises: [], tags: [], reason: null });
   }
-  if (state.workoutIsNextLift && (workout?.items.length ?? 0) > 0) {
+  if (state.workoutIsNextLift && workout?.draft?.workoutId === state.workout?.id && (workout?.items.length ?? 0) > 0) {
     warnings.push(`Today is a rest day, so this edits your next lift (${state.dayLabel})`);
   }
   const items = [
     ...workoutItems,
+    ...(schedule?.items ?? []),
     ...prefs.items.filter((i) => i.kind === "meals_per_day"),
     ...(meal?.items ?? []),
     ...prefs.items.filter((i) => i.kind === "pref"),
@@ -89,11 +97,13 @@ const buildProposal = async (
     patch: prefs.patch,
     meal: meal?.draft ?? null,
     workout: workout?.draft ?? null,
+    schedule: schedule?.draft ?? null,
     touch: {
       mealDay: wholeDay,
       mealItemIds: meal?.draft && !wholeDay ? meal.touchedIds : [],
       workoutId: workout?.draft?.workoutId ?? null,
       prefs: Object.keys(prefs.patch).length > 0,
+      ...(schedule?.dayIds.length ? { dayIds: schedule.dayIds } : {}),
     },
     doMeal,
   };
@@ -167,6 +177,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     prefsPatch: Object.keys(p.patch).length > 0 ? p.patch : null,
     meal: p.meal,
     workout: p.workout,
+    schedule: p.schedule,
     baseHash: touchHash(state, p.touch),
   });
   if (!dryRun) return applyDraft(ctx, draft.id);

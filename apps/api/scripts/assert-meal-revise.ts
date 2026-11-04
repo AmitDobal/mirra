@@ -13,7 +13,7 @@ import type { PlanReviseInput } from "../src/ports/plan-reviser";
 import { legacyChanges } from "../src/services/revise/legacy";
 import { pickCandidate, targetMeals } from "../src/services/revise/meal-targeting";
 import { mealDelta, mealSwapReason, mealSwapTags } from "../src/services/revise/tags";
-import { workoutItemsFrom } from "../src/services/revise/workout-step";
+import { planWorkoutEdits } from "../src/services/workout-revise";
 
 let failures = 0;
 const check = (ok: boolean, label: string) => {
@@ -115,16 +115,16 @@ const tagsAndLegacy = () => {
 
 const workoutMapping = () => {
   const workout = {
-    id: "w", durationMin: 60, focus: "Chest",
-    exercises: ["Cable fly", "Push-up", "Dips", "Plank"].map((name, i) => ({ id: `e${i}`, name, cue: null, targetSets: 3, targetReps: "10-12", restSec: 60, sortOrder: i, swapGroup: null })),
+    id: "w", title: "Push day", durationMin: 60, focus: "Chest", calorieEst: null,
+    exercises: ["Cable fly", "Push-up", "Dips", "Plank"].map((name, i) => ({ id: `e${i}`, name, cue: null, targetSets: 3, targetReps: "10-12", restSec: 60, swapGroup: null, canonicalId: null })),
   };
-  const items = workoutItemsFrom(workout, "Thu · Push day", [
-    { kind: "workout_swap", summary: "", before: "Cable fly", after: "Dumbbell fly" },
-    { kind: "workout_shorten", summary: "", before: "Session 60 min", after: "Session 30 min" },
-  ], sanitizeIntent({ shortenMin: 30 }));
+  // No cables any more: the cable fly swaps to a dumbbell fly, then the session is capped.
+  const { items } = planWorkoutEdits({
+    workout, dayLabel: "Thu · Push day", equipment: ["dumbbells"], intent: sanitizeIntent({ shortenMin: 30 }), newId: () => "n",
+  });
   const swap = items[0];
-  check(swap?.kind === "exercise_swap" && swap.after.name === "Dumbbell fly" && swap.after.sets === 3 && swap.after.reps === "10-12", "exercise_swap carries sets x reps");
-  check(swap?.kind === "exercise_swap" && swap.tags[0] === "Dumbbells" && swap.dayLabel === "Thu · Push day", "exercise tag = after gear, dayLabel set");
+  check(swap?.kind === "exercise_swap" && swap.after.name === "Dumbbell Fly" && swap.after.canonicalId === "dumbbell_fly" && swap.after.sets === 3 && swap.after.reps === "10-12", "exercise_swap carries sets x reps + canonical id");
+  check(swap?.kind === "exercise_swap" && swap.tags.join() === "Same muscles,Dumbbells" && swap.dayLabel === "Thu · Push day", "exercise tags = same muscles + after gear, dayLabel set");
   const sess = items[1];
   check(sess?.kind === "session_minutes" && sess.after === 30 && sess.droppedExercises.join() === "Dips,Plank", "session_minutes lists dropped moves");
 };

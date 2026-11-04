@@ -1,5 +1,7 @@
 import type { Delta, MealSnap } from "@mirra/contracts";
 
+export * from "./tags-exercise";
+
 /**
  * Deterministic proposal tags + reason lines (arch §8.5). The server computes these,
  * never AI free text. Pure, so the assert scripts can load it directly.

@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** AMI-161–174 @ `a50de7f` ([#72](https://github.com/AmitDobal/mirra/pull/72)) — strength tiers + engine, real anatomy SVG, exercise library, plan-chat before/after v2, Stitch S34–S40. D1 `0018`–`0020` remote. API Worker `17a65f69`. EAS iOS https://u.expo.dev/update/01a1a64d-4669-7078-980b-f63c842cfdd3 · Android https://u.expo.dev/update/01a1a64e-0f27-7782-8f21-0798bfdb51c3.
+**Latest:** Hotfix AMI-177 @ `d497c23` ([#73](https://github.com/AmitDobal/mirra/pull/73)) — cold deep link no longer sends onboarded users into the quiz; `PUT /v1/onboarding` over a completed profile → 409 `already_onboarded` unless `reset: true` (prod data-loss fix). Android keyboard (KAV), Play copy, compare baseline. No migrations. API Worker `49ac06ab`. EAS iOS https://u.expo.dev/update/01a1a6ac-11d4-7e68-be9c-8a65790e349a · Android https://u.expo.dev/update/01a1a6ac-e701-7b91-a020-bb00a0169239.
 
 | | |
 | --- | --- |
@@ -8,9 +8,9 @@
 | State | **DAY-TEST LIVE** — hosted API + EAS Update (laptop-off Expo Go) |
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
-| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `17a65f69` (AMI-161–174) |
-| Mobile | Expo SDK **58** — tip `a50de7f` |
-| Mobile day-test | iOS https://u.expo.dev/update/01a1a64d-4669-7078-980b-f63c842cfdd3 · Android https://u.expo.dev/update/01a1a64e-0f27-7782-8f21-0798bfdb51c3 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `49ac06ab` (AMI-177 hotfix) |
+| Mobile | Expo SDK **58** — tip `d497c23` |
+| Mobile day-test | iOS https://u.expo.dev/update/01a1a6ac-11d4-7e68-be9c-8a65790e349a · Android https://u.expo.dev/update/01a1a6ac-e701-7b91-a020-bb00a0169239 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

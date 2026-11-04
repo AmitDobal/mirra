@@ -2,7 +2,8 @@
  * AMI-170 plan chat quality, against the real schema (all D1 migrations, in-memory SQLite):
  * bias promises hold (more protein / fewer carbs / lighter, else a warning), avoid swaps
  * exactly the meals holding the food (cheese != all dairy), preview copy never says "Done",
- * multi-intent keeps every part, apply never spends the meal cap, workoutTitle = edited day.
+ * multi-intent keeps every part, apply never spends the meal cap, workoutTitle = edited day,
+ * previews cap at 20/day so quick prompts past 6 still preview (AMI-171).
  *   npm run test:chat-quality -w @mirra/api
  */
 import type { CoachReviseResponse, ReviseItem } from "@mirra/contracts";
@@ -10,10 +11,12 @@ import { eq } from "drizzle-orm";
 
 import * as schema from "../src/db/schema";
 import type { MirraEnv } from "../src/env";
+import { ApiError } from "../src/lib/errors";
 import { newId } from "../src/lib/id";
 import { filterCatalog } from "../src/lib/meal-diet";
 import { generatePlan, getTodayPlan } from "../src/services/meal-plan";
 import { applyDraft, revisePlans } from "../src/services/plan-revise";
+import { DAILY_PROPOSE_LIMIT } from "../src/services/revise/limits";
 import { PREVIEW_REPLY } from "../src/services/revise/orchestrator";
 import { createMemoryDb } from "./lib/memory-d1";
 
@@ -171,11 +174,30 @@ const mealCap = async () => {
   check((await applyDraft(ctx, after.draftId!)).applied && rows("coach.revise") === 4, "apply cap (coach.revise) still counted per apply");
 };
 
+/** AMI-171: free quick prompts kept previewing past 6; the propose cap is 20/day, apply cap untouched. */
+const proposeCap = async () => {
+  const ctx = await seedUser();
+  let ok = 0;
+  for (let n = 0; n < DAILY_PROPOSE_LIMIT; n++) {
+    const r = await propose(ctx, n % 2 === 0 ? "make my workout 30 minutes" : "swap my breakfast");
+    if (r.message.startsWith("Preview:")) ok += 1;
+  }
+  check(ok === 20, `20 previews in a day all succeed (${ok}/20, was blocked at 7 before)`);
+  let status = 0;
+  try {
+    await propose(ctx, "swap my lunch");
+  } catch (err) {
+    status = err instanceof ApiError ? err.status : -1;
+  }
+  check(status === 429, "21st preview -> 429 rate_limited", String(status));
+};
+
 const main = async () => {
   await bias();
   await avoid();
   await copyAndMulti();
   await mealCap();
+  await proposeCap();
   process.exit(failures === 0 ? 0 : 1);
 };
 main().catch((err) => {

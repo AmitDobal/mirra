@@ -239,8 +239,9 @@ For one release, the legacy `changes[]` (string before/after) is derived from `i
 - `dryRun: true` runs the full edit **in memory**. Meals: targeted slots go through the existing `MealPlanGenerator` port with slot budgets, and the result is real dishes with macros. `services/meal-plan.ts` is split into `draftMeals()` (no writes) + `commitMealDraft()`. Workouts: the edited exercise list. Prefs: the patch.
 - Everything is stored in `revise_drafts`. Apply commits the stored rows with **no AI call** in one D1 batch.
 - The draft holds `base_hash` (ids + names of touched meal items / workout exercises / plan days). If the hash changed, apply returns 409 `plan_changed` and the UI asks the user to resend.
+- Legacy confirm (old builds: `dryRun:false` + echoed `intent`, no `draftId`) never gets 409/410. If the matching pending draft is stale, expired or missing, the server re-runs the revise from the echoed intent and applies fresh, returning the legacy 200 shape (AMI-171). Only `/v1/coach/revise/apply` with a `draftId` returns 409 `plan_changed` / 410 `draft_gone`.
 - One pending draft per user (a new propose expires the old one). TTL 30 min.
-- Limits: propose ≤ 6/day + AI credits. Only a whole-day AI meal redraft from chat counts, on its own meter `coach.revise.meal_day` (2/day), at propose time; at the cap the meal part is skipped with a warning and the rest is still proposed. Single-slot and avoid swaps use the heuristic generator (no AI call) and never count; the plan's own `meal_plan.generate` never eats this budget. Apply counts only `coach.revise` (4/day) (AMI-170).
+- Limits: propose ≤ 20/day + AI credits (AMI-171: raised from 6 so free quick-prompt previews are not blocked; main had no preview cap). Only a whole-day AI meal redraft from chat counts, on its own meter `coach.revise.meal_day` (2/day), at propose time; at the cap the meal part is skipped with a warning and the rest is still proposed. Single-slot and avoid swaps use the heuristic generator (no AI call) and never count; the plan's own `meal_plan.generate` never eats this budget. Apply counts only `coach.revise` (4/day) (AMI-170).
 
 ### 8.3 `revise_drafts`
 

@@ -2,14 +2,15 @@
  * AMI-163 draft lifecycle against a real schema (all D1 migrations, in-memory SQLite via
  * drizzle sqlite-proxy): propose -> draft with real dishes, apply commits it byte for byte
  * with no AI call, apply twice -> 410, plan edited in between -> 409, slot targeting,
- * avoid-food rows, meals per day, legacy v1 confirm.
+ * avoid-food rows, meals per day, legacy v1 confirm (stale/expired/missing draft falls back
+ * to a fresh apply with the legacy 200 shape; draftId clients keep 409/410, AMI-171).
  *   npm run test:revise-drafts -w @mirra/api
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 
-import type { CoachReviseBody, CoachReviseResponse, ReviseItem } from "@mirra/contracts";
+import { CoachReviseResponseSchema, type CoachReviseBody, type CoachReviseResponse, type ReviseItem } from "@mirra/contracts";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/sqlite-proxy";
 
@@ -185,12 +186,65 @@ const legacyConfirm = async () => {
   check(direct.applied && swaps(direct)[0]?.after.name === (await titles(fresh)).dinner, "v1 direct apply (no preview) still works");
 };
 
+/** Old installed builds confirm with the echoed intent and no draftId: never 409/410 (AMI-171). */
+const legacyFallback = async () => {
+  const legacyOk = (r: CoachReviseResponse | null) =>
+    Boolean(r && r.applied && CoachReviseResponseSchema.safeParse(r).success && r.changes.length > 0);
+  const confirm = (ctx: Ctx, res: CoachReviseResponse, message: string) =>
+    revisePlans(ctx, { message, scope: "auto", date: today, dryRun: false, intent: res.intent });
+  const run = async (ctx: Ctx, res: CoachReviseResponse, message: string) => {
+    try {
+      return { res: await confirm(ctx, res, message), err: null };
+    } catch (err) {
+      return { res: null, err: err instanceof ApiError ? `${err.status} ${err.code}` : String(err) };
+    }
+  };
+
+  const stale = await seedUser();
+  const s1 = await propose(stale, "change my dinner");
+  const dinner = (await getTodayPlan(stale, today))!.meals.find((m) => m.slot === "dinner")!;
+  await db.update(schema.mealPlanItems).set({ title: "Edited elsewhere" }).where(eq(schema.mealPlanItems.id, dinner.id));
+  const o1 = await run(stale, s1, "change my dinner");
+  check(legacyOk(o1.res) && (await titles(stale)).dinner !== "Edited elsewhere", "legacy confirm on a stale draft -> fresh apply, 200 legacy shape", o1.err ?? JSON.stringify(o1.res?.changes));
+
+  const expired = await seedUser();
+  const s2 = await propose(expired, "swap my lunch");
+  sqlite.prepare("update revise_drafts set expires_at = ? where id = ?").run(Date.now() - 1000, s2.draftId!);
+  const o2 = await run(expired, s2, "swap my lunch");
+  check(legacyOk(o2.res), "legacy confirm on an expired draft -> fresh apply, 200", o2.err ?? "");
+
+  const marked = await seedUser();
+  const s3 = await propose(marked, "swap my lunch");
+  sqlite.prepare("update revise_drafts set status = 'expired' where id = ?").run(s3.draftId!);
+  const o3 = await run(marked, s3, "swap my lunch");
+  check(legacyOk(o3.res), "legacy confirm on a draft marked expired -> fresh apply, 200", o3.err ?? "");
+
+  const missing = await seedUser();
+  const s4 = await propose(missing, "swap my breakfast");
+  sqlite.prepare("delete from revise_drafts where id = ?").run(s4.draftId!);
+  const o4 = await run(missing, s4, "swap my breakfast");
+  check(legacyOk(o4.res), "legacy confirm with the draft missing -> fresh apply, 200", o4.err ?? "");
+
+  // New clients (draftId) still get the v2 errors.
+  const v2 = await seedUser();
+  const d1 = await propose(v2, "swap my lunch");
+  sqlite.prepare("update revise_drafts set expires_at = ? where id = ?").run(Date.now() - 1000, d1.draftId!);
+  const e1 = await errorOf(() => applyDraft(v2, d1.draftId!));
+  check(e1?.status === 410 && e1.code === "draft_gone", "draftId apply on an expired draft -> 410 draft_gone");
+  const d2 = await propose(v2, "change my dinner");
+  const v2Dinner = (await getTodayPlan(v2, today))!.meals.find((m) => m.slot === "dinner")!;
+  await db.update(schema.mealPlanItems).set({ title: "Edited elsewhere" }).where(eq(schema.mealPlanItems.id, v2Dinner.id));
+  const e2 = await errorOf(() => applyDraft(v2, d2.draftId!));
+  check(e2?.status === 409 && e2.code === "plan_changed", "draftId apply on a stale draft -> 409 plan_changed");
+};
+
 const main = async () => {
   await swapLunch();
   await stalePlan();
   await avoidChicken();
   await twoMeals();
   await legacyConfirm();
+  await legacyFallback();
   process.exit(failures === 0 ? 0 : 1);
 };
 main().catch((err) => {

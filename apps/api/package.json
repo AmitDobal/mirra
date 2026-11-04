@@ -26,6 +26,7 @@
     "test:chat-intents": "tsx scripts/assert-chat-intents.ts",
     "test:profile-update": "tsx scripts/assert-profile-update.ts",
     "test:onboarding-guard": "tsx scripts/assert-onboarding-guard.ts",
+    "test:goal": "tsx scripts/assert-goal.ts",
     "smoke:meal-revise": "node scripts/smoke-meal-revise.mjs",
     "smoke:revise-caps": "node scripts/smoke-revise-caps.mjs",
     "smoke:streaks": "node scripts/smoke-streaks.mjs",

@@ -1,4 +1,4 @@
-import { Redirect, Slot, usePathname, type Href } from "expo-router";
+import { Redirect, usePathname, type Href } from "expo-router";
 import { useEffect, useLayoutEffect } from "react";
 import { View } from "react-native";
 
@@ -16,6 +16,7 @@ import {
 import { useEntitlementStore } from "@/stores/entitlement-store";
 import { useMeStore } from "@/stores/me-store";
 import { sx } from "@/theme/sx";
+import { TabsStack } from "@/ui/nav";
 import { TabDock } from "@/ui/TabDock";
 
 const hideDock = (path: string) =>
@@ -60,7 +61,7 @@ const TabsLayout = () => {
   return (
     <View style={sx("flex-1 bg-background")}>
       <View style={sx("flex-1")}>
-        <Slot />
+        <TabsStack />
       </View>
       {showDock ? <TabDock /> : null}
     </View>

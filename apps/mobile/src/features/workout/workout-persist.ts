@@ -1,5 +1,6 @@
 import {
   completeSession as dbCompleteSession,
+  getLastSetForExercise,
   logSet as dbLogSet,
   startSession as dbStartSession,
 } from "@/db";
@@ -43,15 +44,49 @@ export const planDraft = (ex: PlanExercise): SetDraft => ({
   reps: parseReps(ex.targetReps) ?? DEFAULT_REPS,
 });
 
-/** API session first, local SQLite when the API is unreachable. */
+type DraftView = {
+  readonly draft: SetDraft;
+  readonly sets: readonly SetSlot[];
+  readonly exercises: readonly PlanExercise[];
+  readonly exerciseIndex: number;
+};
+
+/** Prefill: plan target → last logged set (SQLite) → 0 kg × plan reps; only if untouched. */
+export const prefillDraft = async (
+  ex: PlanExercise,
+  read: () => DraftView,
+  apply: (draft: SetDraft) => void,
+): Promise<void> => {
+  if (ex.targetLoadKg != null) return;
+  const before = read().draft;
+  try {
+    const last = await getLastSetForExercise(ex.id, ex.name);
+    const s = read();
+    const stillHere = s.exercises[s.exerciseIndex]?.id === ex.id;
+    const untouched = s.draft === before && !s.sets.some((x) => x.done);
+    if (!last || !stillHere || !untouched) return;
+    apply({ weightKg: last.weightKg ?? before.weightKg, reps: last.reps ?? before.reps });
+  } catch (err) {
+    logger.warn("workout.prefill.failed", { message: errorMessage(err) });
+  }
+};
+
+/** Offline / dead network must not hold sets hostage: fall back to SQLite. */
+const OPEN_TIMEOUT_MS = 8000;
+
+/** API session first, local SQLite when the API is unreachable or slow. */
 export const openSession = async (
   workoutId: string,
 ): Promise<{ sessionId: string | null; sessionSource: SessionSource }> => {
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), OPEN_TIMEOUT_MS);
   try {
-    const sess = await apiStartSession({ workoutId });
+    const sess = await apiStartSession({ workoutId }, abort.signal);
     return { sessionId: sess.id, sessionSource: "api" };
   } catch (err) {
     logger.warn("workout.start.api_failed_using_local", { message: errorMessage(err) });
+  } finally {
+    clearTimeout(timer);
   }
   try {
     const sess = await dbStartSession({ workoutId });

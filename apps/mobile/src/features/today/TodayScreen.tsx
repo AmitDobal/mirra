@@ -16,7 +16,7 @@ import { type DailyGoal, type NextAction } from "@/lib/api";
 import { kcalStatus } from "@/lib/accountability";
 import { useAttendanceStore } from "./attendance-store";
 import { useBadgeStore } from "@/features/rank/badge-store";
-import { titleForRank } from "@/features/rank/rank-meta";
+import { rankChipModel } from "@/features/rank/rank-meta";
 import { useStreakStore } from "./streak-store";
 import { adjustedMinutes, useTodayAdjustStore } from "@/features/checkin/adjust-store";
 import { openCheckIn } from "@/features/checkin/open-check-in";
@@ -80,7 +80,7 @@ export const TodayScreen = () => {
   const loadStreak = useStreakStore((s) => s.load);
   const badgeData = useBadgeStore((s) => s.data);
   const loadBadges = useBadgeStore((s) => s.load);
-  const rankTitle = titleForRank(badgeData?.definitions ?? [], badgeData?.currentRankId ?? null);
+  const rankChip = useMemo(() => rankChipModel(badgeData), [badgeData]);
   const todayDate = serverToday ?? localTodayIso();
   const weekDates = useMemo(() => weekDays.map((d) => d.date), [weekDays]);
   const { onSelectDay, sheet: dayHistorySheet } = useDayHistory(
@@ -153,7 +153,7 @@ export const TodayScreen = () => {
         checkInDue={checkInDue}
         onCheckIn={openCheckIn}
         streak={streak}
-        rankTitle={rankTitle}
+        rankChip={rankChip}
         onRank={() => router.push("/kinetic-rank")}
         onStreak={() => router.push("/kinetic-rank")}
       />

@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
+import { rankCopy } from "@/content/rank";
 import { CapsLabel } from "@/ui/CapsLabel";
 
 import { useBadgeStore } from "./badge-store";
@@ -25,12 +26,12 @@ export const KineticRankTeaser = () => {
       ]}
     >
       <View style={sx("min-w-0 flex-1 gap-1")}>
-        <CapsLabel tone="lime">Kinetic rank</CapsLabel>
+        <CapsLabel tone="lime">{rankCopy.teaserEyebrow}</CapsLabel>
         <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>
-          {rank ?? "Start your ladder"}
+          {rank ?? rankCopy.teaserEmpty}
         </Text>
         <Text style={sx("font-body-sm text-body-sm text-on-surface-variant")}>
-          Best streak {data?.bestStreak ?? 0} · Spark → Apex
+          {rankCopy.teaserLine(data?.bestStreak ?? 0)}
         </Text>
       </View>
       <ChevronRight size={22} color={color.onSurfaceVariant} />

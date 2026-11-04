@@ -21,6 +21,8 @@ type Props = {
   onRefresh?: () => void | Promise<void>;
   refreshing?: boolean;
   scrollRef?: Ref<ScrollViewInstance>;
+  /** Pad for the top safe area (default true). Pass false when the screen already insets a fixed header. */
+  insetTop?: boolean;
 };
 
 /** Safe-area scroll shell used by tab + session screens. */
@@ -31,6 +33,7 @@ export const ScreenScroll = ({
   onRefresh,
   refreshing = false,
   scrollRef,
+  insetTop = true,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const bottom = (dockPad ? space.dockClearance : space.xl) + insets.bottom;
@@ -40,7 +43,7 @@ export const ScreenScroll = ({
       ref={scrollRef}
       style={[styles.root, style]}
       contentContainerStyle={{
-        paddingTop: insets.top + space.lg,
+        paddingTop: (insetTop ? insets.top : 0) + space.lg,
         paddingBottom: bottom,
         paddingHorizontal: space.margin,
       }}

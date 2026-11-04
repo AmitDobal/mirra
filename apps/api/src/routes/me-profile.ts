@@ -6,7 +6,7 @@ import type { MirraEnv } from "../env";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
-import { applyProfileEditSafe } from "../services/goal-refresh";
+import { applyProfileEditSafe, commitGoalSafe } from "../services/goal-refresh";
 import { updateProfile } from "../services/profile-update";
 
 export const meProfileRoutes = new Hono<{
@@ -24,6 +24,8 @@ meProfileRoutes.patch("/v1/me/profile", requireAuth, async (c) => {
   const db = createDb(c.env.DB);
   const userId = c.get("userId");
   const out = await updateProfile(db, userId, body);
+  // AMI-182: S43 commitment that missed the onboarding PUT (post-auth sync on an onboarded account).
+  if (body.commitment) await commitGoalSafe(db, userId, body.commitment.committedAt);
   // AMI-179: new goal version only for goal inputs; else snapshot refresh. Never fails the PATCH.
   await applyProfileEditSafe(db, userId, body);
   return c.json(out);

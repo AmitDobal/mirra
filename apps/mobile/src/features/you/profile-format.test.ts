@@ -9,6 +9,7 @@ import {
   formatWeight,
   ftInToCm,
   lbToKg,
+  pickProfileSources,
   trainDaysLabel,
 } from "./profile-format";
 
@@ -93,4 +94,15 @@ test("rebuild prompt only for plan-affecting changes", () => {
   assert.equal(affectsPlan({ dietTags: ["vegan"] }, PREFS), true);
   assert.equal(affectsPlan({ primaryGoal: "recomp" }, PREFS), false);
   assert.equal(affectsPlan({ experience: "new" }, null), true);
+});
+
+test("pickProfileSources: server answer wins as a whole, local only before it (AMI-182 QA)", () => {
+  const local = { sex: "female", ageYears: 25, preferences: { units: "metric", trainDays: [1, 3] } };
+  const server = { profile: { sex: "male", ageYears: 29 }, preferences: { units: "imperial", trainDays: [1, 2, 4, 5] } };
+  assert.deepEqual(pickProfileSources(server, local), { profile: server.profile, prefs: server.preferences });
+  // Server has a profile but no prefs row yet: never mix in the device quiz prefs.
+  assert.deepEqual(pickProfileSources({ profile: server.profile, preferences: null }, local), { profile: server.profile, prefs: null });
+  // No /v1/me yet (offline first paint) or an empty account: local SQLite.
+  assert.equal(pickProfileSources(null, local).prefs, local.preferences);
+  assert.equal(pickProfileSources({ profile: null, preferences: null }, local).profile, local);
 });

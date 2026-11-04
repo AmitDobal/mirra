@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import { planChatCopy } from "@/content/plan-chat";
 import { useFuelStore } from "@/features/fuel/fuel-store";
+import { invalidateGoal } from "@/features/goal/goal-store";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useTodayStore } from "@/features/today/today-store";
 import {
@@ -13,6 +14,7 @@ import {
   type CoachReviseChange,
   type CoachReviseResponse,
   type DayMealPlan,
+  type GoalImpact,
   type ReviseItem,
   type UsageWindow,
 } from "@/lib/api";
@@ -35,6 +37,8 @@ export type PlanProposal = {
   /** v2 typed diff rows; the card falls back to `changes` when absent. */
   readonly items?: readonly ReviseItem[];
   readonly changes: readonly CoachReviseChange[];
+  /** AMI-181: "Keeps you on track for around Feb 18" (null / absent = render nothing). */
+  readonly goalImpact?: GoalImpact | null;
 };
 
 export type PlanChatMessage = {
@@ -104,6 +108,7 @@ const refreshPlans = async (mealPlan: DayMealPlan | null) => {
     logger.warn("plan-chat.refresh.plan_failed", { message: errorMessage(err) });
   }
   if (mealPlan) useMealPlanStore.setState({ plan: mealPlan });
+  invalidateGoal();
   await Promise.all([
     useTodayStore.getState().hydrate(),
     useFuelStore.getState().hydrate(),
@@ -190,6 +195,7 @@ export const usePlanChatStore = create<PlanChatState>((set, get) => ({
                     request: confirmRequest,
                     items: res.items,
                     changes: res.changes,
+                    goalImpact: res.goalImpact ?? null,
                   },
                 }
               : {}),

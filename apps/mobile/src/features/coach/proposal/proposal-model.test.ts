@@ -5,6 +5,7 @@ import { planChatCopy as l } from "../../../content/plan-chat.ts";
 import type { ReviseItem } from "../../../lib/api/coach-revise.ts";
 import {
   buildProposalSections,
+  goalImpactLine,
   mealDeltaReason,
   previewReplyText,
   rowOfItem,
@@ -178,4 +179,12 @@ test("preview reply never says Done before apply (S39 copy); plain replies pass 
   assert.equal(previewReplyText(legacy, true, l.preview), "Here is the change. Nothing updates until you apply.");
   assert.doesNotMatch(previewReplyText(legacy, true, l.preview), /\bdone\b/i);
   assert.equal(previewReplyText("Preview: I couldn't map that.", false, l.preview), "I couldn't map that.");
+});
+
+test("goalImpact: line renders when present, nothing when null / absent / blank (AMI-182)", () => {
+  assert.equal(goalImpactLine({ line: "Keeps you on track for around Feb 18", etaDeltaDays: 0 } as never), "Keeps you on track for around Feb 18");
+  assert.equal(goalImpactLine({ line: "  Moves your estimate to around Feb 25  " }), "Moves your estimate to around Feb 25");
+  assert.equal(goalImpactLine(null), null);
+  assert.equal(goalImpactLine(undefined), null);
+  assert.equal(goalImpactLine({ line: "   " }), null);
 });

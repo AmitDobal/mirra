@@ -16,6 +16,7 @@ import {
   WEIGHT_LIST_LIMIT,
 } from "@/lib/api/weight";
 import { errorMessage, logger } from "@/lib/logger";
+import { invalidateGoal } from "@/features/goal/goal-store";
 
 export type WeightEntry = LocalWeightLog;
 
@@ -91,6 +92,8 @@ export const useWeightStore = create<WeightState>((set, get) => ({
       set((s) => ({
         entries: sortNewest([remote, ...s.entries.filter((e) => e.id !== localId)]),
       }));
+      // AMI-182: the server refreshed today's goal snapshot; pull it (ETag) for S44/S45/S46.
+      invalidateGoal();
       return true;
     } catch (err) {
       logger.error("weight.log_api_failed", { message: errorMessage(err) });

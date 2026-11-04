@@ -260,3 +260,9 @@ export const stripPreviewPrefix = (message: string): string => message.replace(/
  */
 export const previewReplyText = (message: string, proposes: boolean, previewCopy: string): string =>
   proposes ? previewCopy : stripPreviewPrefix(message);
+
+/** AMI-181 `goalImpact` → the line under "Apply these to your plan?"; null / blank renders nothing. */
+export const goalImpactLine = (impact: { readonly line: string } | null | undefined): string | null => {
+  const line = impact?.line?.trim() ?? "";
+  return line.length > 0 ? line : null;
+};

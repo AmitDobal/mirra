@@ -21,6 +21,8 @@ export type GoalChartProps = {
   /** Defaults: full 180, onboarding 140, spark 56 (arch §7). */
   readonly height?: number;
   readonly accessibilityLabel: string;
+  /** S44 caps label on the today hairline (full variant). */
+  readonly todayCaps?: string;
 };
 
 const DEFAULT_H = { full: 180, onboarding: 140, spark: 56 } as const;
@@ -30,7 +32,7 @@ const DEFAULT_H = { full: 180, onboarding: 140, spark: 56 } as const;
  * expected line to the ETA, dashed goal hairline + label, today marker, month labels,
  * optional weigh-in dots + trend. Geometry lives in `goal-chart-model.ts`.
  */
-export const GoalChart = ({ data, variant, etaWeeks = null, height, accessibilityLabel }: GoalChartProps) => {
+export const GoalChart = ({ data, variant, etaWeeks = null, height, accessibilityLabel, todayCaps }: GoalChartProps) => {
   const [width, setWidth] = useState(0);
   const h = height ?? DEFAULT_H[variant];
   const onLayout = (e: LayoutChangeEvent) => setWidth(Math.round(e.nativeEvent.layout.width));
@@ -44,6 +46,7 @@ export const GoalChart = ({ data, variant, etaWeeks = null, height, accessibilit
           etaWeeks,
           todayLabel: goalCopy.chart.today,
           goalLabel: goalCopy.chart.goal,
+          todayCaps,
         })
       : null;
 
@@ -70,7 +73,14 @@ export const GoalChart = ({ data, variant, etaWeeks = null, height, accessibilit
             />
           ) : null}
           {m.todayLine !== null ? (
-            <Line x1={m.todayLine} x2={m.todayLine} y1={0} y2={h - 24} stroke={color.outlineVariant} strokeWidth={1} />
+            <Line
+              x1={m.todayLine}
+              x2={m.todayLine}
+              y1={m.todayCaps ? 16 : 0}
+              y2={variant === "spark" ? h : h - 24}
+              stroke={color.outlineVariant}
+              strokeWidth={1}
+            />
           ) : null}
           {m.expected ? (
             <Path d={m.expected} stroke={color.secondary} strokeWidth={2} strokeDasharray="4 4" fill="none" />
@@ -80,6 +90,20 @@ export const GoalChart = ({ data, variant, etaWeeks = null, height, accessibilit
           {m.dots.map((d, i) => (
             <Circle key={`d${i}`} cx={d.x} cy={d.y} r={2} fill={color.onSurfaceVariant} />
           ))}
+          {m.trendEnd ? <Circle cx={m.trendEnd.x} cy={m.trendEnd.y} r={4} fill={color.primaryContainer} /> : null}
+          {m.todayCaps ? (
+            <SvgText
+              x={m.todayCaps.x}
+              y={m.todayCaps.y}
+              textAnchor="middle"
+              fill={color.onSurfaceVariant}
+              fontFamily={font.labelBold}
+              fontSize={type.labelCaps.size}
+              letterSpacing={type.labelCaps.size * type.labelCaps.tracking}
+            >
+              {m.todayCaps.text.toUpperCase()}
+            </SvgText>
+          ) : null}
           {m.target?.label ? (
             <SvgText
               x={m.target.label.x}

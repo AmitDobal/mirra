@@ -5,6 +5,7 @@ import { useTodayStore } from "@/features/today/today-store";
 import { createCheckIn, type CheckInStatus } from "@/lib/api";
 import { MirraApiError } from "@/lib/api/client";
 import { errorMessage, logger } from "@/lib/logger";
+import { invalidateGoal } from "@/features/goal/goal-store";
 
 export const todayIso = (): string => new Date().toISOString().slice(0, 10);
 
@@ -33,6 +34,7 @@ export const persistCheckIn = async (
     const remote = await createCheckIn({ localDate, status, note });
     checkInId = remote.id;
     logger.info("checkin.remote.ok", { id: remote.id, status });
+    invalidateGoal();
   } catch (err) {
     logger.error("checkin.remote.failed", {
       message: errorMessage(err),

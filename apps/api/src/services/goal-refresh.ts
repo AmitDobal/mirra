@@ -15,7 +15,7 @@ import {
   type GoalBase,
   type GoalPlanRow,
 } from "./goal-load";
-import { snapshotRowOf, upsertSnapshot, writePlanVersion, type GoalTrigger, type SnapshotRow } from "./goal-store";
+import { setPlanCommitment, snapshotRowOf, upsertSnapshot, writePlanVersion, type GoalTrigger, type SnapshotRow } from "./goal-store";
 
 export type GoalComputed = {
   plan: GoalPlanRow;
@@ -188,5 +188,24 @@ export const applyProfileEditSafe = async (
     await applyProfileEdit(db, userId, body, now);
   } catch (err) {
     logGoalError("profile_edit", userId, err);
+  }
+};
+
+/**
+ * `PATCH /v1/me/profile` with `commitment` (AMI-182): the S43 commit made before sign-in when the
+ * post-auth sync skipped the onboarding PUT. Sets `committed_at` only when the active plan has none.
+ */
+export const commitGoalSafe = async (
+  db: AppDB,
+  userId: string,
+  committedAt: number,
+  now: Date = new Date(),
+): Promise<void> => {
+  try {
+    const base = await loadGoalBase(db, userId);
+    const plan = await ensurePlan(db, userId, base, now);
+    if (plan && plan.committedAt === null) await setPlanCommitment(db, userId, plan.id, committedAt);
+  } catch (err) {
+    logGoalError("commit", userId, err);
   }
 };

@@ -106,6 +106,7 @@ const RootLayout = () => {
           <Stack.Screen name="(onboarding)" options={transition("root")} />
           <Stack.Screen name="(tabs)" options={transition("root")} />
           <Stack.Screen name="workout" options={transition("session")} />
+          <Stack.Screen name="goal" options={transition("push")} />
         </Stack>
         <AiLimitSheet />
       </GestureHandlerRootView>

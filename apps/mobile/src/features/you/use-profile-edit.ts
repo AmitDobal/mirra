@@ -5,6 +5,7 @@ import { useWeightStore } from "@/features/progress/weight-store";
 import { patchProfile, type UpdateProfileBody } from "@/lib/api/profile";
 import type { MeResponse } from "@/lib/api/me";
 import { errorMessage, logger } from "@/lib/logger";
+import { invalidateGoal } from "@/features/goal/goal-store";
 import { useMeStore } from "@/stores/me-store";
 
 import { affectsPlan, type PrefsSource } from "./profile-format";
@@ -43,6 +44,8 @@ export const useProfileEdit = () => {
         }
         const res = await patchProfile(patch as UpdateProfileBody);
         mergeMe({ profile: res.profile, preferences: res.preferences });
+        // Goal weight / pace / train days may start a new goal version server-side.
+        invalidateGoal();
         await patchLocalProfile(patch).catch((err: unknown) =>
           logger.warn("profile.local_mirror_failed", { message: errorMessage(err) }),
         );

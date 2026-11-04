@@ -3,10 +3,12 @@ import { Alert, View } from "react-native";
 
 import { profileCopy } from "@/content/profile";
 import type { TrainerPersonaId } from "@/content/trainer-personas";
-import { getCurrentPlan, getProfile, type LocalPlan, type LocalProfile } from "@/db";
+import { getCurrentPlan, getProfile, patchLocalProfile, type LocalPlan, type LocalProfile } from "@/db";
+import type { LocalProfilePatch } from "@/db/repositories/profile-patch";
 import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useBadgeStore } from "@/features/rank/badge-store";
+import { goalStore } from "@/features/goal/goal-store";
 import { useStrengthStore } from "@/features/strength";
 import { usePersonaStore } from "@/features/trainer";
 import type { FoodPrefs, MeEntitlement, MeUser } from "@/lib/api/me";
@@ -16,11 +18,12 @@ import { space } from "@/theme/tokens";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 
 import { PersonalDetailsRow, PersonalDetailsSheet } from "./PersonalDetails";
+import { GoalTimelineCard } from "./GoalTimelineCard";
 import { ProfileCard } from "./ProfileCard";
 import { ProfileEditSheet } from "./ProfileEditSheet";
 import { connectedAccountLabels, subscriptionLabel } from "./profile-display";
 import { isSheetField, type EditableField } from "./profile-fields";
-import { buildProfileView, experienceText, type PrefsSource, type ProfileRowId, type ProfileSource } from "./profile-format";
+import { buildProfileView, experienceText, pickProfileSources, type ProfileRowId } from "./profile-format";
 import { RebuildPrompt } from "./RebuildPrompt";
 import { RowsSection } from "./RowsSection";
 import { persistTrainingLocation, toTrainingLocationId } from "./training-location";
@@ -76,9 +79,8 @@ export const YouScreen = () => {
 
   const meUser: MeUser | null = me?.user ?? cachedUser;
   const entitlement: MeEntitlement | null = me?.entitlement ?? cachedEntitlement;
-  // Server truth first (fresh after every edit); local SQLite covers offline / first paint.
-  const profile = (me?.profile ?? local) as ProfileSource | null;
-  const prefs = (me?.preferences ?? local?.preferences ?? null) as PrefsSource | null;
+  // Server truth wins as a whole (fresh after every edit); local SQLite covers offline / first paint.
+  const { profile, prefs } = useMemo(() => pickProfileSources(me, local), [me, local]);
   const view = useMemo(() => buildProfileView(profile, prefs), [profile, prefs]);
 
   const reloadLocal = useCallback(async () => {
@@ -100,6 +102,12 @@ export const YouScreen = () => {
     })();
   }, [ensureCredits, ensureMe, hydrateCredits, hydrateMe, loadBadges, refreshCredits, refreshMe, reloadLocal]);
 
+  // Mirror server values into SQLite so the next offline first paint matches (no quiz defaults).
+  useEffect(() => {
+    if (!me?.profile && !me?.preferences) return;
+    void patchLocalProfile({ ...(me.profile ?? {}), ...(me.preferences ?? {}) } as LocalProfilePatch).catch(() => undefined);
+  }, [me?.profile, me?.preferences]);
+
   useEffect(() => {
     if (me?.preferences?.trainingLocation) setLocationId(toTrainingLocationId(me.preferences.trainingLocation));
   }, [me?.preferences?.trainingLocation]);
@@ -107,7 +115,14 @@ export const YouScreen = () => {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([reloadLocal(), ensureMe({ force: true }), ensureCredits({ force: true }), loadBadges(), loadStrength()]);
+      await Promise.all([
+        reloadLocal(),
+        ensureMe({ force: true }),
+        ensureCredits({ force: true }),
+        loadBadges(),
+        loadStrength(),
+        goalStore.getState().load(),
+      ]);
     } catch {
       /* keep cache */
     } finally {
@@ -170,8 +185,9 @@ export const YouScreen = () => {
         fallbackName={fallbackName}
         fallbackMeta={profile ? `${experienceText(prefs?.experience)} · ${prefs?.sessionMinutes ?? 45} min sessions` : "Complete onboarding for profile"}
       />
+      {/* S45 (AMI-182): goal card directly under the profile card, above the rank / strength tiles. */}
+      <GoalTimelineCard style={{ marginTop: 16 }} />
       <YouTiles />
-      {/* Slot: future "Goal timeline" card (separate ticket) mounts here, under the teasers. */}
       <YouCreditsCard credits={credits} onPress={actions.creditsPress} />
 
       <PersonalDetailsRow onPress={() => setDetailsOpen(true)} />

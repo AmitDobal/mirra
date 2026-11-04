@@ -31,6 +31,8 @@ export type ChartModelInput = {
   /** Pre-formatted label builders (copy lives in `content/goal.ts`). */
   readonly todayLabel?: (w: string) => string;
   readonly goalLabel?: (w: string) => string;
+  /** S44 caps label on top of the today hairline ("TODAY"); full variant only. */
+  readonly todayCaps?: string;
 };
 
 export type Pt = { readonly x: number; readonly y: number };
@@ -48,6 +50,10 @@ export type GoalChartModel = {
   /** Label sits above the dot on a cut, beside it on a gain (the line climbs through "above"). */
   readonly todayDot: (Pt & { readonly label: AxisLabel | null }) | null;
   readonly todayLine: number | null;
+  /** S44: caps label above the today hairline. */
+  readonly todayCaps: AxisLabel | null;
+  /** S44: lime dot where the trend meets the today hairline. */
+  readonly trendEnd: Pt | null;
   readonly yLabels: readonly AxisLabel[];
   readonly xLabels: readonly AxisLabel[];
 };
@@ -104,6 +110,8 @@ export const monthLabels = (
       year += 1;
     }
   }
+  // A start label crowding the next month (start after mid-month) drops alone, not every other month.
+  if (raw.length > 2 && raw[1]!.x - raw[0]!.x < MONTH_GAP) raw.shift();
   if (raw.length <= 1) return raw;
   // Smallest even step (every 1, 2, 3… months) whose every gap clears MONTH_GAP.
   const fits = (s: number) => raw.every((l, i) => i < s || i % s !== 0 || l.x - raw[i - s]!.x >= MONTH_GAP);
@@ -116,7 +124,14 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
   const { data, variant } = input;
   const width = Math.max(1, input.width);
   const height = Math.max(1, input.height);
-  const pad = variant === "spark" ? CHART_PAD.spark : CHART_PAD.labeled;
+  const basePad = variant === "spark" ? CHART_PAD.spark : CHART_PAD.labeled;
+  const goalText = variant !== "spark" && data.targetKg !== null && input.goalLabel
+    ? input.goalLabel(`${weightNumber(data.targetKg, data.unit)} ${data.unit}`)
+    : null;
+  // S44 (live): the plot stops before the "Goal 75 kg" label so the ETA dot and band never sit under it.
+  const pad = variant === "full" && goalText && data.todayIndex > 0
+    ? { ...basePad, right: Math.max(basePad.right, goalText.length * GLYPH_W + 8) }
+    : basePad;
   const n = Math.max(data.planned.length, data.optimistic.length, data.conservative.length);
   const lastWeek = Math.max(1, n - 1);
   const actualKgs = data.actual.flatMap((a) => [a.kg, a.trendKg]);
@@ -125,7 +140,7 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
 
   const empty: GoalChartModel = {
     width, height, band: null, expected: null, expectedEnd: null, trend: null, dots: [],
-    target: null, todayDot: null, todayLine: null, yLabels: [], xLabels: [],
+    target: null, todayDot: null, todayLine: null, todayCaps: null, trendEnd: null, yLabels: [], xLabels: [],
   };
   if (all.length === 0) return empty;
 
@@ -142,17 +157,34 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
   const cons = data.conservative.map((v, i) => ({ x: xOf(i), y: yOf(v) })).reverse();
   const band = opt.length && cons.length ? pathOf([...opt, ...cons], true) : null;
 
+  // After onboarding (actual weigh-ins + today > 0) the estimate starts at today's trend (S44/S45).
+  const lastActual = data.actual[data.actual.length - 1] ?? null;
+  const live = data.todayIndex > 0 && lastActual !== null;
   const end = input.etaWeeks != null ? Math.min(input.etaWeeks, lastWeek) : data.planned.length - 1;
   const exp: Pt[] = [];
-  for (let i = 0; i < data.planned.length && i <= end; i += 1) exp.push({ x: xOf(i), y: yOf(data.planned[i]!) });
-  if (input.etaWeeks != null && end > Math.floor(end) && data.planned.length) {
-    const kg = data.targetKg ?? sampleSeries(data.planned, end)!;
-    exp.push({ x: xOf(end), y: yOf(kg) });
+  if (live && lastActual) {
+    exp.push({ x: xOf(data.todayIndex), y: yOf(lastActual.trendKg) });
+    if (input.etaWeeks != null && data.targetKg !== null && end > data.todayIndex) {
+      exp.push({ x: xOf(end), y: yOf(data.targetKg) });
+    } else {
+      // No ETA (horizon / hold): follow the middle of the band to the end.
+      for (let i = Math.floor(data.todayIndex) + 1; i <= lastWeek; i += 1) {
+        const mid = ((data.optimistic[i] ?? 0) + (data.conservative[i] ?? 0)) / 2;
+        if (data.optimistic[i] !== undefined && data.conservative[i] !== undefined) exp.push({ x: xOf(i), y: yOf(mid) });
+      }
+    }
+  } else {
+    for (let i = 0; i < data.planned.length && i <= end; i += 1) exp.push({ x: xOf(i), y: yOf(data.planned[i]!) });
+    if (input.etaWeeks != null && end > Math.floor(end) && data.planned.length) {
+      const kg = data.targetKg ?? sampleSeries(data.planned, end)!;
+      exp.push({ x: xOf(end), y: yOf(kg) });
+    }
   }
   const expectedEnd = input.etaWeeks != null && exp.length > 1 ? exp[exp.length - 1]! : null;
 
   const weekOfDate = (iso: string) => goalEngine.diffDays(iso, data.start) / 7;
-  const dots = data.actual.map((a) => ({ x: xOf(weekOfDate(a.date)), y: yOf(a.kg) }));
+  // Weigh-in dots only on S44; the S45/S46 sparkline shows the trend alone.
+  const dots = variant === "full" ? data.actual.map((a) => ({ x: xOf(weekOfDate(a.date)), y: yOf(a.kg) })) : [];
   const trend = data.actual.length > 1
     ? pathOf(data.actual.map((a) => ({ x: xOf(weekOfDate(a.date)), y: yOf(a.trendKg) })))
     : null;
@@ -179,7 +211,11 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
           : null,
       }
     : null;
-  const todayLine = variant === "full" && data.todayIndex > 0 ? xOf(data.todayIndex) : null;
+  const todayLine = variant !== "onboarding" && data.todayIndex > 0 ? xOf(data.todayIndex) : null;
+  const todayCaps = variant === "full" && todayLine !== null && input.todayCaps
+    ? { x: todayLine, y: 10, text: input.todayCaps }
+    : null;
+  const trendEnd = variant === "full" && live && lastActual ? { x: xOf(data.todayIndex), y: yOf(lastActual.trendKg) } : null;
 
   const yLabels: AxisLabel[] = [];
   if (labeled && startKg !== null) {
@@ -190,6 +226,8 @@ export const buildGoalChartModel = (input: ChartModelInput): GoalChartModel => {
   }
   const xLabels = labeled ? monthLabels(data.start, lastWeek, xOf, height - 5, pad.left + 10) : [];
 
-  return { width, height, band, expected: pathOf(exp), expectedEnd, trend, dots, target, todayDot, todayLine, yLabels, xLabels };
+  return {
+    width, height, band, expected: pathOf(exp), expectedEnd, trend, dots, target, todayDot, todayLine, todayCaps, trendEnd, yLabels, xLabels,
+  };
 };
 

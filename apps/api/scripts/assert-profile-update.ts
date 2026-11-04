@@ -107,6 +107,21 @@ const run = async () => {
   assert.equal(op?.u, "imperial");
   console.log("ok  other user untouched");
 
+  // 4b. AMI-182 commitment: sets committed_at on the active goal plan once (first commit wins).
+  await exec("UPDATE profiles SET onboarding_completed_at = ? WHERE user_id = ?", Date.now() - 86_400_000, owner);
+  const committedAt = Date.now() - 60_000;
+  res = await patch(owner, { commitment: { committedAt } });
+  assert.equal(res.status, 200);
+  const committed = () =>
+    DB.prepare("SELECT committed_at c FROM goal_plans WHERE user_id = ? AND status = 'active'").bind(owner).first<{ c: number | null }>();
+  assert.equal((await committed())?.c, committedAt);
+  res = await patch(owner, { commitment: { committedAt: committedAt + 5_000 }, ageYears: 32 });
+  assert.equal(res.status, 200);
+  assert.equal((await committed())?.c, committedAt);
+  const otherPlan = await DB.prepare("SELECT COUNT(*) n FROM goal_plans WHERE user_id = ?").bind(other).first<{ n: number }>();
+  assert.equal(otherPlan?.n, 0);
+  console.log("ok  commitment sets goal_plans.committed_at once, owner only");
+
   // 5. Validation + auth.
   const bad: unknown[] = [
     {},
@@ -121,6 +136,8 @@ const run = async () => {
     { primaryGoal: "bulk" },
     { weightKg: 80 },
     { userId: other, ageYears: 40 },
+    { commitment: { committedAt: "now" } },
+    { commitment: { committedAt: 1, extra: true } },
   ];
   for (const b of bad) {
     assert.equal(UpdateProfileBodySchema.safeParse(b).success, false, JSON.stringify(b));
@@ -131,6 +148,8 @@ const run = async () => {
   console.log(`ok  ${bad.length} invalid bodies rejected (400), no auth 401`);
 
   for (const uid of [owner, other]) {
+    await exec("DELETE FROM goal_snapshots WHERE user_id = ?", uid);
+    await exec("DELETE FROM goal_plans WHERE user_id = ?", uid);
     await exec("DELETE FROM plans WHERE user_id = ?", uid);
     await exec("DELETE FROM preferences WHERE user_id = ?", uid);
     await exec("DELETE FROM profiles WHERE user_id = ?", uid);

@@ -3,6 +3,7 @@ import { clearVoiceCuePrefs } from "@/features/coach/voice-cue-prefs";
 import { useCoachStore, usePlanChatStore } from "@/features/coach";
 import { useChefStore } from "@/features/fuel/chef-store";
 import { useFuelStore } from "@/features/fuel";
+import { goalStore } from "@/features/goal/goal-store";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
 import { useHistoryStore } from "@/features/history";
 import { useOnboardingStore } from "@/features/onboarding";
@@ -42,6 +43,7 @@ const DATA_STORES: readonly Resettable[] = [
   useWorkoutStore,
   usePersonaStore,
   useAttendanceStore,
+  goalStore,
 ] as unknown as readonly Resettable[];
 
 const resetStores = (): void => {

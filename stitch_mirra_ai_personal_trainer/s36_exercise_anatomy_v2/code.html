@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>S36 — Exercise detail, anatomy v2 + tier card</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            headline: ['Space Grotesk', 'sans-serif'],
+            body: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            surface: '#131313',
+            'surface-container-lowest': '#0e0e0e',
+            'surface-container-low': '#1c1b1b',
+            'surface-container': '#201f1f',
+            'surface-container-high': '#2a2a2a',
+            'surface-container-highest': '#353534',
+            'outline-variant': '#454936',
+            'on-surface': '#e5e2e1',
+            'on-surface-variant': '#c5c9b0',
+            primary: '#cbf150',
+            'on-primary': '#161e00',
+            secondary: '#d1beef',
+            'on-secondary': '#21143a',
+            tier: {
+              gold: '#e8c15a',
+              'gold-bevel': '#a88530',
+            }
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-headline {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .label-tracked {
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 11px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface flex justify-center min-h-screen">
+<!-- iPhone 390 x 844 Frame -->
+<div class="w-[390px] min-h-[844px] bg-surface relative flex flex-col pb-36 overflow-x-hidden selection:bg-primary selection:text-on-primary">
+<!-- 1. Hero Image 260pt tall, full bleed, radius 0 top, radius 28 bottom -->
+<div class="relative w-full h-[260px] rounded-b-[28px] overflow-hidden flex-shrink-0">
+<img alt="Barbell Bench Press" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACyf4q92C1sxxYdKt1xnoGsZ2Zco0i7cvw9bM_UHFn8HuYPmXEkseqNaXMsUt_yg4qpgJrPcXtozPj2nKUCkoiC43CLVeudBWg02k4jng_d8G0tDhkbVf-nqTHTLieiEkoVsxVGLIjB8olDCjsVfBIOZKfpPdKQV_Mc4t7TMYW0HPHI2oSGsiXNJmGhQlIVvKZOqb3ixbo9DCdSHU3q1XheN9qnbqWvoZ4ijDWVLTzvcwIQhQBsDDFGUpvFO99g-5UI-6SVVr-4GuP"/>
+<!-- iOS Status Bar (9:41) -->
+<div class="absolute top-0 inset-x-0 h-11 px-7 flex items-center justify-between z-20 pointer-events-none text-white font-headline text-sm font-semibold tracking-tight">
+<span>9:41</span>
+<div class="flex items-center gap-2">
+<svg class="w-4 h-3.5" fill="currentColor" viewbox="0 0 16 12">
+<path d="M1 9h2V3H1v6zm4 2h2V1H5v10zm4 0h2V5H9v6zm4 1h2V7h-2v5z"></path>
+</svg>
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 16 12">
+<path d="M8 2.5C5.2 2.5 2.7 3.7 1 5.7L8 14.5l7-8.8C13.3 3.7 10.8 2.5 8 2.5z"></path>
+</svg>
+<svg class="w-6 h-3.5" fill="currentColor" viewbox="0 0 25 12">
+<rect fill="none" height="10" rx="3" stroke="currentColor" stroke-width="1.5" width="20" x="1" y="1"></rect>
+<rect height="7" rx="1.5" width="14" x="2.5" y="2.5"></rect>
+<path d="M22 4.5v3c.8-.3 1.3-1 1.3-1.5s-.5-1.2-1.3-1.5z"></path>
+</svg>
+</div>
+</div>
+<!-- Round 40pt back button top-left over the image -->
+<button class="absolute top-12 left-5 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-[#2a2a2a] flex items-center justify-center text-white active:scale-95 transition-transform z-20">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Content Container (20pt side margins) -->
+<div class="px-5 pt-5 flex flex-col space-y-5">
+<!-- 2. Label + Headline -->
+<div class="flex flex-col gap-1.5">
+<span class="label-tracked text-primary font-bold">PRIMARY MOVEMENT</span>
+<h1 class="font-headline text-[28px] leading-[34px] font-bold text-on-surface">Barbell Bench Press</h1>
+</div>
+<!-- 3. Chip row -->
+<div class="flex items-center gap-2">
+<span class="px-3.5 py-1.5 rounded-full bg-secondary text-on-secondary font-headline text-xs font-semibold">Chest</span>
+<span class="px-3.5 py-1.5 rounded-full bg-surface-container-high text-on-surface font-headline text-xs font-medium border border-[#2a2a2a]">Barbell</span>
+<span class="px-3.5 py-1.5 rounded-full bg-surface-container-high text-on-surface font-headline text-xs font-medium border border-[#2a2a2a]">Intermediate</span>
+</div>
+<!-- 4. Prescription card (surface-container-low, radius 24) -->
+<div class="bg-surface-container-low rounded-[24px] border border-[#2a2a2a] p-4 grid grid-cols-4 divide-x divide-[#2a2a2a] text-center">
+<div class="flex flex-col items-center justify-center px-1">
+<span class="font-headline text-[24px] leading-7 font-bold text-on-surface">4</span>
+<span class="label-tracked text-on-surface-variant mt-1 text-[10px]">SETS</span>
+</div>
+<div class="flex flex-col items-center justify-center px-1">
+<span class="font-headline text-[24px] leading-7 font-bold text-on-surface">8</span>
+<span class="label-tracked text-on-surface-variant mt-1 text-[10px]">REPS</span>
+</div>
+<div class="flex flex-col items-center justify-center px-1">
+<span class="font-headline text-[24px] leading-7 font-bold text-on-surface">175</span>
+<span class="label-tracked text-on-surface-variant mt-1 text-[10px]">LB TARGET</span>
+</div>
+<div class="flex flex-col items-center justify-center px-1">
+<span class="font-headline text-[24px] leading-7 font-bold text-on-surface">90s</span>
+<span class="label-tracked text-on-surface-variant mt-1 text-[10px]">REST</span>
+</div>
+</div>
+<!-- 5 & 6. Section label MUSCLES WORKED + Anatomy Card -->
+<div class="flex flex-col gap-2.5">
+<span class="label-tracked text-on-surface-variant">MUSCLES WORKED</span>
+<div class="bg-surface-container-low rounded-[28px] border border-[#2a2a2a] p-4 flex flex-col gap-4">
+<!-- Two anatomy figures side by side ~250pt tall -->
+<div class="grid grid-cols-2 gap-4 items-center justify-items-center pt-2"><!-- Left: FRONT -->
+<div class="flex flex-col items-center w-full">
+<div class="w-full h-[250px] flex items-center justify-center">
+<svg class="w-auto h-[250px]" viewbox="0 0 120 250" xmlns="http://www.w3.org/2000/svg">
+<!-- Head & Neck -->
+<ellipse cx="60" cy="17" fill="#2a2a2a" rx="9" ry="11.5" stroke="#0e0e0e" stroke-width="0.8"></ellipse>
+<path d="M56 27 C56 31 55 33 55 35 L65 35 C65 33 64 31 64 27 Z" fill="#2a2a2a" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Trapezius (#353534 at 55%) -->
+<path d="M55 33 C51 34 46 38 43 43 C46 43 51 44 54 44 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M65 33 C69 34 74 38 77 43 C74 43 69 44 66 44 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Clavicle guide line -->
+<path d="M44 43 Q54 44 60 45 Q66 44 76 43" fill="none" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Front Deltoids: Lavender #d1beef (SECONDARY) -->
+<!-- Left Anterior/Lateral Delt -->
+<path d="M42 43 C37 45 33 50 34 57 C35 63 38 67 42 66 C44 63 45 56 45 49 C44 46 43 44 42 43 Z" fill="#d1beef" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Right Anterior/Lateral Delt -->
+<path d="M78 43 C83 45 87 50 86 57 C85 63 82 67 78 66 C76 63 75 56 75 49 C76 46 77 44 78 43 Z" fill="#d1beef" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Pectorals / Chest: Lime #cbf150 (PRIMARY) -->
+<!-- Left Clavicular & Sternal Pec -->
+<path d="M45 45 C50 45 57 46 59 47 C59 55 58 64 57 66 C51 68 45 66 43 60 C42 56 43 49 45 45 Z" fill="#cbf150" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Right Clavicular & Sternal Pec -->
+<path d="M75 45 C70 45 63 46 61 47 C61 55 62 64 63 66 C69 68 75 66 77 60 C78 56 77 49 75 45 Z" fill="#cbf150" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Biceps (#353534 at 55%) -->
+<path d="M35 60 C32 66 33 74 36 78 C38 78 40 76 41 71 C41 66 39 61 35 60 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M85 60 C88 66 87 74 84 78 C82 78 80 76 79 71 C79 66 81 61 85 60 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Triceps visible outer edge: Lavender #d1beef (SECONDARY) -->
+<path d="M31 59 C29 64 30 71 33 75 C32 72 32 66 33 62 Z" fill="#d1beef" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M89 59 C91 64 90 71 87 75 C88 72 88 66 87 62 Z" fill="#d1beef" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Forearms (#353534 at 55%) -->
+<path d="M36 79 C32 83 31 92 32 99 C33 103 36 104 38 103 C39 98 40 88 38 80 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M84 79 C88 83 89 92 88 99 C87 103 84 104 82 103 C81 98 80 88 82 80 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Plain hands #2a2a2a -->
+<ellipse cx="36" cy="111" fill="#2a2a2a" rx="4.5" ry="7" stroke="#0e0e0e" stroke-width="0.8"></ellipse>
+<ellipse cx="84" cy="111" fill="#2a2a2a" rx="4.5" ry="7" stroke="#0e0e0e" stroke-width="0.8"></ellipse>
+<!-- Rectus Abdominis / Six-Pack (#353534 at 55%) -->
+<!-- Upper pack -->
+<path d="M54 68 C56 68 58 68 59 69 L59 75 C57 75 55 75 53 74 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M66 68 C64 68 62 68 61 69 L61 75 C63 75 65 75 67 74 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Mid pack -->
+<path d="M53 76 C55 76 58 76 59 77 L59 83 C57 84 55 84 53 83 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M67 76 C65 76 62 76 61 77 L61 83 C63 84 65 84 67 83 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Lower pack -->
+<path d="M53 85 C55 85 58 85 59 86 L59 94 C56 94 54 92 53 90 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M67 85 C65 85 62 85 61 86 L61 94 C64 94 66 92 67 90 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- External Obliques (#353534 at 55%) -->
+<path d="M45 68 C48 67 51 69 51 75 C51 83 49 89 46 95 C43 90 43 80 44 72 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M75 68 C72 67 69 69 69 75 C69 83 71 89 74 95 C77 90 77 80 76 72 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Pelvis / Inguinal (#2a2a2a) -->
+<path d="M47 96 Q60 101 73 96 L67 105 Q60 107 53 105 Z" fill="#2a2a2a" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Quadriceps (#353534 at 55%) -->
+<!-- Left Quad (Rectus femoris + Vastus lateralis) -->
+<path d="M42 107 C46 106 52 107 53 113 C55 125 54 139 52 153 C46 153 41 143 39 130 C38 120 40 110 42 107 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Left Vastus medialis tear drop -->
+<path d="M51 143 C54 143 55 149 53 154 C50 155 49 151 51 143 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Right Quad (Rectus femoris + Vastus lateralis) -->
+<path d="M78 107 C74 106 68 107 67 113 C65 125 66 139 68 153 C74 153 79 143 81 130 C82 120 80 110 78 107 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Right Vastus medialis tear drop -->
+<path d="M69 143 C66 143 65 149 67 154 C70 155 71 151 69 143 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Adductors (#353534 at 55%) -->
+<path d="M54 112 C57 111 58 116 57 127 C55 136 53 139 53 133 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M66 112 C63 111 62 116 63 127 C65 136 67 139 67 133 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Knees: Plain #2a2a2a -->
+<circle cx="47" cy="161" fill="#2a2a2a" r="5" stroke="#0e0e0e" stroke-width="0.8"></circle>
+<circle cx="73" cy="161" fill="#2a2a2a" r="5" stroke="#0e0e0e" stroke-width="0.8"></circle>
+<!-- Calves / Tibialis (#353534 at 55%) -->
+<path d="M42 168 C47 167 50 171 50 181 C49 195 47 210 44 222 C41 214 39 196 40 182 C40 174 41 169 42 168 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M78 168 C73 167 70 171 70 181 C71 195 73 210 76 222 C79 214 81 196 80 182 C80 174 79 169 78 168 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Feet: Plain #2a2a2a -->
+<path d="M42 225 C45 225 47 230 46 240 C44 242 38 242 38 238 C38 232 40 226 42 225 Z" fill="#2a2a2a" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M78 225 C75 225 73 230 74 240 C76 242 82 242 82 238 C82 232 80 226 78 225 Z" fill="#2a2a2a" stroke="#0e0e0e" stroke-width="0.8"></path>
+</svg>
+</div>
+<span class="font-headline text-xs font-semibold text-on-surface-variant text-center mt-2">Front</span>
+</div>
+<!-- Right: BACK -->
+<div class="flex flex-col items-center w-full">
+<div class="w-full h-[250px] flex items-center justify-center">
+<svg class="w-auto h-[250px]" viewbox="0 0 120 250" xmlns="http://www.w3.org/2000/svg">
+<!-- Head & Neck -->
+<ellipse cx="60" cy="17" fill="#2a2a2a" rx="9" ry="11.5" stroke="#0e0e0e" stroke-width="0.8"></ellipse>
+<path d="M56 27 C56 31 55 33 55 35 L65 35 C65 33 64 31 64 27 Z" fill="#2a2a2a" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Trapezius / Upper Back (#353534 at 55%) -->
+<path d="M55 34 C49 36 43 40 43 44 C47 47 54 48 60 58 C66 48 73 47 77 44 C77 40 71 36 65 34 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Rear Delts (#353534 at 55%) -->
+<path d="M41 44 C36 46 33 51 34 57 C36 61 40 64 43 61 C44 56 43 49 41 44 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M79 44 C84 46 87 51 86 57 C84 61 80 64 77 61 C76 56 77 49 79 44 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Triceps (Lateral & Long Head): Lavender #d1beef (SECONDARY) -->
+<!-- Left Tricep -->
+<path d="M33 58 C30 63 31 72 34 76 C37 77 40 74 41 68 C41 63 38 58 33 58 Z" fill="#d1beef" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Right Tricep -->
+<path d="M87 58 C90 63 89 72 86 76 C83 77 80 74 79 68 C79 63 82 58 87 58 Z" fill="#d1beef" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Forearms (#353534 at 55%) -->
+<path d="M34 78 C31 82 30 91 32 99 C33 103 36 104 38 102 C39 96 40 86 37 79 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M86 78 C89 82 90 91 88 99 C87 103 84 104 82 102 C81 96 80 86 83 79 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Hands: Plain #2a2a2a -->
+<ellipse cx="36" cy="111" fill="#2a2a2a" rx="4.5" ry="7" stroke="#0e0e0e" stroke-width="0.8"></ellipse>
+<ellipse cx="84" cy="111" fill="#2a2a2a" rx="4.5" ry="7" stroke="#0e0e0e" stroke-width="0.8"></ellipse>
+<!-- Latissimus Dorsi (#353534 at 55%) -->
+<path d="M48 54 C45 60 44 68 46 76 C50 78 55 76 56 68 C57 60 55 56 48 54 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M72 54 C75 60 76 68 74 76 C70 78 65 76 64 68 C63 60 65 56 72 54 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Lower Back / Erector Spinae (#353534 at 55%) -->
+<path d="M54 74 C57 74 58 78 58 92 C55 93 53 87 53 76 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M66 74 C63 74 62 78 62 92 C65 93 67 87 67 76 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Glutes (#353534 at 55%) -->
+<path d="M44 95 C50 94 58 94 58 106 C58 117 48 120 44 116 C39 111 41 100 44 95 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M76 95 C70 94 62 94 62 106 C62 117 72 120 76 116 C81 111 79 100 76 95 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Hamstrings (Biceps Femoris / Semitendinosus) (#353534 at 55%) -->
+<path d="M42 120 C47 119 55 120 55 134 C54 146 49 154 44 153 C40 147 40 133 42 120 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M78 120 C73 119 65 120 65 134 C66 146 71 154 76 153 C80 147 80 133 78 120 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Knee Back Fold: Plain #2a2a2a -->
+<circle cx="47" cy="161" fill="#2a2a2a" r="5" stroke="#0e0e0e" stroke-width="0.8"></circle>
+<circle cx="73" cy="161" fill="#2a2a2a" r="5" stroke="#0e0e0e" stroke-width="0.8"></circle>
+<!-- Calves / Gastrocnemius (#353534 at 55%) -->
+<path d="M42 168 C47 167 51 171 50 184 C50 197 46 212 44 222 C40 213 39 196 40 182 C40 174 41 169 42 168 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M78 168 C73 167 69 171 70 184 C70 197 74 212 76 222 C80 213 81 196 80 182 C80 174 79 169 78 168 Z" fill="#353534" fill-opacity="0.55" stroke="#0e0e0e" stroke-width="0.8"></path>
+<!-- Feet: Plain #2a2a2a -->
+<path d="M42 225 C45 225 47 230 46 240 C44 242 39 242 39 238 C39 232 40 226 42 225 Z" fill="#2a2a2a" stroke="#0e0e0e" stroke-width="0.8"></path>
+<path d="M78 225 C75 225 73 230 74 240 C76 242 81 242 81 238 C81 232 80 226 78 225 Z" fill="#2a2a2a" stroke="#0e0e0e" stroke-width="0.8"></path>
+</svg>
+</div>
+<span class="font-headline text-xs font-semibold text-on-surface-variant text-center mt-2">Back</span>
+</div></div>
+<!-- 6. Legend row inside same card -->
+<div class="border-t border-[#2a2a2a] pt-3 flex flex-wrap items-center justify-between gap-2 px-1">
+<!-- Primary Legend -->
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0"></span>
+<span class="font-headline text-xs font-bold text-on-surface">Primary</span>
+<span class="text-xs text-on-surface-variant font-medium">Chest</span>
+</div>
+<!-- Secondary Legend -->
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></span>
+<span class="font-headline text-xs font-bold text-on-surface">Secondary</span>
+<span class="text-xs text-on-surface-variant font-medium">Front delts, Triceps</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 7. Tier card (surface-container-low, radius 24, padding 16) -->
+<div class="bg-surface-container-low rounded-[24px] border border-[#2a2a2a] p-4 flex flex-col gap-3">
+<span class="label-tracked text-on-surface-variant">YOUR TIER</span>
+<!-- Badge Row -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<!-- md Gold Badge 40pt with 1 dot under (Division III) -->
+<div class="flex flex-col items-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40" xmlns="http://www.w3.org/2000/svg">
+<!-- Pointy-top rounded hexagon -->
+<!-- Outer Gold -->
+<polygon fill="#e8c15a" points="20,2 37,11 37,29 20,38 3,29 3,11"></polygon>
+<!-- 2px Darker inner bevel (same hue, 30% darker #a88530) -->
+<polygon fill="#a88530" points="20,4.5 35,12.5 35,27.5 20,35.5 5,27.5 5,12.5"></polygon>
+<polygon fill="#e8c15a" points="20,6.5 33,13.5 33,26.5 20,33.5 7,26.5 7,13.5"></polygon>
+<!-- White geometric glyph: Gold = three chevrons -->
+<path d="M14 16 L20 12 L26 16" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M14 21 L20 17 L26 21" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M14 26 L20 22 L26 26" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<!-- 1 round dot in Gold directly under hexagon for Division III -->
+<div class="flex items-center justify-center gap-1 mt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+</div>
+</div>
+<!-- Headline-sm Gold III -->
+<span class="font-headline text-[18px] leading-[24px] font-semibold text-on-surface">Gold III</span>
+</div>
+<!-- Right-aligned label-md lime 60% to Gold II -->
+<span class="font-headline text-xs font-semibold text-primary">60% to Gold II</span>
+</div>
+<!-- 6pt progress track #2a2a2a with lime fill to 60% -->
+<div class="w-full h-1.5 rounded-full bg-[#2a2a2a] overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[60%]"></div>
+</div>
+<!-- Body-md on-surface text -->
+<p class="text-sm leading-5 text-on-surface font-body">Next: 185 lb × 8 for 2 sessions → Gold II</p>
+</div>
+<!-- 8. Section label EXECUTION PROTOCOL & first step row -->
+<div class="flex flex-col gap-2.5 pb-6">
+<span class="label-tracked text-on-surface-variant">EXECUTION PROTOCOL</span>
+<!-- Step 1 Row -->
+<div class="bg-surface-container-low rounded-[20px] border border-[#2a2a2a] p-4 flex items-start gap-3.5">
+<div class="w-7 h-7 rounded-full bg-[#2a2a2a] flex items-center justify-center flex-shrink-0 font-headline text-xs font-bold text-on-surface">
+            1
+          </div>
+<div class="flex flex-col gap-1">
+<span class="font-headline text-sm font-semibold text-on-surface">Setup &amp; Eye Alignment</span>
+<p class="text-xs leading-[18px] text-on-surface-variant font-body">
+              Lie flat with eyes directly beneath the bar. Plant feet firmly flat on the floor.
+            </p>
+</div>
+</div>
+</div>
+</div>
+<!-- 9. Bottom action bar over a dark scrim (56pt tall buttons) -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-[390px] px-5 pt-3 pb-7 bg-gradient-to-t from-surface via-surface/95 to-transparent z-40 flex flex-col gap-2">
+<div class="flex items-center gap-3 w-full">
+<!-- Secondary pill Swap (dark, white text, 40% width) -->
+<button class="w-[40%] h-14 rounded-full bg-surface-container-high border border-[#2a2a2a] text-white font-headline text-base font-semibold active:scale-95 transition-transform flex items-center justify-center">
+          Swap
+        </button>
+<!-- Primary lime pill Add to session (60% width) -->
+<button class="w-[60%] h-14 rounded-full bg-primary text-on-primary font-headline text-base font-bold active:scale-95 transition-transform flex items-center justify-center">
+          Add to session
+        </button>
+</div>
+<!-- iOS Home Indicator -->
+<div class="w-32 h-1 bg-white/30 rounded-full mx-auto mt-2"></div>
+</div>
+</div>
+</body>
+</html>

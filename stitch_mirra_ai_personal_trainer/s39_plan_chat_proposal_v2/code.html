@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>S39 — Plan chat proposal v2</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: '#131313',
+            'surface-container-lowest': '#0e0e0e',
+            'surface-container-low': '#1c1b1b',
+            'surface-container': '#201f1f',
+            'surface-container-high': '#2a2a2a',
+            'surface-container-highest': '#353534',
+            'outline-variant': '#454936',
+            'on-surface': '#e5e2e1',
+            'on-surface-variant': '#c5c9b0',
+            'primary-container': '#cbf150',
+            'on-primary-container': '#161e00',
+            'secondary-lavender': '#d1beef',
+            'on-secondary-lavender': '#21143a',
+            'crimson-streak': '#ff6b8a',
+          },
+          fontFamily: {
+            headline: ['Space Grotesk', 'sans-serif'],
+            body: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #000;
+      color: #e5e2e1;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-headline {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .proposal-border {
+      border-top: 1.5px solid #cbf150;
+      border-left: 1.5px solid #cbf150;
+      border-right: 1px solid #2a2a2a;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    /* Hide scrollbar */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface m-0 p-0 min-h-screen">
+<!-- iPhone Frame 390 x 844 pt -->
+<main class="relative w-full max-w-[390px] mx-auto min-h-screen bg-surface flex flex-col justify-between">
+<!-- iOS Status Bar (9:41) -->
+<header class="w-full pt-3 px-7 flex justify-between items-center text-xs font-headline font-semibold text-on-surface z-20 select-none">
+<span>9:41</span>
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-[15px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[15px]">wifi</span>
+<span class="material-symbols-outlined text-[18px]">battery_full</span>
+</div>
+</header>
+<!-- Top Bar: 56pt -->
+<nav class="w-full h-14 px-5 flex items-center justify-between z-20 flex-shrink-0">
+<button aria-label="Go back" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface border border-[#2a2a2a] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<h1 class="font-headline text-[18px] leading-[24px] font-semibold text-on-surface">Plan chat</h1>
+<div class="w-10"></div>
+</nav>
+<!-- Scrollable Chat & Proposal Content -->
+<section class="flex-1 px-5 pt-1 pb-6 space-y-4">
+<!-- User Bubble (right-aligned, surface-container-high, radius 24) -->
+<div class="flex justify-end">
+<div class="max-w-[290px] bg-surface-container-high text-on-surface text-[14px] leading-[20px] rounded-[24px] rounded-br-[8px] p-4 border border-[#2a2a2a]">
+          Swap my lunch and replace tricep dips with skull crushers. No chicken.
+        </div>
+</div>
+<!-- Coach Reply (left, 32pt lime avatar with 'M', bubble surface-container-low) -->
+<div class="flex items-start space-x-2.5">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-headline font-bold text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+          M
+        </div>
+<div class="max-w-[275px] bg-surface-container-low text-on-surface text-[14px] leading-[20px] rounded-[24px] rounded-tl-[8px] p-4 border border-[#2a2a2a]">
+          Here is the change. Nothing updates until you apply.
+        </div>
+</div>
+<!-- Proposal Card (surface-container-low, radius 28, 1.5pt lime border on left and top, padding 20) -->
+<article class="w-full bg-surface-container-low rounded-[28px] p-5 proposal-border space-y-4">
+<!-- Header -->
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface border border-[#2a2a2a] flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</div>
+<div>
+<h2 class="font-headline text-[18px] leading-[22px] font-semibold text-on-surface">Proposed changes</h2>
+<p class="font-headline text-[11px] uppercase tracking-[0.08em] text-on-surface-variant font-medium mt-0.5">READY TO APPLY</p>
+</div>
+</div>
+<!-- Section 1: WORKOUT REVISION -->
+<div class="space-y-2">
+<div>
+<div class="flex items-center space-x-1.5 text-secondary-lavender">
+<span class="material-symbols-outlined text-[16px]">fitness_center</span>
+<span class="font-headline text-[11px] uppercase tracking-[0.08em] font-semibold">WORKOUT REVISION</span>
+</div>
+<p class="text-[12px] leading-[16px] text-on-surface-variant mt-0.5">Thu · Push day</p>
+</div>
+<!-- Diff block 1 (surface-container-lowest, radius 24, padding 14) -->
+<div class="bg-surface-container-lowest rounded-[24px] p-3.5 space-y-2.5 border border-[#2a2a2a]">
+<!-- Line 1: Before -->
+<div class="flex items-center space-x-2 text-on-surface-variant text-[13px]">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant flex-shrink-0">remove</span>
+<span class="line-through">Before: Tricep Dips · 3×8-10</span>
+</div>
+<!-- Divider with small lime swap arrows icon -->
+<div class="flex items-center space-x-2">
+<div class="h-[1px] flex-1 bg-[#2a2a2a]"></div>
+<span class="material-symbols-outlined text-[15px] text-primary-container">sync_alt</span>
+<div class="h-[1px] flex-1 bg-[#2a2a2a]"></div>
+</div>
+<!-- Line 2: After -->
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[18px] text-primary-container flex-shrink-0">check_circle</span>
+<span class="font-headline text-[13px] font-semibold text-primary-container">After: Skull Crusher · 3×8-10</span>
+</div>
+<span class="text-[11px] font-headline text-secondary-lavender px-2 py-0.5 rounded-full border border-secondary-lavender/40 flex-shrink-0 ml-1">Same muscles</span>
+</div>
+<!-- Line 3: Detail -->
+<p class="text-[12px] leading-[16px] text-on-surface pl-6">↳ Trains triceps without a dip station</p>
+</div>
+</div>
+<!-- Section 2: MEAL ADJUSTMENT -->
+<div class="space-y-2">
+<div class="flex items-center space-x-1.5 text-secondary-lavender">
+<span class="material-symbols-outlined text-[16px]">restaurant</span>
+<span class="font-headline text-[11px] uppercase tracking-[0.08em] font-semibold">MEAL ADJUSTMENT</span>
+</div>
+<!-- Diff block 2 (surface-container-lowest, radius 24, padding 14) -->
+<div class="bg-surface-container-lowest rounded-[24px] p-3.5 space-y-2.5 border border-[#2a2a2a]">
+<!-- Line 1: Before -->
+<div class="flex items-center justify-between text-on-surface-variant text-[13px]">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant flex-shrink-0">remove</span>
+<span class="line-through">Before: Lunch · Chicken Caesar wrap</span>
+</div>
+<span class="text-[11px] font-headline text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full border border-[#2a2a2a] flex-shrink-0 ml-1">640 kcal</span>
+</div>
+<!-- Divider with small lime swap arrows icon -->
+<div class="flex items-center space-x-2">
+<div class="h-[1px] flex-1 bg-[#2a2a2a]"></div>
+<span class="material-symbols-outlined text-[15px] text-primary-container">sync_alt</span>
+<div class="h-[1px] flex-1 bg-[#2a2a2a]"></div>
+</div>
+<!-- Line 2: After -->
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[18px] text-primary-container flex-shrink-0">check_circle</span>
+<span class="font-headline text-[13px] font-semibold text-primary-container">After: Lunch · Salmon rice bowl</span>
+</div>
+<span class="text-[11px] font-headline text-secondary-lavender px-2 py-0.5 rounded-full border border-secondary-lavender/40 flex-shrink-0 ml-1">Target intact</span>
+</div>
+<!-- Line 3: Detail -->
+<p class="text-[12px] leading-[16px] text-on-surface pl-6">↳ +12g protein · −20g carbs · 610 kcal</p>
+</div>
+</div>
+<!-- Section 3: PLAN PREFERENCES -->
+<div class="space-y-2">
+<div class="flex items-center space-x-1.5 text-secondary-lavender">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span class="font-headline text-[11px] uppercase tracking-[0.08em] font-semibold">PLAN PREFERENCES</span>
+</div>
+<!-- Compact row -->
+<div class="bg-surface-container-lowest rounded-[24px] p-3.5 flex items-center space-x-2 border border-[#2a2a2a]">
+<span class="material-symbols-outlined text-[18px] text-primary-container flex-shrink-0">check_circle</span>
+<span class="font-headline text-[13px] font-semibold text-on-surface">Avoid: chicken</span>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-[1px] w-full bg-[#2a2a2a]"></div>
+<!-- Question & CTA Buttons -->
+<div class="space-y-3 pt-0.5">
+<p class="text-[14px] leading-[20px] text-on-surface font-medium text-center">Apply these to your plan?</p>
+<div class="flex items-center space-x-3">
+<!-- Outline lavender pill button -->
+<button class="flex-1 h-[52px] rounded-full border border-secondary-lavender text-secondary-lavender font-headline font-semibold text-[14px] flex items-center justify-center space-x-1.5 active:scale-95 transition-transform bg-transparent hover:bg-secondary-lavender/10" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Change it</span>
+</button>
+<!-- Lime filled pill button -->
+<button class="flex-1 h-[52px] rounded-full bg-primary-container text-on-primary-container font-headline font-bold text-[14px] flex items-center justify-center space-x-1.5 active:scale-95 transition-transform hover:opacity-90" type="button">
+<span class="material-symbols-outlined text-[18px]">check</span>
+<span>Yes, apply</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+<!-- Bottom Composer (Pinned) -->
+<footer class="w-full px-5 pt-2 pb-6 bg-surface border-t border-[#2a2a2a] z-20 flex-shrink-0">
+<div class="flex items-center space-x-2.5">
+<!-- Dark pill input with lock icon -->
+<div class="flex-1 h-12 bg-surface-container-low rounded-full px-4 flex items-center space-x-2 border border-[#2a2a2a]">
+<span class="text-on-surface-variant/70 text-[13px] flex-1 select-none truncate">Reply after you decide…</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant/70">lock</span>
+</div>
+<!-- 48pt mic circle (#1c1b1b) -->
+<button aria-label="Microphone input" class="w-12 h-12 rounded-full bg-[#1c1b1b] flex items-center justify-center text-on-surface border border-[#2a2a2a] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+<!-- 48pt send circle (#1c1b1b) -->
+<button aria-label="Send message" class="w-12 h-12 rounded-full bg-[#1c1b1b] flex items-center justify-center text-on-surface border border-[#2a2a2a] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+</button>
+</div>
+<!-- Home Indicator -->
+<div class="w-32 h-1 bg-on-surface/30 rounded-full mx-auto mt-4"></div>
+</footer>
+</main>
+</body>
+</html>

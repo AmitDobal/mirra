@@ -12,7 +12,7 @@
 
 Divisions run **III → II → I** (III = entry, I = top of tier). Legendary has no division. 22 steps, `step` 0..21.
 
-| Tier | Pct band | Division bands (III / II / I) | Token (theme `tier.*`) | Proposed color (S37 decides) |
+| Tier | Pct band | Division bands (III / II / I) | Token (theme `tier.*`) | Color (S37 approved, `DESIGN.md` `tier-*`) |
 | --- | --- | --- | --- | --- |
 | Iron | 0-10 | 0-3 / 3-6 / 6-10 | `tier.iron` | `#8f937c` (= outline) |
 | Bronze | 10-25 | 10-15 / 15-20 / 20-25 | `tier.bronze` | `#b9825f` |
@@ -200,11 +200,11 @@ Tiers are free (retention hook, research §2.7).
 
 ## 7. Mobile surfaces
 
-| Stitch | Surface | Ticket |
-| --- | --- | --- |
-| S34 / S35 / S37 | strength map (You → "Strength tier" card) / muscle detail sheet / tier ladder | AMI-168 (badge AMI-162) |
-| S36 / S38 | exercise detail anatomy v2 + tier card / workout complete tier-up | AMI-169 |
-| S39 / S40 / S33 | plan chat proposal v2 / Today header chips / Kinetic Rank fidelity | AMI-167 / AMI-164 / AMI-164 |
+| Stitch | Surface | Ticket | Stitch screen ids (project `16036285274438790381`) |
+| --- | --- | --- | --- |
+| S34 / S35 / S37 | strength map (You → "Strength tier" card) / muscle detail sheet / tier ladder | AMI-168 (badge AMI-162) | `cb154d3f761948cd9f3cc1afcaaf2fce` / `13a091151eed425fa4c4651adec522f9` / `f87abb1b9ecd49f78b157addab4d09e4` |
+| S36 / S38 | exercise detail anatomy v2 + tier card / workout complete tier-up | AMI-169 | `54bd71822ab4433c9cfedbaeb3b457ed` / `d668ab27332f456dafbf9f0af56d072f` |
+| S39 / S40 / S33 | plan chat proposal v2 / Today header chips (new user; `streak9/`) / Kinetic Rank fidelity | AMI-167 / AMI-164 / AMI-164 | `6b6268c18f1e4b30a3f0fcc58d6b8da7` / `e09ef366b78842fbabc261e9936bcd3d`, `3e188c5ee2cf4706855569372d21ff2b` / `0521a986753e48a2bfabb5543a8f23bc` |
 
 ## 8. Plan chat diff v2
 

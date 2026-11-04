@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S38 — Workout Complete with Tier-Up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#131313',
+            'surface-container-lowest': '#0e0e0e',
+            'surface-container-low': '#1c1b1b',
+            'surface-container': '#201f1f',
+            'surface-container-high': '#2a2a2a',
+            'surface-container-highest': '#353534',
+            'outline-variant': '#454936',
+            'on-surface': '#e5e2e1',
+            'on-surface-variant': '#c5c9b0',
+            lime: '#cbf150',
+            'on-lime': '#161e00',
+            lavender: '#d1beef',
+            'on-lavender': '#21143a',
+            crimson: '#ff6b8a',
+            tier: {
+              iron: '#8f937c',
+              bronze: '#b9825f',
+              silver: '#c5c9d4',
+              gold: '#e8c15a',
+              platinum: '#8fd6cf',
+              diamond: '#9cc8ff',
+              elite: '#d1beef',
+              legendary: '#cbf150',
+            }
+          },
+          fontFamily: {
+            space: ['"Space Grotesk"', 'sans-serif'],
+            jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .phone-canvas {
+      width: 390px;
+      height: 844px;
+      max-height: 844px;
+      background-color: #131313;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body class="bg-[#131313]">
+  <div class="phone-canvas flex flex-col justify-between px-5 pt-3 pb-2 text-[#e5e2e1]">
+    <!-- iOS Status Bar (9:41) -->
+    <div class="w-full flex justify-between items-center h-11 shrink-0 px-2 select-none">
+      <span class="font-space font-semibold text-[15px] tracking-tight text-[#e5e2e1]">9:41</span>
+      <div class="flex items-center space-x-2">
+        <!-- Signal -->
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0.5" y="7.5" width="2.5" height="3" rx="0.5" fill="#e5e2e1"/>
+          <rect x="5" y="5" width="2.5" height="5.5" rx="0.5" fill="#e5e2e1"/>
+          <rect x="9.5" y="2.5" width="2.5" height="8" rx="0.5" fill="#e5e2e1"/>
+          <rect x="14" y="0" width="2.5" height="10.5" rx="0.5" fill="#e5e2e1"/>
+        </svg>
+        <!-- Wifi -->
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8 2.5C10.74 2.5 13.23 3.65 15.01 5.48L15.93 4.54C13.91 2.47 11.11 1.17 8 1.17C4.89 1.17 2.09 2.47 0.07 4.54L0.99 5.48C2.77 3.65 5.26 2.5 8 2.5ZM8 6.5C9.8 6.5 11.44 7.28 12.61 8.52L13.53 7.58C12.12 6.09 10.17 5.17 8 5.17C5.83 5.17 3.88 6.09 2.47 7.58L3.39 8.52C4.56 7.28 6.2 6.5 8 6.5ZM8 9.5C8.83 9.5 9.5 10.17 9.5 11H6.5C6.5 10.17 7.17 9.5 8 9.5Z" fill="#e5e2e1"/>
+        </svg>
+        <!-- Battery -->
+        <div class="w-[24px] h-[11.5px] border border-[#e5e2e1] rounded-[3px] p-[1px] flex items-center">
+          <div class="h-full w-full bg-[#e5e2e1] rounded-[1.5px]"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container (No scroll, perfectly proportioned) -->
+    <div class="flex-1 flex flex-col justify-between py-1">
+      <!-- 1. Top row -->
+      <div class="relative flex items-center justify-center w-full h-10 shrink-0">
+        <button class="absolute left-0 w-10 h-10 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center text-[#e5e2e1] active:scale-95 transition-transform" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="2" y1="2" x2="12" y2="12"/>
+            <line x1="12" y1="2" x2="2" y2="12"/>
+          </svg>
+        </button>
+        <span class="font-space uppercase text-[11px] tracking-[0.08em] font-semibold text-[#e5e2e1]">WORKOUT COMPLETE</span>
+      </div>
+
+      <!-- 2. Centered check circle + Title + Subtitle -->
+      <div class="flex flex-col items-center text-center mt-1 shrink-0">
+        <div class="w-16 h-16 rounded-full bg-[#cbf150] flex items-center justify-center text-[#161e00] mb-2.5">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h1 class="font-space font-bold text-[28px] leading-[34px] text-[#e5e2e1] tracking-tight">Session Logged</h1>
+        <p class="font-jakarta text-[14px] leading-[20px] text-[#c5c9b0] mt-0.5">Push Day completed.</p>
+      </div>
+
+      <!-- 3. Stats row (three equal tiles) -->
+      <div class="grid grid-cols-3 gap-3 my-1 shrink-0">
+        <!-- Tile 1 -->
+        <div class="bg-[#1c1b1b] border border-[#2a2a2a] rounded-[20px] py-2.5 px-2 flex flex-col items-center justify-center text-center">
+          <span class="font-space font-bold text-[26px] leading-[30px] text-[#e5e2e1]">42</span>
+          <span class="font-space text-[11px] leading-[14px] uppercase tracking-[0.08em] text-[#c5c9b0] mt-0.5">MINUTES</span>
+        </div>
+        <!-- Tile 2 -->
+        <div class="bg-[#1c1b1b] border border-[#2a2a2a] rounded-[20px] py-2.5 px-2 flex flex-col items-center justify-center text-center">
+          <span class="font-space font-bold text-[26px] leading-[30px] text-[#e5e2e1]">8.4k</span>
+          <span class="font-space text-[11px] leading-[14px] uppercase tracking-[0.08em] text-[#c5c9b0] mt-0.5">LB VOLUME</span>
+        </div>
+        <!-- Tile 3 -->
+        <div class="bg-[#1c1b1b] border border-[#2a2a2a] rounded-[20px] py-2.5 px-2 flex flex-col items-center justify-center text-center">
+          <span class="font-space font-bold text-[26px] leading-[30px] text-[#e5e2e1]">5</span>
+          <span class="font-space text-[11px] leading-[14px] uppercase tracking-[0.08em] text-[#c5c9b0] mt-0.5">EXERCISES</span>
+        </div>
+      </div>
+
+      <!-- 4. Tier up card (surface-container-low, radius 28, 1.5pt lime border, padding 16) -->
+      <div class="bg-[#1c1b1b] rounded-[28px] border-[1.5px] border-[#cbf150] p-4 my-1 flex flex-col shrink-0">
+        <!-- Header row -->
+        <div class="flex items-center justify-between w-full mb-3">
+          <span class="font-space uppercase text-[11px] tracking-[0.08em] font-bold text-[#cbf150]">TIER UP</span>
+          <span class="font-jakarta text-[12px] leading-[16px] text-[#c5c9b0]">3 changes</span>
+        </div>
+
+        <!-- Overall row (72pt height) -->
+        <div class="flex items-center h-[72px] w-full">
+          <!-- lg Silver badge (2 dots) left (72pt area) -->
+          <div class="flex flex-col items-center justify-center w-14 shrink-0 mr-3.5">
+            <!-- Pointy-top rounded hexagon SVG (size ~48x48 inside 72pt box) with bevel and 2 chevrons -->
+            <svg width="48" height="52" viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Hexagon Outer Shape (Silver #c5c9d4) -->
+              <path d="M24 2 L45 14 V38 L24 50 L3 38 V14 Z" fill="#c5c9d4" rx="4"/>
+              <!-- 2px darker inner bevel (30% darker) -->
+              <path d="M24 5.5 L42.5 16 V36 L24 46.5 L5.5 36 V16 Z" fill="#8a8d94"/>
+              <!-- Inner face -->
+              <path d="M24 7.5 L40.5 17.5 V34.5 L24 44.5 L7.5 34.5 V17.5 Z" fill="#c5c9d4"/>
+              <!-- Silver Glyph: Two white chevrons -->
+              <path d="M16 23 L24 16 L32 23" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 30 L24 23 L32 30" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <!-- Division pips: Division II = 2 dots under hexagon -->
+            <div class="flex items-center space-x-1.5 mt-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#c5c9d4]"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#c5c9d4]"></span>
+            </div>
+          </div>
+
+          <!-- Stacked details -->
+          <div class="flex flex-col justify-center">
+            <span class="font-space uppercase text-[11px] tracking-[0.08em] font-semibold text-[#c5c9b0]">OVERALL</span>
+            <span class="font-space font-semibold text-[20px] leading-[24px] text-[#e5e2e1]">Silver II</span>
+            <span class="font-jakarta text-[12px] leading-[16px] text-[#c5c9b0] mt-0.5">from Silver III</span>
+          </div>
+        </div>
+
+        <!-- Divider 1px #2a2a2a -->
+        <div class="w-full h-[1px] bg-[#2a2a2a] my-2"></div>
+
+        <!-- Compact row 1: Chest (56pt height) -->
+        <div class="flex items-center justify-between h-[48px] w-full">
+          <div class="flex items-center space-x-3">
+            <!-- sm Gold badge (1 dot) (24pt) -->
+            <div class="flex flex-col items-center justify-center w-6 shrink-0">
+              <svg width="24" height="26" viewBox="0 0 24 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer Gold #e8c15a -->
+                <path d="M12 1 L22.5 7 V19 L12 25 L1.5 19 V7 Z" fill="#e8c15a"/>
+                <!-- Darker inner bevel -->
+                <path d="M12 3 L20.5 8 V18 L12 23 L3.5 18 V8 Z" fill="#a3873f"/>
+                <!-- Inner face -->
+                <path d="M12 4.5 L19 9 V17 L12 21.5 L5 17 V9 Z" fill="#e8c15a"/>
+                <!-- Gold Glyph: 3 chevrons -->
+                <path d="M8 11.5 L12 8 L16 11.5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 14.5 L12 11 L16 14.5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 17.5 L12 14 L16 17.5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <!-- 1 dot (Division III) in tier color -->
+              <div class="flex items-center justify-center mt-1">
+                <span class="w-1 h-1 rounded-full bg-[#e8c15a]"></span>
+              </div>
+            </div>
+            <span class="font-jakarta text-[14px] font-semibold text-[#e5e2e1]">Chest</span>
+          </div>
+          <span class="font-space text-[12px] font-semibold text-[#e5e2e1] tracking-tight">Silver I → Gold III</span>
+        </div>
+
+        <!-- Compact row 2: Barbell Bench Press (56pt height) -->
+        <div class="flex items-center justify-between h-[48px] w-full">
+          <div class="flex items-center space-x-3">
+            <!-- sm Gold badge (1 dot) (24pt) -->
+            <div class="flex flex-col items-center justify-center w-6 shrink-0">
+              <svg width="24" height="26" viewBox="0 0 24 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer Gold #e8c15a -->
+                <path d="M12 1 L22.5 7 V19 L12 25 L1.5 19 V7 Z" fill="#e8c15a"/>
+                <!-- Darker inner bevel -->
+                <path d="M12 3 L20.5 8 V18 L12 23 L3.5 18 V8 Z" fill="#a3873f"/>
+                <!-- Inner face -->
+                <path d="M12 4.5 L19 9 V17 L12 21.5 L5 17 V9 Z" fill="#e8c15a"/>
+                <!-- Gold Glyph: 3 chevrons -->
+                <path d="M8 11.5 L12 8 L16 11.5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 14.5 L12 11 L16 14.5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 17.5 L12 14 L16 17.5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <!-- 1 dot (Division III) in tier color -->
+              <div class="flex items-center justify-center mt-1">
+                <span class="w-1 h-1 rounded-full bg-[#e8c15a]"></span>
+              </div>
+            </div>
+            <span class="font-jakarta text-[14px] font-semibold text-[#e5e2e1]">Barbell Bench Press</span>
+          </div>
+          <span class="font-space text-[12px] font-semibold text-[#e5e2e1] tracking-tight">Silver I → Gold III</span>
+        </div>
+      </div>
+
+      <!-- 5. RPE block (How hard was it? + 10 round 32pt chips + Light / Max) -->
+      <div class="flex flex-col my-1 shrink-0">
+        <span class="font-jakarta text-[14px] font-medium text-[#e5e2e1] mb-2">How hard was it?</span>
+        <!-- Ten 32pt round chips 1..10 (chip 7 lime filled) -->
+        <div class="flex items-center justify-between w-full">
+          <!-- 1 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">1</div>
+          <!-- 2 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">2</div>
+          <!-- 3 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">3</div>
+          <!-- 4 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">4</div>
+          <!-- 5 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">5</div>
+          <!-- 6 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">6</div>
+          <!-- 7 (LIME FILLED) -->
+          <div class="w-8 h-8 rounded-full bg-[#cbf150] text-[#161e00] font-bold flex items-center justify-center font-space text-[14px]">7</div>
+          <!-- 8 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">8</div>
+          <!-- 9 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">9</div>
+          <!-- 10 -->
+          <div class="w-8 h-8 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center font-space text-[13px] font-semibold text-[#c5c9b0]">10</div>
+        </div>
+        <!-- Light / Max row -->
+        <div class="flex items-center justify-between w-full mt-1.5 px-1">
+          <span class="font-jakarta text-[12px] leading-[16px] text-[#c5c9b0]">Light</span>
+          <span class="font-jakarta text-[12px] leading-[16px] text-[#c5c9b0]">Max</span>
+        </div>
+      </div>
+
+      <!-- 6. Bottom: full-width lime pill Done, 56pt -->
+      <button class="w-full h-14 bg-[#cbf150] text-[#161e00] font-space font-bold text-[16px] rounded-full flex items-center justify-center active:scale-[0.98] transition-transform shrink-0 mt-1">
+        Done
+      </button>
+    </div>
+
+    <!-- iOS Home Indicator -->
+    <div class="w-full flex justify-center py-1 shrink-0">
+      <div class="w-32 h-1 bg-[#353534] rounded-full"></div>
+    </div>
+  </div>
+</body>
+</html>

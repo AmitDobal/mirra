@@ -15,6 +15,7 @@ import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { withAiCredits } from "../services/credits-gate";
+import { buildGoalContextSafe } from "../services/goal-context";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { applyDraft, revisePlans } from "../services/plan-revise";
 
@@ -53,6 +54,7 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
     .from(preferences)
     .where(eq(preferences.userId, userId))
     .limit(1);
+  const goal = await buildGoalContextSafe(db, userId);
   const result = await withAiCredits(
     { env: c.env, db, userId },
     {
@@ -69,6 +71,7 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
         vectorId: body.vectorId,
         context: body.context ?? body.localDate,
         persona: prefs?.trainerPersona ?? undefined,
+        goal,
       }),
   );
   const response: CoachAdviseResponse = {

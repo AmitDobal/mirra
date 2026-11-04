@@ -10,6 +10,7 @@ export {
   healthyMinKg,
   holdBandKg,
   kcalFloor,
+  KCAL_PER_KG_WEEK,
   planPace,
   ratePct,
   rateBounds,

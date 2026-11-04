@@ -19,6 +19,8 @@ import {
 } from "../lib/meal-macros";
 import { getMealPlanGenerator, getSwapMealPlanGenerator } from "../lib/meal-plan-generator";
 import type { MealPlanInput } from "../ports/meal-plan-generator";
+import { goalContextFor } from "./goal-context";
+import { goalPromptOf } from "./goal-copy";
 
 export type MealPlanCtx = { env: MirraEnv; db: AppDB; userId: string };
 
@@ -102,7 +104,7 @@ export const materializeDrafts = async (
   };
 
   const first = ctx
-    ? await getMealPlanGenerator(ctx.env, ctx.db).generate(input)
+    ? await getMealPlanGenerator(ctx.env, ctx.db).generate({ ...input, goal: goalPromptOf(await goalContextFor(ctx)) })
     : await getSwapMealPlanGenerator().generate(input);
   accept(first.meals);
   let source = first.source;

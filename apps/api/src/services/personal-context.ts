@@ -1,4 +1,4 @@
-import type { AccountabilityScenario, HistoryStats } from "@mirra/contracts";
+import type { AccountabilityScenario, GoalContext, HistoryStats } from "@mirra/contracts";
 import { and, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
@@ -13,6 +13,7 @@ import {
   signedDelta,
   type ScenarioFacts,
 } from "./accountability-scenarios";
+import { buildGoalContextSafe } from "./goal-context";
 import { buildHistorySummary } from "./history-summary";
 import { defaultFuelTargets, loadCurrentPlan } from "./plan-loaders";
 import { historyWindowDays, loadUserTenure, tenureLine } from "./user-tenure";
@@ -69,6 +70,8 @@ export type PersonalDayContext = {
   history: HistoryStats;
   /** Pure inputs behind scenario + copy; handed to the coach advisor. */
   facts: ScenarioFacts;
+  /** AMI-181 goal estimate (server-side only; `goal.line` closes `briefing`). Null = no goal plan. */
+  goal: GoalContext | null;
 };
 
 /** Hour used for time-of-day rules: UTC hour today, 24 for past days, 0 for future days. */
@@ -207,6 +210,7 @@ export const buildPersonalDayContext = async (
 
   const weightPart = await loadWeightLine(db, userId);
   const joinedPart = tenureLine(tenure);
+  const goal = await buildGoalContextSafe(db, userId);
 
   const briefingParts = [
     fuelPart,
@@ -219,6 +223,7 @@ export const buildPersonalDayContext = async (
     checkIn ? `Check-in: ${checkIn.status}` : "Check-in open",
     ...(weightPart ? [weightPart] : []),
     ...(joinedPart ? [joinedPart] : []),
+    ...(goal ? [goal.line] : []),
   ];
 
   const { text: historySummary, ...historyStats } = history;
@@ -270,5 +275,6 @@ export const buildPersonalDayContext = async (
       windowDays: historyStats.windowDays,
     },
     facts,
+    goal,
   };
 };

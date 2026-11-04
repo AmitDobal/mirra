@@ -1,4 +1,4 @@
-import type { MealSlot, TrainerPersona } from "@mirra/contracts";
+import type { GoalContext, MealSlot, TrainerPersona } from "@mirra/contracts";
 
 /** Plan chat: turns a free-text message into a structured edit of the EXISTING plans. */
 
@@ -83,6 +83,8 @@ export type PlanReviseInput = {
   schedule?: PlanReviseDay[];
   /** Trainer character voice for the reply; defaults to drill. */
   persona?: TrainerPersona;
+  /** AMI-181 goal estimate (data). The reply never states dates: the server adds `goalImpact`. */
+  goal?: GoalContext | null;
 };
 
 export type PlanReviseResult = {

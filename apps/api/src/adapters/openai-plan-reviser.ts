@@ -7,6 +7,7 @@ import { logAiUsage } from "../lib/ai-usage";
 import { EQUIPMENT_IDS, hasAnyIntent, sanitizeIntent } from "../lib/plan-intent";
 import type { PlanReviser, PlanReviseInput, PlanReviseResult } from "../ports/plan-reviser";
 import { heuristicPlanReviser } from "./heuristic-plan-reviser";
+import { goalRulesBlock, guardGoalCopy } from "../services/goal-copy";
 import { chatCompletion } from "./openai-client";
 
 const str = { type: "string" } as const;
@@ -93,7 +94,17 @@ Rules:
 - reply: one sentence in the voice of PERSONA, max 30 words, no numbers you were not given. PERSONA changes the reply wording only, never the intent.
 - Never use em dashes or semicolons. Prefer short sentences.`;
 
-const buildUserPayload = (input: PlanReviseInput): string =>
+/** AMI-181: appended when the user has a goal plan. */
+const GOAL_SYSTEM = goalRulesBlock(
+  "GOAL DATA: current.goal is the user's goal, estimate and status. Use it to judge what fits the goal. The reply never states a date or ETA: the server adds the goal impact line itself.",
+);
+
+export const reviserSystemPrompt = (input: PlanReviseInput): string =>
+  input.goal ? `${SYSTEM}\n${GOAL_SYSTEM}` : SYSTEM;
+
+const SAFE_REPLY = "Here is what I can change for you.";
+
+export const buildUserPayload = (input: PlanReviseInput): string =>
   JSON.stringify({
     PERSONA: personaPromptBlock(input.persona),
     message: input.message.slice(0, 2000),
@@ -117,6 +128,7 @@ const buildUserPayload = (input: PlanReviseInput): string =>
         proteinGTarget: input.nutrition.proteinGTarget,
         lifestyleNotes: input.nutrition.lifestyleNotes?.slice(0, 400) ?? null,
       },
+      ...(input.goal ? { goal: input.goal } : {}),
     },
   });
 
@@ -134,7 +146,7 @@ export const createOpenAiPlanReviser = (env: MirraEnv, db?: AppDB): PlanReviser 
         temperature: 0.2,
         maxTokens: 600,
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: reviserSystemPrompt(input) },
           { role: "user", content: buildUserPayload(input) },
         ],
       });
@@ -162,7 +174,8 @@ export const createOpenAiPlanReviser = (env: MirraEnv, db?: AppDB): PlanReviser 
         const rules = await heuristicPlanReviser.propose(input);
         if (hasAnyIntent(rules.intent)) return rules;
       }
-      return { intent, reply: parsed.data.reply, warnings: parsed.data.warnings.slice(0, 3), source: "openai" };
+      const reply = guardGoalCopy(parsed.data.reply, SAFE_REPLY, "openai-reviser.reply");
+      return { intent, reply, warnings: parsed.data.warnings.slice(0, 3), source: "openai" };
     } catch (err) {
       console.warn("[openai-reviser] fallback to heuristic:", err instanceof Error ? err.message : String(err));
       return heuristicPlanReviser.propose(input);

@@ -28,6 +28,8 @@ export type MealPlanInput = {
   recentFoodIds: string[];
   /** Extra entropy for rotation (swap / forced regenerate). */
   seed?: string;
+  /** AMI-181: goal line + status (data). Absent on the heuristic swap path or without a goal plan. */
+  goal?: { line: string; status: string } | null;
 };
 
 export type MealPlanResult = {

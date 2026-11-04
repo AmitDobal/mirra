@@ -2,18 +2,21 @@ import {
   ContextEnvelopeSchema,
   type AiContextFeature,
   type ContextEnvelope,
+  type GoalContext,
   type HardConstraint,
   type PersonalizationContextInput,
 } from "@mirra/contracts";
 
 import type { preferences, profiles } from "../db/schema";
 import { parseJson } from "../lib/json";
+import { weightFreeGoalLine } from "./goal-copy";
 
 type PrefsRow = typeof preferences.$inferSelect;
 type ProfileRow = typeof profiles.$inferSelect;
 type Profile = ContextEnvelope["profile"];
 
-export type ContextRows = { prefs: PrefsRow; profile: ProfileRow };
+/** `goal` = AMI-181 `GoalContext` (null/absent: no goal plan yet, envelope degrades to settings only). */
+export type ContextRows = { prefs: PrefsRow; profile: ProfileRow; goal?: GoalContext | null };
 
 const MAX_CONSTRAINTS = 40;
 const MAX_AVOID_FOODS = 15;
@@ -141,6 +144,33 @@ const profileFor = (
   }
 };
 
+/**
+ * Goal settings in `profile` (hashed, arch §6). Rate and kcal hint move a little with the weight
+ * trend, so they are rounded (0.05 kg/wk, 50 kcal): the hash changes on a target or pace edit,
+ * not on day-to-day drift. Only the two generators get them.
+ */
+const goalProfile = (feature: AiContextFeature, goal: GoalContext | null | undefined): Profile => {
+  if (!goal || (feature !== "workout_plan" && feature !== "meal_plan")) return {};
+  return {
+    goalType: goal.goalType,
+    goalTargetKg: goal.targetKg,
+    ...(feature === "workout_plan" ? { goalRateKgWk: Math.round(goal.paceRateKg * 20) / 20 } : {}),
+    goalKcalHint: goal.kcalHint === null ? null : Math.round(goal.kcalHint / 50) * 50,
+  };
+};
+
+/** Volatile goal fields in `currentState` (not hashed). Chef gets the weight-free line only. */
+const goalState = (feature: AiContextFeature, goal: GoalContext | null | undefined): ContextEnvelope["currentState"] => {
+  if (!goal) return { goalLine: null };
+  if (feature === "recipe_chat") return { goalLine: weightFreeGoalLine(goal), goalStatus: goal.status };
+  return {
+    goalLine: goal.line,
+    goalStatus: goal.status,
+    goalEta: goal.etaExpected,
+    goalWeeksLeft: goal.weeksLeft,
+  };
+};
+
 /** Stable JSON: object keys sorted recursively so equal content hashes equal. */
 const stableStringify = (value: unknown): string => {
   if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
@@ -168,7 +198,7 @@ export const buildContextEnvelope = async (
   now: Date = new Date(),
 ): Promise<ContextEnvelope> => {
   const { feature, subjectId, localDate, overrides } = input;
-  const profile = profileFor(feature, rows, overrides);
+  const profile = { ...profileFor(feature, rows, overrides), ...goalProfile(feature, rows.goal) };
   const hardConstraints = constraintsFor(feature, rows.prefs).slice(0, MAX_CONSTRAINTS);
   const relevantMemories: ContextEnvelope["relevantMemories"] = [];
 
@@ -181,7 +211,7 @@ export const buildContextEnvelope = async (
     feature,
     profile,
     hardConstraints,
-    currentState: { localDate, ...(subjectId ? { subjectId } : {}) },
+    currentState: { localDate, ...(subjectId ? { subjectId } : {}), ...goalState(feature, rows.goal) },
     relevantMemories,
     generatedAt: now.toISOString(),
     contextHash,

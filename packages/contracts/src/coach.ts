@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { CheckInStatusSchema } from "./check-ins";
-import { ReviseItemSchema } from "./coach-diff";
+import { GoalImpactSchema, ReviseItemSchema } from "./coach-diff";
 import { MealSlotSchema } from "./fuel";
 import { AccountabilityScenarioSchema } from "./insights";
 import { DayMealPlanSchema } from "./meal-plan";
@@ -138,6 +138,8 @@ export const CoachReviseResponseSchema = z.object({
   expiresAt: z.number().nullable().optional(),
   /** v2 typed diff rows. Legacy `changes` is derived from these. */
   items: z.array(ReviseItemSchema).optional(),
+  /** AMI-181: how the proposal moves the goal estimate. Old clients ignore it. */
+  goalImpact: GoalImpactSchema.nullable().optional(),
 });
 
 export type CoachReadiness = z.infer<typeof CoachReadinessSchema>;

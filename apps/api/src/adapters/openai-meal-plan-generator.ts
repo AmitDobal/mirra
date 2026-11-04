@@ -10,6 +10,7 @@ import type {
   MealPlanResult,
 } from "../ports/meal-plan-generator";
 import { canSpend } from "../services/ai-budget";
+import { goalRulesBlock } from "../services/goal-copy";
 import { heuristicMealPlanGenerator } from "./heuristic-meal-plan-generator";
 import { chatCompletion } from "./openai-client";
 
@@ -41,10 +42,19 @@ Reply STRICT JSON: {"meals":[{"slot":"breakfast"|"lunch"|"dinner"|"snack","title
 Rules: one meal per requested slot. 2-4 items per meal (protein + carb + veg/fruit/fat). Never output calories or macros; the server computes them.
 Aim each meal near its slot budget. Respect each food's slots. Do not use avoidFoodIds. Prefer variety vs recentFoodIds.`;
 
-const buildPrompt = (input: MealPlanInput): string => {
+/** AMI-181: appended when the user has a goal plan. Budgets stay the server's numbers. */
+const GOAL_SYSTEM = goalRulesBlock(
+  "GOAL DATA: goal.line and goal.status describe the user's goal. Pick dishes that suit it (protein first on a cut or a gain). Never change the slot budgets. Titles never mention weight or dates.",
+);
+
+export const mealPlanSystemPrompt = (input: MealPlanInput): string =>
+  input.goal ? `${SYSTEM}\n${GOAL_SYSTEM}` : SYSTEM;
+
+export const buildPrompt = (input: MealPlanInput): string => {
   const budgets = slotBudgets(input.remaining, input.slots);
   return JSON.stringify({
     date: input.date,
+    ...(input.goal ? { goal: input.goal } : {}),
     slotBudgets: budgets,
     avoidFoodIds: input.avoidFoodIds,
     recentFoodIds: input.recentFoodIds,
@@ -90,7 +100,7 @@ export const createOpenAiMealPlanGenerator = (
         jsonMode: true,
         temperature: 0.5,
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: mealPlanSystemPrompt(input) },
           { role: "user", content: buildPrompt(input) },
         ],
       });

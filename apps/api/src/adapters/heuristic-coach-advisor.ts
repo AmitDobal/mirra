@@ -1,3 +1,4 @@
+import { heuristicGoalNote } from "../services/goal-copy";
 import type {
   CoachAdviseInput,
   CoachAdviseResult,
@@ -27,7 +28,7 @@ export const heuristicCoachAdvisor: CoachAdvisor = {
         ]
       : undefined;
 
-    const message =
+    const base =
       input.status === "done"
         ? "Solid check-in. Keep the next session as planned."
         : input.status === "partial"
@@ -40,6 +41,9 @@ export const heuristicCoachAdvisor: CoachAdvisor = {
                 ? "Travel mode: bodyweight or hotel gym is enough. Rebuild when you land."
                 : "Missed day logged. Rebuild can shift the week so you stay consistent.";
 
+    // AMI-181: one goal sentence from the shared templates (status-aware, ETA at most once).
+    const note = heuristicGoalNote(input.goal);
+    const message = note ? `${base} ${note}` : base;
     return { message, vectors, rebuildSuggested, source: "heuristic" };
   },
 };

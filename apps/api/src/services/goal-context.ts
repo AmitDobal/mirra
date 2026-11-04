@@ -35,4 +35,19 @@ export const buildGoalContextSafe = async (
   }
 };
 
+const perRequest = new WeakMap<object, Promise<GoalContext | null>>();
+
+/**
+ * `buildGoalContextSafe` once per request context object (meal plan drafts call the generator
+ * more than once per request). Never throws.
+ */
+export const goalContextFor = (ctx: { db: AppDB; userId: string }): Promise<GoalContext | null> => {
+  let p = perRequest.get(ctx);
+  if (!p) {
+    p = buildGoalContextSafe(ctx.db, ctx.userId);
+    perRequest.set(ctx, p);
+  }
+  return p;
+};
+
 export { goalLine };

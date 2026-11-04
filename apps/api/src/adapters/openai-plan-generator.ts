@@ -1,3 +1,4 @@
+import type { ContextEnvelope } from "@mirra/contracts";
 import { z } from "zod";
 
 import type { AppDB } from "../db";
@@ -10,6 +11,7 @@ import type {
   PlanGenerateResult,
   PlanGenerator,
 } from "../ports/plan-generator";
+import { goalRulesBlock, guardGoalCopy } from "../services/goal-copy";
 import { chatCompletion } from "./openai-client";
 import { heuristicPlanGenerator } from "./heuristic-plan-generator";
 
@@ -69,6 +71,34 @@ Rules:
 - Meals are planned separately.
 - Keep cues short and practical. outcomeLine must feel personal (1 sentence), never invent fake stats or social proof.`;
 
+/** Appended only when the envelope carries a goal (AMI-181, arch §6). */
+const GOAL_SYSTEM = goalRulesBlock(
+  [
+    "GOAL DATA: context.profile.goalType, goalTargetKg, goalRateKgWk, goalKcalHint are the user's goal settings. context.currentState.goalLine, goalStatus, goalEta, goalWeeksLeft are today's estimate.",
+    "Set summary.kcalTarget within +-8 % of profile.goalKcalHint when present.",
+    "outcomeLine may name the goal, never a date or a result.",
+  ].join("\n"),
+);
+
+const hasGoal = (c: ContextEnvelope | undefined): boolean => typeof c?.currentState.goalLine === "string";
+
+export const planSystemPrompt = (input: PlanGenerateInput): string =>
+  hasGoal(input.context) ? `${SYSTEM}\n${GOAL_SYSTEM}` : SYSTEM;
+
+/**
+ * Keep kcalTarget within ±8 % of the (50-kcal rounded) goal hint, so it always lands within
+ * ±10 % of the engine's exact hint. Carbs absorb the difference.
+ */
+const fitToGoalKcal = (summary: PlanGenerateResult["summary"], context?: ContextEnvelope) => {
+  const hint = context?.profile.goalKcalHint;
+  if (typeof hint !== "number" || hint <= 0) return summary;
+  const kcal = Math.round(Math.min(hint * 1.08, Math.max(hint * 0.92, summary.kcalTarget)));
+  if (kcal === summary.kcalTarget) return summary;
+  return { ...summary, kcalTarget: kcal, carbsG: Math.max(80, Math.round(summary.carbsG + (kcal - summary.kcalTarget) / 4)) };
+};
+
+const SAFE_OUTCOME = "A steady week built around your goal.";
+
 /** Envelope when the caller provided one. Legacy JSON bundles only for callers not migrated yet. */
 const userPayload = (input: PlanGenerateInput): Record<string, unknown> =>
   input.context
@@ -102,7 +132,7 @@ export const createOpenAiPlanGenerator = (
         jsonMode: true,
         temperature: 0.5,
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: planSystemPrompt(input) },
           {
             role: "user",
             content: JSON.stringify({
@@ -136,10 +166,9 @@ export const createOpenAiPlanGenerator = (
         return { ...fb, summary: { ...fb.summary, generator: "heuristic" } };
       }
 
-      return {
-        ...parsed.data,
-        summary: { ...parsed.data.summary, generator: "openai" },
-      };
+      const summary = fitToGoalKcal(parsed.data.summary, input.context);
+      const outcomeLine = guardGoalCopy(summary.outcomeLine, SAFE_OUTCOME, "openai-plan.outcomeLine");
+      return { ...parsed.data, summary: { ...summary, outcomeLine, generator: "openai" } };
     } catch (err) {
       console.warn(
         "[openai-plan] fallback to heuristic: error —",

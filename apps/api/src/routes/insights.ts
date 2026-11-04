@@ -17,7 +17,7 @@ insightsRoutes.get("/v1/insights/today", requireAuth, async (c) => {
   const date = c.req.query("date") || todayUtc();
   const db = createDb(c.env.DB);
   const ctx = await buildPersonalDayContext(db, c.get("userId"), date);
-  const { facts: _facts, ...insights } = ctx;
+  const { facts: _facts, goal: _goal, ...insights } = ctx;
   const body: PersonalInsights = insights;
   return c.json(body);
 });

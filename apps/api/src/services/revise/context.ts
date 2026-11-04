@@ -3,6 +3,7 @@ import {
   type CoachReviseBody,
   type CurrentPlanResponse,
   type DayMealPlan,
+  type GoalContext,
   type Macros,
 } from "@mirra/contracts";
 import { eq } from "drizzle-orm";
@@ -11,6 +12,7 @@ import { preferences } from "../../db/schema";
 import { todayUtc } from "../../lib/dates";
 import { parseJson } from "../../lib/json";
 import type { PlanReviseInput } from "../../ports/plan-reviser";
+import { goalContextFor } from "../goal-context";
 import { getTodayPlan, type MealPlanCtx } from "../meal-plan";
 import { defaultFuelTargets, loadCurrentPlan } from "../plan-loaders";
 
@@ -33,6 +35,8 @@ export type ReviseState = {
   dayLabel: string;
   mealPlan: DayMealPlan | null;
   targets: Macros;
+  /** AMI-181: null when the user has no goal plan (goalImpact is then null too). */
+  goal: GoalContext | null;
 };
 
 const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -75,6 +79,7 @@ export const loadReviseState = async (ctx: MealPlanCtx, body: CoachReviseBody): 
     dayLabel: workout ? [workoutDay ? weekdayOf(workoutDay.date) : null, workout.title].filter(Boolean).join(" · ") : "",
     mealPlan: await getTodayPlan(ctx, date),
     targets: defaultFuelTargets(plan.plan?.summary ?? null),
+    goal: await goalContextFor(ctx),
   };
 };
 
@@ -106,6 +111,7 @@ export const reviserInput = (ctx: MealPlanCtx, s: ReviseState, body: CoachRevise
     lifestyleNotes: s.prefs?.lifestyleNotes ?? null,
   },
   persona: toTrainerPersonaId(s.prefs?.trainerPersona),
+  goal: s.goal,
   today: s.date,
   schedule: s.plan.days.map((d) => ({
     date: d.date,

@@ -102,6 +102,16 @@ export const ReviseItemSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+/**
+ * Plan chat goal impact (AMI-181, arch §6): server-computed, deterministic one-liner on a
+ * proposal ("Keeps you on track for around Feb 18"). `etaDeltaDays` = estimate shift in days
+ * (positive = later); null when it cannot be estimated. Absent/null when the user has no ETA.
+ */
+export const GoalImpactSchema = z.object({
+  line: z.string().max(160),
+  etaDeltaDays: z.number().int().nullable(),
+});
+
 /** POST /v1/coach/revise/apply — commit a stored draft (no AI call). */
 export const ReviseApplyBodySchema = z.object({
   draftId: z.string().min(1).max(64),
@@ -113,4 +123,5 @@ export type Delta = z.infer<typeof DeltaSchema>;
 export type RevisePrefOp = z.infer<typeof RevisePrefOpSchema>;
 export type ReviseItem = z.infer<typeof ReviseItemSchema>;
 export type ReviseItemKind = ReviseItem["kind"];
+export type GoalImpact = z.infer<typeof GoalImpactSchema>;
 export type ReviseApplyBody = z.infer<typeof ReviseApplyBodySchema>;

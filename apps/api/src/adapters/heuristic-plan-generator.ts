@@ -83,9 +83,8 @@ const rotationFor = (prefs: Prefs): readonly string[] => {
   return PPL;
 };
 
-const macroTargets = (profile: Profile, prefs: Prefs) => {
-  const weight = profile.weightKg ?? 70;
-  const goal = prefs.primaryGoal ?? "consistency";
+/** Sex-band kcal (no goal plan yet). */
+const bandKcal = (profile: Profile, prefs: Prefs, weight: number, goal: string): number => {
   const band = sexBand(profile.sex);
   let kcal = Math.round(weight * band.base);
   if (goal === "lose_fat") kcal = Math.round(weight * band.cut);
@@ -93,6 +92,18 @@ const macroTargets = (profile: Profile, prefs: Prefs) => {
   if (prefs.physiqueTarget === "lean_cut") kcal -= 100;
   if (prefs.physiqueTarget === "muscular") kcal += 120;
   if (profile.pace === "aggressive" && goal === "lose_fat") kcal -= 150;
+  return kcal;
+};
+
+/** AMI-181: the goal engine's kcal hint (envelope `profile.goalKcalHint`) wins over the sex band. */
+const macroTargets = (profile: Profile, prefs: Prefs, goalKcalHint: unknown) => {
+  const weight = profile.weightKg ?? 70;
+  const goal = prefs.primaryGoal ?? "consistency";
+  const band = sexBand(profile.sex);
+  const kcal =
+    typeof goalKcalHint === "number" && goalKcalHint > 0
+      ? Math.round(goalKcalHint)
+      : bandKcal(profile, prefs, weight, goal);
   const proteinG = Math.round(weight * band.protein);
   const fatG = Math.round((kcal * 0.25) / 9);
   const carbsG = Math.round((kcal - proteinG * 4 - fatG * 9) / 4);
@@ -124,7 +135,7 @@ export const heuristicPlanGenerator: PlanGenerator = {
     );
     const minutes = prefs.sessionMinutes ?? 45;
     const rotation = rotationFor(prefs);
-    const summary = macroTargets(profile, prefs);
+    const summary = macroTargets(profile, prefs, input.context?.profile.goalKcalHint);
     const workouts: GeneratedWorkout[] = [];
     const days: GeneratedDay[] = [];
     let liftCount = 0;

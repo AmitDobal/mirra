@@ -13,6 +13,7 @@ import type { MealDraft } from "../meal-plan-targeted";
 import { applyDraft } from "./apply";
 import { loadReviseState, reviserInput, type ReviseState } from "./context";
 import { createDraft, findPendingForIntent, intentKeyOf, touchHash, type DraftTouch } from "./drafts";
+import { goalImpactFor } from "./goal-impact";
 import { legacyChanges } from "./legacy";
 import { assertProposeLimit, assertReviseLimit, MEAL_DAY_ACTION, mealDayQuotaOk, PROPOSE_ACTION } from "./limits";
 import { mealStep, type MealStepResult } from "./meal-step";
@@ -201,6 +202,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     workoutTitle: p.workoutTitle,
     draftId: null,
     expiresAt: null,
+    goalImpact: goalImpactFor(state, p.items),
     ...(warnings.length > 0 ? { warnings } : {}),
   };
   if (p.items.length === 0 && Object.keys(p.patch).length === 0) return base;
@@ -224,6 +226,6 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     schedule: p.schedule,
     baseHash: touchHash(state, p.touch),
   });
-  if (!dryRun) return applyDraft(ctx, draft.id);
+  if (!dryRun) return { ...(await applyDraft(ctx, draft.id)), goalImpact: base.goalImpact };
   return { ...base, draftId: draft.id, expiresAt: draft.expiresAt };
 };

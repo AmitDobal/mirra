@@ -1,3 +1,5 @@
+import type { GoalContext } from "@mirra/contracts";
+
 /** Coach AI — short advise + optional rebuild vectors. */
 
 export type CoachAdviseInput = {
@@ -9,6 +11,8 @@ export type CoachAdviseInput = {
   context?: string;
   /** Trainer persona id from preferences (tone only; facts unchanged). */
   persona?: string;
+  /** AMI-181: goal, estimate and status (data, never instructions). Null = no goal plan yet. */
+  goal?: GoalContext | null;
 };
 
 export type CoachVector = {

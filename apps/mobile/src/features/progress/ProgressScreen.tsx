@@ -269,6 +269,7 @@ export const ProgressScreen = () => {
   return (
     <FlatList
       data={photos}
+      keyboardShouldPersistTaps="handled"
       keyExtractor={(p) => p.id}
       renderItem={renderPhoto}
       ListHeaderComponent={header}

@@ -143,12 +143,45 @@ test("I: after delete (wiped, no session) → splash", () => {
 
 test("H + tab guard: blocks without session / onboarding / entitlement", () => {
   assert.equal(resolveTabGuard({ hasSession: false, onboarded: true, entitled: true }), "/(onboarding)/splash");
-  assert.equal(resolveTabGuard({ hasSession: true, onboarded: false, entitled: true }), "/(onboarding)/welcome");
-  assert.equal(resolveTabGuard({ hasSession: true, onboarded: true, entitled: false }), "/(onboarding)/paywall");
-  assert.equal(resolveTabGuard({ hasSession: true, onboarded: true, entitled: true }), null);
+  const g = { hasSession: true };
   assert.equal(
-    resolveTabGuard({ hasSession: true, onboarded: true, entitled: false, devPaywallSkip: true }),
+    resolveTabGuard({ ...g, onboarded: false, entitled: true, hydratedDest: "/(onboarding)/welcome" }),
+    "/(onboarding)/welcome",
+  );
+  assert.equal(
+    resolveTabGuard({ ...g, onboarded: true, entitled: false, hydratedDest: "/(onboarding)/paywall" }),
+    "/(onboarding)/paywall",
+  );
+  assert.equal(resolveTabGuard({ ...g, onboarded: true, entitled: true }), null);
+  assert.equal(
+    resolveTabGuard({ ...g, onboarded: true, entitled: false, devPaywallSkip: true }),
     null,
+  );
+});
+
+test("AMI-177: cold deep link never redirects before hydration", () => {
+  // Unhydrated onboarding flag (index.tsx skipped) → wait, never Welcome.
+  assert.equal(resolveTabGuard({ hasSession: true, onboarded: false, entitled: true }), "pending");
+  assert.equal(resolveTabGuard({ hasSession: true, onboarded: false, entitled: false }), "pending");
+  assert.equal(resolveTabGuard({ hasSession: true, onboarded: true, entitled: false }), "pending");
+});
+
+test("AMI-177: hydrated onboarded + paid user lands in tabs, not onboarding", () => {
+  const dest = resolveColdStartRoute({ ...base, serverOnboarded: true, entitled: true });
+  assert.equal(dest, "/(tabs)/today");
+  assert.equal(
+    resolveTabGuard({ hasSession: true, onboarded: false, entitled: true, hydratedDest: dest }),
+    null,
+  );
+  // Entitlement lapsed after hydration → paywall, still never onboarding.
+  assert.equal(
+    resolveTabGuard({ hasSession: true, onboarded: true, entitled: false, hydratedDest: dest }),
+    "/(onboarding)/paywall",
+  );
+  // Offline (server unknown) but SQLite says onboarded → Today, never Welcome.
+  assert.equal(
+    resolveColdStartRoute({ ...base, serverOnboarded: null, localCompleted: true, entitled: true }),
+    "/(tabs)/today",
   );
 });
 

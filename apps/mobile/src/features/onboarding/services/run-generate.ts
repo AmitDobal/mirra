@@ -11,6 +11,12 @@ import type { OnboardingAnswers, OnboardingWeekPlan } from "../types";
 import { toOnboardingBody } from "../map-body";
 import { generateLocalWeekPlan } from "./local-plan-generator";
 import { useOnboardingStore } from "../store";
+import { loadFunnelSnapshot } from "./funnel-state";
+import {
+  decideOnboardingSubmit,
+  isQuizWalked,
+  type SubmitDecision,
+} from "./submit-guard";
 import { persistOnboardingProfile, persistWeekPlan } from "./plan-persist";
 import { uploadMirrorSelfie } from "./upload-mirror";
 
@@ -77,6 +83,7 @@ const normalizeApiPlan = (raw: unknown): OnboardingWeekPlan | null => {
 const tryApiGenerate = async (
   body: OnboardingPutBody,
 ): Promise<OnboardingWeekPlan> => {
+  // 409 already_onboarded (no reset) → throws → local fallback; never overwrites.
   await putOnboarding(body);
   const key = `onb-${Date.now()}`;
   const { jobId } = await generatePlan(key);
@@ -102,16 +109,34 @@ const tryApiGenerate = async (
 };
 
 /**
+ * AMI-177: may this generating screen write onboarding? Only after the quiz was walked
+ * in this session, and never over an onboarded + entitled account.
+ */
+export const checkOnboardingSubmit = async (): Promise<SubmitDecision> => {
+  const quizWalked = isQuizWalked();
+  if (!quizWalked) return "skip";
+  const snapshot = await loadFunnelSnapshot();
+  return decideOnboardingSubmit({
+    quizWalked,
+    serverOnboarded: snapshot.serverOnboarded,
+    entitled: snapshot.entitled,
+  });
+};
+
+/**
  * PUT onboarding → POST generate → poll; local heuristic fallback.
  * Stamps `plan_generated_at` only — funnel complete waits for auth/paywall.
+ * `reset` = quiz re-run over a completed server profile (see `checkOnboardingSubmit`).
  */
 export const runOnboardingGenerate = async (
   answers: OnboardingAnswers,
+  opts: { readonly reset?: boolean } = {},
 ): Promise<OnboardingWeekPlan> => {
   // Retry a mirror upload that soft-failed earlier; never blocks the plan.
   await uploadMirrorSelfie();
   const { mirrorMediaId, mirrorMediaOwnerId } = useOnboardingStore.getState();
-  const body = toOnboardingBody({ ...answers, mirrorMediaId, mirrorMediaOwnerId });
+  const mapped = toOnboardingBody({ ...answers, mirrorMediaId, mirrorMediaOwnerId });
+  const body: OnboardingPutBody = opts.reset ? { ...mapped, reset: true } : mapped;
   await persistOnboardingProfile(body);
 
   try {

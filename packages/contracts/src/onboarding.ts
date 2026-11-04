@@ -86,6 +86,11 @@ export const OnboardingProfileSchema = z.object({
 export const OnboardingBodySchema = z.object({
   profile: OnboardingProfileSchema,
   preferences: OnboardingPreferencesSchema,
+  /**
+   * AMI-177: once onboarding is complete, PUT is rejected (409 already_onboarded)
+   * unless the client explicitly re-ran the quiz this session and sends `reset: true`.
+   */
+  reset: z.boolean().optional(),
 });
 
 export const OnboardingResponseSchema = z.object({

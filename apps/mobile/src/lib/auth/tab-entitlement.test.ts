@@ -25,8 +25,18 @@ test("effective status: Zustand none + cached trial → tabs allowed", () => {
 test("effective status: Zustand none + unentitled cache stays none → paywall", () => {
   const effective = resolveEffectiveEntitlementStatus("none", "none");
   assert.equal(effective, "none");
+  // Unhydrated → wait (AMI-177); hydrated funnel says paywall → paywall.
   assert.equal(
     resolveTabGuard({ hasSession: true, onboarded: true, entitled: isEntitledStatus(effective) }),
+    "pending",
+  );
+  assert.equal(
+    resolveTabGuard({
+      hasSession: true,
+      onboarded: true,
+      entitled: isEntitledStatus(effective),
+      hydratedDest: "/(onboarding)/paywall",
+    }),
     "/(onboarding)/paywall",
   );
 });

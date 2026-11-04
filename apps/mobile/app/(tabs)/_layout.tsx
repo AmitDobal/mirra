@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect } from "react";
 import { View } from "react-native";
 
 import { useOnboardingStore } from "@/features/onboarding";
+import { useTabGuardHydration } from "@/features/onboarding/services/use-tab-hydration";
 import { usePersonaStore } from "@/features/trainer";
 import { getAuthUserId, hasSession, isPaywallSoftSkipped } from "@/lib/auth";
 import {
@@ -24,6 +25,7 @@ const hideDock = (path: string) =>
 /**
  * Tab shell with floating pill dock (hidden on modal tab routes).
  * Hard guard: session + onboarded + entitled (trial counts). `__DEV__` may soft-skip paywall.
+ * Never redirects on unhydrated state: cold deep links wait for /v1/me + SQLite (AMI-177).
  */
 const TabsLayout = () => {
   const path = usePathname();
@@ -47,12 +49,19 @@ const TabsLayout = () => {
     if (!sessionUserId || !onboarded) return;
     void usePersonaStore.getState().hydrate({ force: true });
   }, [sessionUserId, onboarded]);
+  const session = hasSession();
+  const entitled = isEntitledStatus(entitlementStatus);
+  const devPaywallSkip = isPaywallSoftSkipped();
+  const needsHydration = session && !(onboarded && (entitled || devPaywallSkip));
+  const hydratedDest = useTabGuardHydration(needsHydration);
   const blocked = resolveTabGuard({
-    hasSession: hasSession(),
+    hasSession: session,
     onboarded,
-    entitled: isEntitledStatus(entitlementStatus),
-    devPaywallSkip: isPaywallSoftSkipped(),
+    entitled,
+    devPaywallSkip,
+    hydratedDest,
   });
+  if (blocked === "pending") return <View style={sx("flex-1 bg-background")} />;
   if (blocked) return <Redirect href={blocked as Href} />;
 
   const showDock = !hideDock(path);

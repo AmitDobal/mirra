@@ -5,6 +5,7 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import { mediaObjects, preferences, profiles } from "../db/schema";
 import type { MirraEnv } from "../env";
+import { ApiError } from "../lib/errors";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
@@ -39,11 +40,39 @@ const resolveMirrorMediaId = async (
   return row?.bytes ? row.id : null;
 };
 
+/**
+ * AMI-177: a completed profile is never silently overwritten. A cold-start glitch once
+ * replayed the funnel with store defaults and wiped a paid user's answers + plan.
+ * Re-running the quiz (pre-paywall "edit answers") must opt in with `reset: true`.
+ */
+export const decideOnboardingWrite = (opts: {
+  readonly alreadyCompleted: boolean;
+  readonly reset: boolean | undefined;
+}): "write" | "reject" =>
+  opts.alreadyCompleted && opts.reset !== true ? "reject" : "write";
+
 onboardingRoutes.put("/v1/onboarding", requireAuth, async (c) => {
   const body = parseBody(OnboardingBodySchema, await c.req.json());
   const userId = c.get("userId");
   const db = createDb(c.env.DB);
   const now = new Date();
+
+  const [existing] = await db
+    .select({ completedAt: profiles.onboardingCompletedAt })
+    .from(profiles)
+    .where(eq(profiles.userId, userId))
+    .limit(1);
+  const decision = decideOnboardingWrite({
+    alreadyCompleted: existing?.completedAt != null,
+    reset: body.reset,
+  });
+  if (decision === "reject") {
+    throw new ApiError(
+      "already_onboarded",
+      "Onboarding already completed. Send reset: true to replace your answers.",
+      409,
+    );
+  }
   const mirrorMediaId = await resolveMirrorMediaId(db, userId, body.profile.mirrorMediaId);
 
   await db

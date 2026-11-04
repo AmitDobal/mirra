@@ -55,6 +55,8 @@ meRoutes.get("/v1/me", requireAuth, async (c) => {
         goalWeightKg: profile.goalWeightKg,
         pace: (profile.pace as OnboardingProfile["pace"]) ?? null,
         timezone: profile.timezone,
+        // Onboarding selfie = progress compare baseline (AMI-177).
+        mirrorMediaId: profile.mirrorMediaId ?? null,
       }
     : null;
 

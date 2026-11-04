@@ -39,14 +39,24 @@ export const finishAfterAuth = async (kind: PostAuthKind): Promise<void> =>
   runFunnelNavExclusive(async () => {
     const intent = takePostAuthIntent();
     try {
+      const snapshot = await loadFunnelSnapshot();
       if (kind === "dev" && devTesterAllowed()) {
         markPaywallSoftSkipped();
+        await syncPersonalizationAfterAuth({
+          me: snapshot.me,
+          hasLocalQuiz: snapshot.planGenerated,
+        });
+        // AMI-177: a fresh (or just-deleted) account starts onboarding, never an empty Today.
+        if (snapshot.serverOnboarded === false && !snapshot.planGenerated) {
+          replaceFunnel("/(onboarding)/goal");
+          return;
+        }
+        if (snapshot.serverOnboarded === true) await mirrorServerPlan();
         await completeOnboardingFunnel();
         replaceFunnel("/(tabs)/today");
         return;
       }
 
-      const snapshot = await loadFunnelSnapshot();
       if (kind !== "existing") {
         // Judged from the pre-sync snapshot: no-op when the server already has data.
         await syncPersonalizationAfterAuth({

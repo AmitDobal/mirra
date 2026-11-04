@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet } from "react-native";
+import { KeyboardAvoidingView, Modal, Pressable, StyleSheet } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CapsLabel } from "@/ui/CapsLabel";
+import { KEYBOARD_BEHAVIOR } from "@/ui/keyboard";
 import { color, radius, space } from "@/theme/tokens";
 
 type Props = {
@@ -19,7 +20,7 @@ export const SheetFrame = ({ visible, title, onClose, children }: Props) => {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={KEYBOARD_BEHAVIOR}
         style={styles.fill}
       >
         <Pressable

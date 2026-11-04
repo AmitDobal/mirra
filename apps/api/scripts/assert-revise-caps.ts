@@ -1,9 +1,16 @@
 /**
- * Offline assertions (AMI-159): plan apply 4/day, meal regen 2/day, action keys.
+ * Offline assertions (AMI-159 + AMI-163): plan apply 4/day, meal regen 2/day,
+ * propose 6/day, draft TTL, action keys.
  *   npm run test:revise-caps -w @mirra/api
  */
 import { DAILY_MEAL_REGEN_LIMIT, MEAL_REGEN_ACTIONS } from "../src/services/meal-plan-draft";
-import { DAILY_REVISE_LIMIT, REVISE_ACTION } from "../src/services/plan-revise";
+import {
+  DAILY_PROPOSE_LIMIT,
+  DAILY_REVISE_LIMIT,
+  PROPOSE_ACTION,
+  REVISE_ACTION,
+} from "../src/services/plan-revise";
+import { DRAFT_TTL_MS } from "../src/services/revise/drafts";
 
 let failures = 0;
 const check = (ok: boolean, label: string) => {
@@ -16,5 +23,8 @@ check(DAILY_MEAL_REGEN_LIMIT === 2, "meal regen cap = 2/day");
 check(REVISE_ACTION === "coach.revise", "plan meter action coach.revise");
 check(MEAL_REGEN_ACTIONS.includes("meal_plan.generate"), "meal regen includes meal_plan.generate");
 check(MEAL_REGEN_ACTIONS.includes("meal_plan.rebalance"), "meal regen includes meal_plan.rebalance");
+check(DAILY_PROPOSE_LIMIT === 6, "plan chat propose cap = 6/day");
+check(PROPOSE_ACTION === "coach.revise.propose" && PROPOSE_ACTION !== REVISE_ACTION, "propose has its own meter key");
+check(DRAFT_TTL_MS === 30 * 60 * 1000, "draft TTL = 30 min");
 
 process.exit(failures === 0 ? 0 : 1);

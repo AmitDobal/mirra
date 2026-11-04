@@ -1,6 +1,7 @@
 import {
   CoachAdviseBodySchema,
   CoachReviseBodySchema,
+  ReviseApplyBodySchema,
   type CoachAdviseResponse,
 } from "@mirra/contracts";
 import { Hono } from "hono";
@@ -13,7 +14,7 @@ import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { withAiCredits } from "../services/credits-gate";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
-import { revisePlans } from "../services/plan-revise";
+import { applyDraft, revisePlans } from "../services/plan-revise";
 
 export const coachRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -77,6 +78,16 @@ coachRoutes.post("/v1/coach/revise", requireAuth, async (c) => {
   const response = await revisePlans(
     { env: c.env, db: createDb(c.env.DB), userId: c.get("userId") },
     body,
+  );
+  return c.json(response);
+});
+
+/** Plan chat v2: commit a previewed draft (no AI call). 410 applied/expired, 409 plan_changed. */
+coachRoutes.post("/v1/coach/revise/apply", requireAuth, async (c) => {
+  const body = parseBody(ReviseApplyBodySchema, await c.req.json().catch(() => ({})));
+  const response = await applyDraft(
+    { env: c.env, db: createDb(c.env.DB), userId: c.get("userId") },
+    body.draftId,
   );
   return c.json(response);
 });

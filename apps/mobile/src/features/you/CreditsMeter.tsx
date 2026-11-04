@@ -4,6 +4,8 @@ import { creditsPool, type CreditsSnapshot } from "@/lib/api/credits";
 import { sx } from "@/theme/sx";
 import { CapsLabel } from "@/ui/CapsLabel";
 
+import { t } from "./you-text";
+
 type Props = {
   readonly credits: CreditsSnapshot | null;
   readonly onPress?: () => void;
@@ -50,11 +52,11 @@ export const CreditsMeter = ({ credits, onPress }: Props) => {
   const content = (
     <View style={sx("p-space-md")}>
       <CapsLabel>AI credits</CapsLabel>
-      <Text style={sx("mt-1 font-body text-body-sm text-on-surface")}>{body}</Text>
+      <Text style={sx("mt-1 font-body-medium text-body-sm text-on-surface")}>{body}</Text>
       <View
         accessibilityRole="progressbar"
         accessibilityValue={{ now: credits.remaining, min: 0, max: pool }}
-        style={sx("mt-space-sm h-1.5 overflow-hidden rounded-full bg-surface-container-highest")}
+        style={[sx("h-1.5 overflow-hidden rounded-full bg-surface-container-highest"), { marginTop: 10 }]}
       >
         <View
           style={[
@@ -68,7 +70,7 @@ export const CreditsMeter = ({ credits, onPress }: Props) => {
         />
       </View>
       {used > 0 && !exhausted ? (
-        <Text style={sx("mt-1 font-body text-[11px] text-on-surface-variant")}>
+        <Text style={[t.hint, { marginTop: 6 }]}>
           {used} used this month
         </Text>
       ) : null}

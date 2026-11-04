@@ -30,3 +30,4 @@ export * from "./streaks";
 export * from "./badges";
 export * from "./notifications";
 export * from "./strength";
+export * from "./profile";

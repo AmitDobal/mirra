@@ -5,6 +5,8 @@ export {
   setLocalTrainerPersona,
   setLocalTrainingLocation,
 } from "./profile";
+export { patchLocalProfile } from "./profile-patch";
+export type { LocalProfilePatch } from "./profile-patch";
 export { savePlan, getCurrentPlan, getToday } from "./plans";
 export type { SavePlanInput } from "./plans";
 export { deleteLocalMeal, logMeal, getFuelToday, updateLocalMeal } from "./meals";

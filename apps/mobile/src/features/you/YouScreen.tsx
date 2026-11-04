@@ -1,78 +1,68 @@
-import { router } from "expo-router";
-import { RefreshCw } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Linking, Pressable, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, View } from "react-native";
 
+import { profileCopy } from "@/content/profile";
 import type { TrainerPersonaId } from "@/content/trainer-personas";
 import { getCurrentPlan, getProfile, type LocalPlan, type LocalProfile } from "@/db";
 import { DietPrefsSheet } from "@/features/fuel/DietPrefsSheet";
 import { useMealPlanStore } from "@/features/fuel/meal-plan-store";
-import { useOnboardingStore } from "@/features/onboarding";
-import { usePersonaStore } from "@/features/trainer";
-import { creditsPool } from "@/lib/api/credits";
-import type { MeEntitlement, MeUser } from "@/lib/api/me";
-import {
-  clearSession,
-  requireSignedInUser,
-  setPostAuthIntent,
-} from "@/lib/auth";
-import { authClient } from "@/lib/auth/auth-client";
-import { useCreditsStore } from "@/stores/credits-store";
-import { useMeStore } from "@/stores/me-store";
-import { usePlanStore } from "@/stores/plan-store";
-import { color } from "@/theme/tokens";
-import { ScreenScroll } from "@/ui/ScreenScroll";
-import { sx } from "@/theme/sx";
-
-import { openAiLimitSheet } from "./AiLimitSheet";
 import { useBadgeStore } from "@/features/rank/badge-store";
 import { useStrengthStore } from "@/features/strength";
-import { connectedAccountLabels, experienceLabel } from "./profile-display";
-import { ProfileHero } from "./ProfileHero";
-import {
-  formatCreditsRefreshed,
-  persistTrainingLocation,
-  toTrainingLocationId,
-} from "./training-location";
+import { usePersonaStore } from "@/features/trainer";
+import type { FoodPrefs, MeEntitlement, MeUser } from "@/lib/api/me";
+import { useCreditsStore } from "@/stores/credits-store";
+import { useMeStore } from "@/stores/me-store";
+import { space } from "@/theme/tokens";
+import { ScreenScroll } from "@/ui/ScreenScroll";
+
+import { PersonalDetailsRow, PersonalDetailsSheet } from "./PersonalDetails";
+import { ProfileCard } from "./ProfileCard";
+import { ProfileEditSheet } from "./ProfileEditSheet";
+import { connectedAccountLabels, subscriptionLabel } from "./profile-display";
+import { isSheetField, type EditableField } from "./profile-fields";
+import { buildProfileView, experienceText, type PrefsSource, type ProfileRowId, type ProfileSource } from "./profile-format";
+import { RebuildPrompt } from "./RebuildPrompt";
+import { RowsSection } from "./RowsSection";
+import { persistTrainingLocation, toTrainingLocationId } from "./training-location";
 import { useDeleteAccount } from "./use-delete-account";
-import { YouCards, YouCoachingGroup } from "./YouCards";
+import { useProfileEdit } from "./use-profile-edit";
+import { useYouActions } from "./use-you-actions";
+import { YouCoachSection, YouCreditsCard } from "./YouCards";
 import { YouFooterGroups } from "./YouFooterGroups";
+import { YouTiles } from "./YouTiles";
 import { YouTrainingCard, type TrainingLocationId } from "./YouTrainingCard";
-import { Group, Row } from "./you-settings";
 
-const PRIVACY_URL = "https://adtechservices.in/privacy";
-const TERMS_URL = "https://adtechservices.in/terms";
+/** Extra room under Danger zone so the last row clears the floating dock on Android (QA). */
+const DOCK_TAIL = space.dock;
 
-/** S24 You — cached identity hero, credits meter, horizontal trainers. */
+/**
+ * S41 You / Profile v2 — every onboarding answer, grouped Training / Nutrition / Coach.
+ * PM (AMI-176): Body fields sit behind "Personal details" (sheet), not on the main scroll.
+ */
 export const YouScreen = () => {
   const [locationId, setLocationId] = useState<TrainingLocationId>("gym");
   const [locationSaving, setLocationSaving] = useState(false);
-  const [subNote, setSubNote] = useState<string | null>(null);
-  const [profile, setProfile] = useState<LocalProfile | null>(null);
+  const [local, setLocal] = useState<LocalProfile | null>(null);
   const [plan, setPlan] = useState<LocalPlan | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
+  const [editing, setEditing] = useState<EditableField | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
+  const me = useMeStore((s) => s.me);
   const cachedUser = useMeStore((s) => s.cachedUser);
   const cachedEntitlement = useMeStore((s) => s.cachedEntitlement);
   const cachedAccounts = useMeStore((s) => s.cachedAccounts);
-  const me = useMeStore((s) => s.me);
   const hydrateMe = useMeStore((s) => s.hydrate);
   const ensureMe = useMeStore((s) => s.ensureMe);
   const refreshMe = useMeStore((s) => s.refreshInBackground);
-  const clearMe = useMeStore((s) => s.clear);
 
-  const credits = useCreditsStore((s) => s.credits);
-  const cachedCredits = useCreditsStore((s) => s.cachedCredits);
+  const credits = useCreditsStore((s) => s.credits ?? s.cachedCredits);
   const creditsFetchedAt = useCreditsStore((s) => s.fetchedAt);
   const hydrateCredits = useCreditsStore((s) => s.hydrate);
   const ensureCredits = useCreditsStore((s) => s.ensureCredits);
   const refreshCredits = useCreditsStore((s) => s.refreshInBackground);
-  const clearCredits = useCreditsStore((s) => s.clear);
-  const creditsMeter = credits ?? cachedCredits;
 
-  const resetOnboarding = useOnboardingStore((s) => s.reset);
-  const clearPlan = usePlanStore((s) => s.clear);
   const hasMealPlan = useMealPlanStore((s) => s.plan !== null);
   const regenerateMealPlan = useMealPlanStore((s) => s.generate);
   const persona = usePersonaStore((s) => s.persona);
@@ -81,17 +71,21 @@ export const YouScreen = () => {
   const loadBadges = useBadgeStore((s) => s.load);
   const loadStrength = useStrengthStore((s) => s.loadOverview);
 
+  const edit = useProfileEdit();
+  const { deleting, confirm: handleDeleteAccount } = useDeleteAccount();
+
   const meUser: MeUser | null = me?.user ?? cachedUser;
   const entitlement: MeEntitlement | null = me?.entitlement ?? cachedEntitlement;
-  const accountLabels = connectedAccountLabels(me?.accounts ?? cachedAccounts);
+  // Server truth first (fresh after every edit); local SQLite covers offline / first paint.
+  const profile = (me?.profile ?? local) as ProfileSource | null;
+  const prefs = (me?.preferences ?? local?.preferences ?? null) as PrefsSource | null;
+  const view = useMemo(() => buildProfileView(profile, prefs), [profile, prefs]);
 
   const reloadLocal = useCallback(async () => {
     const [p, pl] = await Promise.all([getProfile(), getCurrentPlan()]);
-    setProfile(p);
+    setLocal(p);
     setPlan(pl);
-    setLocationId(
-      toTrainingLocationId(p?.preferences?.trainingLocation ?? me?.preferences?.trainingLocation),
-    );
+    setLocationId(toTrainingLocationId(p?.preferences?.trainingLocation ?? me?.preferences?.trainingLocation));
   }, [me?.preferences?.trainingLocation]);
 
   useEffect(() => {
@@ -107,21 +101,13 @@ export const YouScreen = () => {
   }, [ensureCredits, ensureMe, hydrateCredits, hydrateMe, loadBadges, refreshCredits, refreshMe, reloadLocal]);
 
   useEffect(() => {
-    if (me?.preferences?.trainingLocation) {
-      setLocationId(toTrainingLocationId(me.preferences.trainingLocation));
-    }
+    if (me?.preferences?.trainingLocation) setLocationId(toTrainingLocationId(me.preferences.trainingLocation));
   }, [me?.preferences?.trainingLocation]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([
-        reloadLocal(),
-        ensureMe({ force: true }),
-        ensureCredits({ force: true }),
-        loadBadges(),
-        loadStrength(),
-      ]);
+      await Promise.all([reloadLocal(), ensureMe({ force: true }), ensureCredits({ force: true }), loadBadges(), loadStrength()]);
     } catch {
       /* keep cache */
     } finally {
@@ -129,31 +115,17 @@ export const YouScreen = () => {
     }
   }, [ensureCredits, ensureMe, loadBadges, loadStrength, reloadLocal]);
 
-  const prefs = profile?.preferences;
-  const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
-  const fallbackName = profile?.sex != null ? `Athlete · ${goalNice}` : "Mirra athlete";
-  const fallbackMeta = profile
-    ? `${experienceLabel(prefs?.experience)} · ${prefs?.sessionMinutes ?? 45} min sessions`
-    : "Complete onboarding for profile";
-  const planLabel = plan ? `Plan v${plan.version} · ${plan.status}` : "No subscription plan";
+  const actions = useYouActions({ credits, creditsFetchedAt, onRefresh: () => void handleRefresh() });
 
-  const openUrl = async (url: string) => {
-    if (await Linking.canOpenURL(url)) await Linking.openURL(url);
-    else Alert.alert("Link", url);
+  const handleEdit = (id: ProfileRowId) => {
+    if (isSheetField(id)) setEditing(id);
+    else setPrefsOpen(true);
   };
 
-  const handleManageSub = () => {
-    if (!requireSignedInUser()) {
-      setPostAuthIntent("paywall");
-      router.push("/(onboarding)/auth");
-      return;
-    }
-    setSubNote(null);
-    router.push("/(onboarding)/paywall");
-  };
-
-  const handlePrefsSaved = () => {
+  const handlePrefsSaved = (saved: FoodPrefs) => {
     setPrefsOpen(false);
+    edit.flagRebuild({ dietTags: saved.dietTags }, prefs);
+    void ensureMe({ force: true }).catch(() => undefined);
     if (!hasMealPlan) return;
     Alert.alert("Food prefs saved", "Rebuild today's meal plan with them?", [
       { text: "Not now", style: "cancel" },
@@ -182,110 +154,74 @@ export const YouScreen = () => {
     }
   };
 
-  const handleCreditsPress = () => {
-    if (creditsMeter && creditsMeter.remaining <= 0) {
-      openAiLimitSheet(creditsMeter.resetsAt);
-      return;
-    }
-    const pool = creditsMeter ? creditsPool(creditsMeter) : 0;
-    const left = creditsMeter?.remaining ?? 0;
-    Alert.alert(
-      "AI credits",
-      creditsMeter
-        ? `${left} of ${pool} left\nLast refreshed ${formatCreditsRefreshed(creditsFetchedAt)}`
-        : "Balance not loaded yet.",
-      [
-        { text: "Close", style: "cancel" },
-        { text: "Refresh", onPress: () => void handleRefresh() },
-      ],
-    );
+  const handleSave = async (patch: Record<string, unknown>) => {
+    const ok = await edit.save(patch);
+    if (ok) void reloadLocal();
+    return ok;
   };
 
-  const { deleting, confirm: handleDeleteAccount } = useDeleteAccount();
-
-  const handleSignOut = () => {
-    void (async () => {
-      try {
-        await authClient.signOut();
-      } catch {
-        /* still clear local */
-      }
-      await clearMe();
-      await clearCredits();
-      await clearSession();
-      resetOnboarding();
-      clearPlan();
-      router.replace("/(onboarding)/welcome");
-    })();
-  };
-
+  const goalNice = (prefs?.primaryGoal ?? "training").replace(/_/g, " ");
+  const fallbackName = profile?.sex != null ? `Athlete · ${goalNice}` : "Mirra athlete";
   return (
     <ScreenScroll refreshing={refreshing} onRefresh={handleRefresh}>
-      <View style={sx("mb-space-sm flex-row items-center justify-end")}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Refresh profile and credits"
-          accessibilityState={{ busy: refreshing }}
-          disabled={refreshing}
-          onPress={() => void handleRefresh()}
-          hitSlop={12}
-          style={sx("h-11 w-11 items-center justify-center rounded-full")}
-        >
-          {refreshing ? (
-            <ActivityIndicator size="small" color={color.primaryFixed} />
-          ) : (
-            <RefreshCw size={20} color={color.onSurfaceVariant} />
-          )}
-        </Pressable>
-      </View>
-
-      <ProfileHero
+      <ProfileCard
         user={meUser}
         entitlement={entitlement}
         fallbackName={fallbackName}
-        fallbackMeta={fallbackMeta}
+        fallbackMeta={profile ? `${experienceText(prefs?.experience)} · ${prefs?.sessionMinutes ?? 45} min sessions` : "Complete onboarding for profile"}
       />
+      <YouTiles />
+      {/* Slot: future "Goal timeline" card (separate ticket) mounts here, under the teasers. */}
+      <YouCreditsCard credits={credits} onPress={actions.creditsPress} />
 
-      <YouCards
-        credits={creditsMeter}
-        onCreditsPress={handleCreditsPress}
-        persona={persona}
-        personaSaving={personaSaving}
-        onChoosePersona={(id) => void handleChoosePersona(id)}
-      />
+      <PersonalDetailsRow onPress={() => setDetailsOpen(true)} />
 
       <YouTrainingCard
         plan={plan}
+        rows={view.training}
+        aboutDays={view.aboutDays}
+        onEdit={handleEdit}
         locationId={locationId}
         locationSaving={locationSaving}
         onLocation={(id) => void handleLocation(id)}
-        onFoodPrefs={() => setPrefsOpen(true)}
       />
+      {edit.rebuild === "training" ? <RebuildPrompt onDismiss={edit.dismissRebuild} /> : null}
 
-      <YouCoachingGroup />
+      <RowsSection title={profileCopy.sections.nutrition} rows={view.nutrition} onEdit={handleEdit} />
+      {edit.rebuild === "nutrition" ? <RebuildPrompt onDismiss={edit.dismissRebuild} /> : null}
 
-      <Group title="Subscription">
-        <Row
-          title={subNote ?? planLabel}
-          meta="Manage / restore"
-          onPress={handleManageSub}
-        />
-      </Group>
+      <YouCoachSection persona={persona} personaSaving={personaSaving} onChoosePersona={(id) => void handleChoosePersona(id)} />
 
       <YouFooterGroups
-        accountLabels={accountLabels}
-        onPrivacy={() => void openUrl(PRIVACY_URL)}
-        onTerms={() => void openUrl(TERMS_URL)}
-        onSignOut={handleSignOut}
+        subscriptionLine={subscriptionLabel(entitlement)}
+        onManageSub={actions.manageSub}
+        accountLabels={connectedAccountLabels(me?.accounts ?? cachedAccounts)}
+        onPrivacy={actions.openPrivacy}
+        onTerms={actions.openTerms}
+        onSignOut={actions.signOut}
         onDeleteAccount={handleDeleteAccount}
         deleting={deleting}
       />
+      <View style={{ height: DOCK_TAIL }} />
 
-      <DietPrefsSheet
-        visible={prefsOpen}
-        onClose={() => setPrefsOpen(false)}
-        onSaved={handlePrefsSaved}
+      <ProfileEditSheet
+        field={editing}
+        units={view.units}
+        profile={profile}
+        prefs={prefs}
+        onClose={() => setEditing(null)}
+        onSave={handleSave}
       />
+      <PersonalDetailsSheet
+        visible={detailsOpen}
+        rows={view.body}
+        units={view.units}
+        profile={profile}
+        prefs={prefs}
+        onSave={handleSave}
+        onClose={() => setDetailsOpen(false)}
+      />
+      <DietPrefsSheet visible={prefsOpen} onClose={() => setPrefsOpen(false)} onSaved={handlePrefsSaved} />
     </ScreenScroll>
   );
 };

@@ -36,3 +36,10 @@ export const completeSession = (
     method: "POST",
     body,
   });
+
+/** RPE / notes after the HUD already completed the session (AMI-172). */
+export const patchSession = (sessionId: string, body: CompleteSessionBody) =>
+  apiFetch<WorkoutSession>(sessionPath(sessionId), {
+    method: "PATCH",
+    body,
+  });

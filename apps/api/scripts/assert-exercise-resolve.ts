@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { MuscleIdSchema } from "@mirra/contracts";
+import { MuscleIdSchema, muscleRoleOf } from "@mirra/contracts";
 
 import { EXERCISE_LIBRARY } from "../src/data/exercises";
 import type { MirraEnv } from "../src/env";
@@ -18,6 +18,7 @@ import {
   matchExerciseName,
   normalize,
   normalizeVariants,
+  withRoles,
 } from "../src/lib/exercise-library";
 import { getExerciseTagger } from "../src/lib/exercise-tagger";
 import { SWAP_MAP } from "../src/services/workout-swaps";
@@ -51,6 +52,19 @@ for (const e of EXERCISE_LIBRARY) {
   if (e.bwFactor != null && e.scoring !== "bodyweight") badEntries.push(`${e.id} bwFactor on non-bodyweight`);
 }
 check(badEntries.length === 0, `every library entry sums to 100 with valid muscles and standards ${badEntries.join("; ")}`);
+// AMI-172: the S36 anatomy paints lime only for role "primary" (pct ≥ PRIMARY_MUSCLE_PCT).
+const noPrimary = EXERCISE_LIBRARY.filter((e) => !e.muscles.some((m) => muscleRoleOf(m.pct) === "primary"));
+check(noPrimary.length === 0, `every library entry has a primary muscle by pct ${noPrimary.map((e) => e.id).join(", ")}`);
+const deadliftPrimary = withRoles(libraryEntry("deadlift")?.muscles ?? []).filter((m) => m.role === "primary").map((m) => m.id);
+check(
+  deadliftPrimary.includes("hamstrings") && deadliftPrimary.includes("glutes"),
+  `deadlift primary = hamstrings + glutes (${deadliftPrimary.join(", ")})`,
+);
+const flatTag = withRoles([{ id: "quads", pct: 25 }, { id: "glutes", pct: 25 }, { id: "abs", pct: 20 }, { id: "chest", pct: 15 }, { id: "triceps", pct: 15 }]);
+check(
+  flatTag.filter((m) => m.role === "primary").map((m) => m.id).join() === "quads",
+  "withRoles promotes the top muscle when no split reaches the primary threshold",
+);
 check(EXERCISE_LIBRARY.length >= 120, `library has ≥120 entries (${EXERCISE_LIBRARY.length})`);
 check(
   ANCHOR_IDS.every((a) => libraryEntry(a)?.standard && "anchor" in libraryEntry(a)!.standard!),

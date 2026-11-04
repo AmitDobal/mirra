@@ -6,6 +6,7 @@
 import { findBannedGoalWords, GOAL_PROMPT_RULES, type GoalContext } from "@mirra/contracts";
 
 import { monthDay } from "../lib/goal";
+import { findShameHits } from "./tone-guard";
 
 const GOAL_WORDS: Record<GoalContext["goalType"], string> = {
   fat_loss: "fat loss",
@@ -72,14 +73,11 @@ export const heuristicGoalNote = (g: GoalContext | null | undefined): string | n
   }
 };
 
-/** Rule 3 extras for goal copy (name-calling / guilt) on top of the contract's banned words. */
-export const GOAL_SHAME_WORDS = ["pathetic", "slacker", "slacking", "act together", "regret", "disgrace", "shame on", "done nothing"] as const;
-
-/** Banned goal words + shame words found in `text`. */
-export const goalCopyHits = (text: string): string[] => {
-  const t = text.toLowerCase();
-  return [...findBannedGoalWords(text), ...GOAL_SHAME_WORDS.filter((w) => t.includes(w))];
-};
+/**
+ * Banned goal words + rule 3 shame hits (name-calling, excuse talk, body shaming, guilt;
+ * AMI-184 `tone-guard.ts`) found in `text`.
+ */
+export const goalCopyHits = (text: string): string[] => [...findBannedGoalWords(text), ...findShameHits(text)];
 
 /** Whole-reply guard: any banned goal word → logged, and the safe fallback replaces the text. */
 export const guardGoalCopy = (text: string, fallback: string, where: string): string => {

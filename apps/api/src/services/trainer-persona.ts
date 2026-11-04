@@ -28,7 +28,7 @@ const OPENERS: Record<TrainerPersona, string> = {
 const CLOSERS: Record<TrainerPersona, string> = {
   drill: "Move it.",
   honey: "You have got this.",
-  wit: "Try not to faint from effort.",
+  wit: "Try to act surprised when it works.",
   spark: "Go be a legend.",
   zen: "Small step, then done.",
   rival: "Beat yesterday.",

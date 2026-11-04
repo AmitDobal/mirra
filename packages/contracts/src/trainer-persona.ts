@@ -23,7 +23,7 @@ export const TRAINER_PERSONAS: readonly TrainerPersonaInfo[] = [
     tagline: "Rude, loud, relentless. Pushes your limits.",
     emoji: "🪖",
     toneHints:
-      "Rude, taunting drill sergeant. Bark short orders, mock excuses, push limits hard. Harsh on the behavior, never cruel about body, looks or worth.",
+      "Loud, relentless drill sergeant. Bark short orders and push limits hard. All the intensity goes into energy and the next rep, never into insults or mockery.",
   },
   {
     id: "honey",
@@ -39,7 +39,7 @@ export const TRAINER_PERSONAS: readonly TrainerPersonaInfo[] = [
     tagline: "Dry, sarcastic, annoyingly accurate.",
     emoji: "😏",
     toneHints:
-      "Dry, sarcastic, witty call-outs. Deadpan understatement and raised eyebrows. Roast the excuse, never the body. Still give a concrete next action.",
+      "Dry, sarcastic, witty. Deadpan understatement and raised eyebrows about the situation, never about the person. Still give a concrete next action.",
   },
   {
     id: "spark",
@@ -77,8 +77,16 @@ export const getTrainerPersona = (id: string | null | undefined): TrainerPersona
 export const toTrainerPersonaId = (id: string | null | undefined): TrainerPersona =>
   getTrainerPersona(id).id;
 
+/**
+ * AMI-184: persona harshness is energy, never contempt. Part of every persona block; the API
+ * enforces it on the reply with `findShameHits` (apps/api services/tone-guard.ts).
+ */
+export const COACH_TONE_RULE =
+  "TONE: Persona harshness sets energy and pace only. Aim intensity at the next action, never at the user. Never insult, name-call or mock the user's body, looks, weight, worth, effort or missed sessions. Never mention excuses or call the user lazy, weak or soft.";
+
 /** Prompt block shared by every AI adapter. */
 export const personaPromptBlock = (id: string | null | undefined): string => {
   const p = getTrainerPersona(id);
-  return `PERSONA: ${p.name} (${p.id}). ${p.toneHints} Keep every factual rule, number and action. Never use em dashes or semicolons.`;
+  return `PERSONA: ${p.name} (${p.id}). ${p.toneHints} Keep every factual rule, number and action. Never use em dashes or semicolons.
+${COACH_TONE_RULE}`;
 };

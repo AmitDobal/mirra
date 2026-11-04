@@ -22,7 +22,8 @@ Feature / route
 
 | Port | Factory | Live adapter | Fallback / stub |
 | --- | --- | --- | --- |
-| `PlanGenerator` | `getPlanGenerator(env)` | OpenAI | Heuristic |
+| `PlanGenerator` | `getPlanGenerator(env)` | OpenAI (prompt names the exact lift weekdays + session count) | Heuristic. Every adapter's week passes `fitPlanToTrainDays` (`lib/plan-train-days.ts`, AMI-184) in the factory and again in `persistGeneratedPlan`: lifts only on the user's train days, order kept, extras dropped, `[train-days]` log on a correction |
+| `MealPlanGenerator` | `getMealPlanGenerator(env, db)` | OpenAI (strict `json_schema`: slot + foodId enums; `meal-plan-repair.ts` keeps valid meals, drops bad items) | Heuristic (no key, budget hit, nothing salvageable); missing slots filled per slot by `meal-plan-draft.ts` |
 | `CoachAdvisor` | `getCoachAdvisor(env)` | OpenAI | Heuristic |
 | `PersonalizationContextPort` | `getPersonalizationContext(env, db)` | D1 (`preferences` + `profiles`) | n/a. Envelope feeds `PlanGenerator` (`workout_plan`). See `ai-context-and-credits-architecture.md` §A |
 | `MealEstimator` (v2: ingredients, fiber/sugar/sodium, warnings) | `getMealEstimator(env, db)` | OpenAI vision (strict `json_schema` structured output, `OPENAI_MODEL`) | Heuristic (no key, budget hit, or parse fail). `anthropic` source reserved |

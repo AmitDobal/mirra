@@ -56,6 +56,28 @@ export const color = {
   onError: "#690005",
   errorContainer: "#93000a",
   onErrorContainer: "#ffdad6",
+  /**
+   * Strength tier colors (DESIGN.md `tier-*`, Stitch S37). Only for tier badges,
+   * division pips and anatomy tier tints. Never for buttons or non-tier UI.
+   */
+  tier: {
+    iron: "#8f937c",
+    ironBevel: "#5d604e",
+    bronze: "#b9825f",
+    bronzeBevel: "#7a4d2e",
+    silver: "#c5c9d4",
+    silverBevel: "#878b96",
+    gold: "#e8c15a",
+    goldBevel: "#a27e2a",
+    platinum: "#8fd6cf",
+    platinumBevel: "#4d9b93",
+    diamond: "#9cc8ff",
+    diamondBevel: "#5b88c7",
+    elite: "#d1beef",
+    eliteBevel: "#8e76b5",
+    legendary: "#cbf150",
+    legendaryBevel: "#8cb01e",
+  },
 } as const;
 
 /** DESIGN.md spacing (rem → px @ 16). */

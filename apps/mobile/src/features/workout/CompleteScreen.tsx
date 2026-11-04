@@ -1,5 +1,7 @@
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { Check, Clock3, X } from "lucide-react-native";
+import { useEffect, useRef } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { CapsLabel } from "@/ui/CapsLabel";
@@ -8,7 +10,10 @@ import { ScreenScroll } from "@/ui/ScreenScroll";
 import { color } from "@/theme/tokens";
 import { useTodayStore } from "@/features/today/today-store";
 
+import { TierUpList } from "./TierUpList";
+import { useLoadUnit } from "./use-load-units";
 import { useWorkoutStore } from "./workout-store";
+import { formatVolume, sessionVolumeKg } from "./workout-volume";
 import { sx } from "@/theme/sx";
 
 const RPE_LABELS: Record<number, string> = {
@@ -26,7 +31,7 @@ const RPE_LABELS: Record<number, string> = {
 
 const INTENSITY = [40, 60, 85, 100, 95, 55];
 
-/** S17 Workout complete — Stitch lavender metrics + RPE grid; keep RPE save. */
+/** S17 Workout complete — Stitch lavender metrics + RPE grid; keep RPE save. S38 tier-up card when tiers moved. */
 export const CompleteScreen = () => {
   const workoutTitle = useWorkoutStore((s) => s.workoutTitle);
   const kcal = useWorkoutStore((s) => s.kcal);
@@ -35,6 +40,10 @@ export const CompleteScreen = () => {
   const durationMin = useWorkoutStore((s) => s.durationMin);
   const setRpe = useWorkoutStore((s) => s.setRpe);
   const reset = useWorkoutStore((s) => s.reset);
+  const tierChanges = useWorkoutStore((s) => s.tierChanges);
+  const logged = useWorkoutStore((s) => s.logged);
+  const unit = useLoadUnit();
+  const buzzed = useRef(false);
   const weekDays = useTodayStore((s) => s.weekDays);
   const dayIndex = useTodayStore((s) => s.dayIndex);
 
@@ -52,7 +61,14 @@ export const CompleteScreen = () => {
       : rpe != null && rpe >= 5
         ? "36–48 hours"
         : "24–36 hours";
-  const volumeKg = Math.max(1, exercises.length * 1400);
+  const volume = formatVolume(sessionVolumeKg(logged), unit);
+
+  // S38: one success haptic when a tier moved.
+  useEffect(() => {
+    if (buzzed.current || tierChanges.length === 0) return;
+    buzzed.current = true;
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+  }, [tierChanges]);
 
   const handleDone = () => {
     void useWorkoutStore.getState().finish().finally(() => {
@@ -101,10 +117,7 @@ export const CompleteScreen = () => {
         </View>
         <View style={sx("flex-row gap-2 py-2")}>
           <Metric value={String(minutes)} label="MINUTES" />
-          <Metric
-            value={volumeKg >= 1000 ? `${(volumeKg / 1000).toFixed(1)}k` : String(volumeKg)}
-            label="KG VOLUME"
-          />
+          <Metric value={volume} label={`${unit.toUpperCase()} VOLUME`} />
           <Metric
             value={String(exercises.length).padStart(2, "0")}
             label="EXERCISES"
@@ -137,6 +150,12 @@ export const CompleteScreen = () => {
           </View>
         </View>
       </View>
+
+      {tierChanges.length ? (
+        <View style={sx("mb-space-md")}>
+          <TierUpList changes={tierChanges} />
+        </View>
+      ) : null}
 
       <View style={sx("mb-space-md rounded-lg bg-surface-container p-space-lg")}>
         <View style={sx("mb-1 flex-row items-center justify-between")}>

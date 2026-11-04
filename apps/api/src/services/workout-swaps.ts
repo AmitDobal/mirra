@@ -1,5 +1,30 @@
 /** Equipment-aware exercise substitution tables for plan chat. */
 
+/** What `full_gym` stands for when checking a single piece of gear (arch §8.5). */
+export const FULL_GYM_GEAR: readonly string[] = ["barbell", "dumbbells", "machines", "cables", "bench", "bands"];
+
+/**
+ * Gear check for the user's equipment list: bodyweight always, listed gear, and every
+ * piece `full_gym` implies. Replaces the old `has()` that ignored `full_gym`.
+ */
+export const hasGear =
+  (equipment: readonly string[]) =>
+  (gear: string): boolean =>
+    gear === "bodyweight" ||
+    equipment.includes(gear) ||
+    (equipment.includes("full_gym") && FULL_GYM_GEAR.includes(gear));
+
+/**
+ * Library equipment lists mix "needs all" (barbell + bench) and "any of" (dumbbells / cables
+ * / bands). Doable when bodyweight is listed, or the bench (if listed) and one other piece are.
+ */
+export const gearAllows = (entryEquipment: readonly string[], has: (gear: string) => boolean): boolean => {
+  if (entryEquipment.length === 0 || entryEquipment.includes("bodyweight")) return true;
+  if (entryEquipment.includes("bench") && !has("bench")) return false;
+  const rest = entryEquipment.filter((g) => g !== "bench");
+  return rest.length === 0 || rest.some(has);
+};
+
 export type GearNeed = "cables" | "machines" | "barbell";
 export type SwapOption = "bands" | "dumbbells" | "bodyweight";
 type Swap = { pattern: RegExp; to: Record<SwapOption, string> };

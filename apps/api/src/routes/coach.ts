@@ -1,11 +1,14 @@
 import {
   CoachAdviseBodySchema,
   CoachReviseBodySchema,
+  ReviseApplyBodySchema,
   type CoachAdviseResponse,
 } from "@mirra/contracts";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 import { createDb } from "../db";
+import { preferences } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { getCoachAdvisor } from "../lib/coach-advisor";
 import { parseBody } from "../lib/validate";
@@ -13,7 +16,7 @@ import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { withAiCredits } from "../services/credits-gate";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
-import { revisePlans } from "../services/plan-revise";
+import { applyDraft, revisePlans } from "../services/plan-revise";
 
 export const coachRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -45,6 +48,11 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
   const db = createDb(c.env.DB);
   const forceHeuristic = c.req.header("x-mirra-ai-mode")?.toLowerCase() === "heuristic";
   const advisor = getCoachAdvisor(c.env, db, { forceHeuristic });
+  const [prefs] = await db
+    .select({ trainerPersona: preferences.trainerPersona })
+    .from(preferences)
+    .where(eq(preferences.userId, userId))
+    .limit(1);
   const result = await withAiCredits(
     { env: c.env, db, userId },
     {
@@ -60,6 +68,7 @@ coachRoutes.post("/v1/coach/advise", requireAuth, async (c) => {
         note: body.note,
         vectorId: body.vectorId,
         context: body.context ?? body.localDate,
+        persona: prefs?.trainerPersona ?? undefined,
       }),
   );
   const response: CoachAdviseResponse = {
@@ -77,6 +86,16 @@ coachRoutes.post("/v1/coach/revise", requireAuth, async (c) => {
   const response = await revisePlans(
     { env: c.env, db: createDb(c.env.DB), userId: c.get("userId") },
     body,
+  );
+  return c.json(response);
+});
+
+/** Plan chat v2: commit a previewed draft (no AI call). 410 applied/expired, 409 plan_changed. */
+coachRoutes.post("/v1/coach/revise/apply", requireAuth, async (c) => {
+  const body = parseBody(ReviseApplyBodySchema, await c.req.json().catch(() => ({})));
+  const response = await applyDraft(
+    { env: c.env, db: createDb(c.env.DB), userId: c.get("userId") },
+    body.draftId,
   );
   return c.json(response);
 });

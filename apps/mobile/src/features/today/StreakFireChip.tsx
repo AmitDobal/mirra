@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from "react-native";
+import { Flame } from "lucide-react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { Streak } from "@/lib/api";
 import { sx } from "@/theme/sx";
@@ -14,11 +15,14 @@ type Props = {
 const labelFor = (streak: Streak): string => {
   const days = `${streak.current}-day streak`;
   if (streak.fire === "at_risk") return `${days}. Check in today to keep it`;
-  if (streak.fire === "cold") return "No active streak. Check in to start one";
+  if (streak.fire === "cold") return "Start a streak: check in today";
   return days;
 };
 
-/** S29 header chip: crimson flame + day count. `lit` glows, `at_risk` is outlined, `cold` is muted. */
+/**
+ * S40 header chip. `lit`: crimson tint + filled S29 flame. `at_risk`: crimson outline, dimmed flame.
+ * `cold` (zero state): transparent pill, outlined grey flame, muted count.
+ */
 export const StreakFireChip = ({ streak, onPress }: Props) => {
   const lit = streak.fire === "lit";
   const cold = streak.fire === "cold";
@@ -29,28 +33,33 @@ export const StreakFireChip = ({ streak, onPress }: Props) => {
       onPress={onPress}
       style={({ pressed }) => [
         sx(
-          `flex-row items-center gap-1.5 rounded-full border px-3 py-2 ${
+          `shrink-0 flex-row items-center gap-1 rounded-full border px-[10px] py-1.5 ${
             cold
-              ? "border-outline-variant bg-surface-container-high"
+              ? "border-outline-variant bg-transparent"
               : lit
                 ? "border-streak-fire/40 bg-streak-fire/15"
                 : "border-streak-fire/60 bg-transparent"
           }`,
         ),
-        lit ? { shadowColor: color.streakFire, shadowOpacity: 0.45, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } } : null,
         pressFeedback(pressed),
       ]}
     >
-      <View style={[sx("items-center justify-center p-1"), { opacity: lit || cold ? 1 : 0.7 }]}>
-        <FlameIcon size={16} lit={!cold} />
-      </View>
-      <Text
-        style={sx(
-          `font-label-bold text-label-md ${cold ? "text-on-surface-variant" : "text-streak-fire"}`,
-        )}
-      >
+      {cold ? (
+        <Flame size={14} color={color.outline} strokeWidth={2} />
+      ) : lit ? (
+        <FlameIcon size={15} />
+      ) : (
+        <View style={styles.atRisk}>
+          <FlameIcon size={15} />
+        </View>
+      )}
+      <Text style={sx(`font-label-md text-label-md ${cold ? "text-on-surface-variant" : "text-streak-fire"}`)}>
         {streak.current}
       </Text>
     </Pressable>
   );
 };
+
+const styles = StyleSheet.create({
+  atRisk: { opacity: 0.7 },
+});

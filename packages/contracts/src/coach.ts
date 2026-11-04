@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 import { CheckInStatusSchema } from "./check-ins";
+import { ReviseItemSchema } from "./coach-diff";
+import { MealSlotSchema } from "./fuel";
 import { AccountabilityScenarioSchema } from "./insights";
 import { DayMealPlanSchema } from "./meal-plan";
 
@@ -47,6 +49,8 @@ export const CoachAdviseResponseSchema = z.object({
   pills: z.array(CoachPillSchema).max(3).optional(),
 });
 
+export * from "./coach-diff";
+
 export const CoachReviseScopeSchema = z.enum(["auto", "meal", "workout", "both"]);
 
 /**
@@ -62,10 +66,29 @@ export const CoachReviseIntentSchema = z.object({
   cuisineStylesOnly: z.boolean().optional(),
   forceMealRegen: z.boolean().default(false),
   reviseWorkout: z.boolean().default(false),
+  /** Legacy (pre-v2 clients echo it). Server keeps it in sync with `preferExercises`. */
   preferBench: z.boolean().optional(),
   shortenMin: z.number().optional(),
   /** Target meals per day (1-4). */
   mealsPerDay: z.number().int().min(1).max(4).optional(),
+  // --- Intent v2 (AMI-163). All optional so v1 clients' echoed intents still parse.
+  /** "swap my lunch": only these slots are redrafted. */
+  mealSlots: z.array(MealSlotSchema).max(4).optional(),
+  /** "swap my lunch for something with more protein": candidate pick bias (not a saved pref). */
+  mealBias: z.enum(["high_protein", "low_carb", "lighter"]).optional(),
+  exerciseSwaps: z
+    .array(z.object({ from: z.string().max(60), to: z.string().max(60).nullable() }))
+    .max(6)
+    .optional(),
+  exerciseAdds: z
+    .array(z.object({ name: z.string().max(60), sets: z.number().int().optional(), reps: z.string().max(16).optional() }))
+    .max(6)
+    .optional(),
+  exerciseRemoves: z.array(z.string().max(60)).max(6).optional(),
+  preferExercises: z.array(z.string().max(60)).max(6).optional(),
+  scheduleMoves: z.array(z.object({ from: z.string().max(16), to: z.string().max(16) })).max(3).optional(),
+  /** Short AI reason per item key (≤80 chars, sanitized). */
+  reasons: z.record(z.string().max(80)).optional(),
 });
 
 /** POST /v1/coach/revise — chat message that edits the existing meal/workout plan. */
@@ -109,6 +132,12 @@ export const CoachReviseResponseSchema = z.object({
   warnings: z.array(z.string()).optional(),
   /** Resolved intent; send it back with dryRun:false to apply this exact preview. */
   intent: CoachReviseIntentSchema.optional(),
+  /** v2: stored draft to commit via POST /v1/coach/revise/apply (null when nothing to apply). */
+  draftId: z.string().nullable().optional(),
+  /** Epoch ms; the draft cannot be applied after this. */
+  expiresAt: z.number().nullable().optional(),
+  /** v2 typed diff rows. Legacy `changes` is derived from these. */
+  items: z.array(ReviseItemSchema).optional(),
 });
 
 export type CoachReadiness = z.infer<typeof CoachReadinessSchema>;

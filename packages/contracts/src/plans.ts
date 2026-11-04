@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ExerciseMuscleSchema } from "./muscles";
+
 export const PlanJobStatusSchema = z.enum(["queued", "running", "done", "failed"]);
 export const PlanStatusSchema = z.enum(["generating", "ready", "superseded", "failed"]);
 export const PlanDayKindSchema = z.enum(["lift", "rest", "fuel"]);
@@ -30,6 +32,10 @@ export const PlanExerciseSchema = z.object({
   restSec: z.number().int().nullable(),
   sortOrder: z.number().int(),
   swapGroup: z.string().nullable(),
+  /** Exercise library id (`bench_press`) or `tag:<normalized>` for an AI-tagged lift. Null = unresolved. */
+  canonicalId: z.string().nullable().default(null),
+  /** Muscle involvement (sums to 100). Empty when unresolved. */
+  muscles: z.array(ExerciseMuscleSchema).default([]),
 });
 
 export const PlanWorkoutSchema = z.object({

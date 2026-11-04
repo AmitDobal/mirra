@@ -1,4 +1,5 @@
 /** Client DTO shapes aligned with docs/03-engineering/api.md — refine via contracts later. */
+import type { ExerciseMuscle } from "./exercise-library";
 
 export type ApiErrorBody = {
   readonly error: {
@@ -71,6 +72,10 @@ export type PlanExercise = {
   /** Planned working load; absent until the plan generator provides one. */
   readonly targetLoadKg?: number | null;
   readonly restSec?: number | null;
+  /** Library id (`bench_press`) or `tag:*` for an AI-tagged lift (AMI-161). Null = unresolved. */
+  readonly canonicalId?: string | null;
+  /** Muscle involvement from the API (AMI-161). Empty when unresolved. */
+  readonly muscles?: readonly ExerciseMuscle[];
 };
 
 export type PlanWorkout = {

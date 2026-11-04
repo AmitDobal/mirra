@@ -6,6 +6,7 @@ import {
   type WorkoutSummaryResponse,
   CreateWorkoutSessionBodySchema,
   LogSetBodySchema,
+  PatchSessionBodySchema,
   type SetLogResponse,
   type WorkoutSessionResponse,
 } from "@mirra/contracts";
@@ -15,30 +16,20 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import { setLogs, workoutSessions, workouts } from "../db/schema";
 import type { MirraEnv } from "../env";
-import { msToUnix, todayUtc } from "../lib/dates";
+import { todayUtc } from "../lib/dates";
 import { badRequest, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
-import { recordAttendanceSafe } from "../services/attendance";
-import { rebuildDaysSafe } from "../services/nutrition-rollup";
 import { loadCurrentPlan } from "../services/plan-loaders";
+import { completeSession, toSessionResponse, updateSession } from "../services/workout-complete";
 import { loadWorkoutHistory, loadWorkoutSummary } from "../services/workout-summary";
 
 export const workoutRoutes = new Hono<{
   Bindings: MirraEnv;
   Variables: AuthVars;
 }>();
-
-const toSession = (row: typeof workoutSessions.$inferSelect): WorkoutSessionResponse => ({
-  id: row.id,
-  workoutId: row.workoutId,
-  startedAt: msToUnix(row.startedAt) ?? 0,
-  endedAt: msToUnix(row.endedAt),
-  rpe: row.rpe,
-  notes: row.notes,
-});
 
 workoutRoutes.post("/v1/workouts/sessions", requireAuth, async (c) => {
   const body = parseBody(CreateWorkoutSessionBodySchema, await c.req.json());
@@ -65,7 +56,7 @@ workoutRoutes.post("/v1/workouts/sessions", requireAuth, async (c) => {
     startedAt: now,
   });
 
-  return c.json(toSession({
+  return c.json(toSessionResponse({
     id,
     userId,
     workoutId: body.workoutId,
@@ -119,40 +110,29 @@ workoutRoutes.post("/v1/workouts/sessions/:id/sets", requireAuth, async (c) => {
   return c.json(response, 201);
 });
 
+/** First call ends the session (tier changes); a repeat only saves RPE / notes (AMI-172). */
 workoutRoutes.post("/v1/workouts/sessions/:id/complete", requireAuth, async (c) => {
   const raw = await c.req.json().catch(() => ({}));
   const body = parseBody(CompleteSessionBodySchema, raw ?? {});
-  const userId = c.get("userId");
-  const db = createDb(c.env.DB);
-  const sessionId = c.req.param("id");
-  const [session] = await db
-    .select()
-    .from(workoutSessions)
-    .where(and(eq(workoutSessions.id, sessionId), eq(workoutSessions.userId, userId)))
-    .limit(1);
-  if (!session) throw notFound("Session not found");
-  if (session.endedAt) throw badRequest("Session already completed");
-
-  const now = new Date();
-  await db
-    .update(workoutSessions)
-    .set({
-      endedAt: now,
-      rpe: body.rpe ?? null,
-      notes: body.notes ?? null,
-    })
-    .where(eq(workoutSessions.id, sessionId));
-  await recordAttendanceSafe(db, userId, "workoutDone");
-  await rebuildDaysSafe(db, userId, [session.startedAt]);
-
-  return c.json(
-    toSession({
-      ...session,
-      endedAt: now,
-      rpe: body.rpe ?? null,
-      notes: body.notes ?? null,
-    }),
+  const response: WorkoutSessionResponse = await completeSession(
+    createDb(c.env.DB),
+    c.get("userId"),
+    c.req.param("id"),
+    body,
   );
+  return c.json(response);
+});
+
+/** Save RPE / notes (S17 "How hard was it?") without re-running completion. */
+workoutRoutes.patch("/v1/workouts/sessions/:id", requireAuth, async (c) => {
+  const body = parseBody(PatchSessionBodySchema, await c.req.json().catch(() => ({})));
+  const response: WorkoutSessionResponse = await updateSession(
+    createDb(c.env.DB),
+    c.get("userId"),
+    c.req.param("id"),
+    body,
+  );
+  return c.json(response);
 });
 
 /** Session history list (`from` / `to` are YYYY-MM-DD, default last 30 days). */

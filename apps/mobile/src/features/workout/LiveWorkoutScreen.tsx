@@ -24,12 +24,13 @@ import { LimeCta } from "@/ui/LimeCta";
 import { ScreenFixed } from "@/ui/ScreenScroll";
 import { color, space } from "@/theme/tokens";
 
+import { formatLoad, fromDisplayLoad, loadLabel, loadStepKg, toDisplayLoad } from "./load-units";
 import { SetChips } from "./SetChips";
 import { SetStepper } from "./SetStepper";
+import { useExerciseScoring, useLoadUnit } from "./use-load-units";
 import { useWorkoutStore } from "./workout-store";
 import { sx } from "@/theme/sx";
 
-const WEIGHT_STEP_KG = 2.5;
 const REPS_STEP = 1;
 
 /** S16 Live workout HUD — log set / pause / finish. */
@@ -81,6 +82,9 @@ export const LiveWorkoutScreen = () => {
   }, [startedAt, paused, finished]);
 
   const ex = exercises[exerciseIndex];
+  const unit = useLoadUnit();
+  // Bodyweight lifts log added load: "+ kg added" / "+ lb added".
+  const scoring = useExerciseScoring(ex);
   const elapsed = formatClock(useWorkoutStore.getState().elapsedSec());
   const rest = formatClock(restLeft);
   const resting = restLeft > 0 && restLeft < restTargetSec;
@@ -172,6 +176,7 @@ export const LiveWorkoutScreen = () => {
           </Text>
         </View>
         <SetChips
+          formatLoad={(kg) => formatLoad(kg, unit)}
           sets={sets}
           setIndex={setIndex}
           editingSet={editingSet}
@@ -182,11 +187,11 @@ export const LiveWorkoutScreen = () => {
 
       <View style={sx("mb-space-sm flex-row gap-space-sm")}>
         <SetStepper
-          label="KG"
-          unit="kilograms"
-          value={draft.weightKg}
-          onStep={(dir) => adjustDraft("weightKg", dir * WEIGHT_STEP_KG)}
-          onCommit={(v) => setDraftValue("weightKg", v)}
+          label={loadLabel(unit, scoring)}
+          unit={unit === "kg" ? "kilograms" : "pounds"}
+          value={toDisplayLoad(draft.weightKg, unit)}
+          onStep={(dir) => adjustDraft("weightKg", dir * loadStepKg(unit))}
+          onCommit={(v) => setDraftValue("weightKg", fromDisplayLoad(v, unit))}
           disabled={paused}
         />
         <SetStepper

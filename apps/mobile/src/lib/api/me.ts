@@ -69,9 +69,9 @@ export const getMyFoodPrefs = async (): Promise<FoodPrefs | null> => {
 };
 
 /** Trainer persona via me-store; null when no preferences row yet. */
-export const getMyTrainerPersona = async (): Promise<string | null> => {
+export const getMyTrainerPersona = async (opts?: { force?: boolean }): Promise<string | null> => {
   const { useMeStore } = await import("@/stores/me-store");
-  const me = await useMeStore.getState().ensureMe();
+  const me = await useMeStore.getState().ensureMe(opts);
   return me.preferences?.trainerPersona ?? null;
 };
 

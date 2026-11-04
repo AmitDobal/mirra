@@ -48,6 +48,22 @@ colors:
   background: '#131313'
   on-background: '#e5e2e1'
   surface-variant: '#353534'
+  tier-iron: '#8f937c'
+  tier-iron-bevel: '#5d604e'
+  tier-bronze: '#b9825f'
+  tier-bronze-bevel: '#7a4d2e'
+  tier-silver: '#c5c9d4'
+  tier-silver-bevel: '#878b96'
+  tier-gold: '#e8c15a'
+  tier-gold-bevel: '#a27e2a'
+  tier-platinum: '#8fd6cf'
+  tier-platinum-bevel: '#4d9b93'
+  tier-diamond: '#9cc8ff'
+  tier-diamond-bevel: '#5b88c7'
+  tier-elite: '#d1beef'
+  tier-elite-bevel: '#8e76b5'
+  tier-legendary: '#cbf150'
+  tier-legendary-bevel: '#8cb01e'
 typography:
   display-lg:
     fontFamily: Space Grotesk
@@ -214,3 +230,22 @@ The geometry uses hyper-rounded corner architecture balancing large-radius struc
 ### Floating Tab Bar
 - **Shell:** Pure `#FFFFFF` pill capsule hovering `1.5rem` above the bottom safe area. Width `280px` to `320px`, height `64px`.
 - **Tab Items:** Charcoal `#121212` iconography. Active tab features a solid `#C3B1E1` or `#D8FF5C` circle (`42px` diameter) centered behind the active glyph.
+
+### Strength Tier Badges
+Source of truth: Stitch S37 (`s37_tier_ladder`, screen `f87abb1b9ecd49f78b157addab4d09e4`). Tier colors are used **only** for tier badges, division pips and tier tints on the anatomy map (S34-S38). Never for buttons, text accents, or non-tier UI.
+
+| Token | Hex | Bevel token | Bevel hex | Usage |
+| --- | --- | --- | --- | --- |
+| `tier-iron` | `#8f937c` | `tier-iron-bevel` | `#5d604e` | Iron badge fill (glyph: one bar). Same hex as `outline`. |
+| `tier-bronze` | `#b9825f` | `tier-bronze-bevel` | `#7a4d2e` | Bronze badge fill (one chevron) and muscle tint. |
+| `tier-silver` | `#c5c9d4` | `tier-silver-bevel` | `#878b96` | Silver badge fill (two chevrons) and muscle tint. |
+| `tier-gold` | `#e8c15a` | `tier-gold-bevel` | `#a27e2a` | Gold badge fill (three chevrons) and muscle tint. |
+| `tier-platinum` | `#8fd6cf` | `tier-platinum-bevel` | `#4d9b93` | Platinum badge fill (diamond outline) and muscle tint. |
+| `tier-diamond` | `#9cc8ff` | `tier-diamond-bevel` | `#5b88c7` | Diamond badge fill (faceted gem) and muscle tint. |
+| `tier-elite` | `#d1beef` | `tier-elite-bevel` | `#8e76b5` | Elite badge fill (five-point star). Same hex as `secondary`. |
+| `tier-legendary` | `#cbf150` | `tier-legendary-bevel` | `#8cb01e` | Legendary badge fill (crown) plus lime laurel arc, no pips. Same hex as `primary-container`. |
+
+- **Badge:** pointy-top rounded hexagon in the tier color, 2px bevel stroke in the matching `-bevel` token, one white glyph centered. Never a circle (circles are Kinetic Rank).
+- **Division pips:** dots in the tier color under the hexagon. III = 1, II = 2, I = 3. Legendary has none.
+- **Sizes:** sm 24pt, md 40pt, lg 72pt.
+- **Unranked:** `#353534` hexagon outline (badge) or `#353534` at 55% (anatomy region).

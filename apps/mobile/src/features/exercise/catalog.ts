@@ -4,6 +4,7 @@ import {
   s25ExerciseHub,
   s26ExerciseDetail,
   s27ExerciseSwapAdd,
+  s36ExerciseAnatomyV2,
 } from "../../../assets/stitch";
 import raw from "@/content/exercise-catalog.json";
 import type { EquipmentId } from "@/features/onboarding/types";
@@ -29,6 +30,8 @@ export type CatalogStep = { readonly title: string; readonly body: string };
 
 export type CatalogEntry = {
   readonly id: string;
+  /** API exercise library id (`bench_press`); null for a plan lift we could not match. */
+  readonly canonicalId: string | null;
   readonly name: string;
   readonly pattern: CatalogPattern;
   readonly muscle: string;
@@ -75,11 +78,13 @@ const THUMBS: Record<ThumbKey, ImageSourcePropType> = {
 
 export const thumbSource = (key: ThumbKey): ImageSourcePropType => THUMBS[key];
 
-/** Wide detail hero: the S26 Stitch shot for the bench press, else the lift thumb. */
+/** Wide detail hero: the S36 Stitch shot for the bench press, S26 for unmatched lifts, else the lift thumb. */
 export const heroSource = (e: CatalogEntry): ImageSourcePropType =>
-  e.id === "barbell-bench-press" || e.thumb === "hero"
-    ? s26ExerciseDetail.hero
-    : THUMBS[e.thumb];
+  e.id === "barbell-bench-press"
+    ? s36ExerciseAnatomyV2.hero
+    : e.thumb === "hero"
+      ? s26ExerciseDetail.hero
+      : THUMBS[e.thumb];
 
 export const PATTERN_LABEL: Record<CatalogPattern, string> = {
   push: "Push",
@@ -139,6 +144,7 @@ export const entryForPlanExercise = (ex: PlanExercise): CatalogEntry => {
   if (match) return match;
   return {
     id: ex.id,
+    canonicalId: ex.canonicalId ?? null,
     name: ex.name,
     pattern: patternFromName(ex.name),
     muscle: "Full body",

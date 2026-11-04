@@ -120,6 +120,27 @@
       "when": 1763233200000,
       "tag": "0017_kinetic_badges",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1763319600000,
+      "tag": "0018_exercise_library",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1763406000000,
+      "tag": "0019_revise_drafts",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1763492400000,
+      "tag": "0020_strength_scores",
+      "breakpoints": true
     }
   ]
 }

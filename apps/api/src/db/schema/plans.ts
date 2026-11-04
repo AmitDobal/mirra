@@ -69,6 +69,8 @@ export const workoutExercises = sqliteTable(
     restSec: integer("rest_sec"),
     sortOrder: integer("sort_order").notNull().default(0),
     swapGroup: text("swap_group"),
+    /** Exercise library id or `tag:<normalized>` (AMI-161). Null for rows written before resolve. */
+    canonicalId: text("canonical_id"),
   },
   (t) => [index("workout_exercises_workout_idx").on(t.workoutId)],
 );

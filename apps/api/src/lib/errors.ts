@@ -13,6 +13,10 @@ export type ApiErrorCode =
   | "thread_capped"
   | "constraint_violation"
   | "unsafe_output"
+  /** Plan chat draft: the plan changed after the preview (409). */
+  | "plan_changed"
+  /** Plan chat draft: already applied or expired (410). */
+  | "draft_gone"
   | "internal";
 
 export class ApiError extends Error {

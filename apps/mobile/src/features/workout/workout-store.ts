@@ -1,27 +1,26 @@
 import { create } from "zustand";
 
-import {
-  getLastSetForExercise,
-  startSession as dbStartSession,
-} from "@/db";
-import {
-  startSession as apiStartSession,
-  type PlanExercise,
-  type PlanWorkout,
-} from "@/lib/api";
+import { getLastSetForExercise } from "@/db";
+import type { PlanExercise, PlanWorkout } from "@/lib/api";
+import type { ApiTierChange } from "@/lib/api/strength-exercise";
 import { errorMessage, logger } from "@/lib/logger";
 
 import {
+  activeSeconds,
   DEFAULT_REPS,
   buildSets,
   clampValue,
+  openSession,
   persistComplete,
+  persistRpe,
   persistSet,
   planDraft,
   type SessionSource,
   type SetDraft,
   type SetSlot,
 } from "./workout-persist";
+import { createFinisher } from "./workout-finish";
+import { loggedKey, type LoggedSets } from "./workout-volume";
 
 export type { SessionSource, SetDraft, SetSlot } from "./workout-persist";
 
@@ -45,6 +44,10 @@ type WorkoutState = {
   readonly rpe: number | null;
   readonly finished: boolean;
   readonly durationMin: number;
+  /** Tier promotions from the complete response (S38); empty = plain S17. */
+  readonly tierChanges: readonly ApiTierChange[];
+  /** Every set logged this session (kg × reps), for the S17 volume. */
+  readonly logged: LoggedSets;
   readonly start: (workout: PlanWorkout | null, focusExerciseId?: string) => Promise<void>;
   /** Jump to one exercise; starts a session first if none is active. */
   readonly openExercise: (workout: PlanWorkout | null, exerciseId: string) => Promise<void>;
@@ -81,9 +84,24 @@ const empty = {
   rpe: null as number | null,
   finished: false,
   durationMin: 0,
+  tierChanges: [] as readonly ApiTierChange[],
+  logged: {} as LoggedSets,
 };
 
 export const useWorkoutStore = create<WorkoutState>((set, get) => {
+  const finisher = createFinisher<ApiTierChange>(
+    {
+      complete: (id, rpe) => persistComplete(get().sessionSource, id, rpe),
+      saveRpe: (id, rpe) => persistRpe(get().sessionSource, id, rpe),
+    },
+    {
+      sessionId: () => get().sessionId,
+      rpe: () => get().rpe,
+      onTierChanges: (id, changes) => {
+        if (get().sessionId === id) set({ tierChanges: changes });
+      },
+    },
+  );
   /** Prefill: plan target → last logged set (SQLite) → 0 kg × plan reps; only if untouched. */
   const hydrateDraft = async (ex: PlanExercise): Promise<void> => {
     if (ex.targetLoadKg != null) return;
@@ -133,26 +151,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
         workout.exercises.findIndex((e) => e.id === focusExerciseId),
       );
       const first = workout.exercises[focusIdx]!;
-      let sessionId: string | null = null;
-      let sessionSource: SessionSource = "none";
-      try {
-        const sess = await apiStartSession({ workoutId: workout.id });
-        sessionId = sess.id;
-        sessionSource = "api";
-      } catch (err) {
-        logger.warn("workout.start.api_failed_using_local", {
-          message: errorMessage(err),
-        });
-        try {
-          const sess = await dbStartSession({ workoutId: workout.id });
-          sessionId = sess.id;
-          sessionSource = "local";
-        } catch (localErr) {
-          logger.error("workout.start.local_failed", {
-            message: errorMessage(localErr),
-          });
-        }
-      }
+      const { sessionId, sessionSource } = await openSession(workout.id);
       set({
         sessionId,
         sessionSource,
@@ -166,6 +165,8 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
         kcal: 0,
         rpe: null,
         finished: false,
+        tierChanges: [],
+        logged: {},
         durationMin: workout.durationMin,
       });
     },
@@ -179,13 +180,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
 
     elapsedSec: () => {
       const { startedAt, pausedTotalMs, pauseStartedAt } = get();
-      if (!startedAt) return 0;
-      const now = Date.now();
-      const currentPause = pauseStartedAt ? now - pauseStartedAt : 0;
-      return Math.max(
-        0,
-        Math.floor((now - startedAt - pausedTotalMs - currentPause) / 1000),
-      );
+      return activeSeconds(startedAt, pausedTotalMs, pauseStartedAt);
     },
 
     adjustDraft: (field, delta) =>
@@ -231,6 +226,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       const nextSets = sets.map((s) =>
         s.n === n ? { ...s, done: true, weightKg: draft.weightKg, reps: draft.reps } : s,
       );
+      set((s) => ({ logged: { ...s.logged, [loggedKey(ex.id, n)]: { ...draft } } }));
       // Correcting an earlier set: save it, keep the current position.
       if (editingSet !== null) {
         set({ sets: nextSets, editingSet: null });
@@ -283,13 +279,12 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
 
     setRpe: (rpe) => set({ rpe }),
 
-    finish: async () => {
-      const { sessionId, rpe } = get();
-      const durationMin = Math.max(1, Math.round(get().elapsedSec() / 60));
-      set({ finished: true, durationMin });
-      if (sessionId) {
-        await persistComplete(get().sessionSource, sessionId, rpe);
+    finish: () => {
+      // HUD Finish completes; S17 Done only saves a changed RPE (no second complete).
+      if (!finisher.started(get().sessionId)) {
+        set({ finished: true, durationMin: Math.max(1, Math.round(get().elapsedSec() / 60)) });
       }
+      return finisher.finish();
     },
 
     reset: () => set({ ...empty }),

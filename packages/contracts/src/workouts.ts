@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { PlanExerciseSchema } from "./plans";
+import { TierChangeSchema } from "./strength";
 
 export const CreateWorkoutSessionBodySchema = z.object({
   workoutId: z.string().min(1),
@@ -13,6 +14,8 @@ export const WorkoutSessionResponseSchema = z.object({
   endedAt: z.number().int().nullable(),
   rpe: z.number().int().nullable(),
   notes: z.string().nullable(),
+  /** Tier promotions from this session (complete only; max 6, overall > group > muscle > exercise). */
+  tierChanges: z.array(TierChangeSchema).optional(),
 });
 
 export const LogSetBodySchema = z.object({
@@ -41,7 +44,18 @@ export const CompleteSessionBodySchema = z.object({
   notes: z.string().max(2000).nullable().optional(),
 });
 
+/** `PATCH /v1/workouts/sessions/:id` — RPE / notes before or after complete (AMI-172). */
+export const PatchSessionBodySchema = z
+  .object({
+    rpe: z.number().int().min(1).max(10).nullable().optional(),
+    notes: z.string().max(2000).nullable().optional(),
+  })
+  .refine((b) => b.rpe !== undefined || b.notes !== undefined, {
+    message: "Provide rpe or notes",
+  });
+
 export type CreateWorkoutSessionBody = z.infer<typeof CreateWorkoutSessionBodySchema>;
+export type PatchSessionBody = z.infer<typeof PatchSessionBodySchema>;
 export type WorkoutSessionResponse = z.infer<typeof WorkoutSessionResponseSchema>;
 export type LogSetBody = z.infer<typeof LogSetBodySchema>;
 export type SetLogResponse = z.infer<typeof SetLogResponseSchema>;

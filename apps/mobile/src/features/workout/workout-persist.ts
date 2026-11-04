@@ -1,13 +1,17 @@
 import {
   completeSession as dbCompleteSession,
   logSet as dbLogSet,
+  startSession as dbStartSession,
 } from "@/db";
 import {
   completeSession as apiCompleteSession,
   logSet as apiLogSet,
+  patchSession as apiPatchSession,
+  startSession as apiStartSession,
   type LogSetBody,
   type PlanExercise,
 } from "@/lib/api";
+import type { ApiTierChange } from "@/lib/api/strength-exercise";
 import { errorMessage, logger } from "@/lib/logger";
 
 /** Where the active session row lives. */
@@ -39,6 +43,25 @@ export const planDraft = (ex: PlanExercise): SetDraft => ({
   reps: parseReps(ex.targetReps) ?? DEFAULT_REPS,
 });
 
+/** API session first, local SQLite when the API is unreachable. */
+export const openSession = async (
+  workoutId: string,
+): Promise<{ sessionId: string | null; sessionSource: SessionSource }> => {
+  try {
+    const sess = await apiStartSession({ workoutId });
+    return { sessionId: sess.id, sessionSource: "api" };
+  } catch (err) {
+    logger.warn("workout.start.api_failed_using_local", { message: errorMessage(err) });
+  }
+  try {
+    const sess = await dbStartSession({ workoutId });
+    return { sessionId: sess.id, sessionSource: "local" };
+  } catch (err) {
+    logger.error("workout.start.local_failed", { message: errorMessage(err) });
+    return { sessionId: null, sessionSource: "none" };
+  }
+};
+
 /** API set logs use a 1-based `setIndex`; local SQLite is 0-based. */
 export const persistSet = async (
   source: SessionSource,
@@ -62,15 +85,16 @@ export const persistSet = async (
   }
 };
 
+/** Completes the session; returns the API tier promotions (empty for local / failed). */
 export const persistComplete = async (
   source: SessionSource,
   sessionId: string,
   rpe: number | null,
-): Promise<void> => {
+): Promise<readonly ApiTierChange[]> => {
   if (source === "api") {
     try {
-      await apiCompleteSession(sessionId, { rpe });
-      return;
+      const res = await apiCompleteSession(sessionId, { rpe });
+      return res.tierChanges ?? [];
     } catch (err) {
       logger.warn("workout.complete.api_failed_using_local", {
         message: errorMessage(err),
@@ -82,6 +106,33 @@ export const persistComplete = async (
   } catch (err) {
     logger.error("workout.complete.local_failed", { message: errorMessage(err) });
   }
+  return [];
+};
+
+/** RPE picked on S17 after the session was already completed (no second complete). */
+export const persistRpe = async (
+  source: SessionSource,
+  sessionId: string,
+  rpe: number,
+): Promise<void> => {
+  try {
+    if (source === "api") await apiPatchSession(sessionId, { rpe });
+    else if (source === "local") await dbCompleteSession({ sessionId, rpe });
+  } catch (err) {
+    logger.warn("workout.rpe.save_failed", { source, message: errorMessage(err) });
+  }
+};
+
+/** Active seconds since start, excluding finished and current pauses. */
+export const activeSeconds = (
+  startedAt: number | null,
+  pausedTotalMs: number,
+  pauseStartedAt: number | null,
+  now = Date.now(),
+): number => {
+  if (!startedAt) return 0;
+  const currentPause = pauseStartedAt ? now - pauseStartedAt : 0;
+  return Math.max(0, Math.floor((now - startedAt - pausedTotalMs - currentPause) / 1000));
 };
 
 export const buildSets = (ex: PlanExercise): SetSlot[] =>

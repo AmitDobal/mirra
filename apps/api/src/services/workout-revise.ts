@@ -1,176 +1,296 @@
-import type { CoachReviseChange } from "@mirra/contracts";
-import { asc, eq } from "drizzle-orm";
+import type { CurrentPlanResponse, ExerciseSnap, ReviseItem } from "@mirra/contracts";
 
-import type { AppDB } from "../db";
-import { workoutExercises, workouts } from "../db/schema";
-import { newId } from "../lib/id";
 import type { PlanReviseIntent } from "../ports/plan-reviser";
-import { gearNeeded, pickSwap } from "./workout-swaps";
+import {
+  defaultDose,
+  entryOf,
+  findRow,
+  fromEntry,
+  idsIn,
+  pickAlternative,
+  resolveName,
+  slotFor,
+  type Resolved,
+} from "./revise/exercise-pick";
+import { capSession } from "./revise/session-cap";
+import { exerciseRowReason, exerciseSwapTags, gearTag } from "./revise/tags-exercise";
+import { gearAllows, gearNeeded, hasGear, pickSwap } from "./workout-swaps";
 
-type Draft = {
-  id: string | null;
+/**
+ * Pure workout draft planner (arch §8.4/§8.5, AMI-166). Applies, in order: gear-loss swaps,
+ * named swaps, removes, adds, preferred moves, shorter session. Returns typed items plus the
+ * exact rows apply writes (ids pre-assigned, canonical ids set). No D1, no AI.
+ */
+
+export type DraftRow = {
+  id: string;
   name: string;
   cue: string | null;
   targetSets: number;
   targetReps: string;
   restSec: number | null;
   swapGroup: string | null;
+  canonicalId: string | null;
 };
 
-export type WorkoutReviseResult = {
+export type PlanTarget = {
+  id: string;
   title: string;
-  changes: CoachReviseChange[];
-  warnings: string[];
+  focus: string | null;
+  durationMin: number;
+  calorieEst: number | null;
+  exercises: readonly Pick<PlanExercise, "id" | "name" | "cue" | "targetSets" | "targetReps" | "restSec" | "swapGroup" | "canonicalId">[];
 };
 
-type Opts = {
-  workoutId: string;
+export type WorkoutPlanInput = {
+  workout: PlanTarget;
+  dayLabel: string;
   /** Equipment the user has AFTER this revision. */
-  equipment: string[];
+  equipment: readonly string[];
   intent: PlanReviseIntent;
+  /** Limit gear-loss swaps to one exercise (exercise detail screen). */
   exerciseId?: string;
-  dryRun: boolean;
+  newId: () => string;
 };
 
-const BENCH_RE = /bench press/i;
-const PUSH_DAY_RE = /push|chest|upper/i;
+export type WorkoutPlanResult = {
+  items: ReviseItem[];
+  warnings: string[];
+  rows: DraftRow[];
+  removedIds: string[];
+  durationMin: number;
+  calorieEst: number | null;
+};
+
+type PlanExercise = CurrentPlanResponse["workouts"][number]["exercises"][number];
+
 const MIN_MOVES = 2;
 
-const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+/** Which step swapped a slot: gear loss (can be overridden), a named swap, a prefer. */
+type SwapBy = "gear" | "named" | "prefer";
 
-/** Bench press variant the user can actually do, or null. */
-const benchName = (has: (g: string) => boolean): string | null => {
-  if (has("barbell") && has("bench")) return "Bench press";
-  if (has("dumbbells")) return "Dumbbell bench press";
-  return null;
-};
+const snap = (r: Pick<DraftRow, "name" | "targetSets" | "targetReps" | "canonicalId">): ExerciseSnap => ({
+  name: r.name,
+  sets: r.targetSets,
+  reps: r.targetReps,
+  canonicalId: r.canonicalId,
+});
 
-/**
- * Rewrite one workout's exercises in place: swap moves that need unavailable gear,
- * favour bench press on push days, and trim to a shorter session. Plan/workout rows
- * stay; only exercises (and duration) change.
- */
-export const reviseWorkout = async (db: AppDB, opts: Opts): Promise<WorkoutReviseResult | null> => {
-  const [workout] = await db.select().from(workouts).where(eq(workouts.id, opts.workoutId)).limit(1);
-  if (!workout) return null;
-  const rows = await db
-    .select()
-    .from(workoutExercises)
-    .where(eq(workoutExercises.workoutId, workout.id))
-    .orderBy(asc(workoutExercises.sortOrder));
-
-  const original = rows.map((r) => r.id);
-  let list: Draft[] = rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    cue: r.cue,
-    targetSets: r.targetSets,
-    targetReps: r.targetReps,
-    restSec: r.restSec,
-    swapGroup: r.swapGroup,
+export const planWorkoutEdits = (input: WorkoutPlanInput): WorkoutPlanResult => {
+  const { workout, dayLabel, intent } = input;
+  const has = hasGear(input.equipment);
+  let rows: DraftRow[] = workout.exercises.map((e) => ({
+    id: e.id,
+    name: e.name,
+    cue: e.cue,
+    targetSets: e.targetSets,
+    targetReps: e.targetReps,
+    restSec: e.restSec,
+    swapGroup: e.swapGroup,
+    canonicalId: e.canonicalId ?? null,
   }));
-  const changes: CoachReviseChange[] = [];
+  const items: ReviseItem[] = [];
   const warnings: string[] = [];
-  const has = (gear: string) => gear === "bodyweight" || opts.equipment.includes(gear);
+  const ref = { workoutId: workout.id, dayLabel };
+  const names = () => rows.map((r) => r.name).join(", ");
+  const why = (...keys: string[]) =>
+    keys.map((k) => k.toLowerCase()).map((k) => intent.reasons[`exercise:${k}`] ?? intent.reasons[k]).find(Boolean);
 
-  // 1. Swap moves that need gear the user no longer has.
+  /**
+   * One slot, one swap row (AMI-173): a later step that swaps the same slot again folds into
+   * the first row (original before -> final after) instead of chaining. A named swap never
+   * re-swaps a slot another named swap took; a soft (prefer) swap never touches a named one.
+   */
+  const swapped = new Map<string, { index: number; before: DraftRow; by: SwapBy }>();
+  const undone = new Set<number>();
+  const swapAt = (at: number, to: Resolved, keepDose: boolean, reasonKeys: string[], by: SwapBy = "named") => {
+    const prev = rows[at]!;
+    const seen = swapped.get(prev.id);
+    if (seen && seen.by !== "gear") {
+      if (by === "named") warnings.push(`${seen.before.name} is already being swapped`);
+      return;
+    }
+    const dose = defaultDose(to.entry);
+    const next: DraftRow = {
+      ...prev,
+      name: to.name,
+      canonicalId: to.canonicalId,
+      cue: null,
+      ...(keepDose ? {} : { targetSets: dose.sets, targetReps: dose.reps, restSec: dose.restSec }),
+    };
+    rows[at] = next;
+    const before = seen?.before ?? prev;
+    const item: ReviseItem = {
+      ...ref,
+      id: seen ? items[seen.index]!.id : `exercise:swap:${items.length}`,
+      kind: "exercise_swap",
+      before: snap(before),
+      after: snap(next),
+      tags: exerciseSwapTags(before, next),
+      reason: exerciseRowReason(why(before.name, next.name, ...reasonKeys), next, workout.focus),
+    };
+    if (!seen) {
+      swapped.set(next.id, { index: items.length, before: prev, by });
+      items.push(item);
+      return;
+    }
+    items[seen.index] = item;
+    seen.by = by;
+    const back = (before.canonicalId && before.canonicalId === next.canonicalId) || before.name.toLowerCase() === next.name.toLowerCase();
+    if (!back) return;
+    rows[at] = before;
+    undone.add(seen.index);
+  };
+  /** Same pattern keeps sets x reps; a different (known) pattern takes library defaults. */
+  const keepsDose = (prev: DraftRow, to: Resolved) => {
+    const p = entryOf(prev)?.pattern;
+    return !p || !to.entry || to.entry.pattern === p;
+  };
+
+  // 1. Gear the user no longer has (legacy behavior, now full_gym aware).
   const stuck: string[] = [];
-  list = list.flatMap((ex) => {
-    if (opts.exerciseId && ex.id !== opts.exerciseId) return [ex];
+  for (let i = 0; i < rows.length; i++) {
+    const ex = rows[i]!;
+    if (input.exerciseId && ex.id !== input.exerciseId) continue;
     const need = gearNeeded(ex.name);
-    if (!need || has(need)) return [ex];
+    if (!need || has(need)) continue;
     const next = pickSwap(ex.name, need, has);
     if (!next) {
       stuck.push(ex.name);
-      return [ex];
+      continue;
     }
-    const dup = list.some((o) => o !== ex && same(o.name, next));
-    if (dup && list.length > MIN_MOVES) {
-      changes.push({
-        kind: "workout_remove",
-        area: "workout",
-        before: ex.name,
-        after: "Removed",
-        summary: `Dropped ${ex.name} (needs ${need}; ${next} already in session)`,
-      });
-      return [];
+    const to = resolveName(next);
+    const dup = rows.some((o, j) => j !== i && o.name.trim().toLowerCase() === next.toLowerCase());
+    if (dup && rows.length > MIN_MOVES) {
+      items.push({ ...ref, id: `exercise:remove:${items.length}`, kind: "exercise_remove", before: snap(ex), tags: [], reason: `Needs ${need}; ${next} is already in the session` });
+      rows.splice(i, 1);
+      i -= 1;
+      continue;
     }
-    changes.push({ kind: "workout_swap", area: "workout", before: ex.name, after: next, summary: `${ex.name} → ${next}` });
-    return [{ ...ex, name: next, cue: null }];
-  });
+    swapAt(i, { ...to, name: to.entry ? to.name : next }, true, [], "gear");
+  }
   if (stuck.length > 0) warnings.push(`No substitute found for ${stuck.join(", ")}`);
 
-  // 2. Prefer bench press on push days.
-  if (opts.intent.preferBench) {
-    const pushDay = PUSH_DAY_RE.test(`${workout.title} ${workout.focus ?? ""}`);
-    const bench = benchName(has);
-    if (!pushDay) warnings.push("Bench press saved as a preference; today isn't a push day");
-    else if (!bench) warnings.push("Bench press needs dumbbells or a barbell + bench");
-    else if (!list.some((e) => BENCH_RE.test(e.name))) {
-      const target = list.findIndex((e) => e.swapGroup === "push" || /push-up|chest|fly/i.test(e.name));
-      const bump: Draft = { id: null, name: bench, cue: "Retract shoulder blades", targetSets: 3, targetReps: "6-10", restSec: 120, swapGroup: "push" };
-      if (target >= 0) {
-        changes.push({
-          kind: "workout_swap",
-          area: "workout",
-          before: list[target]!.name,
-          after: bench,
-          summary: `${list[target]!.name} → ${bench}`,
-        });
-        list[target] = { ...list[target]!, name: bench, cue: bump.cue, targetReps: bump.targetReps, restSec: bump.restSec };
-      } else {
-        changes.push({
-          kind: "workout_add",
-          area: "workout",
-          before: "Not in session",
-          after: bench,
-          summary: `Added ${bench} to the top of the session`,
-        });
-        list = [bump, ...list];
+  // 2. "Replace X with Y" / "swap out X".
+  for (const sw of intent.exerciseSwaps) {
+    const at = findRow(rows, sw.from);
+    if (at < 0) {
+      warnings.push(`No '${sw.from}' in ${dayLabel}. Your moves: ${names()}`);
+      continue;
+    }
+    const prev = rows[at]!;
+    const prevEntry = entryOf(prev);
+    let to: Resolved | null = sw.to ? resolveName(sw.to) : null;
+    if (!to) {
+      const alt = pickAlternative({
+        muscles: prevEntry?.muscles ?? [],
+        pattern: prevEntry?.pattern ?? null,
+        has,
+        exclude: new Set([...idsIn(rows), ...(prevEntry ? [prevEntry.id] : [])]),
+      });
+      if (!alt) {
+        warnings.push(`No substitute found for ${prev.name} with your equipment`);
+        continue;
       }
+      to = fromEntry(alt);
     }
+    if ((to.canonicalId && to.canonicalId === prevEntry?.id) || to.name.toLowerCase() === prev.name.toLowerCase()) {
+      warnings.push(`${prev.name} is already in ${dayLabel}`);
+      continue;
+    }
+    swapAt(at, to, keepsDose(prev, to), [sw.from, sw.to ?? ""]);
   }
 
-  // 3. Shorter session: cap duration, drop tail moves proportionally.
-  let durationMin = workout.durationMin;
-  let calorieEst = workout.calorieEst;
-  const cap = opts.intent.shortenMin;
-  if (cap != null && cap < durationMin) {
-    const keep = Math.min(list.length, Math.max(MIN_MOVES, Math.round((list.length * cap) / durationMin)));
-    const dropped = list.length - keep;
-    list = list.slice(0, keep);
-    if (calorieEst != null) calorieEst = Math.round((calorieEst * cap) / durationMin);
-    changes.push({
-      kind: "workout_shorten",
-      area: "workout",
-      before: `Session ${durationMin} min`,
-      after: `Session ${cap} min`,
-      summary: `Session ${durationMin} → ${cap} min${dropped > 0 ? `, dropped ${dropped} move${dropped > 1 ? "s" : ""}` : ""}`,
+  // 3. Removes (a session keeps at least 2 moves).
+  const removedIds: string[] = [];
+  for (const name of intent.exerciseRemoves) {
+    const at = findRow(rows, name);
+    if (at < 0) {
+      warnings.push(`No '${name}' in ${dayLabel}. Your moves: ${names()}`);
+      continue;
+    }
+    if (rows.length <= MIN_MOVES) {
+      warnings.push(`Kept ${rows[at]!.name}: a session needs at least ${MIN_MOVES} moves`);
+      continue;
+    }
+    const [gone] = rows.splice(at, 1);
+    items.push({ ...ref, id: `exercise:remove:${items.length}`, kind: "exercise_remove", before: snap(gone!), tags: [], reason: why(gone!.name, name) ?? null });
+  }
+
+  /** Insert a library move; swaps in a doable same-muscle variant when the gear is missing. */
+  const insert = (spoken: string, at: number, dose: Partial<{ sets: number; reps: string }>, reasonKeys: string[]) => {
+    let to = resolveName(spoken);
+    if (to.entry && !gearAllows(to.entry.equipment, has)) {
+      const alt = pickAlternative({ muscles: to.entry.muscles, pattern: to.entry.pattern, has, exclude: idsIn(rows) });
+      if (!alt) {
+        warnings.push(`${to.name} needs gear you don't have`);
+        return;
+      }
+      warnings.push(`${to.name} needs gear you don't have, so I used ${alt.name}`);
+      to = fromEntry(alt);
+    }
+    const dup = findRow(rows, to.name);
+    if (dup >= 0 || (to.canonicalId && idsIn(rows).has(to.canonicalId))) {
+      warnings.push(`${to.name} is already in ${dayLabel}`);
+      return;
+    }
+    const base = defaultDose(to.entry);
+    const row: DraftRow = {
+      id: input.newId(),
+      name: to.name,
+      cue: null,
+      targetSets: dose.sets ?? base.sets,
+      targetReps: dose.reps ?? base.reps,
+      restSec: base.restSec,
+      swapGroup: to.entry?.pattern ?? null,
+      canonicalId: to.canonicalId,
+    };
+    const position = Math.min(at, rows.length);
+    rows.splice(position, 0, row);
+    items.push({
+      ...ref,
+      id: `exercise:add:${items.length}`,
+      kind: "exercise_add",
+      after: snap(row),
+      position,
+      tags: [gearTag(row.name, row.canonicalId)],
+      reason: exerciseRowReason(why(row.name, ...reasonKeys), row, workout.focus),
     });
-    durationMin = cap;
-  } else if (cap != null) {
-    warnings.push(`Session is already ${durationMin} min`);
+  };
+
+  // 4. Adds go to the end of the session.
+  for (const a of intent.exerciseAdds) {
+    insert(a.name, rows.length, { ...(a.sets ? { sets: a.sets } : {}), ...(a.reps ? { reps: a.reps } : {}) }, [a.name]);
   }
 
-  if (!opts.dryRun && changes.length > 0) {
-    const keptIds = new Set(list.map((e) => e.id).filter((id): id is string => id != null));
-    for (const id of original.filter((id) => !keptIds.has(id))) {
-      await db.delete(workoutExercises).where(eq(workoutExercises.id, id));
+  // 5. Preferred moves: take over the same-pattern slot, else lead the session.
+  for (const spoken of intent.preferExercises) {
+    let to = resolveName(spoken);
+    if (to.entry && !gearAllows(to.entry.equipment, has)) {
+      const alt = pickAlternative({ muscles: to.entry.muscles, pattern: to.entry.pattern, has, exclude: new Set() });
+      if (!alt) {
+        warnings.push(`${to.name} needs gear you don't have`);
+        continue;
+      }
+      to = fromEntry(alt);
     }
-    for (const [i, ex] of list.entries()) {
-      const values = {
-        name: ex.name,
-        cue: ex.cue,
-        targetSets: ex.targetSets,
-        targetReps: ex.targetReps,
-        restSec: ex.restSec,
-        swapGroup: ex.swapGroup,
-        sortOrder: i,
-      };
-      if (ex.id) await db.update(workoutExercises).set(values).where(eq(workoutExercises.id, ex.id));
-      else await db.insert(workoutExercises).values({ id: newId(), workoutId: workout.id, ...values });
+    if (findRow(rows, to.name) >= 0 || (to.canonicalId && idsIn(rows).has(to.canonicalId))) {
+      warnings.push(`${to.name} is already in ${dayLabel}`);
+      continue;
     }
-    await db.update(workouts).set({ durationMin, calorieEst }).where(eq(workouts.id, workout.id));
+    const slot = to.entry ? slotFor(rows, to.entry) : -1;
+    if (slot >= 0) swapAt(slot, to, true, [spoken], "prefer");
+    else insert(to.name, 0, {}, [spoken]);
   }
-  return { title: workout.title, changes, warnings };
+
+  // 6. Shorter session: cap duration, drop tail moves proportionally.
+  const capped = capSession(rows, workout, intent.shortenMin, MIN_MOVES);
+  rows = capped.rows;
+  if (capped.item) items.push(capped.item);
+  if (capped.warning) warnings.push(capped.warning);
+  const { durationMin, calorieEst } = capped;
+
+  const kept = new Set(rows.map((r) => r.id));
+  removedIds.push(...workout.exercises.map((e) => e.id).filter((id) => !kept.has(id)));
+  return { items: items.filter((_, i) => !undone.has(i)), warnings, rows, removedIds, durationMin, calorieEst };
 };

@@ -1,4 +1,4 @@
-import type { TrainerPersona } from "@mirra/contracts";
+import type { MealSlot, TrainerPersona } from "@mirra/contracts";
 
 /** Plan chat: turns a free-text message into a structured edit of the EXISTING plans. */
 
@@ -22,10 +22,36 @@ export type PlanReviseIntent = {
   shortenMin?: number;
   /** Target meals per day (1-4); "I only eat two times a day" -> 2. */
   mealsPerDay?: number;
+  // --- v2 (AMI-163) ---
+  /** "swap my lunch": redraft only these slots. Empty = no slot named. */
+  mealSlots: MealSlot[];
+  /** Candidate pick bias for redrafted slots ("more protein"). Never saved as a pref. */
+  mealBias?: PlanReviseMealBias;
+  /** "replace X with Y" (`to` null = any sensible substitute). */
+  exerciseSwaps: { from: string; to: string | null }[];
+  exerciseAdds: { name: string; sets?: number; reps?: string }[];
+  exerciseRemoves: string[];
+  /** Exercise names to favour ("prefer bench press"). Supersedes `preferBench`. */
+  preferExercises: string[];
+  /**
+   * "move Tuesday's workout to Thursday", "move legs to tomorrow": day refs (weekday,
+   * today/tomorrow, "next monday", weekend, YYYY-MM-DD) or a workout name ("legs").
+   */
+  scheduleMoves: { from: string; to: string }[];
+  /** Short reason per item key (e.g. "lunch", "exercise:bench press"); ≤80 chars, sanitized. */
+  reasons: Record<string, string>;
 };
 
+export type PlanReviseMealBias = "high_protein" | "low_carb" | "lighter";
+
 /** One planned meal as the reviser sees it (for "swap lunch", "two meals a day"). */
-export type PlanReviseMeal = { slot: string; title: string; kcal: number; status: string };
+export type PlanReviseMeal = { id?: string; slot: string; title: string; kcal: number; status: string };
+
+/** One exercise of the target workout (for "replace X with Y"). */
+export type PlanReviseExercise = { id: string; name: string; sets: number; reps: string };
+
+/** One plan day as the reviser sees it (workout title, null on rest days). */
+export type PlanReviseDay = { date: string; weekday: string; workout: string | null };
 
 /** Targets + personal context so replies/intent fit the user's actual nutrition. */
 export type PlanReviseNutrition = {
@@ -45,11 +71,16 @@ export type PlanReviseInput = {
   cuisineStyles: string[];
   workoutTitle: string | null;
   exerciseNames: string[];
+  /** Target workout's exercises with sets x reps (v2). */
+  exercises?: PlanReviseExercise[];
   /** Saved meals-per-day preference; null = default four slots. */
   mealsPerDay: number | null;
   /** Today's current meals (empty when no plan yet). */
   meals: PlanReviseMeal[];
   nutrition: PlanReviseNutrition;
+  /** Plan date of this turn (YYYY-MM-DD) and the plan's days, for "move legs to tomorrow". */
+  today?: string;
+  schedule?: PlanReviseDay[];
   /** Trainer character voice for the reply; defaults to drill. */
   persona?: TrainerPersona;
 };

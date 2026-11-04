@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S35 — Muscle Detail Sheet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'surface': '#131313',
+            'surface-container-lowest': '#0e0e0e',
+            'surface-container-low': '#1c1b1b',
+            'surface-container': '#201f1f',
+            'surface-container-high': '#2a2a2a',
+            'surface-container-highest': '#353534',
+            'outline-variant': '#454936',
+            'on-surface': '#e5e2e1',
+            'on-surface-variant': '#c5c9b0',
+            'primary-container': '#cbf150',
+            'on-lime': '#161e00',
+            'secondary': '#d1beef',
+            'on-lavender': '#21143a',
+            'tier-gold': '#e8c15a',
+            'tier-silver': '#c5c9d4',
+          },
+          fontFamily: {
+            headline: ['"Space Grotesk"', 'sans-serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #131313;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface flex justify-center items-center min-h-screen">
+  <!-- iPhone Frame: 390 x 844 pt -->
+  <div class="relative w-[390px] h-[844px] bg-[#131313] overflow-hidden select-none flex flex-col justify-between">
+    
+    <!-- 1. Background: S34 screen dimmed under 60% black scrim -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <!-- Dimmed top portion of S34 -->
+      <div class="w-full px-5 pt-3">
+        <!-- Top bar of S34 -->
+        <div class="flex items-center justify-between h-10 mt-8 opacity-40">
+          <div class="w-8 h-8 rounded-full bg-[#201f1f] flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e5e2e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </div>
+          <div class="font-headline text-[12px] tracking-[0.08em] font-semibold text-on-surface-variant uppercase">STRENGTH TIER</div>
+          <div class="w-8 h-8"></div>
+        </div>
+
+        <!-- Dimmed preview card from S34 -->
+        <div class="mt-4 p-4 rounded-[24px] bg-[#1c1b1b] border border-[#2a2a2a] opacity-40 flex items-center gap-3">
+          <div class="w-12 h-12 rounded-[14px] bg-[#2a2a2a] flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
+              <polygon points="20,4 35,12 35,28 20,36 5,28 5,12" fill="#c5c9d4" />
+            </svg>
+          </div>
+          <div>
+            <div class="text-[10px] font-headline tracking-[0.08em] text-on-surface-variant uppercase">OVERALL</div>
+            <div class="text-[18px] font-headline font-bold text-on-surface">Silver II</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 60% black scrim over background -->
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
+    </div>
+
+    <!-- iOS Status Bar (9:41) -->
+    <div class="relative z-20 w-full h-[44px] px-7 pt-3 flex justify-between items-center text-on-surface text-[14px] font-semibold">
+      <span>9:41</span>
+      <div class="flex items-center gap-2">
+        <!-- Cellular Signal -->
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none">
+          <rect x="0" y="8" width="3" height="3" rx="0.5" fill="#e5e2e1"/>
+          <rect x="4.5" y="5.5" width="3" height="5.5" rx="0.5" fill="#e5e2e1"/>
+          <rect x="9" y="3" width="3" height="8" rx="0.5" fill="#e5e2e1"/>
+          <rect x="13.5" y="0" width="3" height="11" rx="0.5" fill="#e5e2e1"/>
+        </svg>
+        <!-- Wifi -->
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
+          <path d="M7.5 10.5C8.05228 10.5 8.5 10.0523 8.5 9.5C8.5 8.94772 8.05228 8.5 7.5 8.5C6.94772 8.5 6.5 8.94772 6.5 9.5C6.5 10.0523 6.94772 10.5 7.5 10.5Z" fill="#e5e2e1"/>
+          <path d="M4.67188 7.37187C5.45902 6.58474 6.45902 6.14282 7.57187 6.14282C8.68473 6.14282 9.68473 6.58474 10.4719 7.37187" stroke="#e5e2e1" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M2.19727 4.89726C3.65935 3.43518 5.51649 2.62854 7.57198 2.62854C9.62747 2.62854 11.4846 3.43518 12.9467 4.89726" stroke="#e5e2e1" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <!-- Battery -->
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+          <rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#e5e2e1"/>
+          <rect x="2" y="2" width="18" height="8" rx="1.5" fill="#e5e2e1"/>
+          <path d="M23 4C23.5523 4 24 4.44772 24 5V7C24 7.55228 23.5523 8 23 8V4Z" fill="#e5e2e1"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 2. Bottom Sheet: y=140 to bottom -->
+    <div class="relative z-10 w-full mt-[96px] flex-1 bg-surface-container-low rounded-t-[28px] border-t border-[#2a2a2a] flex flex-col justify-between overflow-hidden shadow-2xl">
+      
+      <!-- Top Scrollable Content Container -->
+      <div class="px-5 pt-2 pb-2">
+        <!-- 36x4 Grab handle centered 8pt from top -->
+        <div class="flex justify-center pt-0 pb-3">
+          <div class="w-[36px] h-[4px] bg-outline-variant rounded-full"></div>
+        </div>
+
+        <!-- 3. Header Row: md Gold badge (1 dot) on left; stacked: uppercase CHEST, headline-md Gold III; round close button on right -->
+        <div class="flex items-center justify-between pt-1 pb-4">
+          <div class="flex items-center gap-3.5">
+            <!-- md Gold Badge (40pt, 1 dot) -->
+            <div class="flex flex-col items-center">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <!-- Outer pointy-top rounded hexagon fill Gold #e8c15a -->
+                <polygon points="20,2 37,11.5 37,30.5 20,40 3,30.5 3,11.5" fill="#e8c15a" />
+                <!-- Inner bevel (2px darker inner line / bevel) -->
+                <polygon points="20,4 35,12.5 35,29.5 20,38 5,29.5 5,12.5" fill="#a2873f" />
+                <polygon points="20,6 33,13.5 33,28.5 20,36 7,28.5 7,13.5" fill="#e8c15a" />
+                <!-- Gold glyph: three chevrons centered -->
+                <path d="M14 17L20 13L26 17" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 22L20 18L26 22" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 27L20 23L26 27" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <!-- Division pip: 1 round dot for Division III directly under hexagon -->
+              <div class="flex items-center justify-center gap-1 mt-1">
+                <div class="w-[4px] h-[4px] rounded-full bg-tier-gold"></div>
+              </div>
+            </div>
+
+            <!-- Stacked text -->
+            <div class="flex flex-col">
+              <span class="font-headline text-[11px] tracking-[0.08em] font-bold text-on-surface-variant uppercase leading-tight">CHEST</span>
+              <span class="font-headline text-[22px] font-bold text-on-surface leading-tight mt-0.5">Gold III</span>
+            </div>
+          </div>
+
+          <!-- 36pt round close button (x icon) -->
+          <button class="w-[36px] h-[36px] rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-colors active:scale-95">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5e2e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 4. Progress Block: label-md row 'Progress to Gold II' left, '60%' right (lime). 8pt pill track #2a2a2a with lime fill to 60% -->
+        <div class="mt-1">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-headline text-[13px] font-medium text-on-surface tracking-[0.01em]">Progress to Gold II</span>
+            <span class="font-headline text-[13px] font-bold text-primary-container">60%</span>
+          </div>
+          <!-- 8pt track -->
+          <div class="w-full h-[8px] rounded-full bg-surface-container-high overflow-hidden">
+            <div class="h-full rounded-full bg-primary-container" style="width: 60%;"></div>
+          </div>
+        </div>
+
+        <!-- 5. Next-set card (lime fill #cbf150, radius 24, padding 16, text #161e00) -->
+        <div class="mt-4 p-4 rounded-[24px] bg-primary-container text-on-lime">
+          <div class="font-headline text-[11px] font-bold tracking-[0.08em] uppercase text-on-lime/80 leading-none">NEXT DIVISION</div>
+          <div class="font-headline text-[28px] font-bold leading-tight mt-1.5 tracking-tight text-on-lime">185 lb × 8</div>
+          <div class="font-body text-[14px] leading-[20px] font-medium mt-1 text-on-lime/90">Barbell Bench Press · 2 sessions → Gold II</div>
+        </div>
+
+        <!-- 6. Section Label CONTRIBUTING LIFTS -->
+        <div class="mt-5 mb-1">
+          <div class="font-headline text-[11px] tracking-[0.08em] font-bold text-on-surface-variant uppercase">CONTRIBUTING LIFTS</div>
+        </div>
+
+        <!-- 7. Three Rows, each 64pt, separated by 1px #2a2a2a -->
+        <div class="flex flex-col">
+          
+          <!-- Row 1: Barbell Bench Press -->
+          <div class="h-[64px] flex items-center justify-between border-b border-[#2a2a2a]">
+            <!-- Left: exercise name (body-lg) & body-sm on-surface-variant detail -->
+            <div class="flex flex-col justify-center">
+              <span class="font-body text-[15px] font-semibold text-on-surface leading-snug">Barbell Bench Press</span>
+              <span class="font-body text-[12px] text-on-surface-variant leading-tight mt-0.5">70% chest · best 175 lb × 8</span>
+            </div>
+            <!-- Right: sm Gold badge 1 dot + label Gold III -->
+            <div class="flex items-center gap-2">
+              <div class="flex flex-col items-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <polygon points="12,1.5 22,7 22,18 12,23.5 2,18 2,7" fill="#e8c15a" />
+                  <polygon points="12,3 20.5,7.8 20.5,17.2 12,22 3.5,17.2 3.5,7.8" fill="#a2873f" />
+                  <polygon points="12,4.5 19,8.5 19,16.5 12,20.5 5,16.5 5,8.5" fill="#e8c15a" />
+                  <!-- 3 chevrons -->
+                  <path d="M8 10L12 7.5L16 10" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 13.5L12 11L16 13.5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 17L12 14.5L16 17" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <!-- 1 dot for Div III -->
+                <div class="flex items-center justify-center gap-0.5 mt-0.5">
+                  <div class="w-[3px] h-[3px] rounded-full bg-tier-gold"></div>
+                </div>
+              </div>
+              <span class="font-headline text-[13px] font-semibold text-on-surface">Gold III</span>
+            </div>
+          </div>
+
+          <!-- Row 2: Incline Dumbbell Press -->
+          <div class="h-[64px] flex items-center justify-between border-b border-[#2a2a2a]">
+            <!-- Left: exercise name & detail -->
+            <div class="flex flex-col justify-center">
+              <span class="font-body text-[15px] font-semibold text-on-surface leading-snug">Incline Dumbbell Press</span>
+              <span class="font-body text-[12px] text-on-surface-variant leading-tight mt-0.5">60% chest · best 60 lb × 10</span>
+            </div>
+            <!-- Right: sm Silver badge 3 dots + label Silver I -->
+            <div class="flex items-center gap-2">
+              <div class="flex flex-col items-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <polygon points="12,1.5 22,7 22,18 12,23.5 2,18 2,7" fill="#c5c9d4" />
+                  <polygon points="12,3 20.5,7.8 20.5,17.2 12,22 3.5,17.2 3.5,7.8" fill="#8a8f9c" />
+                  <polygon points="12,4.5 19,8.5 19,16.5 12,20.5 5,16.5 5,8.5" fill="#c5c9d4" />
+                  <!-- 2 chevrons for Silver -->
+                  <path d="M8 11.5L12 8.5L16 11.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 15.5L12 12.5L16 15.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <!-- 3 dots for Div I -->
+                <div class="flex items-center justify-center gap-0.5 mt-0.5">
+                  <div class="w-[3px] h-[3px] rounded-full bg-tier-silver"></div>
+                  <div class="w-[3px] h-[3px] rounded-full bg-tier-silver"></div>
+                  <div class="w-[3px] h-[3px] rounded-full bg-tier-silver"></div>
+                </div>
+              </div>
+              <span class="font-headline text-[13px] font-semibold text-on-surface">Silver I</span>
+            </div>
+          </div>
+
+          <!-- Row 3: Push-up -->
+          <div class="h-[64px] flex items-center justify-between">
+            <!-- Left: exercise name & detail -->
+            <div class="flex flex-col justify-center">
+              <span class="font-body text-[15px] font-semibold text-on-surface leading-snug">Push-up</span>
+              <span class="font-body text-[12px] text-on-surface-variant leading-tight mt-0.5">65% chest · best bodyweight × 22</span>
+            </div>
+            <!-- Right: sm Silver badge 2 dots + label Silver II -->
+            <div class="flex items-center gap-2">
+              <div class="flex flex-col items-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <polygon points="12,1.5 22,7 22,18 12,23.5 2,18 2,7" fill="#c5c9d4" />
+                  <polygon points="12,3 20.5,7.8 20.5,17.2 12,22 3.5,17.2 3.5,7.8" fill="#8a8f9c" />
+                  <polygon points="12,4.5 19,8.5 19,16.5 12,20.5 5,16.5 5,8.5" fill="#c5c9d4" />
+                  <!-- 2 chevrons for Silver -->
+                  <path d="M8 11.5L12 8.5L16 11.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 15.5L12 12.5L16 15.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <!-- 2 dots for Div II -->
+                <div class="flex items-center justify-center gap-0.5 mt-0.5">
+                  <div class="w-[3px] h-[3px] rounded-full bg-tier-silver"></div>
+                  <div class="w-[3px] h-[3px] rounded-full bg-tier-silver"></div>
+                </div>
+              </div>
+              <span class="font-headline text-[13px] font-semibold text-on-surface">Silver II</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 8. Footnote: Rest days never lower a tier. -->
+        <div class="mt-4 pt-1">
+          <p class="font-body text-[12px] leading-[16px] text-on-surface-variant">Rest days never lower a tier.</p>
+        </div>
+
+      </div>
+
+      <!-- iOS Home Indicator -->
+      <div class="w-full flex justify-center pb-2 pt-1">
+        <div class="w-[134px] h-[5px] bg-[#e5e2e1]/30 rounded-full"></div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

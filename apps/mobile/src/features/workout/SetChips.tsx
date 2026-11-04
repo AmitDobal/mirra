@@ -12,19 +12,21 @@ type Props = {
   editingSet: number | null;
   targetReps: string;
   onSelect: (n: number) => void;
+  /** Logged load in the user's unit (kg default). */
+  formatLoad?: (kg: number) => string;
 };
 
 const formatKg = (kg: number) => (Number.isInteger(kg) ? `${kg}` : kg.toFixed(1));
 
 /** `100×8` once logged; bodyweight (0 kg) shows `8 reps`. */
-const chipText = (s: SetSlot, targetReps: string): string => {
+const chipText = (s: SetSlot, targetReps: string, fmt: (kg: number) => string = formatKg): string => {
   if (!s.done) return `${targetReps} reps`;
   const reps = s.reps ?? 0;
-  return s.weightKg ? `${formatKg(s.weightKg)}×${reps}` : `${reps} reps`;
+  return s.weightKg ? `${fmt(s.weightKg)}×${reps}` : `${reps} reps`;
 };
 
 /** SET 1..N chips. Tap a logged chip to edit it. */
-export const SetChips = ({ sets, setIndex, editingSet, targetReps, onSelect }: Props) => (
+export const SetChips = ({ sets, setIndex, editingSet, targetReps, onSelect, formatLoad }: Props) => (
   <View style={sx("mt-space-md flex-row justify-between gap-space-xs")}>
     {sets.map((s) => {
       const active = editingSet === s.n || (editingSet === null && s.n === setIndex && !s.done);
@@ -32,7 +34,7 @@ export const SetChips = ({ sets, setIndex, editingSet, targetReps, onSelect }: P
         <Pressable
           key={s.n}
           accessibilityRole="button"
-          accessibilityLabel={`Set ${s.n}, ${chipText(s, targetReps)}${s.done ? ", tap to edit" : ""}`}
+          accessibilityLabel={`Set ${s.n}, ${chipText(s, targetReps, formatLoad)}${s.done ? ", tap to edit" : ""}`}
           accessibilityState={{ selected: active }}
           disabled={!s.done && s.n !== setIndex}
           onPress={() => onSelect(s.n)}
@@ -46,7 +48,7 @@ export const SetChips = ({ sets, setIndex, editingSet, targetReps, onSelect }: P
               s.done ? "text-on-primary-fixed" : "text-on-surface"
             }`)}
           >
-            {chipText(s, targetReps)}
+            {chipText(s, targetReps, formatLoad)}
           </Text>
         </Pressable>
       );

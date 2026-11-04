@@ -37,8 +37,13 @@ export const setLogs = sqliteTable(
     reps: integer("reps"),
     completed: integer("completed", { mode: "boolean" }).notNull().default(false),
     loggedAt: integer("logged_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+    /** Exercise library id or `tag:*`; backfilled by the strength recompute (AMI-165). */
+    canonicalId: text("canonical_id"),
   },
-  (t) => [index("set_logs_session_idx").on(t.sessionId)],
+  (t) => [
+    index("set_logs_session_idx").on(t.sessionId),
+    index("set_logs_canonical_idx").on(t.canonicalId),
+  ],
 );
 
 export const meals = sqliteTable(

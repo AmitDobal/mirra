@@ -1,19 +1,22 @@
 import { create } from "zustand";
 
-import {
-  DEFAULT_TRAINER_PERSONA,
-  toTrainerPersonaId,
-  type TrainerPersonaId,
-} from "@/content/trainer-personas";
+import { DEFAULT_TRAINER_PERSONA, type TrainerPersonaId } from "@/content/trainer-personas";
 import { getProfile, setLocalTrainerPersona } from "@/db";
 import { getMyTrainerPersona, patchTrainerPersona } from "@/lib/api";
 import { errorMessage, logger } from "@/lib/logger";
 
+import { syncPersona } from "./persona-sync";
+
 type PersonaStore = {
   readonly persona: TrainerPersonaId;
   readonly saving: boolean;
-  /** Load from local SQLite, then best-effort sync from the API (server wins). */
-  readonly hydrate: () => Promise<void>;
+  /** Bumped on every successful pick so an in-flight hydrate cannot overwrite it. */
+  readonly epoch: number;
+  /**
+   * Load from local SQLite, then sync from `/v1/me` (server wins).
+   * `force` skips the /me TTL cache (after auth or a persona change).
+   */
+  readonly hydrate: (opts?: { force?: boolean }) => Promise<void>;
   /** PATCH /v1/me/preferences, then update local SQLite and the store. Returns false on failure. */
   readonly choose: (persona: TrainerPersonaId) => Promise<boolean>;
 };
@@ -21,33 +24,31 @@ type PersonaStore = {
 export const usePersonaStore = create<PersonaStore>((set, get) => ({
   persona: DEFAULT_TRAINER_PERSONA,
   saving: false,
-  hydrate: async () => {
-    try {
-      const profile = await getProfile();
-      if (profile?.preferences) {
-        set({ persona: toTrainerPersonaId(profile.preferences.trainerPersona) });
-      }
-    } catch (err) {
-      logger.warn("trainer.hydrate.local_failed", { message: errorMessage(err) });
-    }
-    try {
-      const remote = await getMyTrainerPersona();
-      if (!remote) return;
-      const next = toTrainerPersonaId(remote);
-      if (next === get().persona) return;
-      set({ persona: next });
-      await setLocalTrainerPersona(next);
-    } catch (err) {
-      logger.warn("trainer.hydrate.remote_failed", { message: errorMessage(err) });
-    }
+  epoch: 0,
+  hydrate: async (opts) => {
+    await syncPersona({
+      readLocal: async () => (await getProfile())?.preferences?.trainerPersona,
+      readRemote: () => getMyTrainerPersona({ force: opts?.force === true }),
+      writeLocal: (persona) => setLocalTrainerPersona(persona),
+      getPersona: () => get().persona,
+      setPersona: (persona) => {
+        if (persona !== get().persona) set({ persona });
+      },
+      getEpoch: () => get().epoch,
+      warn: (event, err) => logger.warn(event, { message: errorMessage(err) }),
+    });
   },
   choose: async (persona) => {
     if (get().saving) return false;
     set({ saving: true });
     try {
       await patchTrainerPersona(persona);
-      await setLocalTrainerPersona(persona);
-      set({ persona, saving: false });
+      set({ persona, saving: false, epoch: get().epoch + 1 });
+      await setLocalTrainerPersona(persona).catch((err: unknown) =>
+        logger.warn("trainer.choose.local_failed", { message: errorMessage(err) }),
+      );
+      // Refresh the /me cache so later hydrates (and coach context) read the new value.
+      void get().hydrate({ force: true });
       return true;
     } catch (err) {
       logger.warn("trainer.choose.failed", { message: errorMessage(err) });

@@ -38,5 +38,8 @@ export const copy = {
     calibration: "Daily Calibration",
     titlePush: "Ready to adapt",
     titleRest: "Recovery preferred",
+    rebuildApplied: "New plan applied",
+    rebuildPreviewFailed: "Couldn't rebuild the week. Check your connection and try again.",
+    rebuildApplyFailed: "Couldn't apply the new plan. Your current plan is unchanged.",
   },
 } as const;

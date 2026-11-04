@@ -4,15 +4,17 @@ import { Pressable, Text, View } from "react-native";
 
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
+import { rankCopy } from "@/content/rank";
 import { CapsLabel } from "@/ui/CapsLabel";
 
 import { useBadgeStore } from "./badge-store";
-import { titleForRank } from "./rank-meta";
+import { earnedRankId, titleForRank, unlockedSet } from "./rank-meta";
 
 /** Compact Kinetic Rank entry on You tab (S33 teaser). */
 export const KineticRankTeaser = () => {
   const data = useBadgeStore((s) => s.data);
-  const rank = titleForRank(data?.definitions ?? [], data?.currentRankId ?? null);
+  const defs = data?.definitions ?? [];
+  const rank = titleForRank(defs, earnedRankId(defs, unlockedSet(data?.unlocked ?? [])));
 
   return (
     <Pressable
@@ -25,12 +27,12 @@ export const KineticRankTeaser = () => {
       ]}
     >
       <View style={sx("min-w-0 flex-1 gap-1")}>
-        <CapsLabel tone="lime">Kinetic rank</CapsLabel>
+        <CapsLabel tone="lime">{rankCopy.teaserEyebrow}</CapsLabel>
         <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>
-          {rank ?? "Start your ladder"}
+          {rank ?? rankCopy.teaserEmpty}
         </Text>
         <Text style={sx("font-body-sm text-body-sm text-on-surface-variant")}>
-          Best streak {data?.bestStreak ?? 0} · Spark → Apex
+          {rankCopy.teaserLine(data?.bestStreak ?? 0)}
         </Text>
       </View>
       <ChevronRight size={22} color={color.onSurfaceVariant} />

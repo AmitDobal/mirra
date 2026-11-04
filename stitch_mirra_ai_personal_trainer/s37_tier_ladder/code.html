@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>S37 — Strength Tier Ladder</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-tertiary-fixed-variant": "#8c1037",
+            "tertiary-fixed-dim": "#ffb2bd",
+            "surface-dim": "#131313",
+            "secondary-fixed": "#ebdcff",
+            "on-primary-fixed-variant": "#3c4d00",
+            "inverse-on-surface": "#313030",
+            "surface-tint": "#b0d434",
+            "on-tertiary-fixed": "#400013",
+            "inverse-primary": "#516600",
+            "background": "#131313",
+            "primary": "#ffffff",
+            "on-surface": "#e5e2e1",
+            "surface-bright": "#393939",
+            "inverse-surface": "#e5e2e1",
+            "on-secondary-container": "#c2b0e0",
+            "on-primary-container": "#566c00",
+            "tertiary-fixed": "#ffd9dd",
+            "on-error": "#690005",
+            "error": "#ffb4ab",
+            "tertiary": "#ffffff",
+            "surface-variant": "#353534",
+            "surface-container-lowest": "#0e0e0e",
+            "on-secondary": "#372950",
+            "surface-container": "#201f1f",
+            "primary-fixed": "#cbf150",
+            "on-primary": "#293500",
+            "on-surface-variant": "#c5c9b0",
+            "on-secondary-fixed-variant": "#4e4068",
+            "on-error-container": "#ffdad6",
+            "primary-container": "#cbf150",
+            "primary-fixed-dim": "#b0d434",
+            "outline-variant": "#454936",
+            "on-secondary-fixed": "#21143a",
+            "error-container": "#93000a",
+            "secondary-container": "#50426b",
+            "on-tertiary": "#670024",
+            "surface-container-high": "#2a2a2a",
+            "on-primary-fixed": "#161e00",
+            "surface-container-highest": "#353534",
+            "outline": "#8f937c",
+            "surface-container-low": "#1c1b1b",
+            "on-background": "#e5e2e1",
+            "secondary": "#d1beef",
+            "tertiary-container": "#ffd9dd",
+            "surface": "#131313",
+            "on-tertiary-container": "#b53354",
+            "secondary-fixed-dim": "#d1beef"
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-lg": "1.25rem",
+            "space-sm": "0.5rem",
+            "gutter": "1rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem",
+            "margin": "1.25rem",
+            "space-xl": "1.75rem"
+          },
+          fontFamily: {
+            "headline-lg": ["Space Grotesk"],
+            "label-md": ["Space Grotesk"],
+            "display-lg": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "label-lg": ["Space Grotesk"],
+            "display-metric": ["Space Grotesk"],
+            "body-md": ["Plus Jakarta Sans"],
+            "label-caps": ["Space Grotesk"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Space Grotesk"],
+            "body-sm": ["Plus Jakarta Sans"]
+          },
+          fontSize: {
+            "headline-lg": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "600" }],
+            "display-lg": ["48px", { lineHeight: "52px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+            "label-lg": ["14px", { lineHeight: "18px", letterSpacing: "0.02em", fontWeight: "600" }],
+            "display-metric": ["38px", { lineHeight: "42px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "label-caps": ["11px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "700" }],
+            "body-lg": ["16px", { lineHeight: "24px", fontWeight: "500" }],
+            "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#131313] text-on-surface antialiased flex justify-center items-start min-h-screen">
+<!-- iPhone 390x844 Shell Canvas Container -->
+<main class="w-[390px] min-h-[844px] bg-[#131313] relative overflow-hidden flex flex-col justify-start">
+<!-- 1. iOS Status Bar -->
+<header class="w-full h-11 pt-3 px-7 flex justify-between items-center z-20 select-none">
+<span class="font-['Space_Grotesk'] text-[15px] font-bold text-on-surface tracking-tight">9:41</span>
+<div class="flex items-center space-x-1.5 text-on-surface">
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+<path d="M1 9h2v3H1V9zm4-3h2v6H5V6zm4-3h2v9H9V3zm4-3h2v12h-2V0z"></path>
+</svg>
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+<path d="M8 2.5a9.8 9.8 0 0 1 6.3 2.3.8.8 0 0 1 .1 1.1l-1.3 1.3a.8.8 0 0 1-1.1 0 6.6 6.6 0 0 0-8 0 .8.8 0 0 1-1.1 0L1.6 5.9a.8.8 0 0 1 .1-1.1A9.8 9.8 0 0 1 8 2.5zm0 4.5a5.5 5.5 0 0 1 3.5 1.3.8.8 0 0 1 .1 1.1L8.6 12.3a.8.8 0 0 1-1.2 0L4.4 9.4a.8.8 0 0 1 .1-1.1A5.5 5.5 0 0 1 8 7z"></path>
+</svg>
+<svg class="w-6 h-3 fill-current" viewbox="0 0 25 12">
+<rect fill="none" height="11" rx="3.5" stroke="currentColor" stroke-width="1" width="21" x="0.5" y="0.5"></rect>
+<rect fill="currentColor" height="8" rx="2" width="18" x="2" y="2"></rect>
+<path d="M23 4.5v3a1.5 1.5 0 0 0 0-3z"></path>
+</svg>
+</div>
+</header>
+<!-- 2. Top bar 56pt -->
+<nav class="w-full h-14 px-5 flex items-center justify-between z-20">
+<button aria-label="Go Back" class="w-10 h-10 rounded-full bg-[#1c1b1b] border border-[#2a2a2a] flex items-center justify-center text-on-surface hover:bg-[#201f1f] active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<h2 class="font-label-caps text-label-caps tracking-[0.08em] text-on-surface text-center">TIERS</h2>
+<div class="w-10 h-10"></div>
+</nav>
+<!-- Scrollable Body Content -->
+<div class="flex-1 overflow-y-auto px-5 pt-3 pb-8 relative">
+<!-- 3. Header section -->
+<section class="mb-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#cbf150]"></span>
+<span class="font-['Space_Grotesk'] text-[11px] font-bold tracking-[0.08em] text-[#cbf150]">STRENGTH LADDER</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-[#e5e2e1] mt-1">Strength Tiers</h1>
+<p class="font-body-md text-body-md text-[#c5c9b0] mt-2">Tiers come from your logged working sets, compared with lifters of your sex and bodyweight. Rest days never lower a tier.</p>
+</section>
+<!-- 4. Divisions explainer card -->
+<section class="bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] p-4 mb-4">
+<h3 class="font-['Space_Grotesk'] text-[11px] font-bold tracking-[0.08em] text-[#c5c9b0] mb-3">DIVISIONS</h3>
+<div class="flex items-center justify-around px-2">
+<!-- Division III -->
+<div class="flex flex-col items-center">
+<!-- 40x40 Pointy Hex Badge (Gold) with 1 Pip -->
+<div class="w-10 h-10 relative flex items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<!-- Outer pointy-top rounded hexagon -->
+<polygon fill="#e8c15a" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#a27e2a" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- Gold Glyph: 3 Chevrons -->
+<path d="M14 14.5 L20 10.5 L26 14.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 20.5 L20 16.5 L26 20.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 26.5 L20 22.5 L26 26.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<!-- 1 Pip Dot -->
+<div class="flex items-center justify-center gap-1 mt-1.5 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+</div>
+<span class="font-['Space_Grotesk'] text-[12px] text-[#e5e2e1] font-medium mt-1">Gold III</span>
+</div>
+<!-- Division II -->
+<div class="flex flex-col items-center">
+<!-- 40x40 Pointy Hex Badge (Gold) with 2 Pips -->
+<div class="w-10 h-10 relative flex items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#e8c15a" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#a27e2a" stroke-linejoin="round" stroke-width="2"></polygon>
+<path d="M14 14.5 L20 10.5 L26 14.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 20.5 L20 16.5 L26 20.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 26.5 L20 22.5 L26 26.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<!-- 2 Pip Dots -->
+<div class="flex items-center justify-center gap-1 mt-1.5 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+</div>
+<span class="font-['Space_Grotesk'] text-[12px] text-[#e5e2e1] font-medium mt-1">Gold II</span>
+</div>
+<!-- Division I -->
+<div class="flex flex-col items-center">
+<!-- 40x40 Pointy Hex Badge (Gold) with 3 Pips -->
+<div class="w-10 h-10 relative flex items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#e8c15a" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#a27e2a" stroke-linejoin="round" stroke-width="2"></polygon>
+<path d="M14 14.5 L20 10.5 L26 14.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 20.5 L20 16.5 L26 20.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 26.5 L20 22.5 L26 26.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<!-- 3 Pip Dots -->
+<div class="flex items-center justify-center gap-1 mt-1.5 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+</div>
+<span class="font-['Space_Grotesk'] text-[12px] text-[#e5e2e1] font-medium mt-1">Gold I</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-[#c5c9b0] mt-3.5 text-center">Each tier has three divisions. III is the entry, I is the top.</p>
+</section>
+<!-- 5. Eight Tier Rows Structure with Continuous Track Rail Behind Badges -->
+<section class="relative w-full">
+<!-- Connecting Vertical Rail passing exactly behind badges center (4 + 20px = 24px from left card edge = 44px) -->
+<div class="absolute left-[36px] top-6 bottom-6 w-[1.5px] bg-[#454936] z-0"></div>
+<div class="relative z-10 flex flex-col space-y-2">
+<!-- 1. Legendary -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#cbf150" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#8cb01e" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- Crown Glyph -->
+<path d="M12 25 L12 17 L16 21 L20 14 L24 21 L28 17 L28 25 Z" fill="#FFFFFF"></path>
+</svg>
+<!-- Thin lime laurel arc under hexagon -->
+<svg class="mt-0.5" fill="none" height="6" viewbox="0 0 28 6" width="28">
+<path d="M2 1C6 5 22 5 26 1" stroke="#cbf150" stroke-linecap="round" stroke-width="1.2"></path>
+</svg>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Legendary</span>
+</div>
+<span class="font-['Space_Grotesk'] text-[13px] font-medium text-[#c5c9b0]">Top tier</span>
+</div>
+<!-- 2. Elite -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#d1beef" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#8e76b5" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- 5-Point Star Glyph -->
+<polygon fill="#FFFFFF" points="20,11 22.8,17 29.5,17.8 24.5,22.4 25.9,29 20,25.6 14.1,29 15.5,22.4 10.5,17.8 17.2,17"></polygon>
+</svg>
+<div class="flex items-center justify-center gap-1 mt-1 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#d1beef]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#d1beef]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#d1beef]"></span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Elite</span>
+</div>
+<span class="font-['Space_Grotesk'] text-[13px] font-medium text-[#c5c9b0]">III · II · I</span>
+</div>
+<!-- 3. Diamond -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#9cc8ff" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#5b88c7" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- Faceted Gem Glyph -->
+<polygon fill="none" points="14,14 26,14 30,19 20,29 10,19" stroke="#FFFFFF" stroke-linejoin="round" stroke-width="1.6"></polygon>
+<path d="M14 14 L20 29 L26 14 M10 19 L30 19" stroke="#FFFFFF" stroke-width="1.4"></path>
+</svg>
+<div class="flex items-center justify-center gap-1 mt-1 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#9cc8ff]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#9cc8ff]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#9cc8ff]"></span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Diamond</span>
+</div>
+<span class="font-['Space_Grotesk'] text-[13px] font-medium text-[#c5c9b0]">III · II · I</span>
+</div>
+<!-- 4. Platinum -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#8fd6cf" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#4d9b93" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- Diamond Outline Glyph -->
+<polygon fill="none" points="20,11 28,20 20,29 12,20" stroke="#FFFFFF" stroke-width="1.8"></polygon>
+</svg>
+<div class="flex items-center justify-center gap-1 mt-1 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#8fd6cf]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#8fd6cf]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#8fd6cf]"></span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Platinum</span>
+</div>
+<span class="font-['Space_Grotesk'] text-[13px] font-medium text-[#c5c9b0]">III · II · I</span>
+</div>
+<!-- 5. Gold -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#e8c15a" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#a27e2a" stroke-linejoin="round" stroke-width="2"></polygon>
+<path d="M14 14.5 L20 10.5 L26 14.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 20.5 L20 16.5 L26 20.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 26.5 L20 22.5 L26 26.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<div class="flex items-center justify-center gap-1 mt-1 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#e8c15a]"></span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Gold</span>
+</div>
+<span class="font-['Space_Grotesk'] text-[13px] font-medium text-[#c5c9b0]">III · II · I</span>
+</div>
+<!-- 6. Silver (HIGHLIGHTED ROW) -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border-[1.5px] border-[#cbf150] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#c5c9d4" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#878b96" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- Two Chevrons Glyph -->
+<path d="M14 17 L20 13 L26 17" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M14 23.5 L20 19.5 L26 23.5" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<div class="flex items-center justify-center gap-1 mt-1 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#c5c9d4]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#c5c9d4]"></span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Silver</span>
+</div>
+<!-- Highlighted Pill: You · Silver II -->
+<div class="bg-[#cbf150] text-[#161e00] font-semibold px-3 py-1 rounded-full text-[12px] font-['Space_Grotesk']">
+              You · Silver II
+            </div>
+</div>
+<!-- 7. Bronze -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#b9825f" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#7a4d2e" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- One Chevron Glyph -->
+<path d="M14 21 L20 16 L26 21" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<div class="flex items-center justify-center gap-1 mt-1 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#b9825f]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#b9825f]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#b9825f]"></span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Bronze</span>
+</div>
+<span class="font-['Space_Grotesk'] text-[13px] font-medium text-[#c5c9b0]">III · II · I</span>
+</div>
+<!-- 8. Iron -->
+<div class="h-[72px] bg-[#1c1b1b] rounded-[24px] border border-[#2a2a2a] px-4 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<div class="w-10 flex flex-col items-center justify-center">
+<svg fill="none" height="40" viewbox="0 0 40 40" width="40">
+<polygon fill="#8f937c" points="20,2 37,11 37,29 20,38 3,29 3,11" stroke="#5d604e" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- One Horizontal Bar Glyph -->
+<rect fill="#FFFFFF" height="3" rx="1.5" width="14" x="13" y="18.5"></rect>
+</svg>
+<div class="flex items-center justify-center gap-1 mt-1 h-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#8f937c]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#8f937c]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#8f937c]"></span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-[#e5e2e1]">Iron</span>
+</div>
+<span class="font-['Space_Grotesk'] text-[13px] font-medium text-[#c5c9b0]">III · II · I</span>
+</div>
+</div>
+</section>
+</div>
+<!-- 6. iOS Home Indicator -->
+<footer class="w-full h-8 flex justify-center items-center pb-2 select-none">
+<div class="w-36 h-1 bg-surface-variant rounded-full opacity-60"></div>
+</footer>
+</main>
+</body></html>

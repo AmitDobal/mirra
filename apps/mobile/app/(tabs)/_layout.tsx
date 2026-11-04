@@ -1,9 +1,10 @@
 import { Redirect, Slot, usePathname, type Href } from "expo-router";
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { View } from "react-native";
 
 import { useOnboardingStore } from "@/features/onboarding";
-import { hasSession, isPaywallSoftSkipped } from "@/lib/auth";
+import { usePersonaStore } from "@/features/trainer";
+import { getAuthUserId, hasSession, isPaywallSoftSkipped } from "@/lib/auth";
 import {
   isEntitledStatus,
   resolveTabGuard,
@@ -39,6 +40,13 @@ const TabsLayout = () => {
   useLayoutEffect(() => {
     syncEntitlementFromMeCache();
   }, [zustandStatus, meEntitlement]);
+
+  // Trainer persona: server wins on app start and after each sign-in (new session user).
+  const sessionUserId = hasSession() ? getAuthUserId() : null;
+  useEffect(() => {
+    if (!sessionUserId || !onboarded) return;
+    void usePersonaStore.getState().hydrate({ force: true });
+  }, [sessionUserId, onboarded]);
   const blocked = resolveTabGuard({
     hasSession: hasSession(),
     onboarded,

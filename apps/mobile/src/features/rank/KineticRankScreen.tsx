@@ -1,11 +1,11 @@
 import { router } from "expo-router";
-import { ArrowLeft, Share2 } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ArrowLeft, ArrowRight, Share2, Trophy } from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { rankCopy } from "@/content/rank";
 import { useStreakStore } from "@/features/today/streak-store";
-import type { BadgeDefinition } from "@/lib/api/badges";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
@@ -13,23 +13,14 @@ import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
 
 import { useBadgeStore } from "./badge-store";
-import { progressToNext, titleForRank, unlockedSet } from "./rank-meta";
-import { RankTierRow } from "./RankTierRow";
+import { RankLadder } from "./RankLadder";
+import { activeTier, earnedRankId, rankShareMessage, titleForRank, unlockedSet } from "./rank-meta";
 import { StreakRankHero } from "./StreakRankHero";
 
-const tierState = (
-  def: BadgeDefinition,
-  unlocked: Set<string>,
-  currentRankId: string | null,
-  nextRankId: string | null,
-): "locked" | "unlocked" | "current" | "next" => {
-  if (def.id === currentRankId) return "current";
-  if (unlocked.has(def.id)) return "unlocked";
-  if (def.id === nextRankId) return "next";
-  return "locked";
-};
+/** Room under the scroll content for the sticky footer (milestone line + 56pt CTA). */
+const FOOTER_CLEARANCE = 132;
 
-/** S33 Kinetic Rank — streak hero + vertical badge ladder. */
+/** S33 Kinetic Rank — streak hero + vertical badge ladder + sticky CTA. */
 export const KineticRankScreen = () => {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
@@ -45,13 +36,9 @@ export const KineticRankScreen = () => {
   }, [loadBadges, loadStreak]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  const unlocked = useMemo(() => unlockedSet(data?.unlocked ?? []), [data?.unlocked]);
-  const currentTitle = titleForRank(data?.definitions ?? [], data?.currentRankId ?? null);
-  const nextDef = data?.definitions.find((d) => d.id === data.nextRankId);
-  const progress = data ? progressToNext(data.bestStreak, nextDef) : null;
+    void loadBadges();
+    void loadStreak();
+  }, [loadBadges, loadStreak]);
 
   if (!data) {
     return (
@@ -60,6 +47,24 @@ export const KineticRankScreen = () => {
       </View>
     );
   }
+
+  const unlocked = unlockedSet(data.unlocked);
+  const active = activeTier(data.definitions, unlocked);
+  const currentTitle = titleForRank(data.definitions, earnedRankId(data.definitions, unlocked));
+
+  const share = async () => {
+    const message = rankShareMessage({
+      currentTitle,
+      streak: streak?.current ?? 0,
+      bestStreak: data.bestStreak,
+      next: active?.def ?? null,
+    });
+    try {
+      await Share.share({ title: rankCopy.shareTitle, message });
+    } catch {
+      Alert.alert(rankCopy.shareFailed);
+    }
+  };
 
   return (
     <View style={[sx("flex-1 bg-surface-container-lowest"), { paddingTop: insets.top }]}>
@@ -72,66 +77,80 @@ export const KineticRankScreen = () => {
         >
           <ArrowLeft size={20} color={color.onSurface} />
         </Pressable>
-        <CapsLabel tone="muted">Rank progression</CapsLabel>
+        <CapsLabel style={styles.onSurface}>{rankCopy.headerTitle}</CapsLabel>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Share rank"
-          style={sx("h-10 w-10 items-center justify-center rounded-full border border-outline-variant/40 bg-surface-container-low opacity-40")}
+          onPress={() => void share()}
+          style={sx("h-10 w-10 items-center justify-center rounded-full border border-outline-variant/40 bg-surface-container-low")}
         >
           <Share2 size={18} color={color.onSurface} />
         </Pressable>
       </View>
 
-      <ScreenScroll refreshing={refreshing} onRefresh={() => void refresh()} dockPad={false}>
-        <View style={sx("px-5 pb-32")}>
-        <View style={sx("mb-space-md gap-1.5")}>
+      <ScreenScroll
+        refreshing={refreshing}
+        onRefresh={() => void refresh()}
+        dockPad={false}
+        insetTop={false}
+        style={styles.scroll}
+      >
+        <View style={[sx("mb-6 gap-2"), styles.top]}>
           <View style={sx("flex-row items-center gap-2")}>
             <View style={sx("h-2 w-2 rounded-full bg-primary-fixed")} />
-            <CapsLabel tone="lime">Performance ladder</CapsLabel>
+            <CapsLabel tone="lime">{rankCopy.eyebrow}</CapsLabel>
           </View>
-          <Text style={sx("font-headline-lg text-headline-lg text-on-surface")}>Kinetic Rank</Text>
-          <Text style={sx("font-body-md text-body-md text-on-surface-variant")}>
-            Consistent microcycles forge momentum. Unlock tiers by locking daily adherence.
-          </Text>
+          <Text style={sx("font-headline-lg text-headline-lg text-on-surface")}>{rankCopy.title}</Text>
+          <Text style={sx("font-body text-body-lg text-on-surface-variant")}>{rankCopy.intro}</Text>
         </View>
 
         <StreakRankHero
           streakCurrent={streak?.current ?? 0}
           bestStreak={data.bestStreak}
           currentTitle={currentTitle}
-          progress={progress}
-          nextTitle={nextDef?.title ?? null}
+          active={active}
         />
 
-        <View style={sx("mb-space-sm mt-space-md flex-row items-center justify-between")}>
-          <Text style={sx("font-headline-sm text-headline-sm text-on-surface")}>Milestone tiers</Text>
-          <CapsLabel tone="muted">5 tiers</CapsLabel>
+        <View style={sx("mb-4 mt-10 flex-row items-center justify-between")}>
+          <Text style={sx("font-headline-md text-headline-md text-on-surface")}>{rankCopy.tiersTitle}</Text>
+          <CapsLabel style={styles.onSurface}>{rankCopy.tiersCount(data.definitions.length)}</CapsLabel>
         </View>
 
-        {data.definitions.map((def) => (
-          <RankTierRow
-            key={def.id}
-            def={def}
-            bestStreak={data.bestStreak}
-            state={tierState(def, unlocked, data.currentRankId, data.nextRankId)}
-          />
-        ))}
-        </View>
+        <RankLadder definitions={data.definitions} bestStreak={data.bestStreak} unlocked={unlocked} />
+        <View style={{ height: FOOTER_CLEARANCE }} />
       </ScreenScroll>
 
       <View
         style={[
-          sx("absolute bottom-0 left-0 right-0 border-t border-surface-container-high bg-surface-container-lowest/95 px-4 pt-3"),
+          sx("absolute bottom-0 left-0 right-0 border-t border-surface-container-high bg-surface-container-lowest px-4 pt-3"),
           { paddingBottom: Math.max(insets.bottom, 12) },
         ]}
       >
-        {nextDef ? (
-          <Text style={sx("mb-2 text-center font-label-caps text-label-caps text-on-surface-variant")}>
-            Next milestone · {nextDef.title} ({nextDef.thresholdDays}d)
-          </Text>
-        ) : null}
-        <LimeCta label="Keep streak active today" onPress={() => router.replace("/(tabs)/today")} />
+        <View style={sx("mb-3 flex-row items-center justify-center gap-2")}>
+          <Trophy size={14} color={color.primaryFixed} />
+          {active ? (
+            <Text style={sx("font-label-bold text-label-md text-on-surface")}>
+              {rankCopy.nextMilestone}
+              <Text style={sx("text-primary-fixed")}>
+                {rankCopy.nextMilestoneValue(active.def.title, active.def.thresholdDays)}
+              </Text>
+            </Text>
+          ) : (
+            <Text style={sx("font-label-bold text-label-md text-on-surface")}>{rankCopy.allUnlocked}</Text>
+          )}
+        </View>
+        <LimeCta
+          label={rankCopy.cta}
+          icon={<ArrowRight size={20} color={color.onPrimaryFixed} />}
+          onPress={() => router.replace("/(tabs)/today")}
+        />
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  scroll: { backgroundColor: color.surfaceContainerLowest },
+  top: { marginTop: -8 },
+  onSurface: { color: color.onSurface },
+});

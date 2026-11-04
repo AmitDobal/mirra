@@ -39,3 +39,9 @@ All 28 images downloaded successfully (curl -L, 1 retry on failure).
 - Local: `stitch_mirra_ai_personal_trainer/s28_plan_chat_proposal/` + `assets/stitch/s28_plan_chat_proposal/` (`screen.png`, `code.html`)
 - No raster photos in S28 (icons + tokens only), so `index.ts` needs no new `require`
 - Wired in: `features/coach/ProposalCard.tsx` (before/after card, Yes, apply / Want to change)
+
+## AMI-169 S36 Exercise anatomy v2 (2026-11-04)
+
+- Screen: Stitch `54bd71822ab4433c9cfedbaeb3b457ed` (project `16036285274438790381`)
+- Local: `assets/stitch/s36_exercise_anatomy_v2/hero.jpg` (800px, from S36 `code.html` hero `<img>`)
+- Wired: `s36ExerciseAnatomyV2.hero` in `features/exercise/catalog.ts` `heroSource` (bench press detail hero)

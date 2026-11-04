@@ -6,7 +6,7 @@
  *   npm run test:chat-quality -w @mirra/api
  */
 import type { CoachReviseResponse, ReviseItem } from "@mirra/contracts";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import * as schema from "../src/db/schema";
 import type { MirraEnv } from "../src/env";
@@ -150,18 +150,25 @@ const copyAndMulti = async () => {
 
 const mealCap = async () => {
   const ctx = await seedUser();
-  const count = () =>
-    (sqlite.prepare("select count(*) n from audit_log where user_id = ? and action = 'meal_plan.generate'").get(ctx.userId) as { n: number }).n;
-  const first = await propose(ctx, "swap my breakfast");
-  check(count() === 2, "generate + one meal proposal = 2 meal_plan.generate rows", String(count()));
-  const applied = await applyDraft(ctx, first.draftId!);
-  check(applied.applied && count() === 2, "apply commits the drafted meals without spending the meal cap");
-  const capped = await propose(ctx, "swap my dinner and replace tricep dips with skull crushers");
-  check(slots(capped) === "" && all(capped, "exercise_swap").length === 1 && (capped.warnings ?? []).some((w) => /meal changes/.test(w)), "meal cap at propose: meals skipped with a warning, workout part kept", dump(capped));
-  const ok = await applyDraft(ctx, capped.draftId!);
-  check(ok.applied, "workout-only draft applies after the meal cap");
-  const reviseRows = await db.select().from(schema.auditLog).where(and(eq(schema.auditLog.userId, ctx.userId), eq(schema.auditLog.action, "coach.revise")));
-  check(reviseRows.length === 2, "apply cap (coach.revise) still counted per apply");
+  const rows = (action: string) =>
+    (sqlite.prepare("select count(*) n from audit_log where user_id = ? and action = ?").get(ctx.userId, action) as { n: number }).n;
+  const dayRows = () => rows("coach.revise.meal_day");
+  // Plan's own generation already wrote one meal_plan.generate row: it must not eat the chat budget.
+  const slot = await propose(ctx, "swap my breakfast");
+  check(slots(slot) === "breakfast" && dayRows() === 0 && rows("meal_plan.generate") === 1, "slot swap (heuristic, no AI) never counts toward the meal cap");
+  check((await applyDraft(ctx, slot.draftId!)).applied && dayRows() === 0, "apply never counts toward the meal cap");
+  const day1 = await propose(ctx, "new meals today");
+  check(all(day1, "meal_swap").length > 0 && dayRows() === 1, "whole-day AI redraft counts 1 at propose", dump(day1));
+  check((await applyDraft(ctx, day1.draftId!)).applied && dayRows() === 1, "applying the whole-day draft spends nothing more");
+  const day2 = await propose(ctx, "new meals today");
+  check(all(day2, "meal_swap").length > 0 && dayRows() === 2, "2nd whole-day redraft allowed (2/day), plan generation not counted");
+  const capped = await propose(ctx, "new meals please and replace tricep dips with skull crushers");
+  check(slots(capped) === "" && all(capped, "exercise_swap").length === 1 && (capped.warnings ?? []).some((w) => /full-day meal rebuilds/.test(w)) && dayRows() === 2,
+    "3rd whole-day redraft: meals skipped with a warning, workout part kept", dump(capped));
+  check((await applyDraft(ctx, capped.draftId!)).applied, "workout-only draft applies after the whole-day cap");
+  const after = await propose(ctx, "swap my lunch");
+  check(slots(after) === "lunch" && dayRows() === 2, "slot swaps still work after the whole-day cap");
+  check((await applyDraft(ctx, after.draftId!)).applied && rows("coach.revise") === 4, "apply cap (coach.revise) still counted per apply");
 };
 
 const main = async () => {

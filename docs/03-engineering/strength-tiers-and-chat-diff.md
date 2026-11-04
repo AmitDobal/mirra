@@ -240,7 +240,7 @@ For one release, the legacy `changes[]` (string before/after) is derived from `i
 - Everything is stored in `revise_drafts`. Apply commits the stored rows with **no AI call** in one D1 batch.
 - The draft holds `base_hash` (ids + names of touched meal items / workout exercises / plan days). If the hash changed, apply returns 409 `plan_changed` and the UI asks the user to resend.
 - One pending draft per user (a new propose expires the old one). TTL 30 min.
-- Limits: propose ≤ 6/day + AI credits. A propose that drafts meals counts `meal_plan.generate` (2/day) at propose time; at the cap the meal part is skipped with a warning and the rest is still proposed (AMI-170). Apply counts only `coach.revise` (4/day) and never spends the meal cap. This keeps the AMI-159 caps.
+- Limits: propose ≤ 6/day + AI credits. Only a whole-day AI meal redraft from chat counts, on its own meter `coach.revise.meal_day` (2/day), at propose time; at the cap the meal part is skipped with a warning and the rest is still proposed. Single-slot and avoid swaps use the heuristic generator (no AI call) and never count; the plan's own `meal_plan.generate` never eats this budget. Apply counts only `coach.revise` (4/day) (AMI-170).
 
 ### 8.3 `revise_drafts`
 

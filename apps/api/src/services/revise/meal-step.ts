@@ -11,6 +11,7 @@ import type { MealPrefsPlan } from "../meal-revise";
 import { draftMeals, toItemValues, type MealDraft, type MealOp } from "../meal-plan-targeted";
 import { loadDayMeals } from "../meals";
 import type { ReviseState } from "./context";
+import { MEAL_CAP_WARNING } from "./limits";
 import { BIAS_LABEL, pickCandidate, targetMeals } from "./meal-targeting";
 import { mealDelta, mealSnapReason, mealSwapReason, mealSwapTags } from "./tags";
 
@@ -55,6 +56,8 @@ type Args = {
   intent: PlanReviseIntent;
   prefs: MealPrefsPlan;
   mealItemId?: string;
+  /** False when today's whole-day AI redraft budget is spent (slot swaps are always allowed). */
+  allowWholeDay?: boolean;
 };
 
 /** Foods the post-revision prefs allow; null when no food pref changed. */
@@ -219,6 +222,7 @@ export const mealStep = async (ctx: MealPlanCtx, a: Args): Promise<MealStepResul
   });
   if (catalog.length === 0) return { items: [], draft: null, warnings: ["No foods match your diet settings"], touchedIds: [] };
   if (plan.wholeDay) {
+    if (a.allowWholeDay === false) return { items: [], draft: null, warnings: [...plan.warnings, MEAL_CAP_WARNING], touchedIds: [] };
     const out = await draftDay(ctx, a, catalog);
     return { ...out, warnings: [...plan.warnings, ...out.warnings] };
   }

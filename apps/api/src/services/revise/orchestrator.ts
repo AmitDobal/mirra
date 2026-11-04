@@ -8,13 +8,13 @@ import { getPlanReviser } from "../../lib/plan-reviser";
 import { hasAnyIntent, hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../../lib/plan-intent";
 import type { PlanReviseResult } from "../../ports/plan-reviser";
 import { withAiCredits } from "../credits-gate";
-import { assertRateLimit, recordRegen, type MealPlanCtx } from "../meal-plan-draft";
+import { recordRegen, type MealPlanCtx } from "../meal-plan-draft";
 import type { MealDraft } from "../meal-plan-targeted";
 import { applyDraft } from "./apply";
 import { loadReviseState, reviserInput, type ReviseState } from "./context";
 import { createDraft, findPendingForIntent, intentKeyOf, touchHash, type DraftTouch } from "./drafts";
 import { legacyChanges } from "./legacy";
-import { assertProposeLimit, assertReviseLimit, PROPOSE_ACTION } from "./limits";
+import { assertProposeLimit, assertReviseLimit, MEAL_DAY_ACTION, mealDayQuotaOk, PROPOSE_ACTION } from "./limits";
 import { mealStep, type MealStepResult } from "./meal-step";
 import { prefsStep } from "./prefs-step";
 import { scheduleStep, type ScheduleDraft } from "./schedule-step";
@@ -37,18 +37,7 @@ type Proposal = {
 /** S39 coach line for a preview: nothing is applied yet, so never "Done". */
 export const PREVIEW_REPLY = "Here is the change. Nothing updates until you apply.";
 export const APPLIED_REPLY = "Done. Your plan is updated.";
-export const MEAL_CAP_WARNING = "You've used today's meal changes, so meals stay as they are. Try again tomorrow";
 
-/** Meal drafting counts against the 2/day meal cap at propose time (apply never does). */
-const mealQuotaOk = async (ctx: MealPlanCtx): Promise<boolean> => {
-  try {
-    await assertRateLimit(ctx);
-    return true;
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 429) return false;
-    throw err;
-  }
-};
 
 /** Meal drafting problems become warnings; credit/paywall errors still reach the client. */
 const safeMealStep = async (run: () => Promise<MealStepResult>): Promise<MealStepResult> => {
@@ -79,10 +68,10 @@ const buildProposal = async (
 
   const prefs = prefsStep(state, intent, { doMeal, doWorkout });
   warnings.push(...prefs.warnings);
-  const mealPrefs = prefs.meal && (await mealQuotaOk(ctx)) ? prefs.meal : null;
-  if (prefs.meal && !mealPrefs) warnings.push(MEAL_CAP_WARNING);
+  const mealPrefs = prefs.meal;
+  const allowWholeDay = mealPrefs ? await mealDayQuotaOk(ctx) : true;
   const meal = mealPrefs
-    ? await safeMealStep(() => mealStep(ctx, { state, intent, prefs: mealPrefs, mealItemId: body.context?.mealItemId }))
+    ? await safeMealStep(() => mealStep(ctx, { state, intent, prefs: mealPrefs, mealItemId: body.context?.mealItemId, allowWholeDay }))
     : null;
   const workout = doWorkout
     ? workoutStep(state, intent, prefs.nextEquipment, {
@@ -171,8 +160,8 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
       );
   const p = await buildProposal(ctx, state, body, result);
   if (dryRun) await recordRegen(ctx, PROPOSE_ACTION, date);
-  // The meals were generated now, so the meal cap is spent now (AMI-170), never on apply.
-  if ((p.meal?.ops.length ?? 0) > 0) await recordRegen(ctx, "meal_plan.generate", date);
+  // Only a whole-day AI redraft spends the chat meal budget, and only now (never on apply).
+  if (p.meal?.wholeDay && p.meal.ops.length > 0) await recordRegen(ctx, MEAL_DAY_ACTION, date);
 
   const message = sanitizeAiCopy(replyFor(result, p, dryRun));
   const source = result.source ?? "heuristic";

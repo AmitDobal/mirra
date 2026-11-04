@@ -1,8 +1,11 @@
 import type { MealSlot, TrainerPersona } from "@mirra/contracts";
 
+import { matchExerciseName } from "../lib/exercise-library";
 import { emptyIntent, hasAnyIntent, sanitizeIntent } from "../lib/plan-intent";
+import { DAY_PHRASE } from "../lib/plan-refs";
 import { parseByClause, unmappedWarnings } from "../lib/plan-intent-clauses";
 import type { PlanReviseIntent, PlanReviseMealBias, PlanReviser, PlanReviseResult } from "../ports/plan-reviser";
+import { englishish, scheduleMovesFrom, withoutMoves } from "./heuristic-phrases";
 
 const REPLY_LEADS: Record<TrainerPersona, string> = {
   drill: "Done, recruit. Now",
@@ -75,19 +78,26 @@ const NOT_EXERCISE = new RegExp(
 );
 /** A captured name may not run across a clause join or a second edit verb. */
 const NO_JOIN = "(?!\\b(?:and|then|also|replace|swap)\\b)";
-const DAY = "(mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)(?:day)?";
+/** Library names pass even with gear words ("dumbbell bench press"); day phrases never do. */
 const exerciseLike = (s: string | undefined): s is string =>
-  s != null && s.trim().length >= 3 && s.trim().split(/\s+/).length <= 5 && !NOT_EXERCISE.test(s);
+  s != null &&
+  s.trim().length >= 3 &&
+  s.trim().split(/\s+/).length <= 5 &&
+  !DAY_ONLY.test(s.trim()) &&
+  (!NOT_EXERCISE.test(s) || matchExerciseName(s) != null);
+const DAY_ONLY = new RegExp(`^(?:${DAY_PHRASE})(?:'s)?(?:\\s+(?:workout|session))?$`);
+const SWAP_OUT = /\b(?:swap|switch|change|sub)\s+out\s+(?:the\s+|my\s+)?([a-z][a-z' -]{2,40}?)(?=[.,;!?]|\s+(?:and|then|also)\b|$)/g;
+const SWAP_RE = new RegExp(`\\b(?:replace|swap)\\s+(?:out\\s+)?([a-z](?:${NO_JOIN}[a-z' -]){2,40}?)\\s+(?:with|for)\\s+([a-z][a-z' -]{2,40}?)(?=[.,;!?]|\\s+(?:and|then|also)\\b|$)`, "g");
 const tidy = (s: string): string => s.replace(/^(?:my|the|a|an|some)\s+/, "").replace(/\s+(?:please|today|instead)$/, "").trim();
 
 type V2Pieces = Pick<PlanReviseIntent, "mealSlots" | "mealBias" | "exerciseSwaps" | "exerciseAdds" | "exerciseRemoves" | "scheduleMoves">;
 
 /** v2 regexes (arch §8.4): slot swaps, macro bias, named exercise edits, day moves. */
 const v2From = (text: string): V2Pieces => {
-  const slot = new RegExp(`\\b(?:swap|change|replace|switch|redo|new|different)\\s+(?:out\\s+)?(?:my\\s+|the\\s+|today'?s\\s+)?${SLOT_WORD.source}|${SLOT_WORD.source}\\s+(?:swap|change)\\b`, "g");
+  const slot = new RegExp(`\\b(?:swap|change|replace|switch|redo|new|different)\\s+(?:out\\s+)?(?:my\\s+|the\\s+|today'?s\\s+)?${SLOT_WORD.source}(?:\\s*(?:,|and|&)\\s*(?:my\\s+)?${SLOT_WORD.source})*|${SLOT_WORD.source}\\s+(?:swap|change)\\b`, "g");
   const biased = new RegExp(`\\b(?:make|keep|give me)\\s+(?:my\\s+|the\\s+|today'?s\\s+)?${SLOT_WORD.source}`, "g");
   const mealSlots = [...text.matchAll(slot), ...(BIAS_WORDS.test(text) ? text.matchAll(biased) : [])]
-    .map((m) => (m[1] ?? m[2])!.replace(/s$/, "") as MealSlot)
+    .flatMap((m) => [...m[0].matchAll(new RegExp(SLOT_WORD.source, "g"))].map((x) => x[1]!.replace(/s$/, "") as MealSlot))
     .filter((v, i, xs) => xs.indexOf(v) === i);
   const mealBias: PlanReviseMealBias | undefined =
     /\b(?:more|extra|higher|high|bigger)[- ]protein\b|\bprotein[- ](?:heavy|rich|packed)\b/.test(text)
@@ -97,19 +107,24 @@ const v2From = (text: string): V2Pieces => {
         : /\b(?:lighter|smaller|fewer calories|less heavy)\b/.test(text)
           ? "lighter"
           : undefined;
-  const exerciseSwaps = [...text.matchAll(new RegExp(`\\b(?:replace|swap)\\s+(?:out\\s+)?([a-z](?:${NO_JOIN}[a-z' -]){2,40}?)\\s+(?:with|for)\\s+([a-z][a-z' -]{2,40}?)(?=[.,;!?]|\\s+(?:and|then|also)\\b|$)`, "g"))]
+  const scheduleMoves = scheduleMovesFrom(text);
+  const rest = withoutMoves(text);
+  const exerciseSwaps = [...rest.matchAll(SWAP_RE)]
     .map((m) => ({ from: tidy(m[1]!), to: tidy(m[2]!) }))
     .filter((sw) => exerciseLike(sw.from) && !SLOT_WORD.test(sw.from))
     .map((sw) => ({ from: sw.from, to: exerciseLike(sw.to) && !/\bsomething\b/.test(sw.to) ? sw.to : null }));
-  const exerciseAdds = [...text.matchAll(/\badd\s+([a-z][a-z' -]{2,40}?)(?:\s+to\s+(?:my\s+|the\s+)?[a-z ]{0,20})?(?=[.,;!?]|$)/g)]
+  // "swap out the cable fly": no target named, so any same-muscle substitute.
+  for (const m of rest.replace(SWAP_RE, " ").matchAll(SWAP_OUT)) {
+    const from = tidy(m[1]!);
+    if (exerciseLike(from) && !SLOT_WORD.test(from)) exerciseSwaps.push({ from, to: null });
+  }
+  const exerciseAdds = [...rest.matchAll(/\badd\s+([a-z][a-z' -]{2,40}?)(?:\s+to\s+(?:my\s+|the\s+)?[a-z ]{0,20})?(?=[.,;!?]|$)/g)]
     .map((m) => tidy(m[1]!))
     .filter(exerciseLike)
     .map((name) => ({ name }));
-  const exerciseRemoves = [...text.matchAll(/\b(?:drop|remove|cut|skip)\s+(?:the\s+|my\s+)?([a-z][a-z' -]{2,40}?)(?=[.,;!?]|\s+from\b|$)/g)]
+  const exerciseRemoves = [...rest.matchAll(/\b(?:drop|remove|cut|skip)\s+(?:the\s+|my\s+)?([a-z][a-z' -]{2,40}?)(?=[.,;!?]|\s+from\b|$)/g)]
     .map((m) => tidy(m[1]!))
     .filter(exerciseLike);
-  const scheduleMoves = [...text.matchAll(new RegExp(`\\bmove\\s+(?:my\\s+)?${DAY}(?:'s)?\\s+(?:workout|session|lift|training)\\s+to\\s+${DAY}\\b`, "g"))]
-    .map((m) => ({ from: m[0]!.split(/\s+/).find((w) => new RegExp(`^${DAY}`).test(w))!.replace(/'s$/, ""), to: m[0]!.split(/\s+/).at(-1)! }));
   return { mealSlots, ...(mealBias ? { mealBias } : {}), exerciseSwaps, exerciseAdds, exerciseRemoves, scheduleMoves };
 };
 
@@ -134,7 +149,9 @@ const parseRules = (text: string): PlanReviseIntent => {
   }
 
   // Preferences.
-  if (/\b(prefer|want|more|use|do|favou?r|focus on)\b[^.,;]{0,20}\bbench\b|\bbench press\b/.test(text) && !negated(text, "bench")) {
+  // An explicit "replace X with Y" owns the lifts it names (no extra prefer-bench swap).
+  const free = text.replace(SWAP_RE, " ");
+  if (/\b(prefer|want|more|use|do|favou?r|focus on)\b[^.,;]{0,20}\bbench\b|\bbench press\b/.test(free) && !negated(free, "bench")) {
     intent.preferBench = true;
     intent.equipmentAdd.push("bench");
   }
@@ -198,7 +215,7 @@ const parseRules = (text: string): PlanReviseIntent => {
 export const heuristicPlanReviser: PlanReviser = {
   propose: async (input): Promise<PlanReviseResult> => {
     // iOS keyboards send curly apostrophes ("Thursday’s workout").
-    const text = input.message.toLowerCase().replace(/[‘’]/g, "'").replace(/cable machines?/g, "cables");
+    const text = englishish(input.message.toLowerCase().replace(/[‘’]/g, "'")).replace(/cable machines?/g, "cables");
     // Multi-intent messages: every clause is parsed too, so no part is silently dropped.
     const { intent: clean, unmapped } = parseByClause(text, parseRules);
     const notes: string[] = [];

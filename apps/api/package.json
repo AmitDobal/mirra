@@ -22,6 +22,7 @@
     "test:workout-revise": "tsx scripts/assert-workout-revise.ts",
     "test:strength": "tsx scripts/assert-strength.ts",
     "test:chat-quality": "tsx scripts/assert-chat-quality.ts",
+    "test:chat-intents": "tsx scripts/assert-chat-intents.ts",
     "smoke:meal-revise": "node scripts/smoke-meal-revise.mjs",
     "smoke:revise-caps": "node scripts/smoke-revise-caps.mjs",
     "smoke:streaks": "node scripts/smoke-streaks.mjs",

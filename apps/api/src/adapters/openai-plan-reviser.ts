@@ -82,8 +82,9 @@ Rules:
 - mealSlots: the meal slots the user names ("swap my lunch" -> ["lunch"]). Then forceMealRegen stays false. Only set forceMealRegen for whole-day asks ("new meals today").
 - mealBias: "more protein" -> high_protein, "fewer carbs" -> low_carb, "lighter" -> lighter. It is a one-off pick hint, never a dietTagsAdd.
 - mealsPerDay: integer 1-4 when the user says how often they eat ("I only eat two times a day" -> 2). Do NOT set forceMealRegen for this. Never invent a number the user did not say.
-- Exercises: names must come from current.exercises when the user refers to one. "replace X with Y" -> exerciseSwaps [{from:X,to:Y}] (to null when unspecified). "add X" -> exerciseAdds. "drop X" -> exerciseRemoves. "prefer bench press" -> preferExercises ["bench press"].
-- scheduleMoves: "move Tuesday's workout to Thursday" -> [{from:"tuesday",to:"thursday"}] (weekday names or YYYY-MM-DD).
+- Exercises: names must come from current.exercises when the user refers to one. "replace X with Y" -> exerciseSwaps [{from:X,to:Y}] with Y exactly as the user said it, gear words kept ("replace bench press with dumbbell bench press" -> {from:"bench press",to:"dumbbell bench press"}); to null when unspecified. "add X" -> exerciseAdds. "drop X" -> exerciseRemoves. "prefer bench press" -> preferExercises ["bench press"].
+- An explicit swap owns its lifts: never also list X or Y in preferExercises, and never return two swaps for the same exercise.
+- scheduleMoves: move a planned workout to another day. from = the day it is on now, or the workout name the user used ("legs", "push", "upper body"). to = the day it should go to. Use the YYYY-MM-DD date from current.schedule when you can tell it, else a weekday name, "today", "tomorrow", "next monday" or "weekend". "move legs to tomorrow" -> [{from:"legs",to:"<tomorrow's date>"}]. "move Tuesday's workout to Thursday" -> [{from:"tuesday",to:"thursday"}]. Keep each value under 16 characters.
 - reasons: optional short why per edit, key = slot or exercise name, text max 80 chars.
 - Use current.meals, current.nutrition (goal, kcal and protein targets, lifestyle notes) and current.mealsPerDay to judge what is possible.
 - reviseWorkout true whenever equipment, exercises or session length changes. shortenMin = target minutes (10-90).
@@ -103,6 +104,8 @@ const buildUserPayload = (input: PlanReviseInput): string =>
       foodsAvoid: input.foodsAvoid,
       cuisineStyles: input.cuisineStyles,
       workout: input.workoutTitle,
+      today: input.today ?? null,
+      schedule: (input.schedule ?? []).slice(0, 14),
       exercises: (input.exercises ?? input.exerciseNames.map((name) => ({ name, sets: null, reps: null })))
         .slice(0, 12)
         .map((e) => ({ name: e.name, sets: e.sets, reps: e.reps })),

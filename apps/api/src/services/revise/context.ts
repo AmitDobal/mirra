@@ -106,4 +106,10 @@ export const reviserInput = (ctx: MealPlanCtx, s: ReviseState, body: CoachRevise
     lifestyleNotes: s.prefs?.lifestyleNotes ?? null,
   },
   persona: toTrainerPersonaId(s.prefs?.trainerPersona),
+  today: s.date,
+  schedule: s.plan.days.map((d) => ({
+    date: d.date,
+    weekday: weekdayOf(d.date),
+    workout: s.plan.workouts.find((w) => w.id === d.workoutId)?.title ?? null,
+  })),
 });

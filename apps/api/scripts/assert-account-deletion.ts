@@ -47,6 +47,10 @@ const run = async () => {
     await exec("INSERT INTO referral_codes (user_id, code) VALUES (?, ?)", uid, `CODE${uid}`);
     await exec("INSERT INTO audit_log (id, user_id, action) VALUES (?, ?, 'test')", `a-${uid}`, uid);
     await exec("INSERT INTO payment_events (id, user_id, type) VALUES (?, ?, 'test.paid')", `pe-${uid}`, uid);
+    await exec("INSERT INTO exercise_scores (user_id, exercise_id, sustained_pct, best_pct, last_session_pct, sessions, display_step, standards_version, updated_at) VALUES (?, 'bench_press', 50, 50, 50, 1, 11, 'v', ?)", uid, now);
+    await exec("INSERT INTO muscle_scores (user_id, muscle_id, pct, display_step, updated_at) VALUES (?, 'chest', 50, 11, ?)", uid, now);
+    await exec("INSERT INTO strength_summary (user_id, updated_at) VALUES (?, ?)", uid, now);
+    await exec("INSERT INTO strength_events (id, user_id, scope, ref_id, to_step, created_at) VALUES (?, ?, 'muscle', 'chest', 11, ?)", `se-${uid}`, uid, now);
   };
 
   await seed(victim);
@@ -89,6 +93,10 @@ const run = async () => {
   assert.equal(await count("SELECT COUNT(*) n FROM users WHERE id = ?", bystander), 1);
   assert.equal(await count("SELECT COUNT(*) n FROM meals WHERE user_id = ?", bystander), 1);
   assert.equal(await count("SELECT COUNT(*) n FROM ai_credit_ledger WHERE user_id = ?", bystander), 1);
+  for (const t of ["exercise_scores", "muscle_scores", "strength_summary", "strength_events"]) {
+    assert.equal(await count(`SELECT COUNT(*) n FROM ${t} WHERE user_id = ?`, victim), 0, `${t} victim rows`);
+    assert.equal(await count(`SELECT COUNT(*) n FROM ${t} WHERE user_id = ?`, bystander), 1, `${t} bystander rows`);
+  }
   assert.equal(await count("SELECT COUNT(*) n FROM payment_events WHERE user_id = ?", bystander), 1);
   assert.ok(await MEDIA.head(`meal/${bystander}/m1`));
   console.log("ok  bystander untouched");

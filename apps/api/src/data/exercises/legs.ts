@@ -1,4 +1,4 @@
-/** Legs, hinges and full-body conditioning. Muscles sum to 100. Ratios are provisional (AMI-165). */
+/** Legs, hinges and full-body conditioning. Muscles sum to 100. Ratios calibrated in AMI-165 (effective e1RM vs parent e1RM). */
 import { anchor, defineExercise as ex, derived, type LibraryExercise } from "../../lib/exercise-library/types";
 
 const BW = ["bodyweight"];

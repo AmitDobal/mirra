@@ -1,4 +1,4 @@
-/** Pull lifts: back, rear delts, traps, biceps. Muscles sum to 100. Ratios are provisional (AMI-165). */
+/** Pull lifts: back, rear delts, traps, biceps. Muscles sum to 100. Ratios calibrated in AMI-165 (effective e1RM vs parent e1RM). */
 import { anchor, defineExercise as ex, derived, type LibraryExercise } from "../../lib/exercise-library/types";
 
 const BW = ["bodyweight"];
@@ -39,7 +39,7 @@ export const PULL_EXERCISES: LibraryExercise[] = [
     ["band row", "seated band row", "band bent over row"]),
   ex("inverted_row", "Inverted Row", "pull", BW, { upper_back: 35, lats: 30, biceps: 20, rear_delts: 15 }, "bodyweight",
     ["inverted row", "inverted towel row", "towel row", "doorway row", "bodyweight row", "australian pull up", "table row"],
-    { bwFactor: 0.6, standard: derived("pull_up", 0.6) }),
+    { bwFactor: 0.6, standard: derived("pull_up", 0.7) }),
   ex("face_pull", "Cable Face Pull", "pull", ["cables"], { rear_delts: 45, upper_back: 30, traps: 15, side_delts: 10 }, "load",
     ["face pull", "cable face pull", "rope face pull"]),
   ex("band_face_pull", "Band Face Pull", "pull", ["bands"], { rear_delts: 45, upper_back: 30, traps: 15, side_delts: 10 }, "reps",

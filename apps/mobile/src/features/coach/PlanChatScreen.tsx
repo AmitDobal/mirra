@@ -3,7 +3,6 @@ import { ArrowLeft } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   type ScrollViewInstance,
@@ -18,6 +17,7 @@ import { sx } from "@/theme/sx";
 import { color, font } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { Chip } from "@/ui/Chip";
+import { KEYBOARD_BEHAVIOR } from "@/ui/keyboard";
 
 import { ChatComposer } from "./chat/ChatComposer";
 import { CoachBubble, CoachTyping, UserBubble } from "./chat/ChatBubbles";
@@ -87,7 +87,7 @@ export const PlanChatScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={styles.screen} behavior={KEYBOARD_BEHAVIOR}>
       <View style={[styles.topBar, { marginTop: insets.top }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={handleBack} style={styles.back}>
           <ArrowLeft size={20} color={color.onSurface} />

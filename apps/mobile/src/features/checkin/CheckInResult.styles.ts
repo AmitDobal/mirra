@@ -163,4 +163,5 @@ export const styles = StyleSheet.create({
   ctaText: { fontFamily: font.labelBold, fontSize: type.labelLg.size, color: color.onPrimaryFixed },
   keep: { alignItems: "center", paddingVertical: 8 },
   keepText: { fontFamily: font.label, fontSize: type.labelMd.size, color: color.onSurfaceVariant },
+  rebuildText: { fontFamily: font.label, fontSize: type.labelMd.size, color: color.primaryFixed },
 });

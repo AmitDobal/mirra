@@ -19,6 +19,7 @@ import {
   SelectRow,
   useOnboardingStore,
 } from "@/features/onboarding";
+import { markQuizWalked } from "@/features/onboarding/services/submit-guard";
 import { color } from "@/theme/tokens";
 import { Button } from "@/ui";
 import { sx } from "@/theme/sx";
@@ -40,6 +41,7 @@ const GoalScreen = () => {
   const handleBack = () => router.back();
   const handleContinue = () => {
     if (!goal) return;
+    markQuizWalked();
     router.push("/(onboarding)/experience");
   };
 

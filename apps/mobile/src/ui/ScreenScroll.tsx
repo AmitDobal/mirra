@@ -48,6 +48,9 @@ export const ScreenScroll = ({
         paddingHorizontal: space.margin,
       }}
       showsVerticalScrollIndicator={false}
+      // Sheets/modals render inside this tree: let taps reach their buttons while the
+      // keyboard is up instead of only dismissing it (two-tap Save/Send, AMI-177).
+      keyboardShouldPersistTaps="handled"
       refreshControl={
         onRefresh ? (
           <RefreshControl

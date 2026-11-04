@@ -46,6 +46,8 @@ export type OnboardingPutBody = {
       | null;
     readonly lifestyleNotes?: string | null;
   };
+  /** AMI-177: required to replace a completed onboarding (quiz re-run this session). */
+  readonly reset?: boolean;
 };
 
 export type PlanGenerateResponse = { readonly jobId: string };

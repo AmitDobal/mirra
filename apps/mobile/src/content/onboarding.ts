@@ -1,4 +1,5 @@
 import { CUISINE_OPTIONS } from "./cuisines";
+import { storeCopy } from "./store-copy";
 
 /** Onboarding S01–S14 copy — STITCH-PASTE / wireframes. Screens never hardcode. */
 export const onboardingCopy = {
@@ -333,12 +334,10 @@ export const onboardingCopy = {
     restoreShort: "Restore",
     termsLink: "Terms",
     privacyLink: "Privacy Policy",
-    legal:
-      "Plan auto-renews after 7-day trial. Cancel anytime in Apple ID settings at least 24 hours before renewal.",
+    legal: storeCopy.legal,
     closeLabel: "Close paywall",
     restoreNoneTitle: "No purchases found",
-    restoreNoneBody:
-      "We couldn't find an active Mirra Pro plan on this Apple ID. Start the free trial or try a different account.",
+    restoreNoneBody: storeCopy.restoreNoneBody,
     restoreErrorTitle: "Couldn't restore purchases",
     restoreErrorFallback: "Something went wrong. Check your connection and try again.",
     purchaseErrorFallback: "That purchase didn't go through. Please try again.",
@@ -379,7 +378,7 @@ export const onboardingCopy = {
       "The API cannot accept Google sessions until Better Auth is connected, so you are not signed in yet.",
     googleFailedTitle: "Google sign-in failed",
     googleFailedBody:
-      "Could not create a Mirra session. Check that the API has GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, then try again. In the simulator use Continue as Dev Tester.",
+      "Could not finish Google sign-in. Check your connection and try again.",
     googleConnecting: "Connecting Google…",
     loadingBadge: "Live AI",
     loadingTitle: "Signing you in…",

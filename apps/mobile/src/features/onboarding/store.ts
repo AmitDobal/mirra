@@ -51,6 +51,7 @@ const defaultAnswers: OnboardingAnswers = {
   weekPlan: null,
   planOptions: null,
   selectedPlanKey: "recommended",
+  commitment: null,
 };
 
 type OnboardingStore = OnboardingAnswers & {
@@ -81,6 +82,7 @@ type OnboardingStore = OnboardingAnswers & {
   setWeekPlan: (weekPlan: OnboardingWeekPlan | null) => void;
   setPlanOptions: (planOptions: OnboardingPlanOption[] | null) => void;
   setSelectedPlanKey: (selectedPlanKey: PlanOptionKey) => void;
+  setCommitment: (commitment: { committedAt: number } | null) => void;
   markCompleted: () => void;
   reset: () => void;
 };
@@ -132,6 +134,7 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   setWeekPlan: (weekPlan) => set({ weekPlan }),
   setPlanOptions: (planOptions) => set({ planOptions }),
   setSelectedPlanKey: (selectedPlanKey) => set({ selectedPlanKey }),
+  setCommitment: (commitment) => set({ commitment }),
   markCompleted: () => set({ completed: true }),
   reset: () => set({ ...defaultAnswers }),
 }));

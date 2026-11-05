@@ -1,14 +1,15 @@
 import { Stack } from "expo-router";
 
 import { color } from "@/theme/tokens";
+import { transition } from "@/ui/nav";
 
 const OnboardingLayout = () => (
   <Stack
     screenOptions={{
       headerShown: false,
       contentStyle: { backgroundColor: color.background },
-      animation: "default",
-      gestureEnabled: true,
+      // Forward slides in, swipe / back slides out (Android: iOS-style slide).
+      ...transition("push"),
     }}
   >
     <Stack.Screen name="splash" />
@@ -27,6 +28,7 @@ const OnboardingLayout = () => (
     <Stack.Screen name="mirror" />
     <Stack.Screen name="generating" />
     <Stack.Screen name="week-reveal" />
+    <Stack.Screen name="timeline" />
     <Stack.Screen name="paywall" />
     <Stack.Screen name="auth" />
   </Stack>

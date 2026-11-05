@@ -16,13 +16,15 @@ import {
   WEIGHT_LIST_LIMIT,
 } from "@/lib/api/weight";
 import { errorMessage, logger } from "@/lib/logger";
+import { invalidateGoal } from "@/features/goal/goal-store";
+
+import { WEIGHT_MAX_KG, WEIGHT_MIN_KG } from "./body-weight-input";
 
 export type WeightEntry = LocalWeightLog;
 
 const LOCAL_ID_PREFIX = "wt_";
 
-export const WEIGHT_MIN_KG = 30;
-export const WEIGHT_MAX_KG = 400;
+export { WEIGHT_MAX_KG, WEIGHT_MIN_KG };
 
 type WeightState = {
   /** Newest first. */
@@ -91,6 +93,8 @@ export const useWeightStore = create<WeightState>((set, get) => ({
       set((s) => ({
         entries: sortNewest([remote, ...s.entries.filter((e) => e.id !== localId)]),
       }));
+      // AMI-182: the server refreshed today's goal snapshot; pull it (ETag) for S44/S45/S46.
+      invalidateGoal();
       return true;
     } catch (err) {
       logger.error("weight.log_api_failed", { message: errorMessage(err) });

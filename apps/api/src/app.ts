@@ -20,6 +20,7 @@ import { insightsRoutes } from "./routes/insights";
 import { mealPlanRoutes } from "./routes/meal-plan";
 import { mediaRoutes } from "./routes/media";
 import { meRoutes } from "./routes/me";
+import { meProfileRoutes } from "./routes/me-profile";
 import { notificationRoutes } from "./routes/notifications";
 import { nutritionRoutes } from "./routes/nutrition";
 import { onboardingRoutes } from "./routes/onboarding";
@@ -35,6 +36,7 @@ import { workoutRoutes } from "./routes/workouts";
 import { workoutExerciseRoutes } from "./routes/workout-exercises";
 import { exerciseRoutes } from "./routes/exercises";
 import { strengthRoutes } from "./routes/strength";
+import { goalRoutes } from "./routes/goal";
 
 export const createApp = () => {
   const app = new Hono<{ Bindings: MirraEnv; Variables: AuthVars }>();
@@ -55,8 +57,9 @@ export const createApp = () => {
         "x-user-id",
         "x-mirra-ai-mode",
         "expo-origin",
+        "If-None-Match",
       ],
-      exposeHeaders: ["x-request-id", "Set-Cookie", "set-auth-token"],
+      exposeHeaders: ["x-request-id", "Set-Cookie", "set-auth-token", "ETag"],
       credentials: true,
     }),
   );
@@ -65,6 +68,7 @@ export const createApp = () => {
   app.route("/", devAuthRoutes);
   app.route("/", healthRoutes);
   app.route("/", meRoutes);
+  app.route("/", meProfileRoutes);
   app.route("/", onboardingRoutes);
   app.route("/", planRoutes);
   app.route("/", todayRoutes);
@@ -91,6 +95,7 @@ export const createApp = () => {
   app.route("/", notificationRoutes);
   app.route("/", exerciseRoutes);
   app.route("/", strengthRoutes);
+  app.route("/", goalRoutes);
 
   app.onError((err, c) => {
     if (err instanceof ApiError) {

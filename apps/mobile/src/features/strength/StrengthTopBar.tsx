@@ -1,10 +1,10 @@
 import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useEffect } from "react";
-import { BackHandler, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { color, radius, space } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
+import { useColdBackFallback } from "@/ui/nav/use-cold-back";
 
 type Props = {
   readonly title: string;
@@ -21,14 +21,7 @@ const goBack = () => {
 /** 56pt top bar (S34 / S37): 40pt round back button + centered caps title. */
 export const StrengthTopBar = ({ title, tone = "muted" }: Props) => {
   // Android hardware back on a cold-linked screen would otherwise close the app.
-  useEffect(() => {
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (router.canGoBack()) return false;
-      router.replace("/(tabs)/you");
-      return true;
-    });
-    return () => sub.remove();
-  }, []);
+  useColdBackFallback(() => router.replace("/(tabs)/you"));
 
   return (
     <View style={styles.bar}>

@@ -1,9 +1,9 @@
 import { create } from "zustand";
 
-import { getLastSetForExercise } from "@/db";
 import type { PlanExercise, PlanWorkout } from "@/lib/api";
 import type { ApiTierChange } from "@/lib/api/strength-exercise";
 import { errorMessage, logger } from "@/lib/logger";
+import { markWorkoutOpen } from "./use-open-timing";
 
 import {
   activeSeconds,
@@ -15,10 +15,12 @@ import {
   persistRpe,
   persistSet,
   planDraft,
+  prefillDraft,
   type SessionSource,
   type SetDraft,
   type SetSlot,
 } from "./workout-persist";
+import { createSessionLine } from "./session-line";
 import { createFinisher } from "./workout-finish";
 import { loggedKey, type LoggedSets } from "./workout-volume";
 
@@ -26,7 +28,8 @@ export type { SessionSource, SetDraft, SetSlot } from "./workout-persist";
 
 type WorkoutState = {
   readonly sessionId: string | null;
-  readonly sessionSource: SessionSource;
+  /** "pending" while the session row opens in the background (HUD is already live). */
+  readonly sessionSource: SessionSource | "pending";
   readonly workoutTitle: string;
   readonly exercises: readonly PlanExercise[];
   readonly exerciseIndex: number;
@@ -48,6 +51,7 @@ type WorkoutState = {
   readonly tierChanges: readonly ApiTierChange[];
   /** Every set logged this session (kg × reps), for the S17 volume. */
   readonly logged: LoggedSets;
+  /** Sync: the HUD can render (and navigate) at once; the session opens in the background. */
   readonly start: (workout: PlanWorkout | null, focusExerciseId?: string) => Promise<void>;
   /** Jump to one exercise; starts a session first if none is active. */
   readonly openExercise: (workout: PlanWorkout | null, exerciseId: string) => Promise<void>;
@@ -63,12 +67,14 @@ type WorkoutState = {
   readonly swapExercise: () => void;
   readonly setRpe: (rpe: number) => void;
   readonly finish: () => Promise<void>;
+  /** S17 Done: finish in the background, then reset unless a new workout started. */
+  readonly close: () => void;
   readonly reset: () => void;
 };
 
 const empty = {
   sessionId: null as string | null,
-  sessionSource: "none" as SessionSource,
+  sessionSource: "none" as SessionSource | "pending",
   workoutTitle: "No workout",
   exercises: [] as PlanExercise[],
   exerciseIndex: 0,
@@ -88,11 +94,25 @@ const empty = {
   logged: {} as LoggedSets,
 };
 
+/** Let S17 slide away before its data clears. */
+const CLOSE_RESET_DELAY_MS = 600;
+
 export const useWorkoutStore = create<WorkoutState>((set, get) => {
+  const line = createSessionLine<SessionSource>(
+    (opened) => set(opened),
+    (err) => logger.warn("workout.session_line.failed", { message: errorMessage(err) }),
+  );
+  /** Line generation whose finish already stamped `finished` + duration. */
+  let finalizedGen = -1;
+  const source = (): SessionSource => {
+    const src = get().sessionSource;
+    return src === "pending" ? "none" : src;
+  };
   const finisher = createFinisher<ApiTierChange>(
     {
-      complete: (id, rpe) => persistComplete(get().sessionSource, id, rpe),
-      saveRpe: (id, rpe) => persistRpe(get().sessionSource, id, rpe),
+      // Logged sets reach the server before the complete scores them.
+      complete: (id, rpe) => line.drained().then(() => persistComplete(source(), id, rpe)),
+      saveRpe: (id, rpe) => persistRpe(source(), id, rpe),
     },
     {
       sessionId: () => get().sessionId,
@@ -102,29 +122,8 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       },
     },
   );
-  /** Prefill: plan target → last logged set (SQLite) → 0 kg × plan reps; only if untouched. */
-  const hydrateDraft = async (ex: PlanExercise): Promise<void> => {
-    if (ex.targetLoadKg != null) return;
-    const before = get().draft;
-    try {
-      const last = await getLastSetForExercise(ex.id, ex.name);
-      const s = get();
-      const stillHere = s.exercises[s.exerciseIndex]?.id === ex.id;
-      const untouched = s.draft === before && !s.sets.some((x) => x.done);
-      if (!last || !stillHere || !untouched) return;
-      set({
-        draft: {
-          weightKg: last.weightKg ?? before.weightKg,
-          reps: last.reps ?? before.reps,
-        },
-      });
-    } catch (err) {
-      logger.warn("workout.prefill.failed", { message: errorMessage(err) });
-    }
-  };
-
   const enterExercise = (ex: PlanExercise, exerciseIndex: number) => {
-    queueMicrotask(() => void hydrateDraft(ex));
+    queueMicrotask(() => void prefillDraft(ex, get, (draft) => set({ draft })));
     return {
       exerciseIndex,
       setIndex: 1,
@@ -138,7 +137,9 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
     ...empty,
 
     start: async (workout, focusExerciseId) => {
+      markWorkoutOpen();
       if (!workout || workout.exercises.length === 0) {
+        line.cancel();
         set({
           ...empty,
           workoutTitle: workout?.title ?? "No workout loaded",
@@ -151,30 +152,24 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
         workout.exercises.findIndex((e) => e.id === focusExerciseId),
       );
       const first = workout.exercises[focusIdx]!;
-      const { sessionId, sessionSource } = await openSession(workout.id);
       set({
-        sessionId,
-        sessionSource,
+        ...empty,
+        sessionSource: "pending",
         workoutTitle: workout.title,
         exercises: [...workout.exercises],
         ...enterExercise(first, focusIdx),
-        paused: false,
         startedAt: Date.now(),
-        pausedTotalMs: 0,
-        pauseStartedAt: null,
-        kcal: 0,
-        rpe: null,
-        finished: false,
-        tierChanges: [],
-        logged: {},
         durationMin: workout.durationMin,
       });
+      // Not awaited: callers navigate now; sets queue behind the open (session-line).
+      void line.begin(() => openSession(workout.id));
     },
 
     openExercise: async (workout, exerciseId) => {
-      const { sessionId, finished, exercises, exerciseIndex } = get();
+      const { sessionId, sessionSource, finished, exercises, exerciseIndex } = get();
       const idx = exercises.findIndex((e) => e.id === exerciseId);
-      if (!sessionId || finished || idx < 0) return get().start(workout, exerciseId);
+      const live = Boolean(sessionId) || sessionSource === "pending";
+      if (!live || finished || idx < 0) return get().start(workout, exerciseId);
       if (idx !== exerciseIndex) set(enterExercise(exercises[idx]!, idx));
     },
 
@@ -206,22 +201,13 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
     },
 
     logSet: async () => {
-      const { sets, setIndex, exerciseIndex, exercises, kcal, sessionId, draft, editingSet } =
-        get();
+      const { sets, setIndex, exerciseIndex, exercises, kcal, draft, editingSet } = get();
       const ex = exercises[exerciseIndex];
       if (!ex) return;
       const n = editingSet ?? setIndex;
-
-      if (sessionId) {
-        await persistSet(get().sessionSource, sessionId, {
-          exerciseId: ex.id,
-          exerciseName: ex.name,
-          setIndex: n,
-          weightKg: draft.weightKg,
-          reps: draft.reps,
-          completed: true,
-        });
-      }
+      // Optimistic: the chip flips now; the write queues behind the session open.
+      const body = { exerciseId: ex.id, exerciseName: ex.name, setIndex: n, ...draft, completed: true };
+      void line.enqueue((s) => persistSet(s.sessionSource, s.sessionId, body));
 
       const nextSets = sets.map((s) =>
         s.n === n ? { ...s, done: true, weightKg: draft.weightKg, reps: draft.reps } : s,
@@ -239,8 +225,8 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       }
       const nextEx = exerciseIndex + 1;
       if (nextEx >= exercises.length) {
-        set({ sets: nextSets, kcal: nextKcal, finished: true });
-        await get().finish();
+        set({ sets: nextSets, kcal: nextKcal });
+        await get().finish(); // stamps `finished` → HUD leaves for S17
         return;
       }
       set({ ...enterExercise(exercises[nextEx]!, nextEx), kcal: nextKcal });
@@ -248,22 +234,15 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
 
     togglePause: () =>
       set((s) => {
-        if (!s.paused) {
-          return { paused: true, pauseStartedAt: Date.now() };
-        }
+        if (!s.paused) return { paused: true, pauseStartedAt: Date.now() };
         const add = s.pauseStartedAt ? Date.now() - s.pauseStartedAt : 0;
-        return {
-          paused: false,
-          pauseStartedAt: null,
-          pausedTotalMs: s.pausedTotalMs + add,
-        };
+        return { paused: false, pauseStartedAt: null, pausedTotalMs: s.pausedTotalMs + add };
       }),
 
     skipExercise: () => {
       const { exerciseIndex, exercises } = get();
       const nextEx = exerciseIndex + 1;
       if (nextEx >= exercises.length) {
-        set({ finished: true });
         void get().finish();
         return;
       }
@@ -279,14 +258,31 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
 
     setRpe: (rpe) => set({ rpe }),
 
-    finish: () => {
+    finish: async () => {
       // HUD Finish completes; S17 Done only saves a changed RPE (no second complete).
-      if (!finisher.started(get().sessionId)) {
+      // Stamped synchronously so the HUD can leave for S17 before the network returns.
+      if (finalizedGen !== line.generation()) {
+        finalizedGen = line.generation();
         set({ finished: true, durationMin: Math.max(1, Math.round(get().elapsedSec() / 60)) });
       }
+      await line.ready();
       return finisher.finish();
     },
 
-    reset: () => set({ ...empty }),
+    close: () => {
+      const gen = line.generation();
+      void get()
+        .finish()
+        .finally(() => {
+          setTimeout(() => {
+            if (line.generation() === gen) get().reset();
+          }, CLOSE_RESET_DELAY_MS);
+        });
+    },
+
+    reset: () => {
+      line.cancel();
+      set({ ...empty });
+    },
   };
 });

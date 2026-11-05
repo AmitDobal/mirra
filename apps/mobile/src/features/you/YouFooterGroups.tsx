@@ -1,12 +1,20 @@
 import { LogOut, Trash2 } from "lucide-react-native";
+import { Fragment } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
+import { profileCopy } from "@/content/profile";
+import { storeCopy } from "@/content/store-copy";
 import { color } from "@/theme/tokens";
+import { CapsLabel } from "@/ui/CapsLabel";
 import { sx } from "@/theme/sx";
 
-import { Divider, Group, Row, StatusRow } from "./you-settings";
+import { Card, Divider, Group, StatusRow, ValueRow } from "./you-settings";
+import { t } from "./you-text";
 
 type Props = {
+  /** "Pro · Active", "Plan v2 · active", … */
+  readonly subscriptionLine: string;
+  readonly onManageSub: () => void;
   readonly accountLabels: readonly string[];
   readonly onPrivacy: () => void;
   readonly onTerms: () => void;
@@ -15,8 +23,10 @@ type Props = {
   readonly deleting?: boolean;
 };
 
-/** Connected accounts + hardware + legal + sign out + delete account. */
+/** S41 Account (subscription + linked providers), Connected, Legal, Sign out, Danger zone. */
 export const YouFooterGroups = ({
+  subscriptionLine,
+  onManageSub,
   accountLabels,
   onPrivacy,
   onTerms,
@@ -25,21 +35,30 @@ export const YouFooterGroups = ({
   deleting = false,
 }: Props) => (
   <>
-    <Group title="Connected accounts">
+    <Group title={profileCopy.sections.account}>
+      <ValueRow
+        title={profileCopy.subscription}
+        sub={subscriptionLine}
+        value={profileCopy.manage}
+        onPress={onManageSub}
+      />
       {accountLabels.length > 0 ? (
-        accountLabels.map((label, i) => (
-          <View key={label}>
-            {i > 0 ? <Divider /> : null}
+        accountLabels.map((label) => (
+          <Fragment key={label}>
+            <Divider />
             <StatusRow title={label} meta="Connected" />
-          </View>
+          </Fragment>
         ))
       ) : (
-        <StatusRow title="No linked accounts" meta="None" />
+        <>
+          <Divider />
+          <StatusRow title="No linked accounts" meta="None" soon />
+        </>
       )}
     </Group>
 
     <Group title="Connected">
-      <StatusRow title="Apple Health / Watch" meta="Soon" soon />
+      <StatusRow title={storeCopy.healthRow} meta="Soon" soon />
       <Divider />
       <StatusRow title="Withings Body Scan" meta="Soon" soon />
       <Divider />
@@ -47,42 +66,41 @@ export const YouFooterGroups = ({
     </Group>
 
     <Group title="Legal">
-      <Row title="Privacy Policy" meta="Open in browser" onPress={onPrivacy} />
+      <ValueRow title="Privacy Policy" value="Open in browser" onPress={onPrivacy} />
       <Divider />
-      <Row title="Terms of Use" meta="Open in browser" onPress={onTerms} />
+      <ValueRow title="Terms of Use" value="Open in browser" onPress={onTerms} />
     </Group>
 
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Log out"
       onPress={onSignOut}
-      style={sx("mt-space-md flex-row items-center justify-center gap-space-sm py-space-md")}
+      style={sx("mt-6 h-12 flex-row items-center justify-center gap-2 self-center px-6")}
     >
-      <LogOut size={16} color={color.error} />
-      <Text style={sx("font-label-bold text-label-lg text-error")}>Sign out</Text>
+      <LogOut size={18} color={color.error} />
+      <Text style={t.signOut}>Sign out</Text>
     </Pressable>
 
-    <Group title="Danger zone">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Delete account"
-        accessibilityState={{ disabled: deleting, busy: deleting }}
-        disabled={deleting}
-        onPress={onDeleteAccount}
-        style={sx("flex-row items-center gap-space-sm px-space-md pt-space-md")}
-      >
-        {deleting ? (
-          <ActivityIndicator size="small" color={color.error} />
-        ) : (
-          <Trash2 size={16} color={color.error} />
-        )}
-        <Text style={sx("font-label-bold text-label-lg text-error")}>
-          {deleting ? "Deleting…" : "Delete account"}
-        </Text>
-      </Pressable>
-      <Text style={sx("px-space-md pb-space-md pt-1 font-body text-body-sm text-on-surface-variant")}>
-        Permanently erases your account, meals, workouts and photos.
-      </Text>
-    </Group>
+    <View style={sx("mt-4")}>
+      <CapsLabel style={sx("mb-2 px-1")}>Danger zone</CapsLabel>
+      <Card>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Delete account"
+          accessibilityState={{ disabled: deleting, busy: deleting }}
+          disabled={deleting}
+          onPress={onDeleteAccount}
+          style={sx("p-4")}
+        >
+          <View style={sx("flex-row items-center gap-2")}>
+            {deleting ? <ActivityIndicator size="small" color={color.error} /> : <Trash2 size={18} color={color.error} />}
+            <Text style={t.signOut}>{deleting ? "Deleting…" : "Delete account"}</Text>
+          </View>
+          <Text style={[sx("font-body text-body-sm text-on-surface-variant"), { marginTop: 6 }]}>
+            Permanently erases your account, meals, workouts and photos.
+          </Text>
+        </Pressable>
+      </Card>
+    </View>
   </>
 );

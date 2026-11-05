@@ -1,8 +1,15 @@
-/** YYYY-MM-DD helpers (UTC calendar for local-first stubs). */
+import { localDayBoundsMs, localTodayIso } from "@/lib/datetime";
+
+/**
+ * YYYY-MM-DD helpers for the local-first stubs.
+ * "Today" and day bounds follow the device calendar (AMI-183); `mondayOf` /
+ * `addDays` are pure calendar arithmetic on date strings (UTC math is exact there).
+ */
 
 export const toDateString = (d: Date): string => d.toISOString().slice(0, 10);
 
-export const todayUtc = (): string => toDateString(new Date());
+/** Device-local today. */
+export const todayLocal = (): string => localTodayIso();
 
 export const mondayOf = (isoDate: string): string => {
   const d = new Date(`${isoDate}T00:00:00.000Z`);
@@ -18,7 +25,5 @@ export const addDays = (isoDate: string, days: number): string => {
   return toDateString(d);
 };
 
-export const dayBoundsMs = (isoDate: string): { start: number; end: number } => {
-  const start = Date.parse(`${isoDate}T00:00:00.000Z`);
-  return { start, end: start + 86_400_000 };
-};
+/** Device-local midnight-to-midnight bounds for `isoDate`. */
+export const dayBoundsMs = (isoDate: string): { start: number; end: number } => localDayBoundsMs(isoDate);

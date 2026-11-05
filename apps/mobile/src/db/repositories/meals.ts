@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { getDb } from "../client";
-import { dayBoundsMs, todayUtc } from "../dates";
+import { dayBoundsMs, todayLocal } from "../dates";
 import { getLocalUserId, newId, nowMs } from "../ids";
 import { MealSlotSchema, type FuelToday, type LocalMeal } from "../types";
 import { getCurrentPlan } from "./plans";
@@ -144,7 +144,7 @@ export const deleteLocalMeal = async (
 
 export const getFuelToday = async (
   userId: string = getLocalUserId(),
-  date: string = todayUtc(),
+  date: string = todayLocal(),
 ): Promise<FuelToday> => {
   const db = await getDb();
   const { start, end } = dayBoundsMs(date);

@@ -1,3 +1,4 @@
+import { localTodayIso } from "@/lib/datetime";
 import { create } from "zustand";
 
 import { copy } from "@/content/copy";
@@ -9,6 +10,7 @@ import {
   type CoachVector,
   type CurrentPlan,
 } from "@/lib/api";
+import { openProUpsell } from "@/features/you/AiLimitSheet";
 import { MirraApiError } from "@/lib/api/client";
 import { errorMessage, logger } from "@/lib/logger";
 import { usePlanStore } from "@/stores/plan-store";
@@ -54,7 +56,10 @@ type CoachState = {
   readonly clearNotice: () => void;
 };
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = localTodayIso;
+
+/** API `requirePro` (rebuild preview/apply): show the Pro upsell, not a generic error. */
+const proRequired = (err: unknown): boolean => err instanceof MirraApiError && err.status === 403;
 
 /** Ignore a preview response that lands after Keep / a newer preview. */
 let previewSeq = 0;
@@ -138,6 +143,11 @@ export const useCoachStore = create<CoachState>((set, get) => ({
       logger.info("coach.rebuild.preview.ok", { diffs: res.diffs.length });
     } catch (err) {
       if (seq !== previewSeq) return;
+      if (proRequired(err)) {
+        set({ ...CLEARED_PREVIEW });
+        openProUpsell();
+        return;
+      }
       logger.error("coach.rebuild.preview.failed", {
         message: errorMessage(err),
         status: err instanceof MirraApiError ? err.status : undefined,
@@ -160,6 +170,10 @@ export const useCoachStore = create<CoachState>((set, get) => ({
         message: errorMessage(err),
         status: err instanceof MirraApiError ? err.status : undefined,
       });
+      if (proRequired(err)) {
+        openProUpsell();
+        return false;
+      }
       set({ previewError: copy.coach.rebuildApplyFailed });
       return false;
     }

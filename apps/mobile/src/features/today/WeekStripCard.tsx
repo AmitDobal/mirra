@@ -1,15 +1,16 @@
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useMemo } from "react";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { AttendanceState, PlanDay } from "@/lib/api";
 import { localTodayIso } from "@/lib/datetime";
 import { color } from "@/theme/tokens";
 import { sx } from "@/theme/sx";
 
-import { PresenceDot } from "./PresenceDot";
+import { useAttendanceStore } from "./attendance-store";
+import { DayMarker } from "./DayMarker";
 import { TodayIconBtn } from "./TodayIconBtn";
-
-const LETTERS = ["M", "T", "W", "T", "F", "S", "S"] as const;
+import { buildStrip, markerFor, mondayOf, type DayMarker as Marker } from "./week-strip-model";
 
 const WEEKDAY_FORMAT: Intl.DateTimeFormatOptions = { weekday: "long" };
 
@@ -21,37 +22,26 @@ export const presenceFor = (
 ): AttendanceState =>
   date && date <= today ? (attendance[date] ?? "none") : "none";
 
-const dayLabel = (
-  letter: string,
-  dayNum: number,
-  date: string | undefined,
-  state: AttendanceState,
-) => {
-  if (!date) return `${letter} ${dayNum}`;
-  const weekday = new Date(`${date}T12:00:00`).toLocaleDateString(
-    "en-US",
-    WEEKDAY_FORMAT,
-  );
+const dayLabel = (date: string, dayNum: number, marker: Marker) => {
+  const weekday = new Date(`${date}T12:00:00`).toLocaleDateString("en-US", WEEKDAY_FORMAT);
   const base = `${weekday} ${dayNum}`;
-  if (state === "none") return base;
-  return state === "active"
-    ? `${base}, you were here and logged activity`
-    : `${base}, you were here`;
+  if (marker === "flame") return `${base}, workout done`;
+  return marker === "dot" ? `${base}, you were here` : base;
 };
 
 type Props = {
   readonly weekDays: readonly PlanDay[];
   readonly dayIndex: number;
-  /** Presence by date from `attendance-store`; dots fade in once loaded. */
+  /** Presence by date from `attendance-store`; markers fade in once loaded. */
   readonly attendance?: Readonly<Record<string, AttendanceState>>;
-  /** Local today (`YYYY-MM-DD`); later days never get a dot. */
+  /** Local today (`YYYY-MM-DD`); later days never get a marker. */
   readonly today?: string;
   readonly onPrev: () => void;
   readonly onNext: () => void;
   readonly onSelectDay: (index: number) => void;
 };
 
-/** S15c compact week strip — one slim row (chevrons + 7 days), no month header. */
+/** S15c compact week strip (S42 markers): flame = workout done, muted dot = presence only. */
 export const WeekStripCard = ({
   weekDays,
   dayIndex,
@@ -61,79 +51,60 @@ export const WeekStripCard = ({
   onNext,
   onSelectDay,
 }: Props) => {
-  const strip =
-    weekDays.length > 0
-      ? weekDays.slice(0, 7).map((d, i) => ({
-          letter: LETTERS[i] ?? "·",
-          dayNum: Number(d.date.slice(-2)) || i + 1,
-          active: i === dayIndex % 7,
-          index: i,
-          date: d.date as string | undefined,
-        }))
-      : Array.from({ length: 7 }, (_, i) => ({
-          letter: LETTERS[i]!,
-          dayNum: new Date().getDate() - 3 + i,
-          active: i === 3,
-          index: i,
-          date: undefined as string | undefined,
-        }));
+  const workoutByDate = useAttendanceStore((s) => s.workoutByDate);
+  const loadAttendance = useAttendanceStore((s) => s.load);
+  const planDates = useMemo(() => weekDays.map((d) => d.date), [weekDays]);
+  const strip = useMemo(() => buildStrip(planDates, dayIndex, today), [planDates, dayIndex, today]);
+  const noPlan = planDates.length === 0;
+
+  // No plan yet: the screen only loads presence for plan weeks, so fetch the real week here.
+  useEffect(() => {
+    if (noPlan) void loadAttendance(mondayOf(today));
+  }, [noPlan, loadAttendance, today]);
 
   return (
-    <View
-      style={sx(
-        "mb-space-sm flex-row items-center rounded-full bg-surface-container-low px-1 py-1",
-      )}
-    >
+    <View style={sx("mb-space-sm flex-row items-center rounded-full bg-surface-container-low px-1 py-1")}>
       <TodayIconBtn label="Previous day" Icon={ChevronLeft} small onPress={onPrev} />
       <View style={sx("flex-1 flex-row justify-between")}>
         {strip.map((day) => {
-          const presence = presenceFor(day.date, today, attendance);
+          const marker = markerFor(day.date, today, attendance, workoutByDate);
+          const ring = day.isToday && !day.selected;
           return (
             <Pressable
-              key={`${day.dayNum}-${day.index}`}
+              key={day.date}
               accessibilityRole="button"
-              accessibilityLabel={dayLabel(day.letter, day.dayNum, day.date, presence)}
-              accessibilityState={{ selected: day.active }}
+              accessibilityLabel={dayLabel(day.date, day.dayNum, marker)}
+              accessibilityState={{ selected: day.selected }}
               onPress={() => onSelectDay(day.index)}
-              style={sx("items-center gap-0.5 py-0.5")}
+              style={sx("items-center")}
             >
               <Text
                 style={sx(
-                  `font-label text-label-caps ${
-                    day.active ? "text-primary-fixed" : "text-on-surface-variant"
-                  }`,
+                  `font-label text-label-caps ${day.selected ? "text-primary-fixed" : "text-on-surface-variant"}`,
                 )}
               >
                 {day.letter}
               </Text>
               <View
+                // Remount on state change: Android drops borderRadius when a fill is added late.
+                key={day.selected ? "selected" : ring ? "ring" : "plain"}
                 style={[
-                  sx(
-                    `h-8 w-8 items-center justify-center rounded-full ${
-                      day.active ? "bg-primary-fixed" : ""
-                    }`,
-                  ),
-                  day.active
-                    ? {
-                        shadowColor: color.primaryFixed,
-                        shadowOpacity: 0.35,
-                        shadowRadius: 8,
-                        shadowOffset: { width: 0, height: 0 },
-                      }
-                    : null,
+                  styles.circle,
+                  day.selected ? styles.selected : null,
+                  ring ? styles.todayRing : null,
                 ]}
               >
                 <Text
                   style={sx(
                     `font-headline-sm text-label-md ${
-                      day.active ? "text-on-primary-fixed" : "text-on-surface"
+                      day.selected ? "text-on-primary-fixed" : ring ? "text-primary-fixed" : "text-on-surface"
                     }`,
                   )}
                 >
                   {day.dayNum}
                 </Text>
               </View>
-              <PresenceDot state={presence} />
+              <DayMarker marker={marker} />
             </Pressable>
           );
         })}
@@ -142,3 +113,41 @@ export const WeekStripCard = ({
     </View>
   );
 };
+
+const CIRCLE = 32;
+
+/**
+ * Explicit radius (not `rounded-full` 9999) + no iOS shadow props on Android:
+ * Android QA saw the selected past day drawn as a square. Every state keeps the same
+ * box (fixed size, radius, 1.5 border, background) so only colors change, and the
+ * view remounts per state; Android also clips to the circle.
+ */
+const styles = StyleSheet.create({
+  circle: {
+    width: CIRCLE,
+    height: CIRCLE,
+    borderRadius: CIRCLE / 2,
+    borderWidth: 1.5,
+    borderColor: "transparent",
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({ android: { overflow: "hidden" as const }, default: {} }),
+  },
+  selected: {
+    backgroundColor: color.primaryFixed,
+    borderColor: color.primaryFixed,
+    ...Platform.select({
+      ios: {
+        shadowColor: color.primaryFixed,
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 0 },
+      },
+      default: {},
+    }),
+  },
+  todayRing: {
+    borderColor: color.primaryFixed,
+  },
+});

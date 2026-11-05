@@ -3,11 +3,11 @@ import { Hono } from "hono";
 
 import { createDb } from "../db";
 import type { MirraEnv } from "../env";
-import { todayUtc } from "../lib/dates";
 import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { loadNutritionSummary } from "../services/nutrition-summary";
+import { dateOrUserToday } from "../services/user-day";
 
 export const nutritionRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -17,11 +17,13 @@ export const nutritionRoutes = new Hono<{
 /** Day / week / month kcal + macro + workout series for the history charts. */
 nutritionRoutes.get("/v1/nutrition/summary", requireAuth, async (c) => {
   const q = parseBody(HistoryQuerySchema, c.req.query());
+  const db = createDb(c.env.DB);
+  const userId = c.get("userId");
   const body: NutritionSummaryResponse = await loadNutritionSummary(
-    createDb(c.env.DB),
-    c.get("userId"),
+    db,
+    userId,
     q.range,
-    q.anchor ?? todayUtc(),
+    await dateOrUserToday(db, userId, q.anchor),
   );
   return c.json(body);
 });

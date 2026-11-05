@@ -15,6 +15,8 @@ type Props = {
   onPress: () => void;
   accessibilityLabel?: string;
   icon?: ReactNode;
+  /** Icon before the label (S44 "Log weight"); default after. */
+  iconLeading?: boolean;
   variant?: "lime" | "ghost" | "dark";
   /** @deprecated NativeWind removed */ className?: string;
   style?: StyleProp<ViewStyle>;
@@ -26,6 +28,7 @@ export const LimeCta = ({
   onPress,
   accessibilityLabel,
   icon,
+  iconLeading = false,
   variant = "lime",
   style,
 }: Props) => {
@@ -54,8 +57,9 @@ export const LimeCta = ({
         style,
       ]}
     >
+      {icon && iconLeading ? <View>{icon}</View> : null}
       <Text style={[styles.label, { color: textColor }]}>{label}</Text>
-      {icon ? <View>{icon}</View> : null}
+      {icon && !iconLeading ? <View>{icon}</View> : null}
     </Pressable>
   );
 };

@@ -1,5 +1,9 @@
+import type { GoalImpact } from "@mirra/contracts";
+
 import { apiFetch } from "./client";
 import type { DayMealPlan } from "./meal-plan";
+
+export type { GoalImpact };
 
 export type CoachReviseScope = "auto" | "meal" | "workout" | "both";
 
@@ -124,6 +128,8 @@ export type CoachReviseResponse = {
   readonly expiresAt?: number | null;
   /** v2 typed diff rows (contracts `coach-diff.ts`). Absent on older APIs: use `changes`. */
   readonly items?: readonly ReviseItem[];
+  /** AMI-181: deterministic goal-estimate line for the proposal (null when no goal). */
+  readonly goalImpact?: GoalImpact | null;
 };
 
 /** POST /v1/coach/revise — chat message that edits the existing meal + workout plans. */

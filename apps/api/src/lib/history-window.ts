@@ -1,4 +1,4 @@
-import { addDays, mondayOf } from "./dates";
+import { addDays, dayBoundsIn, mondayOf } from "./dates";
 
 export type HistoryRange = "day" | "week" | "month";
 
@@ -29,8 +29,11 @@ export const historyWindow = (range: HistoryRange, anchor: string): HistoryWindo
   return { from, to, dates };
 };
 
-/** [start, end) ms covering every day in the window. */
-export const windowBoundsMs = (w: Pick<HistoryWindow, "from" | "to">): { start: number; end: number } => ({
-  start: Date.parse(`${w.from}T00:00:00.000Z`),
-  end: Date.parse(`${addDays(w.to, 1)}T00:00:00.000Z`),
+/** [start, end) ms covering every day in the window, as lived in IANA zone `tz` (AMI-183). */
+export const windowBoundsMs = (
+  w: Pick<HistoryWindow, "from" | "to">,
+  tz = "UTC",
+): { start: number; end: number } => ({
+  start: dayBoundsIn(tz, w.from).start,
+  end: dayBoundsIn(tz, w.to).end,
 });

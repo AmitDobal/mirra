@@ -1,4 +1,4 @@
-import { addDays, mondayOf, todayUtc } from "../../db/dates";
+import { addDays, mondayOf, todayLocal } from "../../db/dates";
 import type { PlanSummary } from "../../db/types";
 import {
   ageRecoveryHint,
@@ -145,7 +145,7 @@ const macroTargets = (input: HeuristicPlanInput): PlanSummary => {
 export const generateHeuristicWeekPlan = (
   input: HeuristicPlanInput = {},
 ): HeuristicPlanResult => {
-  const weekStart = input.weekStart ?? mondayOf(todayUtc());
+  const weekStart = input.weekStart ?? mondayOf(todayLocal());
   const trainDays = new Set(
     (input.trainDays?.length ? input.trainDays : [1, 3, 5]).filter(
       (d) => d >= 1 && d <= 7,

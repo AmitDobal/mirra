@@ -6,6 +6,7 @@ import { planDays, plans, workoutExercises, workouts } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { getExerciseTagger } from "../lib/exercise-tagger";
 import { newId } from "../lib/id";
+import { enforceTrainDays } from "../lib/plan-train-days";
 import type { PlanGenerateResult } from "../ports/plan-generator";
 import { resolveExerciseNames } from "./exercise-resolve";
 
@@ -18,6 +19,8 @@ type PersistOpts = {
   parentPlanId?: string | null;
   /** Picks the ExerciseTagger. Omitted → heuristic tagger (library + cache still apply). */
   env?: MirraEnv;
+  /** AMI-184 last guard: lift days are fitted to these (1 = Mon .. 7 = Sun). Omitted → as generated. */
+  trainDays?: readonly number[];
 };
 
 /** name → canonical id for every plan exercise. One tagger call per plan; never fails the write. */
@@ -42,11 +45,13 @@ export const persistGeneratedPlan = async ({
   userId,
   weekStart,
   source,
-  generated,
+  generated: raw,
   parentPlanId = null,
   env,
+  trainDays,
 }: PersistOpts): Promise<{ planId: string; version: number }> => {
   const now = new Date();
+  const generated = enforceTrainDays(raw, trainDays, weekStart, `persist-plan.${source}`);
   const canonicalIds = await canonicalIdsFor(db, env, generated);
   const [latest] = await db
     .select({ version: plans.version })

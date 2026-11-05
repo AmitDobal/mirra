@@ -2,10 +2,10 @@ import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
 import { sanitizeAiCopy } from "../lib/ai-copy";
 import { estimateMicros } from "../lib/ai-pricing";
-import { todayUtc } from "../lib/dates";
 import { getSpeechSynthesizer } from "../lib/speech";
 import { assertCanSpend, recordUsage } from "./ai-budget";
 import { buildTodayActions } from "./today-actions";
+import { dateOrUserToday } from "./user-day";
 import { loadTodayActionsInput } from "./today-actions-inputs";
 import { loadTrainerPersona } from "./trainer-persona";
 import { buildVoiceCueText } from "./voice-cue-text";
@@ -37,7 +37,8 @@ const cloudTtsEnabled = (env: MirraEnv): boolean =>
  * Today's spoken coach cue. Text from today actions (no LLM).
  * Cloud TTS (ElevenLabs) is metered; text-only (device TTS on mobile) is free and uncapped.
  */
-export const getTodayVoiceCue = async (ctx: VoiceCueCtx, date = todayUtc()): Promise<VoiceCue> => {
+export const getTodayVoiceCue = async (ctx: VoiceCueCtx, dateArg?: string): Promise<VoiceCue> => {
+  const date = await dateOrUserToday(ctx.db, ctx.userId, dateArg);
   const paid = cloudTtsEnabled(ctx.env);
   const summary = paid ? await assertCanSpend(ctx.db, ctx.userId, "voice_tts") : null;
 

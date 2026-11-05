@@ -1,3 +1,4 @@
+import { localTodayIso } from "@/lib/datetime";
 import { copy } from "@/content/copy";
 import { setCached } from "@/db";
 import { withAiCache } from "@/lib/ai";
@@ -36,7 +37,7 @@ const ADVISE_TTL_MS = 15 * 60_000;
 const ADVISE_MIN_REFRESH_MS = 60_000;
 const COACH_OFFLINE_NOTICE = "Coach offline — showing saved tips";
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = localTodayIso;
 
 const adviseKey = (localDate: string, readiness: string, vectorId: string, persona: string) =>
   `advise:${persona}:${localDate}:${readiness}:${vectorId}`;

@@ -17,27 +17,14 @@ import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { color, space } from "@/theme/tokens";
 import { getTodayInsights } from "@/lib/api";
+import { goalStore } from "@/features/goal/goal-store";
+import { GoalTimelineCard } from "@/features/you/GoalTimelineCard";
 
 import { useProgressStore, type ProgressPhoto } from "./progress-store";
 import { PhotoSlot, Stat } from "./ProgressParts";
+import { streakishDays } from "./photo-streak";
 import { WeightJourneyCard } from "./WeightJourneyCard";
 import { sx } from "@/theme/sx";
-
-const dayKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
-
-/** Distinct check-in days in the loaded page (honest, not fabricated). */
-const streakishDays = (photos: readonly ProgressPhoto[]): number => {
-  const keys = [...new Set(photos.map((p) => dayKey(p.takenAt)))].sort().reverse();
-  if (keys.length === 0) return 0;
-  let streak = 1;
-  for (let i = 1; i < keys.length; i += 1) {
-    const prev = new Date(`${keys[i - 1]}T12:00:00Z`).getTime();
-    const cur = new Date(`${keys[i]}T12:00:00Z`).getTime();
-    if (Math.round((prev - cur) / 86_400_000) === 1) streak += 1;
-    else break;
-  }
-  return streak;
-};
 
 /** S22 Progress gallery — API-backed, page size 10, empty CTA (no stock Stitch). */
 export const ProgressScreen = () => {
@@ -69,7 +56,7 @@ export const ProgressScreen = () => {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([hydratePhotos(), loadInsights()]);
+      await Promise.all([hydratePhotos(), loadInsights(), goalStore.getState().load()]);
     } finally {
       setRefreshing(false);
     }
@@ -182,6 +169,9 @@ export const ProgressScreen = () => {
           <CapsLabel tone="lime">{note}</CapsLabel>
         </Pressable>
       ) : null}
+
+      {/* S46 (AMI-182): goal card above the photo pair → /goal. */}
+      <GoalTimelineCard style={{ marginBottom: space.md }} />
 
       <View style={sx("mb-space-md overflow-hidden rounded-lg bg-surface-container-low p-space-md")}>
         <View style={sx("mb-space-sm flex-row items-center justify-between")}>

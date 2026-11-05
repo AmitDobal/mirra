@@ -39,7 +39,6 @@ export const CompleteScreen = () => {
   const rpe = useWorkoutStore((s) => s.rpe);
   const durationMin = useWorkoutStore((s) => s.durationMin);
   const setRpe = useWorkoutStore((s) => s.setRpe);
-  const reset = useWorkoutStore((s) => s.reset);
   const tierChanges = useWorkoutStore((s) => s.tierChanges);
   const logged = useWorkoutStore((s) => s.logged);
   const unit = useLoadUnit();
@@ -70,11 +69,11 @@ export const CompleteScreen = () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
   }, [tierChanges]);
 
+  // Leave at once (modal slides down); the RPE save + reset finish in the background.
   const handleDone = () => {
-    void useWorkoutStore.getState().finish().finally(() => {
-      reset();
-      router.replace("/(tabs)/today");
-    });
+    useWorkoutStore.getState().close();
+    if (router.canGoBack()) router.back();
+    else router.replace("/(tabs)/today");
   };
 
   return (

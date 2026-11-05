@@ -61,5 +61,19 @@ export const defineExercise = (
   ...extra,
 });
 
+/**
+ * Dumbbell load convention (AMI-183). On a paired-dumbbell lift `set_logs.weight_kg` is ONE
+ * dumbbell (per hand), never the pair total, and the live HUD says "KG PER HAND".
+ * Standards follow the same unit: `derived(parent, ratio)` ratio = per-hand e1RM ÷ barbell
+ * e1RM. Equivalently the pair (per hand × 2) is scored against the barbell standard × 2·ratio:
+ * DB bench 0.37 ⇒ a pair ≈ 74% of the barbell bench (gym norms put it at 65-80%).
+ * Lifts that hold one dumbbell in both hands are not per hand.
+ */
+const SINGLE_DUMBBELL = new Set(["goblet_squat", "overhead_triceps_extension", "dumbbell_hip_thrust", "dumbbell_pullover"]);
+
+/** True when logged load means "per hand" (dumbbell-first load lift, not single-implement). */
+export const isLoadPerHand = (e: Pick<LibraryExercise, "id" | "equipment" | "scoring">): boolean =>
+  e.scoring === "load" && e.equipment[0] === "dumbbells" && !SINGLE_DUMBBELL.has(e.id);
+
 export const anchor = (id: AnchorId): ExerciseStandard => ({ anchor: id });
 export const derived = (parent: AnchorId, ratio: number): ExerciseStandard => ({ parent, ratio });

@@ -20,17 +20,18 @@ export const toHistorySession = (s: SessionStat): WorkoutHistorySession => ({
   volumeKg: s.volumeKg,
 });
 
-/** Sessions started between `from` and `to` (inclusive days, UTC). Defaults to the last 30 days. */
+/** Sessions started between `from` and `to` (inclusive days in `tz`, the profile timezone). Defaults to the last 30 days. */
 export const loadWorkoutHistory = async (
   db: AppDB,
   userId: string,
   today: string,
   query: { from?: string; to?: string },
+  tz = "UTC",
 ) => {
   const to = query.to ?? today;
   const from = query.from ?? addDays(to, -(DEFAULT_HISTORY_DAYS - 1));
-  const { start, end } = windowBoundsMs({ from, to });
-  const stats = (await loadSessionStats(db, userId, start, end)).slice(0, 200);
+  const { start, end } = windowBoundsMs({ from, to }, tz);
+  const stats = (await loadSessionStats(db, userId, start, end, tz)).slice(0, 200);
   return { from, to, items: stats.map(toHistorySession) };
 };
 
@@ -39,10 +40,11 @@ export const loadWorkoutSummary = async (
   userId: string,
   range: HistoryRange,
   anchor: string,
+  tz = "UTC",
 ): Promise<WorkoutSummaryResponse> => {
   const window = historyWindow(range, anchor);
-  const { start, end } = windowBoundsMs(window);
-  const done = (await loadSessionStats(db, userId, start, end)).filter((s) => s.endedAt != null);
+  const { start, end } = windowBoundsMs(window, tz);
+  const done = (await loadSessionStats(db, userId, start, end, tz)).filter((s) => s.endedAt != null);
 
   const series = window.dates.map((date) => {
     const day = done.filter((s) => s.date === date);

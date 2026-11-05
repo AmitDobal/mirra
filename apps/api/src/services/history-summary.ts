@@ -3,7 +3,7 @@ import { and, desc, eq, gte, lt } from "drizzle-orm";
 
 import type { AppDB } from "../db";
 import { checkIns, meals, workoutSessions } from "../db/schema";
-import { addDays, dayBoundsMs, toDateString } from "../lib/dates";
+import { addDays, dayBoundsIn, localDateIn } from "../lib/dates";
 import { MAX_HISTORY_WINDOW_DAYS } from "./user-tenure";
 
 const STREAK_LOOKBACK = MAX_HISTORY_WINDOW_DAYS;
@@ -19,7 +19,7 @@ export type HistorySummary = HistoryStats & {
 export type PlannedDay = { date: string; workoutId: string | null };
 
 const toMs = (v: Date | number): number => (v instanceof Date ? v.getTime() : Number(v));
-const dateOf = (v: Date | number): string => toDateString(new Date(toMs(v)));
+const dateOf = (tz: string, v: Date | number): string => localDateIn(tz, new Date(toMs(v)));
 
 const pct = (value: number, target: number): number =>
   Math.round(((value - target) / Math.max(1, target)) * 100);
@@ -60,16 +60,17 @@ export const buildHistorySummary = async (
   db: AppDB,
   userId: string,
   localDate: string,
-  opts: { kcalTarget: number; plannedDays: PlannedDay[]; windowDays?: number },
+  opts: { kcalTarget: number; plannedDays: PlannedDay[]; windowDays?: number; tz?: string },
 ): Promise<HistorySummary> => {
+  const tz = opts.tz ?? "UTC";
   const windowDays = Math.min(
     MAX_HISTORY_WINDOW_DAYS,
     Math.max(1, Math.floor(opts.windowDays ?? 7)),
   );
   const windowStart = addDays(localDate, -windowDays);
   const yesterday = addDays(localDate, -1);
-  const from = new Date(dayBoundsMs(windowStart).start);
-  const to = new Date(dayBoundsMs(localDate).start);
+  const from = new Date(dayBoundsIn(tz, windowStart).start);
+  const to = new Date(dayBoundsIn(tz, localDate).start);
 
   const [mealRows, sessionRows, checkInRows] = await Promise.all([
     db
@@ -96,7 +97,7 @@ export const buildHistorySummary = async (
 
   const kcalByDay = new Map<string, number>();
   for (const m of mealRows) {
-    const key = dateOf(m.eatenAt);
+    const key = dateOf(tz, m.eatenAt);
     kcalByDay.set(key, (kcalByDay.get(key) ?? 0) + m.kcal);
   }
   const loggedDays = kcalByDay.size;
@@ -104,7 +105,7 @@ export const buildHistorySummary = async (
   const avgKcal = loggedDays ? Math.round(totalKcal / loggedDays) : null;
 
   const sessionDays = new Set(
-    sessionRows.filter((s) => s.endedAt != null).map((s) => dateOf(s.startedAt)),
+    sessionRows.filter((s) => s.endedAt != null).map((s) => dateOf(tz, s.startedAt)),
   );
   const plannedInWindow = opts.plannedDays.filter(
     (d) => d.workoutId != null && d.date >= windowStart && d.date < localDate,

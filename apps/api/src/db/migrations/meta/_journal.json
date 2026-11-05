@@ -141,6 +141,13 @@
       "when": 1763492400000,
       "tag": "0020_strength_scores",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1763578800000,
+      "tag": "0021_goal_timeline",
+      "breakpoints": true
     }
   ]
 }

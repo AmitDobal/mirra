@@ -2,17 +2,18 @@ import type { CoachReviseBody, CoachReviseResponse, ReviseItem } from "@mirra/co
 
 import { sanitizeAiCopy } from "../../lib/ai-copy";
 import { resolveAiProvider } from "../../lib/ai/resolve-provider";
-import { todayUtc } from "../../lib/dates";
 import { ApiError } from "../../lib/errors";
 import { getPlanReviser } from "../../lib/plan-reviser";
 import { hasAnyIntent, hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../../lib/plan-intent";
 import type { PlanReviseResult } from "../../ports/plan-reviser";
 import { withAiCredits } from "../credits-gate";
+import { dateOrUserToday } from "../user-day";
 import { recordRegen, type MealPlanCtx } from "../meal-plan-draft";
 import type { MealDraft } from "../meal-plan-targeted";
 import { applyDraft } from "./apply";
 import { loadReviseState, reviserInput, type ReviseState } from "./context";
 import { createDraft, findPendingForIntent, intentKeyOf, touchHash, type DraftTouch } from "./drafts";
+import { goalImpactFor } from "./goal-impact";
 import { legacyChanges } from "./legacy";
 import { assertProposeLimit, assertReviseLimit, MEAL_DAY_ACTION, mealDayQuotaOk, PROPOSE_ACTION } from "./limits";
 import { mealStep, type MealStepResult } from "./meal-step";
@@ -165,7 +166,7 @@ const applyLegacyPending = async (
  */
 export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Promise<CoachReviseResponse> => {
   const dryRun = body.dryRun === true;
-  const date = body.date ?? todayUtc();
+  const date = await dateOrUserToday(ctx.db, ctx.userId, body.date);
   const echoed = body.intent ? sanitizeIntent(body.intent) : null;
   if (!dryRun && echoed) {
     const applied = await applyLegacyPending(ctx, date, echoed);
@@ -174,7 +175,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
   if (dryRun) await assertProposeLimit(ctx);
   else await assertReviseLimit(ctx);
 
-  const state = await loadReviseState(ctx, body);
+  const state = await loadReviseState(ctx, { ...body, date });
   const result: PlanReviseResult = echoed
     ? { intent: echoed, reply: APPLIED_REPLY, warnings: [], source: "heuristic" }
     : await withAiCredits(
@@ -201,6 +202,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     workoutTitle: p.workoutTitle,
     draftId: null,
     expiresAt: null,
+    goalImpact: goalImpactFor(state, p.items),
     ...(warnings.length > 0 ? { warnings } : {}),
   };
   if (p.items.length === 0 && Object.keys(p.patch).length === 0) return base;
@@ -224,6 +226,6 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
     schedule: p.schedule,
     baseHash: touchHash(state, p.touch),
   });
-  if (!dryRun) return applyDraft(ctx, draft.id);
+  if (!dryRun) return { ...(await applyDraft(ctx, draft.id)), goalImpact: base.goalImpact };
   return { ...base, draftId: draft.id, expiresAt: draft.expiresAt };
 };

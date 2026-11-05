@@ -256,6 +256,18 @@ Unique index: `(user_id, local_date)`.
 
 ---
 
+## Goal timeline (0021, AMI-179)
+
+Spec: `goal-timeline.md` §4. Both tables cascade from `users` (account deletion covered by `test:account-delete`).
+
+### `goal_plans` (0021)
+Versioned goal plan. `id` PK · `user_id` FK · `version` (unique per user) · `status` `active`/`superseded` (partial unique index `goal_plans_active_uq`: one active per user) · `goal_type` · `primary_goal` · `pace` null · `direction` `down`/`up`/`hold` · `mode` `eta`/`horizon`/`milestones` · `start_date` (local) · `start_weight_kg` null (**frozen**; weigh-ins never touch it) · `target_weight_kg` null · `target_effective_kg` null (after BMI clamp) · `pace_rate_pct` · `pace_rate_kg` · `kcal_hint` null · `eta_expected`/`eta_optimistic`/`eta_conservative` null (day-0 band; `originalEta`) · `weeks_expected` null · `planned_line_json` (weekly kg, ≤105) · `flags_json` · `inputs_json` · `engine_version` · `reason` `onboarding`/`profile_edit`/`restart`/`backfill` · `committed_at` null (ms, S43) · `created_at`. New version only when a §4 input changes; supersede + insert in one batch.
+
+### `goal_snapshots` (0021)
+Today's projection, one row per `(user_id, local_date)` (unique; upserted by every trigger, doubles as estimate history). `id` PK · `user_id` FK · `goal_plan_id` FK (cascade) · `trend_weight_kg` / `observed_rate_kg` / `trend_span_days` null · `adherence` · `adherence_json` · `status` · `eta_*` + `what_if_eta` null · `milestones_json` · `trigger` · `engine_version` · `updated_at` (ETag `"<version>-<updated_at>"`). Index `(goal_plan_id, local_date)`.
+
+---
+
 ## Monetization
 
 ### `entitlements`

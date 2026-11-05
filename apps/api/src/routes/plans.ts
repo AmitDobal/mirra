@@ -64,6 +64,8 @@ planRoutes.get("/v1/plans/current", requireAuth, async (c) => {
 planRoutes.post("/v1/plans/rebuild/preview", requireAuth, async (c) => {
   const body = parseBody(PlanRebuildPreviewBodySchema, await c.req.json());
   const db = createDb(c.env.DB);
+  // AMI-183: gate before the AI call; apply is Pro-only, so a free preview is wasted spend.
+  await requirePro(db, c.get("userId"));
   return c.json(
     await previewRebuild(db, c.env, c.get("userId"), body.reason, body.checkInId),
   );

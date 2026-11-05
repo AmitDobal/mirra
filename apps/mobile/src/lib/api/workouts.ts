@@ -16,10 +16,11 @@ export type CompletedSession = WorkoutSession & {
 const sessionPath = (sessionId: string): string =>
   `/v1/workouts/sessions/${encodeURIComponent(sessionId)}`;
 
-export const startSession = (body: StartWorkoutSessionBody) =>
+export const startSession = (body: StartWorkoutSessionBody, signal?: AbortSignal) =>
   apiFetch<WorkoutSession>("/v1/workouts/sessions", {
     method: "POST",
     body,
+    signal,
   });
 
 export const logSet = (sessionId: string, body: LogSetBody) =>

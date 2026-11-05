@@ -17,6 +17,10 @@ const PORTRAITS: Record<TrainerPersonaId, number> = {
   rival: s09bTrainers.rival,
 };
 
+/** Stitch S09B portrait source for a persona id (unknown ids fall back like `getTrainerPersonaOption`). */
+export const personaPortrait = (personaId: string): number =>
+  PORTRAITS[getTrainerPersonaOption(personaId).id];
+
 type Props = {
   readonly personaId: string;
   readonly size?: number;

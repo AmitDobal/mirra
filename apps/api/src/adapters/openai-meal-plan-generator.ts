@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
 import { logAiUsage } from "../lib/ai-usage";
@@ -10,41 +8,31 @@ import type {
   MealPlanResult,
 } from "../ports/meal-plan-generator";
 import { canSpend } from "../services/ai-budget";
+import { goalRulesBlock } from "../services/goal-copy";
 import { heuristicMealPlanGenerator } from "./heuristic-meal-plan-generator";
+import { MAX_CATALOG_ROWS, mealPlanJsonSchema, repairMealDraft } from "./meal-plan-repair";
 import { chatCompletion } from "./openai-client";
 
 export const MEAL_PLAN_AI_ACTION = "openai.meal.plan";
-const MAX_CATALOG_ROWS = 120;
-
-const DraftSchema = z.object({
-  meals: z
-    .array(
-      z.object({
-        slot: z.enum(["breakfast", "lunch", "dinner", "snack"]),
-        title: z.string().min(1).max(80),
-        items: z
-          .array(
-            z.object({
-              foodId: z.string().min(1),
-              grams: z.number().positive().max(2000),
-            }),
-          )
-          .min(1)
-          .max(6),
-      }),
-    )
-    .min(1),
-});
 
 const SYSTEM = `You are Mirra Fuel, a meal planner. Pick foods ONLY from the provided catalog ids.
 Reply STRICT JSON: {"meals":[{"slot":"breakfast"|"lunch"|"dinner"|"snack","title":string,"items":[{"foodId":string,"grams":number}]}]}
 Rules: one meal per requested slot. 2-4 items per meal (protein + carb + veg/fruit/fat). Never output calories or macros; the server computes them.
 Aim each meal near its slot budget. Respect each food's slots. Do not use avoidFoodIds. Prefer variety vs recentFoodIds.`;
 
-const buildPrompt = (input: MealPlanInput): string => {
+/** AMI-181: appended when the user has a goal plan. Budgets stay the server's numbers. */
+const GOAL_SYSTEM = goalRulesBlock(
+  "GOAL DATA: goal.line and goal.status describe the user's goal. Pick dishes that suit it (protein first on a cut or a gain). Never change the slot budgets. Titles never mention weight or dates.",
+);
+
+export const mealPlanSystemPrompt = (input: MealPlanInput): string =>
+  input.goal ? `${SYSTEM}\n${GOAL_SYSTEM}` : SYSTEM;
+
+export const buildPrompt = (input: MealPlanInput): string => {
   const budgets = slotBudgets(input.remaining, input.slots);
   return JSON.stringify({
     date: input.date,
+    ...(input.goal ? { goal: input.goal } : {}),
     slotBudgets: budgets,
     avoidFoodIds: input.avoidFoodIds,
     recentFoodIds: input.recentFoodIds,
@@ -52,21 +40,14 @@ const buildPrompt = (input: MealPlanInput): string => {
   });
 };
 
-/** Returns null when the model output breaks the catalog / slot contract. */
+/**
+ * AMI-184: repair instead of all-or-nothing. Null only when no meal survives; missing slots are
+ * filled per slot by `meal-plan-draft.ts` with the heuristic.
+ */
 const validate = (raw: unknown, input: MealPlanInput): MealPlanResult | null => {
-  const parsed = DraftSchema.safeParse(raw);
-  if (!parsed.success) return null;
-  const allowed = new Set(input.catalog.map((r) => r.id));
-  const avoid = new Set(input.avoidFoodIds);
-  const wanted = new Set(input.slots);
-  const seen = new Set<string>();
-  for (const meal of parsed.data.meals) {
-    if (!wanted.has(meal.slot) || seen.has(meal.slot)) return null;
-    seen.add(meal.slot);
-    if (meal.items.some((i) => !allowed.has(i.foodId) || avoid.has(i.foodId))) return null;
-  }
-  if (seen.size !== wanted.size) return null;
-  return { meals: parsed.data.meals, source: "openai" };
+  const { meals, fixes } = repairMealDraft(raw, input);
+  if (fixes.length > 0) console.warn(`[openai-meal-plan] repaired output: ${fixes.slice(0, 8).join("; ")}`);
+  return meals.length > 0 ? { meals, source: "openai" } : null;
 };
 
 /** OpenAI meal planner (metered). Any cap hit, API error or invalid JSON → heuristic. */
@@ -84,13 +65,14 @@ export const createOpenAiMealPlanGenerator = (
 
     const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
     try {
+      const schema = mealPlanJsonSchema(input);
       const completion = await chatCompletion({
         apiKey,
         model,
-        jsonMode: true,
+        ...(schema ? { jsonSchema: { name: "meal_plan", schema } } : { jsonMode: true }),
         temperature: 0.5,
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: mealPlanSystemPrompt(input) },
           { role: "user", content: buildPrompt(input) },
         ],
       });

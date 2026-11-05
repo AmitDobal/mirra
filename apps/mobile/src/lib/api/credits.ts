@@ -20,6 +20,13 @@ export type CreditsSnapshot = {
 /** GET /v1/credits — monthly AI credit balance (works in shadow + enforce). */
 export const getCredits = () => apiFetch<CreditsSnapshot>("/v1/credits");
 
+/** DEV ONLY: POST /v1/credits/dev/entitlement (404 unless the API sets ALLOW_DEV_USER_HEADER). */
+export const grantDevEntitlement = () =>
+  apiFetch<{ status: string | undefined }>("/v1/credits/dev/entitlement", {
+    method: "POST",
+    body: { status: "active" },
+  });
+
 /** Total pool for the meter (grant + bonus, capped by absolute when useful). */
 export const creditsPool = (c: CreditsSnapshot): number => {
   const pool = c.granted + c.bonus;

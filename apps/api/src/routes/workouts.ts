@@ -16,7 +16,7 @@ import { Hono } from "hono";
 import { createDb } from "../db";
 import { setLogs, workoutSessions, workouts } from "../db/schema";
 import type { MirraEnv } from "../env";
-import { todayUtc } from "../lib/dates";
+import { localDateIn } from "../lib/dates";
 import { badRequest, notFound } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseBody } from "../lib/validate";
@@ -25,6 +25,7 @@ import { requireAuth } from "../middleware/auth";
 import { loadCurrentPlan } from "../services/plan-loaders";
 import { completeSession, toSessionResponse, updateSession } from "../services/workout-complete";
 import { loadWorkoutHistory, loadWorkoutSummary } from "../services/workout-summary";
+import { userTz } from "../services/user-day";
 
 export const workoutRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -138,23 +139,24 @@ workoutRoutes.patch("/v1/workouts/sessions/:id", requireAuth, async (c) => {
 /** Session history list (`from` / `to` are YYYY-MM-DD, default last 30 days). */
 workoutRoutes.get("/v1/workouts/sessions", requireAuth, async (c) => {
   const q = parseBody(WorkoutHistoryQuerySchema, c.req.query());
-  const body: WorkoutHistoryListResponse = await loadWorkoutHistory(
-    createDb(c.env.DB),
-    c.get("userId"),
-    todayUtc(),
-    q,
-  );
+  const db = createDb(c.env.DB);
+  const userId = c.get("userId");
+  const tz = await userTz(db, userId);
+  const body: WorkoutHistoryListResponse = await loadWorkoutHistory(db, userId, localDateIn(tz), q, tz);
   return c.json(body);
 });
 
 /** Minutes / sets / volume series for day | week | month charts. */
 workoutRoutes.get("/v1/workouts/summary", requireAuth, async (c) => {
   const q = parseBody(HistoryQuerySchema, c.req.query());
+  const db = createDb(c.env.DB);
+  const tz = await userTz(db, c.get("userId"));
   const body: WorkoutSummaryResponse = await loadWorkoutSummary(
-    createDb(c.env.DB),
+    db,
     c.get("userId"),
     q.range,
-    q.anchor ?? todayUtc(),
+    q.anchor ?? localDateIn(tz),
+    tz,
   );
   return c.json(body);
 });

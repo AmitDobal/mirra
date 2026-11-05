@@ -25,6 +25,7 @@ import { configurePurchases } from "@/lib/purchases";
 import { useCreditsStore } from "@/stores/credits-store";
 import { useMeStore } from "@/stores/me-store";
 import { color } from "@/theme/tokens";
+import { transition } from "@/ui/nav";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -97,15 +98,15 @@ const RootLayout = () => {
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: color.background },
-            animation: "fade",
+            ...transition("push"),
           }}
         >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(onboarding)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="kinetic-rank" options={{ animation: "slide_from_right" }} />
-          <Stack.Screen name="strength" options={{ animation: "slide_from_right" }} />
-          <Stack.Screen name="strength-ladder" options={{ animation: "slide_from_right" }} />
+          {/* Boot gate / funnel / tabs are mode swaps: no animation, no fade flash. */}
+          <Stack.Screen name="index" options={transition("root")} />
+          <Stack.Screen name="(onboarding)" options={transition("root")} />
+          <Stack.Screen name="(tabs)" options={transition("root")} />
+          <Stack.Screen name="workout" options={transition("session")} />
+          <Stack.Screen name="goal" options={transition("push")} />
         </Stack>
         <AiLimitSheet />
       </GestureHandlerRootView>

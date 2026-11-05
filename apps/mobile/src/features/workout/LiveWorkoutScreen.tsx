@@ -1,17 +1,12 @@
 import { router } from "expo-router";
-import {
-  CheckCircle2,
-  Flame,
-  Heart,
-  Pause,
-  Play,
-  SkipForward,
-  X,
-} from "lucide-react-native";
+import { CheckCircle2, Flame, Heart, Pause, Play, SkipForward, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Pressable,
+  TouchableWithoutFeedback,
   StyleSheet,
   Text,
   View,
@@ -25,9 +20,11 @@ import { ScreenFixed } from "@/ui/ScreenScroll";
 import { color, space } from "@/theme/tokens";
 
 import { formatLoad, fromDisplayLoad, loadLabel, loadStepKg, toDisplayLoad } from "./load-units";
+import { formatClock, HudChip, Stat, TextLink } from "./HudParts";
 import { SetChips } from "./SetChips";
 import { SetStepper } from "./SetStepper";
-import { useExerciseScoring, useLoadUnit } from "./use-load-units";
+import { useExerciseLoadMeta, useLoadUnit } from "./use-load-units";
+import { useOpenTiming } from "./use-open-timing";
 import { useWorkoutStore } from "./workout-store";
 import { sx } from "@/theme/sx";
 
@@ -54,16 +51,17 @@ export const LiveWorkoutScreen = () => {
   const skipExercise = useWorkoutStore((s) => s.skipExercise);
   const swapExercise = useWorkoutStore((s) => s.swapExercise);
 
+  useOpenTiming();
   const [, setTick] = useState(0);
   const restTargetSec = exercises[exerciseIndex]?.restSec ?? 90;
   const [restLeft, setRestLeft] = useState(restTargetSec);
 
+  // `finish()` stamps `finished` synchronously: leave for S17 now, the complete
+  // (tier changes) lands there when the network returns.
   useEffect(() => {
-    if (finished) {
-      void useWorkoutStore.getState().finish().then(() => {
-        router.replace("/workout/complete");
-      });
-    }
+    if (!finished) return;
+    void useWorkoutStore.getState().finish();
+    router.replace("/workout/complete");
   }, [finished]);
 
   // New exercise → reset rest prescription.
@@ -83,19 +81,16 @@ export const LiveWorkoutScreen = () => {
 
   const ex = exercises[exerciseIndex];
   const unit = useLoadUnit();
-  // Bodyweight lifts log added load: "+ kg added" / "+ lb added".
-  const scoring = useExerciseScoring(ex);
+  // Bodyweight lifts log added load ("+ kg added"); dumbbell lifts log one dumbbell ("KG PER HAND").
+  const loadMeta = useExerciseLoadMeta(ex);
   const elapsed = formatClock(useWorkoutStore.getState().elapsedSec());
   const rest = formatClock(restLeft);
   const resting = restLeft > 0 && restLeft < restTargetSec;
 
   const handleClose = () => router.back();
-  const handleFinish = () => {
-    void useWorkoutStore.getState().finish().then(() => {
-      router.replace("/workout/complete");
-    });
-  };
+  const handleFinish = () => void useWorkoutStore.getState().finish();
   const handleLog = () => {
+    Keyboard.dismiss();
     void logSet();
     // After a set: start the prescribed rest countdown.
     setRestLeft(restTargetSec);
@@ -111,167 +106,138 @@ export const LiveWorkoutScreen = () => {
 
   return (
     <ScreenFixed>
-      <View style={sx("mb-space-md flex-row items-center justify-between")}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close workout"
-          onPress={handleClose}
-          style={sx("h-11 w-11 items-center justify-center rounded-full bg-surface-container-high")}
-        >
-          <X size={22} color={color.onSurface} />
-        </Pressable>
-        <CapsLabel tone="lime">{paused ? "Paused" : "Mirra Live"}</CapsLabel>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={paused ? "Resume" : "Pause"}
-          onPress={togglePause}
-          style={sx("h-11 w-11 items-center justify-center rounded-full bg-surface-container-high")}
-        >
-          {paused ? (
-            <Play size={20} color={color.onSurface} fill={color.onSurface} />
-          ) : (
-            <Pause size={20} color={color.onSurface} />
-          )}
-        </Pressable>
-      </View>
+      {/* Keyboard up: the flex card shrinks so steppers + Log stay above it. Edge-to-edge
+          Android does not resize the window, so pad on both platforms. Tap outside = dismiss. */}
+      <TouchableWithoutFeedback accessible={false} onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView behavior="padding" style={styles.flex}>
+          <View style={sx("mb-space-md flex-row items-center justify-between")}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close workout"
+              onPress={handleClose}
+              style={sx(
+                "h-11 w-11 items-center justify-center rounded-full bg-surface-container-high",
+              )}
+            >
+              <X size={22} color={color.onSurface} />
+            </Pressable>
+            <CapsLabel tone="lime">{paused ? "Paused" : "Mirra Live"}</CapsLabel>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={paused ? "Resume" : "Pause"}
+              onPress={togglePause}
+              style={sx(
+                "h-11 w-11 items-center justify-center rounded-full bg-surface-container-high",
+              )}
+            >
+              {paused ? (
+                <Play size={20} color={color.onSurface} fill={color.onSurface} />
+              ) : (
+                <Pause size={20} color={color.onSurface} />
+              )}
+            </Pressable>
+          </View>
 
-      <View style={sx("mb-space-md flex-row gap-space-sm")}>
-        <HudChip Icon={Flame} value={`${kcal} KCAL`} />
-        <HudChip Icon={Heart} value={`${sets.filter((s) => s.done).length} DONE`} label="SETS" />
-      </View>
+          <View style={sx("mb-space-md flex-row gap-space-sm")}>
+            <HudChip Icon={Flame} value={`${kcal} KCAL`} />
+            <HudChip
+              Icon={Heart}
+              value={`${sets.filter((s) => s.done).length} DONE`}
+              label="SETS"
+            />
+          </View>
 
-      <View
-        style={[
-          sx("mb-space-sm flex-1 justify-center rounded-lg bg-surface-container-low p-space-lg"),
-          styles.card,
-        ]}
-      >
-        <Image
-          source={s16LiveWorkoutHud.athleteDeepSquat}
-          accessibilityLabel="Live exercise"
-          style={[styles.hero, { width: heroWidth }]}
-          resizeMode="cover"
-        />
-        <CapsLabel>
-          Exercise {exerciseIndex + 1} of {exercises.length}
-        </CapsLabel>
-        <Text style={sx("mt-1 font-body-medium text-body-md text-on-surface-variant")}>
-          {ex?.cue ?? workoutTitle}
-        </Text>
-        <Text style={sx("mt-space-sm font-headline text-headline-lg text-on-surface")}>
-          {ex?.name ?? "Movement"}
-        </Text>
-        <View style={sx("mt-space-lg flex-row justify-between")}>
-          <Stat label="Elapsed" value={elapsed} />
-          <Stat
-            label={restLeft === 0 ? "Rest done" : resting ? "Resting" : "Rest Target"}
-            value={rest}
+          <View
+            style={[
+              sx(
+                "mb-space-sm flex-1 justify-center rounded-lg bg-surface-container-low p-space-lg",
+              ),
+              styles.card,
+            ]}
+          >
+            <Image
+              source={s16LiveWorkoutHud.athleteDeepSquat}
+              accessibilityLabel="Live exercise"
+              style={[styles.hero, { width: heroWidth }]}
+              resizeMode="cover"
+            />
+            <CapsLabel>
+              Exercise {exerciseIndex + 1} of {exercises.length}
+            </CapsLabel>
+            <Text style={sx("mt-1 font-body-medium text-body-md text-on-surface-variant")}>
+              {ex?.cue ?? workoutTitle}
+            </Text>
+            <Text style={sx("mt-space-sm font-headline text-headline-lg text-on-surface")}>
+              {ex?.name ?? "Movement"}
+            </Text>
+            <View style={sx("mt-space-lg flex-row justify-between")}>
+              <Stat label="Elapsed" value={elapsed} />
+              <Stat
+                label={restLeft === 0 ? "Rest done" : resting ? "Resting" : "Rest Target"}
+                value={rest}
+              />
+              <Stat label="Current Set" value={`${setIndex}`} sub={`/ ${sets.length}`} />
+            </View>
+            <View style={sx("mt-space-lg rounded-lg bg-surface-container-high p-space-md")}>
+              <CapsLabel>Target Load Track</CapsLabel>
+              <Text style={sx("mt-1 font-headline-sm text-headline-sm text-primary-fixed")}>
+                {ex?.targetReps ?? "—"} REPS · {sets.length} SETS
+              </Text>
+            </View>
+            <SetChips
+              formatLoad={(kg) => formatLoad(kg, unit)}
+              sets={sets}
+              setIndex={setIndex}
+              editingSet={editingSet}
+              targetReps={ex?.targetReps ?? "—"}
+              onSelect={selectSet}
+            />
+          </View>
+
+          <View style={sx("mb-space-sm flex-row gap-space-sm")}>
+            <SetStepper
+              label={loadLabel(unit, loadMeta?.scoring, loadMeta?.perHand)}
+              unit={unit === "kg" ? "kilograms" : "pounds"}
+              value={toDisplayLoad(draft.weightKg, unit)}
+              onStep={(dir) => adjustDraft("weightKg", dir * loadStepKg(unit))}
+              onCommit={(v) => setDraftValue("weightKg", fromDisplayLoad(v, unit))}
+              disabled={paused}
+            />
+            <SetStepper
+              label="REPS"
+              unit="reps"
+              value={draft.reps}
+              onStep={(dir) => adjustDraft("reps", dir * REPS_STEP)}
+              onCommit={(v) => setDraftValue("reps", v)}
+              disabled={paused}
+            />
+          </View>
+          <LimeCta
+            label={logLabel}
+            onPress={paused ? togglePause : handleLog}
+            icon={<CheckCircle2 size={20} color={color.onPrimaryFixed} />}
           />
-          <Stat label="Current Set" value={`${setIndex}`} sub={`/ ${sets.length}`} />
-        </View>
-        <View style={sx("mt-space-lg rounded-lg bg-surface-container-high p-space-md")}>
-          <CapsLabel>Target Load Track</CapsLabel>
-          <Text style={sx("mt-1 font-headline-sm text-headline-sm text-primary-fixed")}>
-            {ex?.targetReps ?? "—"} REPS · {sets.length} SETS
-          </Text>
-        </View>
-        <SetChips
-          formatLoad={(kg) => formatLoad(kg, unit)}
-          sets={sets}
-          setIndex={setIndex}
-          editingSet={editingSet}
-          targetReps={ex?.targetReps ?? "—"}
-          onSelect={selectSet}
-        />
-      </View>
-
-      <View style={sx("mb-space-sm flex-row gap-space-sm")}>
-        <SetStepper
-          label={loadLabel(unit, scoring)}
-          unit={unit === "kg" ? "kilograms" : "pounds"}
-          value={toDisplayLoad(draft.weightKg, unit)}
-          onStep={(dir) => adjustDraft("weightKg", dir * loadStepKg(unit))}
-          onCommit={(v) => setDraftValue("weightKg", fromDisplayLoad(v, unit))}
-          disabled={paused}
-        />
-        <SetStepper
-          label="REPS"
-          unit="reps"
-          value={draft.reps}
-          onStep={(dir) => adjustDraft("reps", dir * REPS_STEP)}
-          onCommit={(v) => setDraftValue("reps", v)}
-          disabled={paused}
-        />
-      </View>
-      <LimeCta
-        label={logLabel}
-        onPress={paused ? togglePause : handleLog}
-        icon={<CheckCircle2 size={20} color={color.onPrimaryFixed} />}
-      />
-      <View style={sx("mt-space-md flex-row items-center justify-between px-space-sm")}>
-        <TextLink label="Swap exercise" onPress={swapExercise} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Skip exercise"
-          onPress={skipExercise}
-          style={sx("flex-row items-center gap-1")}
-        >
-          <SkipForward size={16} color={color.onSurfaceVariant} />
-          <Text style={sx("font-label text-label-md text-on-surface-variant")}>Skip</Text>
-        </Pressable>
-        <TextLink label="Finish workout" onPress={handleFinish} />
-      </View>
+          <View style={sx("mt-space-md flex-row items-center justify-between px-space-sm")}>
+            <TextLink label="Swap exercise" onPress={swapExercise} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Skip exercise"
+              onPress={skipExercise}
+              style={sx("flex-row items-center gap-1")}
+            >
+              <SkipForward size={16} color={color.onSurfaceVariant} />
+              <Text style={sx("font-label text-label-md text-on-surface-variant")}>Skip</Text>
+            </Pressable>
+            <TextLink label="Finish workout" onPress={handleFinish} />
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </ScreenFixed>
   );
 };
 
-const formatClock = (sec: number) => {
-  const m = Math.floor(sec / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = Math.floor(sec % 60)
-    .toString()
-    .padStart(2, "0");
-  return `${m}:${s}`;
-};
-
-const HudChip = ({
-  Icon,
-  value,
-  label,
-}: {
-  Icon: typeof Flame;
-  value: string;
-  label?: string;
-}) => (
-  <View style={sx("flex-1 flex-row items-center gap-space-sm rounded-lg bg-surface-container-high px-space-md py-space-sm")}>
-    <Icon size={18} color={color.primaryFixed} />
-    <View>
-      {label ? <CapsLabel>{label}</CapsLabel> : null}
-      <Text style={sx("font-label-bold text-label-lg text-on-surface")}>{value}</Text>
-    </View>
-  </View>
-);
-
-const Stat = ({ label, value, sub }: { label: string; value: string; sub?: string }) => (
-  <View>
-    <CapsLabel>{label}</CapsLabel>
-    <View style={sx("flex-row items-baseline gap-1")}>
-      <Text style={sx("font-headline text-headline-md text-on-surface")}>{value}</Text>
-      {sub ? (
-        <Text style={sx("font-body text-body-sm text-on-surface-variant")}>{sub}</Text>
-      ) : null}
-    </View>
-  </View>
-);
-
-const TextLink = ({ label, onPress }: { label: string; onPress: () => void }) => (
-  <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}>
-    <Text style={sx("font-label text-label-md text-on-surface-variant")}>{label}</Text>
-  </Pressable>
-);
-
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   card: {
     overflow: "hidden",
   },

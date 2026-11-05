@@ -1,3 +1,4 @@
+import { localTodayIso } from "@/lib/datetime";
 import { submitCheckIn } from "@/db";
 import { useFuelStore } from "@/features/fuel/fuel-store";
 import { useCoachStore } from "@/features/coach/coach-store";
@@ -5,8 +6,9 @@ import { useTodayStore } from "@/features/today/today-store";
 import { createCheckIn, type CheckInStatus } from "@/lib/api";
 import { MirraApiError } from "@/lib/api/client";
 import { errorMessage, logger } from "@/lib/logger";
+import { invalidateGoal } from "@/features/goal/goal-store";
 
-export const todayIso = (): string => new Date().toISOString().slice(0, 10);
+export const todayIso = localTodayIso;
 
 export const SYNC_FAILED_NOTICE =
   "Check-in failed to sync — not saved. Check your connection and try again.";
@@ -33,6 +35,7 @@ export const persistCheckIn = async (
     const remote = await createCheckIn({ localDate, status, note });
     checkInId = remote.id;
     logger.info("checkin.remote.ok", { id: remote.id, status });
+    invalidateGoal();
   } catch (err) {
     logger.error("checkin.remote.failed", {
       message: errorMessage(err),

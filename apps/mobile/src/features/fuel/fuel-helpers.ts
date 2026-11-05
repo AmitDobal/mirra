@@ -1,9 +1,10 @@
+import { localTodayIso } from "@/lib/datetime";
 import { overKcalTip } from "@/lib/accountability";
 import type { Meal, MealAnalysisFields, MealSlot } from "@/lib/api";
 
 import type { LocalMeal } from "./fuel-store";
 
-export const todayIso = () => new Date().toISOString().slice(0, 10);
+export const todayIso = localTodayIso;
 
 export const slotKey = (slot: string): MealSlot => {
   const s = slot.toLowerCase();

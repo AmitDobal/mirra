@@ -9,6 +9,8 @@ import {
 type AttendanceStoreState = {
   /** Presence by `YYYY-MM-DD`, cached from the last successful sync (survives offline). */
   readonly byDate: Readonly<Record<string, AttendanceState>>;
+  /** Days with a completed workout (S42 flame), same cache rules as `byDate`. */
+  readonly workoutByDate: Readonly<Record<string, boolean>>;
   /** User's local today per the server (profile timezone). `null` until the first sync. */
   readonly today: string | null;
   readonly merge: (week: AttendanceWeek) => void;
@@ -18,6 +20,7 @@ type AttendanceStoreState = {
 
 export const useAttendanceStore = create<AttendanceStoreState>((set, get) => ({
   byDate: {},
+  workoutByDate: {},
   today: null,
 
   merge: (week) =>
@@ -26,6 +29,10 @@ export const useAttendanceStore = create<AttendanceStoreState>((set, get) => ({
       byDate: {
         ...state.byDate,
         ...Object.fromEntries(week.days.map((d) => [d.date, d.state])),
+      },
+      workoutByDate: {
+        ...state.workoutByDate,
+        ...Object.fromEntries(week.days.map((d) => [d.date, d.workoutDone])),
       },
     })),
 

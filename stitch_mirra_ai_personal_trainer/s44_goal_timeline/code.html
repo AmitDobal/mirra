@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>S44 — Goal timeline</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#131313',
+            'surface-container-lowest': '#0e0e0e',
+            'surface-container-low': '#1c1b1b',
+            'surface-container': '#201f1f',
+            'surface-container-high': '#2a2a2a',
+            'surface-container-highest': '#353534',
+            'outline-variant': '#454936',
+            'on-surface': '#e5e2e1',
+            'on-surface-variant': '#c5c9b0',
+            lime: '#cbf150',
+            'on-lime': '#161e00',
+            lavender: '#d1beef',
+            'on-lavender': '#21143a',
+          },
+          fontFamily: {
+            headline: ['"Space Grotesk"', 'sans-serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .font-space {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .caps-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased selection:bg-lime selection:text-on-lime min-h-screen">
+<!-- Mobile Edge-to-Edge Container (390px max-width, no desktop letterbox borders) -->
+<div class="w-full max-w-[390px] mx-auto min-h-screen bg-surface flex flex-col relative px-5">
+<!-- iOS Status Bar (9:41) -->
+<div class="w-full pt-3 pb-2 flex justify-between items-center text-on-surface text-[14px] font-semibold tracking-tight select-none">
+<span>9:41</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-[18px]">battery_full</span>
+</div>
+</div>
+<!-- 1. Top Bar 56pt -->
+<header class="h-[56px] flex items-center justify-between w-full">
+<button aria-label="Back" class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:opacity-90 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<h1 class="caps-label text-on-surface font-space">GOAL</h1>
+<button aria-label="More" class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:opacity-90 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</header>
+<!-- Main Content Container with standard spacing -->
+<main class="flex flex-col gap-[28px] mt-4">
+<!-- 2. Goal Summary Header -->
+<section class="flex flex-col">
+<!-- Tagline -->
+<div class="flex items-center gap-2 mb-1.5">
+<div class="w-[6px] h-[6px] rounded-full bg-lime"></div>
+<span class="caps-label text-lime font-space">LOSE FAT · STEADY</span>
+</div>
+<!-- Headline Row -->
+<div class="flex items-center justify-between">
+<h2 class="font-space font-bold text-[28px] leading-[34px] text-on-surface">Around Feb 18</h2>
+<div class="bg-lime text-on-lime font-space font-semibold text-[12px] leading-[16px] px-3 py-1 rounded-full">
+            On track
+          </div>
+</div>
+<!-- Sub-headline Detail -->
+<p class="text-[14px] leading-[20px] text-on-surface-variant font-normal mt-1">
+          Range Feb 11 – Mar 6 · moved up from Mar 6
+        </p>
+</section>
+<!-- 3. Chart Card -->
+<section class="bg-surface-container-low rounded-[24px] border border-[#2a2a2a] p-4 flex flex-col">
+<!-- Card Header -->
+<div class="flex items-center justify-between mb-2">
+<span class="caps-label text-on-surface font-space">WEIGHT TREND</span>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface-variant">Last 5 weeks</span>
+</div>
+<!-- Goal Chart SVG: 190pt tall -->
+<div class="w-full h-[190px] relative select-none">
+<svg class="w-full h-full overflow-visible" fill="none" viewbox="0 0 318 190" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<!-- Wedge gradient or flat color -->
+</defs>
+<!-- Y Axis Labels -->
+<!-- 82 kg corresponds to top (y=24), 75 kg corresponds to bottom goal line (y=154) -->
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="600" x="0" y="28">82</text>
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="600" x="0" y="158">75</text>
+<!-- Goal line: 1pt dashed horizontal hairline #454936 at 75 kg (y=154) from x=24 to x=252 -->
+<line stroke="#454936" stroke-dasharray="3 3" stroke-width="1" x1="24" x2="252" y1="154" y2="154"></line>
+<!-- Goal line label right end: label-md on-surface-variant -->
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="600" x="256" y="158">Goal 75 kg</text>
+<!-- Today Vertical Hairline (x=108, about 1/3 from left ~ early Dec) -->
+<line stroke="#454936" stroke-width="1" x1="108" x2="108" y1="20" y2="162"></line>
+<!-- Today label at top (uppercase 11px on-surface-variant) -->
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em" text-anchor="middle" x="108" y="14">TODAY</text>
+<!-- Estimate Range Wedge: starts at Today hairline (108, 68.5) where weight=79.6 kg -->
+<!-- Lower edge reaches goal line at earlier date (Feb 11, under FEB, x=220, y=154) -->
+<!-- Upper edge reaches goal line at later date (Mar 6, under MAR, x=278, y=154) -->
+<polygon fill="#d1beef" fill-opacity="0.16" points="108,68.5 278,154 220,154"></polygon>
+<!-- Expected line: 2pt dashed lavender #d1beef line through middle of wedge -->
+<!-- Meets goal line between them at Feb 18 (x=240, y=154) with a small lavender dot -->
+<line stroke="#d1beef" stroke-dasharray="4 4" stroke-width="2" x1="108" x2="240" y1="68.5" y2="154"></line>
+<circle cx="240" cy="154" fill="#d1beef" r="3.5"></circle>
+<!-- Actual Data (Left of Today hairline x=108) -->
+<!-- Six distinct small grey weigh-in dots in on-surface-variant #c5c9b0 (r=2.5) scattered slightly around trend line -->
+<!-- Nov 4 (82.0kg) -> (32, 24) -->
+<!-- Nov 11 (81.4kg) -> (48, 35) -->
+<!-- Nov 18 (81.1kg) -> (63, 41) -->
+<!-- Nov 25 (80.3kg) -> (78, 56) -->
+<!-- Dec 2 (80.0kg) -> (93, 61) -->
+<!-- Dec 9 (79.4kg) -> (108, 72) -->
+<circle cx="32" cy="24" fill="#c5c9b0" r="2.8"></circle>
+<circle cx="48" cy="35" fill="#c5c9b0" r="2.8"></circle>
+<circle cx="63" cy="41" fill="#c5c9b0" r="2.8"></circle>
+<circle cx="78" cy="56" fill="#c5c9b0" r="2.8"></circle>
+<circle cx="93" cy="61" fill="#c5c9b0" r="2.8"></circle>
+<circle cx="108" cy="72" fill="#c5c9b0" r="2.8"></circle>
+<!-- Solid 2.5pt lime trend line from 82.0 down to 79.6 ending at Today hairline (108, 68.5) -->
+<path d="M 32 24 C 55 38, 80 54, 108 68.5" fill="none" stroke="#cbf150" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Today trend endpoint dot -->
+<circle cx="108" cy="68.5" fill="#cbf150" r="3.5"></circle>
+<!-- X Axis Month Labels along bottom (y=180) -->
+<!-- NOV DEC JAN FEB MAR -->
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em" text-anchor="middle" x="32" y="180">NOV</text>
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em" text-anchor="middle" x="100" y="180">DEC</text>
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em" text-anchor="middle" x="165" y="180">JAN</text>
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em" text-anchor="middle" x="230" y="180">FEB</text>
+<text fill="#c5c9b0" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700" letter-spacing="0.08em" text-anchor="middle" x="295" y="180">MAR</text>
+</svg>
+</div>
+<!-- Legend Row under Chart: body-sm on-surface-variant, 16pt gaps -->
+<div class="flex items-center justify-start gap-4 mt-3 pt-3 border-t border-[#2a2a2a] text-[12px] leading-[16px] text-on-surface-variant">
+<!-- Short lime line Trend -->
+<div class="flex items-center gap-1.5">
+<span class="w-3.5 h-[2.5px] rounded-full bg-lime"></span>
+<span>Trend</span>
+</div>
+<!-- Grey dot Weigh-ins -->
+<div class="flex items-center gap-1.5">
+<span class="w-[5px] h-[5px] rounded-full bg-on-surface-variant"></span>
+<span>Weigh-ins</span>
+</div>
+<!-- Small lavender square at 40% Estimate range -->
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-[2px] bg-lavender/40"></span>
+<span>Estimate range</span>
+</div>
+</div>
+</section>
+<!-- 4. Three Equal Stat Tiles in a row -->
+<section class="grid grid-cols-3 gap-2">
+<!-- START -->
+<div class="bg-surface-container-low rounded-[20px] border border-[#2a2a2a] p-3 flex flex-col justify-between">
+<span class="caps-label text-on-surface-variant font-space">START</span>
+<span class="font-space font-semibold text-[18px] leading-[24px] text-on-surface my-0.5">82.0 kg</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">Nov 4</span>
+</div>
+<!-- NOW -->
+<div class="bg-surface-container-low rounded-[20px] border border-[#2a2a2a] p-3 flex flex-col justify-between">
+<span class="caps-label text-on-surface-variant font-space">NOW</span>
+<span class="font-space font-semibold text-[18px] leading-[24px] text-on-surface my-0.5">79.6 kg</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">7-day trend</span>
+</div>
+<!-- TO GO -->
+<div class="bg-surface-container-low rounded-[20px] border border-[#2a2a2a] p-3 flex flex-col justify-between">
+<span class="caps-label text-on-surface-variant font-space">TO GO</span>
+<span class="font-space font-semibold text-[18px] leading-[24px] text-on-surface my-0.5">4.6 kg</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">−2.4 kg so far</span>
+</div>
+</section>
+<!-- 5. Milestones Section -->
+<section class="flex flex-col">
+<h3 class="caps-label text-on-surface font-space mb-2.5">MILESTONES</h3>
+<div class="bg-surface-container-low rounded-[24px] border border-[#2a2a2a] px-4 py-2 flex flex-col">
+<!-- Row 1: First visible change -->
+<div class="min-h-[56px] py-2 flex items-center justify-between relative">
+<!-- Left line segment connecting downwards -->
+<div class="absolute left-[11px] top-[26px] bottom-0 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-3.5 z-10">
+<div class="w-[24px] flex justify-center">
+<!-- 10pt hollow lavender circle -->
+<div class="w-[10px] h-[10px] rounded-full border-2 border-lavender bg-surface-container-low"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-[14px] leading-[20px] text-on-surface font-medium">First visible change</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">Often around here · −2.5 kg</span>
+</div>
+</div>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">Dec 10</span>
+</div>
+<!-- Row 2: Bench press Silver I (Tier hexagon) -->
+<div class="min-h-[56px] py-2 flex items-center justify-between relative">
+<!-- Left line segments above and below -->
+<div class="absolute left-[11px] top-0 bottom-0 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-3.5 z-10">
+<!-- 24pt pointy-top rounded silver hexagon #c5c9d4 with 2pt #878b96 bevel, white 2-chevron glyph, 3 silver dots under -->
+<div class="w-[24px] flex flex-col items-center justify-center">
+<svg fill="none" height="24" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<!-- Hexagon Outer Shape with Bevel -->
+<polygon fill="#c5c9d4" points="12,1.5 21.5,6.8 21.5,17.2 12,22.5 2.5,17.2 2.5,6.8" stroke="#878b96" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- Inner double chevron glyph in white -->
+<path d="M7.5 13 L12 9 L16.5 13" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M7.5 16.5 L12 12.5 L16.5 16.5" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<!-- Three tiny silver dots under it -->
+<div class="flex items-center gap-[2px] mt-[1.5px]">
+<span class="w-[2px] h-[2px] rounded-full bg-[#c5c9d4]"></span>
+<span class="w-[2px] h-[2px] rounded-full bg-[#c5c9d4]"></span>
+<span class="w-[2px] h-[2px] rounded-full bg-[#c5c9d4]"></span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-[14px] leading-[20px] text-on-surface font-medium">Bench press Silver I</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">80 kg × 8 for 2 sessions</span>
+</div>
+</div>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">Dec 16</span>
+</div>
+<!-- Row 3: Halfway -->
+<div class="min-h-[56px] py-2 flex items-center justify-between relative">
+<div class="absolute left-[11px] top-0 bottom-0 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-3.5 z-10">
+<div class="w-[24px] flex justify-center">
+<div class="w-[10px] h-[10px] rounded-full border-2 border-lavender bg-surface-container-low"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-[14px] leading-[20px] text-on-surface font-medium">Halfway</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">78.5 kg</span>
+</div>
+</div>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">Dec 26</span>
+</div>
+<!-- Row 4: 5% of start -->
+<div class="min-h-[56px] py-2 flex items-center justify-between relative">
+<div class="absolute left-[11px] top-0 bottom-0 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-3.5 z-10">
+<div class="w-[24px] flex justify-center">
+<div class="w-[10px] h-[10px] rounded-full border-2 border-lavender bg-surface-container-low"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-[14px] leading-[20px] text-on-surface font-medium">5% of start</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">77.9 kg</span>
+</div>
+</div>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">Jan 4</span>
+</div>
+<!-- Row 5: Goal (Circle filled lime) -->
+<div class="min-h-[56px] py-2 flex items-center justify-between relative">
+<!-- Line stops at circle -->
+<div class="absolute left-[11px] top-0 h-[26px] w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-3.5 z-10">
+<div class="w-[24px] flex justify-center">
+<div class="w-[10px] h-[10px] rounded-full bg-lime"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-[14px] leading-[20px] text-on-surface font-medium">Goal</span>
+<span class="text-[12px] leading-[16px] text-on-surface-variant">75 kg</span>
+</div>
+</div>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">Feb 18</span>
+</div>
+</div>
+</section>
+<!-- 6. Stay on Track Section -->
+<section class="flex flex-col">
+<h3 class="caps-label text-on-surface font-space mb-2.5">STAY ON TRACK</h3>
+<div class="bg-surface-container-low rounded-[24px] border border-[#2a2a2a] p-4 flex flex-col gap-3.5">
+<span class="caps-label text-on-surface-variant font-space">LAST 28 DAYS</span>
+<!-- Metric 1: Sessions 10 / 12 (83%) -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-[14px] leading-[20px]">
+<span class="text-on-surface font-medium">Sessions</span>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">10 / 12</span>
+</div>
+<div class="w-full h-[6px] rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-lime rounded-full" style="width: 83.3%;"></div>
+</div>
+</div>
+<!-- Metric 2: Check-ins 20 / 28 (71%) -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-[14px] leading-[20px]">
+<span class="text-on-surface font-medium">Check-ins</span>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">20 / 28</span>
+</div>
+<div class="w-full h-[6px] rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-lime rounded-full" style="width: 71.4%;"></div>
+</div>
+</div>
+<!-- Metric 3: Fuel on target 11 / 16 logged days (69%) -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-[14px] leading-[20px]">
+<span class="text-on-surface font-medium">Fuel on target</span>
+<span class="font-space font-semibold text-[12px] leading-[16px] text-on-surface">11 / 16 logged days</span>
+</div>
+<div class="w-full h-[6px] rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-lime rounded-full" style="width: 68.75%;"></div>
+</div>
+</div>
+<!-- Divider & Retention Advice -->
+<div class="pt-3 border-t border-outline-variant/30 mt-0.5">
+<p class="text-[14px] leading-[20px] text-on-surface">
+              Keep 4 of 4 sessions this week to hold Feb 18.
+            </p>
+</div>
+</div>
+</section>
+<!-- 7. Action Buttons -->
+<section class="flex flex-col gap-2.5">
+<!-- Log weight CTA -->
+<button class="w-full h-[56px] rounded-full bg-lime text-on-lime font-space font-bold text-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[20px]">scale</span>
+<span>Log weight</span>
+</button>
+<!-- Edit goal Secondary Button -->
+<button class="w-full h-[48px] rounded-full bg-surface-container-high border border-[#2a2a2a] text-on-surface font-space font-semibold text-[14px] flex items-center justify-center active:scale-[0.98] transition-transform">
+          Edit goal
+        </button>
+</section>
+<!-- 8. Medical/Algorithm Disclaimer -->
+<footer class="text-center px-4">
+<p class="text-[11px] leading-[16px] text-on-surface-variant font-normal">
+          Estimate based on your pace, logs and plan. Not medical advice.
+        </p>
+</footer>
+<!-- 9. 32pt Bottom Spacing -->
+<div class="h-[32px] w-full"></div>
+</main>
+<!-- iOS Home Indicator -->
+<div class="w-full flex justify-center pb-2 select-none">
+<div class="w-[134px] h-[5px] bg-[#393939] rounded-full"></div>
+</div>
+</div>
+</body></html>

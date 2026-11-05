@@ -8,7 +8,7 @@ import { color, font } from "@/theme/tokens";
 import type { PlanProposal } from "../plan-chat-store";
 import { ProposalActions } from "./ProposalActions";
 import { ProposalSectionView } from "./ProposalSectionView";
-import { buildProposalSections } from "./proposal-model";
+import { buildProposalSections, goalImpactLine } from "./proposal-model";
 import { hairline } from "./proposal-styles";
 
 type Props = {
@@ -47,7 +47,12 @@ export const ProposalCard = ({ proposal, applying, onApply, onChange }: Props) =
       {pending ? (
         <>
           <View style={styles.rule} />
-          <ProposalActions applying={applying} onApply={onApply} onChange={onChange} />
+          <ProposalActions
+            applying={applying}
+            onApply={onApply}
+            onChange={onChange}
+            impact={goalImpactLine(proposal.goalImpact)}
+          />
         </>
       ) : null}
     </View>

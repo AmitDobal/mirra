@@ -4,9 +4,13 @@ import type { AppDB } from "../db";
 import { preferences, profiles } from "../db/schema";
 import { badRequest } from "../lib/errors";
 import type { PersonalizationContextPort } from "../ports/personalization-context";
+import { buildGoalContextSafe } from "../services/goal-context";
 import { buildContextEnvelope } from "../services/personalization-context";
 
-/** D1 adapter: reads `preferences` + `profiles` for one user (always filtered by `user_id`). */
+/**
+ * D1 adapter: reads `preferences` + `profiles` for one user (always filtered by `user_id`),
+ * plus the AMI-181 `GoalContext` (null on any goal failure, so the AI call still runs).
+ */
 export const createD1PersonalizationContext = (db: AppDB): PersonalizationContextPort => ({
   build: async (input) => {
     const [profile] = await db
@@ -20,6 +24,7 @@ export const createD1PersonalizationContext = (db: AppDB): PersonalizationContex
       .where(eq(preferences.userId, input.userId))
       .limit(1);
     if (!profile || !prefs) throw badRequest("Onboarding incomplete — PUT /v1/onboarding first");
-    return buildContextEnvelope({ prefs, profile }, input);
+    const goal = await buildGoalContextSafe(db, input.userId);
+    return buildContextEnvelope({ prefs, profile, goal }, input);
   },
 });

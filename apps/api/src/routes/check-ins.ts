@@ -11,7 +11,10 @@ import { parseBody } from "../lib/validate";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { recordAttendanceSafe } from "../services/attendance";
+import { buildGoalContextSafe } from "../services/goal-context";
+import { refreshGoalSafe } from "../services/goal-refresh";
 import { recomputeCheckInStreakSafe } from "../services/streaks";
+import { loadTrainerPersona } from "../services/trainer-persona";
 
 export const checkInRoutes = new Hono<{
   Bindings: MirraEnv;
@@ -48,14 +51,20 @@ checkInRoutes.post("/v1/check-ins", requireAuth, async (c) => {
 
   await recordAttendanceSafe(db, userId, "checkedIn");
   await recomputeCheckInStreakSafe(db, userId);
+  await refreshGoalSafe(db, userId, "check_in");
 
   let coachMessage: string | undefined;
   if (hasOpenAi(c.env)) {
     try {
+      // AMI-184: same persona + GoalContext as POST /v1/coach/advise (after the goal refresh).
+      const [persona, goal] = await Promise.all([loadTrainerPersona(db, userId), buildGoalContextSafe(db, userId)]);
       const advise = await getCoachAdvisor(c.env, db).advise({
         userId,
         status: body.status,
         note: body.note ?? undefined,
+        context: body.localDate,
+        persona,
+        goal,
       });
       coachMessage = advise.message;
     } catch {

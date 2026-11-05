@@ -48,6 +48,8 @@ export type OnboardingPutBody = {
   };
   /** AMI-177: required to replace a completed onboarding (quiz re-run this session). */
   readonly reset?: boolean;
+  /** S43 hold-to-commit (AMI-180); `null` = "Not now". */
+  readonly commitment?: { readonly committedAt: number } | null;
 };
 
 export type PlanGenerateResponse = { readonly jobId: string };

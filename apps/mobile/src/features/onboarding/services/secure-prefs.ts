@@ -10,6 +10,7 @@ import { useMeStore } from "@/stores/me-store";
 
 import { toOnboardingBody } from "../map-body";
 import { useOnboardingStore } from "../store";
+import { patchCommitment } from "./commitment-patch";
 import { fetchMeOrNull } from "./funnel-state";
 import { uploadMirrorSelfie } from "./upload-mirror";
 import { persistOnboardingProfile, persistWeekPlan } from "./plan-persist";
@@ -39,6 +40,8 @@ export const syncPersonalizationAfterAuth = async (
   }
   if (me.onboardingCompleted || me.preferences) {
     logger.info("auth.secure_prefs.skipped_server_has_profile");
+    // AMI-182: the S43 commit still has to reach goal_plans.committed_at.
+    await patchCommitment();
     return;
   }
   const hasQuiz =

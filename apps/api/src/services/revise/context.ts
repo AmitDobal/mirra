@@ -3,16 +3,18 @@ import {
   type CoachReviseBody,
   type CurrentPlanResponse,
   type DayMealPlan,
+  type GoalContext,
   type Macros,
 } from "@mirra/contracts";
 import { eq } from "drizzle-orm";
 
 import { preferences } from "../../db/schema";
-import { todayUtc } from "../../lib/dates";
 import { parseJson } from "../../lib/json";
 import type { PlanReviseInput } from "../../ports/plan-reviser";
+import { goalContextFor } from "../goal-context";
 import { getTodayPlan, type MealPlanCtx } from "../meal-plan";
 import { defaultFuelTargets, loadCurrentPlan } from "../plan-loaders";
+import { dateOrUserToday } from "../user-day";
 
 export type PrefsRow = typeof preferences.$inferSelect;
 export type PlanWorkout = CurrentPlanResponse["workouts"][number];
@@ -33,6 +35,8 @@ export type ReviseState = {
   dayLabel: string;
   mealPlan: DayMealPlan | null;
   targets: Macros;
+  /** AMI-181: null when the user has no goal plan (goalImpact is then null too). */
+  goal: GoalContext | null;
 };
 
 const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -40,7 +44,8 @@ export const weekdayOf = (date: string): string => WEEKDAY[new Date(`${date}T00:
 
 /** Load prefs, plan, target workout and the day's meals. Workout: context id, today, then next lift. */
 export const loadReviseState = async (ctx: MealPlanCtx, body: CoachReviseBody): Promise<ReviseState> => {
-  const date = body.date ?? todayUtc();
+  // AMI-183: the client sends its local date; fallback is the profile-timezone today, never UTC.
+  const date = await dateOrUserToday(ctx.db, ctx.userId, body.date);
   const [prefs] = await ctx.db
     .select()
     .from(preferences)
@@ -75,6 +80,7 @@ export const loadReviseState = async (ctx: MealPlanCtx, body: CoachReviseBody): 
     dayLabel: workout ? [workoutDay ? weekdayOf(workoutDay.date) : null, workout.title].filter(Boolean).join(" · ") : "",
     mealPlan: await getTodayPlan(ctx, date),
     targets: defaultFuelTargets(plan.plan?.summary ?? null),
+    goal: await goalContextFor(ctx),
   };
 };
 
@@ -106,6 +112,7 @@ export const reviserInput = (ctx: MealPlanCtx, s: ReviseState, body: CoachRevise
     lifestyleNotes: s.prefs?.lifestyleNotes ?? null,
   },
   persona: toTrainerPersonaId(s.prefs?.trainerPersona),
+  goal: s.goal,
   today: s.date,
   schedule: s.plan.days.map((d) => ({
     date: d.date,

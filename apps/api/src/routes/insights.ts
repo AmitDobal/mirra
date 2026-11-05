@@ -3,7 +3,6 @@ import { Hono } from "hono";
 
 import { createDb } from "../db";
 import type { MirraEnv } from "../env";
-import { todayUtc } from "../lib/dates";
 import type { AuthVars } from "../middleware/auth";
 import { requireAuth } from "../middleware/auth";
 import { buildPersonalDayContext } from "../services/personal-context";
@@ -14,10 +13,10 @@ export const insightsRoutes = new Hono<{
 }>();
 
 insightsRoutes.get("/v1/insights/today", requireAuth, async (c) => {
-  const date = c.req.query("date") || todayUtc();
   const db = createDb(c.env.DB);
-  const ctx = await buildPersonalDayContext(db, c.get("userId"), date);
-  const { facts: _facts, ...insights } = ctx;
+  // No date: the service falls back to the user's profile-timezone today (AMI-183).
+  const ctx = await buildPersonalDayContext(db, c.get("userId"), c.req.query("date") || undefined);
+  const { facts: _facts, goal: _goal, ...insights } = ctx;
   const body: PersonalInsights = insights;
   return c.json(body);
 });

@@ -22,6 +22,8 @@ export type LibraryExercise = {
   readonly scoring: ExerciseScoring;
   readonly bwFactor: number | null;
   readonly ranked: boolean;
+  /** AMI-183: logged load is one dumbbell (per hand). Absent on older servers. */
+  readonly loadPerHand?: boolean;
   readonly source: "library" | "ai" | "heuristic";
 };
 

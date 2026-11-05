@@ -1,5 +1,17 @@
 # Handoff
 
+## 2026-11-05 — Round 2 AMI-175–184: Profile v2, goal timeline, workout speed, AI goal context
+
+**Done:** [#74](https://github.com/AmitDobal/mirra/pull/74) `integrate/round2` → `main` merge `8c8bc84`. AMI-175 instant workout start, native transitions, anatomy sex from the server. AMI-176 profile v2 (S41 personal details sheet, `PATCH /v1/me/profile`) + Today strip workout flame (S42). AMI-178 goal engine (contracts). AMI-179 goal timeline API (`GET /v1/goal` with ETag/304) + triggers. AMI-180 onboarding goal timeline (S06 rates, S12 line, S43 timeline + commit). AMI-181 GoalContext in AI ports + plan-chat `goalImpact`. AMI-182 goal screen + You/Progress goal cards (S44–S46). AMI-183 round-2 QA fixes (local dates, Android UI, lb weight log, upsell, subscription management). AMI-184 train-days enforcement, tone guard, check-in persona, meal plan repair. D1 `0021_goal_timeline` remote applied (additive: `goal_plans`, `goal_snapshots`). API Worker `f99d5c6b-fc10-46d8-9121-a5be52731e7e` (prev `49ac06ab-ca5f-4836-9929-5d040595fee5` = rollback target).
+
+**Backup:** `~/mirra-backups/mirra-db-pre-0021-20261105T040540Z.sql` (632K). Time Travel bookmark before 0021: `000000bf-00000000-0000511a-5d6e83b0feb2462bb65d4bfdddc81fe4` (`~/mirra-backups/mirra-db-bookmark-pre-0021-20261105T040540Z.txt`).
+
+**Smoke:** Root typecheck PASS, mobile 242/242, 26 api `test:*` suites PASS. QA: iOS r3 8/8 PASS, Android r3 12 PASS / 0 FAIL. Prod (`day-test-1`): `/health`, `/api/auth/ok`, `/v1/me`, `/v1/plans/current`, `/v1/strength`, `/v1/goal` → 200; `/v1/goal` with `If-None-Match` → 304.
+
+**Phone:** iOS https://u.expo.dev/update/01a1a9e5-6fee-733f-afc0-f43763bdc626 (group `17a960d6-9eaa-4004-8c16-1229044ea9f9`). Android https://u.expo.dev/update/01a1a9e7-2a4c-7051-8d55-538cd6b4a76c (group `395ba171-3a99-4966-9a47-4326b63b0087`). Runtime `exposdk:58.0.0`, branch `day-test`. Rollback groups: iOS `cdc11490-f93d-4688-b32d-3ed776fc1b39`, Android `43c6a7fe-da7e-487d-8012-7f8a14f89749`.
+
+**Follow-ups:** Coach review of the goal rate table and the female strength tables. Nits: the complete screen shows exercise count "04"; Next lift shows a raw ISO date; the "swap today's workout" intent; the Today hero flips rest/start after a finished workout. Drill persona tone. Watch the OpenAI meal plan repair logs.
+
 ## 2026-11-04 — Hotfix AMI-177: Cold-start onboarding overwrite + Android keyboard
 
 **Done:** [#73](https://github.com/AmitDobal/mirra/pull/73) `fix/ami-177-coldstart-keyboard` → `main` squash `d497c23`. Root cause: a cold deep link redirected before the funnel hydrated, so onboarded paid users landed in the quiz. Its generating step then sent `PUT /v1/onboarding` with defaults and overwrote the profile and plan. Fix: the tabs guard waits for `GET /v1/me` + SQLite hydration. Generating sends the PUT only when the quiz was walked this session, and never for an onboarded + entitled user. API returns 409 `already_onboarded` over a completed profile unless `reset: true`. Also: Android keyboard (KAV on plan chat, onboarding shell, describe meal, snap sheets), Strength back → You, Play copy, check-in → rebuild preview, onboarding selfie = compare baseline. No migrations. API Worker `49ac06ab` (prev `17a65f69`).

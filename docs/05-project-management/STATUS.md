@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** Hotfix AMI-177 @ `d497c23` ([#73](https://github.com/AmitDobal/mirra/pull/73)) — cold deep link no longer sends onboarded users into the quiz; `PUT /v1/onboarding` over a completed profile → 409 `already_onboarded` unless `reset: true` (prod data-loss fix). Android keyboard (KAV), Play copy, compare baseline. No migrations. API Worker `49ac06ab`. EAS iOS https://u.expo.dev/update/01a1a6ac-11d4-7e68-be9c-8a65790e349a · Android https://u.expo.dev/update/01a1a6ac-e701-7b91-a020-bb00a0169239.
+**Latest:** Round 2 AMI-175–184 @ `8c8bc84` ([#74](https://github.com/AmitDobal/mirra/pull/74)): profile v2 + `PATCH /v1/me/profile`, calendar flame, goal timeline (engine, `GET /v1/goal`, onboarding timeline, goal screen/cards), AI GoalContext + goalImpact, workout speed/transitions, local dates, lb weight log, upsell, subscription mgmt, train-days enforcement, tone guard, meal plan repair. Stitch S41–S46. D1 `0021_goal_timeline` remote. API Worker `f99d5c6b`. EAS iOS https://u.expo.dev/update/01a1a9e5-6fee-733f-afc0-f43763bdc626 · Android https://u.expo.dev/update/01a1a9e7-2a4c-7051-8d55-538cd6b4a76c.
 
 | | |
 | --- | --- |
@@ -8,9 +8,9 @@
 | State | **DAY-TEST LIVE** — hosted API + EAS Update (laptop-off Expo Go) |
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
-| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `49ac06ab` (AMI-177 hotfix) |
-| Mobile | Expo SDK **58** — tip `d497c23` |
-| Mobile day-test | iOS https://u.expo.dev/update/01a1a6ac-11d4-7e68-be9c-8a65790e349a · Android https://u.expo.dev/update/01a1a6ac-e701-7b91-a020-bb00a0169239 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `f99d5c6b` (Round 2 AMI-175–184) |
+| Mobile | Expo SDK **58** — tip `8c8bc84` |
+| Mobile day-test | iOS https://u.expo.dev/update/01a1a9e5-6fee-733f-afc0-f43763bdc626 · Android https://u.expo.dev/update/01a1a9e7-2a4c-7051-8d55-538cd6b4a76c · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

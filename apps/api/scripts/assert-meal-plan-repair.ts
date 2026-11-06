@@ -7,6 +7,7 @@ import { mealPlanJsonSchema, repairMealDraft } from "../src/adapters/meal-plan-r
 import { toCatalogRow, VETTED_FOODS } from "../src/data/vetted-foods";
 import type { MirraEnv } from "../src/env";
 import type { MealPlanInput } from "../src/ports/meal-plan-generator";
+import { NO_DIET_CONSTRAINTS } from "../src/lib/diet-constraints";
 
 let failures = 0;
 const check = (ok: boolean, label: string) => {
@@ -26,6 +27,7 @@ const input: MealPlanInput = {
   catalog,
   avoidFoodIds: [avoided!.id],
   recentFoodIds: [],
+  diet: NO_DIET_CONSTRAINTS,
 };
 
 const repairCases = () => {

@@ -86,7 +86,8 @@ export const ensurePeriod = async (
       amount: topUp,
       bucket: "granted",
       kind: "monthly_grant",
-      idempotencyKey: `monthly_grant:${period}:${tier}`,
+      // AMI-199: the target grant is part of the key, so raising a grant mid-month tops up once.
+      idempotencyKey: `monthly_grant:${period}:${tier}:${monthlyGrantFor(env, tier)}`,
     });
     row = (await readPeriod(db, userId, period))!;
   }

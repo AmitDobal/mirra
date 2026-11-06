@@ -16,6 +16,7 @@ import { createOpenAiRecipeChat } from "../src/adapters/openai-recipe-chat";
 import { toCatalogRow, VETTED_FOODS } from "../src/data/vetted-foods";
 import type { MirraEnv } from "../src/env";
 import type { PlanReviseInput } from "../src/ports/plan-reviser";
+import { NO_DIET_CONSTRAINTS } from "../src/lib/diet-constraints";
 import { goalDatesOk, heuristicGoalNote } from "../src/services/goal-copy";
 import { buildContextEnvelope } from "../src/services/personalization-context";
 import { FIXTURE_LINE, fixtureGoalContext, noTargetGoal, withStatus } from "./lib/goal-context-fixture";
@@ -79,7 +80,7 @@ const planCases = async () => {
 const mealCases = async () => {
   const catalog = VETTED_FOODS.slice(0, 20).map(toCatalogRow);
   const macros = { kcal: 2250, proteinG: 170, carbsG: 220, fatG: 70 };
-  const input = { userId: "u1", date: "2026-12-09", targets: macros, remaining: macros, slots: ["lunch" as const], catalog, avoidFoodIds: [], recentFoodIds: [] };
+  const input = { userId: "u1", date: "2026-12-09", targets: macros, remaining: macros, slots: ["lunch" as const], catalog, diet: NO_DIET_CONSTRAINTS, avoidFoodIds: [], recentFoodIds: [] };
   reply = "{}";
   await createOpenAiMealPlanGenerator(env).generate({ ...input, goal: { line: goal.line, status: goal.status } });
   check(hasBlock(last(), FIXTURE_LINE), "meal plan generator: goal rules + goal line in prompt");
@@ -134,7 +135,7 @@ const reviserCases = async () => {
 
 const chefCases = async () => {
   const meal = { id: "m1", slot: "lunch", title: "Chicken rice bowl", kcal: 650, proteinG: 50, carbsG: 70, fatG: 15, items: [{ name: "chicken breast", grams: 180 }] } as unknown as PlannedMeal;
-  const rules = { forbiddenTerms: [], allowed: [] } as never;
+  const rules = { forbiddenTerms: [], allowed: [], neverInclude: [] } as never;
   const input = { userId: "u1", envelope: await envelope("recipe_chat"), meal, rules, maxOutputTokens: 200, message: "how do I cook it", history: [] };
   reply = "Sear the chicken 4 minutes a side. This bowl will guarantee results.";
   const out = await createOpenAiRecipeChat(env).chat(input);

@@ -9,6 +9,8 @@
  */
 import type { MealSlot } from "@mirra/contracts";
 
+import { FOODS_BY_ID } from "../data/vetted-foods";
+import { foodBannedBy } from "../lib/diet-constraints";
 import type { MealPlanDraftMeal, MealPlanInput } from "../ports/meal-plan-generator";
 
 export const MAX_CATALOG_ROWS = 120;
@@ -99,6 +101,15 @@ const repairItems = (raw: unknown, resolve: (v: unknown) => string | null, slot:
   return out.slice(0, MAX_ITEMS);
 };
 
+const bannedItemOf = (raw: unknown, input: MealPlanInput): string | null => {
+  for (const it of Array.isArray(raw) ? raw : []) {
+    const id = asRecord(it)?.foodId ?? asRecord(it)?.id;
+    const food = typeof id === "string" ? FOODS_BY_ID.get(id.trim().toLowerCase()) : undefined;
+    if (food && foodBannedBy(food, input.diet)) return food.id;
+  }
+  return null;
+};
+
 export const repairMealDraft = (raw: unknown, input: MealPlanInput): MealRepair => {
   const fixes: string[] = [];
   const wanted = new Set<string>(input.slots);
@@ -115,6 +126,12 @@ export const repairMealDraft = (raw: unknown, input: MealPlanInput): MealRepair 
     }
     if (meals.some((x) => x.slot === slot)) {
       fixes.push(`dropped repeat ${slot}`);
+      continue;
+    }
+    // AMI-199: a dish built around a banned food is re-drafted, never served minus that food.
+    const banned = bannedItemOf(r?.items, input);
+    if (banned) {
+      fixes.push(`${slot}: diet-banned ${banned} → re-draft`);
       continue;
     }
     const items = repairItems(r?.items, resolve, slot, fixes);

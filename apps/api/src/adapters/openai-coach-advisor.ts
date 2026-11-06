@@ -3,6 +3,8 @@ import { z } from "zod";
 
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
+import { maxOutputTokensFor, openAiModelFor } from "../lib/ai/feature-config";
+import { canSpend } from "../services/ai-budget";
 import { logAiUsage } from "../lib/ai-usage";
 import type {
   CoachAdviseInput,
@@ -68,14 +70,17 @@ export const createOpenAiCoachAdvisor = (
   advise: async (input: CoachAdviseInput): Promise<CoachAdviseResult> => {
     const apiKey = env.OPENAI_API_KEY;
     if (!apiKey) return heuristicCoachAdvisor.advise(input);
+    // AMI-199: coach was never metered against the daily cap or monthly token budget.
+    if (!(await canSpend(db, input.userId, "coach"))) return heuristicCoachAdvisor.advise(input);
 
-    const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+    const model = openAiModelFor(env, "coach");
     try {
       const completion = await chatCompletion({
         apiKey,
         model,
         jsonMode: true,
         temperature: 0.6,
+        maxTokens: maxOutputTokensFor("coach"),
         messages: [
           { role: "system", content: coachSystemPrompt(input) },
           { role: "user", content: coachUserPayload(input) },
@@ -86,6 +91,7 @@ export const createOpenAiCoachAdvisor = (
         db,
         userId: input.userId,
         action: "openai.coach.advise",
+        feature: "coach",
         model: completion.model,
         usage: completion.usage,
       });

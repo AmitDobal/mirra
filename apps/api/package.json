@@ -33,6 +33,8 @@
     "test:tone": "tsx scripts/assert-tone-guard.ts",
     "test:meal-plan-repair": "tsx scripts/assert-meal-plan-repair.ts",
     "test:local-dates": "tsx scripts/assert-local-dates.ts",
+    "test:diet-safety": "tsx scripts/assert-diet-safety.ts",
+    "test:credits-tokens": "tsx scripts/assert-credits-tokens.ts",
     "smoke:meal-revise": "node scripts/smoke-meal-revise.mjs",
     "smoke:revise-caps": "node scripts/smoke-revise-caps.mjs",
     "smoke:streaks": "node scripts/smoke-streaks.mjs",

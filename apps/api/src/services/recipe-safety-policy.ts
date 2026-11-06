@@ -1,11 +1,18 @@
 import type { ContextEnvelope, HardConstraint } from "@mirra/contracts";
 
 import { VETTED_FOODS, type VettedFood } from "../data/vetted-foods";
-import { avoidWordsOf, excludedTagsFor, filterCatalog, keywordsForTags } from "../lib/meal-diet";
+import {
+  findBannedTerm,
+  hardPartOf,
+  neverIncludeList,
+  type DietConstraints,
+} from "../lib/diet-constraints";
+import { dietCatalog } from "../lib/meal-diet";
 
 /**
  * Deterministic hard-constraint checks for Chef chat and recipes (no tokens spent).
- * Constraints come ONLY from the envelope (explicit settings). The model never widens them.
+ * Constraints come ONLY from the envelope (explicit settings) plus the AMI-199 resolver
+ * (cuisine cultural defaults, timezone). The model never widens them.
  * Used before the LLM (user asks for a banned food) and after it (reply names a banned food).
  */
 export type SafetyRules = {
@@ -13,6 +20,14 @@ export type SafetyRules = {
   allowed: VettedFood[];
   /** Lowercase words/phrases that must never be suggested. */
   forbiddenTerms: string[];
+  /** Short prompt list ("beef (incl. steak, veal…)", "pork …"). */
+  neverInclude: string[];
+  /** Resolved constraints with `terms` = `forbiddenTerms` (qualified words kept). */
+  diet: DietConstraints;
+  /** Phrases cleared before scanning (allowed catalog names + planned items without beef/pork). */
+  safe: string[];
+  /** Beef/pork word in the planned meal itself (legacy row), else null. */
+  mealViolation: string | null;
 };
 
 const valuesOf = (envelope: ContextEnvelope, type: HardConstraint["type"]): string[] =>
@@ -22,38 +37,42 @@ const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 const termRegex = (term: string): RegExp => new RegExp(`\\b${escapeRe(term)}(?:s|es)?\\b`, "i");
 
-const singular = (w: string): string => (w.endsWith("s") && w.length > 3 ? w.slice(0, -1) : w);
-
-/** `mealFoodNames`: items already in the planned meal are never flagged (they predate a pref change). */
+/** `mealFoodNames`: items already in the planned meal are never flagged, except beef/pork (AMI-199). */
 export const buildSafetyRules = (
   envelope: ContextEnvelope,
   mealFoodNames: readonly string[] = [],
+  timezone?: string | null,
 ): SafetyRules => {
-  const diet = valuesOf(envelope, "diet");
-  const foodsAvoid = [...valuesOf(envelope, "avoid_food"), ...valuesOf(envelope, "allergy")].join(", ");
-  const cuisines = valuesOf(envelope, "cuisine_only");
-  const excludedTags = excludedTagsFor(diet, foodsAvoid);
-  const allowed = filterCatalog(diet, foodsAvoid, cuisines);
+  const { constraints, foods: allowed } = dietCatalog({
+    dietTags: valuesOf(envelope, "diet"),
+    foodsAvoid: [...valuesOf(envelope, "avoid_food"), ...valuesOf(envelope, "allergy")].join(", "),
+    cuisineStyles: valuesOf(envelope, "cuisine_only"),
+    timezone,
+  });
+  const hard = hardPartOf(constraints);
 
-  const terms = new Set<string>();
-  for (const w of avoidWordsOf(foodsAvoid)) terms.add(singular(w));
-  for (const tag of excludedTags) terms.add(tag);
-  for (const w of keywordsForTags(excludedTags)) terms.add(w);
-
+  const terms = new Set<string>([...constraints.terms, ...constraints.bannedTags.filter((t) => !t.includes("_"))]);
   const allowedIds = new Set(allowed.map((f) => f.id));
   for (const f of VETTED_FOODS) {
     if (!allowedIds.has(f.id)) terms.add(f.name.toLowerCase());
   }
+  const hardTerms = new Set(hard.terms);
   const inMeal = mealFoodNames.map((n) => n.toLowerCase());
-  const forbiddenTerms = [...terms].filter((t) => !inMeal.some((n) => n.includes(t)));
-  return { allowed, forbiddenTerms };
+  const forbiddenTerms = [...terms].filter((t) => hardTerms.has(t) || !inMeal.some((n) => n.includes(t)));
+  const mealViolation = inMeal.map((n) => findBannedTerm(n, hard)).find((t) => t !== null) ?? null;
+  return {
+    allowed,
+    forbiddenTerms,
+    neverInclude: neverIncludeList(constraints),
+    diet: { ...constraints, terms: forbiddenTerms },
+    safe: [...allowed.map((f) => f.name), ...inMeal.filter((n) => findBannedTerm(n, hard) === null)],
+    mealViolation,
+  };
 };
 
 /** First forbidden term found in `text`, else null. Post-LLM check on replies and recipe steps. */
-export const findForbiddenTerm = (text: string, rules: SafetyRules): string | null => {
-  for (const term of rules.forbiddenTerms) if (termRegex(term).test(text)) return term;
-  return null;
-};
+export const findForbiddenTerm = (text: string, rules: SafetyRules): string | null =>
+  findBannedTerm(text, rules.diet, rules.safe);
 
 const NEGATION_BEFORE =
   /\b(?:no|without|not|avoid|avoiding|never|exclude|skip|hate|allergic to|free of|instead of|replace|replacing|swap|remove|drop|ditch|cant|can't|dont|don't)\b[^.?!]{0,20}$/i;
@@ -73,4 +92,4 @@ export const findRequestedViolation = (message: string, rules: SafetyRules): str
 };
 
 export const constraintViolationReply = (term: string): string =>
-  `I can't suggest ${term} because it's on your avoid list. Ask for another swap and I'll pick something that fits. Always check labels for hidden ingredients.`;
+  `I can't suggest ${term} because it doesn't fit your food settings. Ask for another swap and I'll pick something that fits. Always check labels for hidden ingredients.`;

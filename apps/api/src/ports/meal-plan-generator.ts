@@ -1,6 +1,7 @@
 import type { Macros, MealSlot } from "@mirra/contracts";
 
 import type { CatalogRow } from "../data/vetted-foods";
+import type { DietConstraints } from "../lib/diet-constraints";
 
 /**
  * Meal plan drafting. Generators only pick `foodId` + grams from the catalog;
@@ -23,6 +24,11 @@ export type MealPlanInput = {
   slots: MealSlot[];
   /** Pre-filtered by diet / allergy. */
   catalog: CatalogRow[];
+  /**
+   * AMI-199: resolved diet bans (diet tags, avoid list, cuisine cultural defaults). Required so no
+   * path can skip the prompt "never include" list or the post-generation guard.
+   */
+  diet: DietConstraints;
   avoidFoodIds: string[];
   /** Foods used in the last 3 days (variety). */
   recentFoodIds: string[];

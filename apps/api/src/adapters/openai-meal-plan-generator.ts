@@ -1,6 +1,9 @@
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
+import { maxOutputTokensFor, openAiModelFor } from "../lib/ai/feature-config";
 import { logAiUsage } from "../lib/ai-usage";
+import { hasConstraints, neverIncludeList } from "../lib/diet-constraints";
+import { logDietGuard } from "../lib/diet-guard";
 import { slotBudgets } from "../lib/meal-macros";
 import type {
   MealPlanGenerator,
@@ -20,19 +23,33 @@ Reply STRICT JSON: {"meals":[{"slot":"breakfast"|"lunch"|"dinner"|"snack","title
 Rules: one meal per requested slot. 2-4 items per meal (protein + carb + veg/fruit/fat). Never output calories or macros; the server computes them.
 Aim each meal near its slot budget. Respect each food's slots. Do not use avoidFoodIds. Prefer variety vs recentFoodIds.`;
 
+/** AMI-199: only sent when the user has bans. The server guard re-checks every meal anyway. */
+const DIET_SYSTEM = `DIET RULES (hard): never include any food, ingredient or dish word from diet.neverInclude, not in items and not in titles. Proteins only from diet.allowedProteins. Titles name only the chosen catalog foods.`;
+
 /** AMI-181: appended when the user has a goal plan. Budgets stay the server's numbers. */
 const GOAL_SYSTEM = goalRulesBlock(
   "GOAL DATA: goal.line and goal.status describe the user's goal. Pick dishes that suit it (protein first on a cut or a gain). Never change the slot budgets. Titles never mention weight or dates.",
 );
 
 export const mealPlanSystemPrompt = (input: MealPlanInput): string =>
-  input.goal ? `${SYSTEM}\n${GOAL_SYSTEM}` : SYSTEM;
+  [SYSTEM, ...(hasConstraints(input.diet) ? [DIET_SYSTEM] : []), ...(input.goal ? [GOAL_SYSTEM] : [])].join("\n");
+
+const dietBlock = (input: MealPlanInput) =>
+  hasConstraints(input.diet)
+    ? {
+        diet: {
+          neverInclude: neverIncludeList(input.diet),
+          allowedProteins: input.catalog.filter((r) => r.roles.includes("protein")).map((r) => r.name),
+        },
+      }
+    : {};
 
 export const buildPrompt = (input: MealPlanInput): string => {
   const budgets = slotBudgets(input.remaining, input.slots);
   return JSON.stringify({
     date: input.date,
     ...(input.goal ? { goal: input.goal } : {}),
+    ...dietBlock(input),
     slotBudgets: budgets,
     avoidFoodIds: input.avoidFoodIds,
     recentFoodIds: input.recentFoodIds,
@@ -47,6 +64,8 @@ export const buildPrompt = (input: MealPlanInput): string => {
 const validate = (raw: unknown, input: MealPlanInput): MealPlanResult | null => {
   const { meals, fixes } = repairMealDraft(raw, input);
   if (fixes.length > 0) console.warn(`[openai-meal-plan] repaired output: ${fixes.slice(0, 8).join("; ")}`);
+  const diet = fixes.filter((f) => f.includes("diet-banned"));
+  if (diet.length > 0) logDietGuard("meal_plan.openai", { fixes: diet, groups: input.diet.groups });
   return meals.length > 0 ? { meals, source: "openai" } : null;
 };
 
@@ -63,7 +82,7 @@ export const createOpenAiMealPlanGenerator = (
       return heuristicMealPlanGenerator.generate(input);
     }
 
-    const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+    const model = openAiModelFor(env, "meal_plan");
     try {
       const schema = mealPlanJsonSchema(input);
       const completion = await chatCompletion({
@@ -71,6 +90,7 @@ export const createOpenAiMealPlanGenerator = (
         model,
         ...(schema ? { jsonSchema: { name: "meal_plan", schema } } : { jsonMode: true }),
         temperature: 0.5,
+        maxTokens: maxOutputTokensFor("meal_plan"),
         messages: [
           { role: "system", content: mealPlanSystemPrompt(input) },
           { role: "user", content: buildPrompt(input) },

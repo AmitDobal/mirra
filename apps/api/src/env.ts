@@ -33,6 +33,14 @@ export type MirraEnv = {
   OPENAI_API_KEY?: string;
   /** Chat model id; defaults to gpt-4o-mini when unset. */
   OPENAI_MODEL?: string;
+  /** AMI-199: per-feature model overrides (fall back to OPENAI_MODEL). See lib/ai/feature-config.ts. */
+  OPENAI_MODEL_MEAL_PLAN?: string;
+  OPENAI_MODEL_PLAN_GEN?: string;
+  OPENAI_MODEL_REVISE?: string;
+  OPENAI_MODEL_COACH?: string;
+  OPENAI_MODEL_MEAL_ESTIMATE?: string;
+  OPENAI_MODEL_CHEF?: string;
+  OPENAI_MODEL_EXERCISE_TAG?: string;
   /** Optional OpenAI-compatible base URL (local mock for smoke). Default api.openai.com/v1. */
   OPENAI_BASE_URL?: string;
   /** Chef chat: max user turns per planned-meal thread (default 8). */
@@ -52,7 +60,7 @@ export type MirraEnv = {
   VOICE_PROVIDER?: string;
   /** `off` | `shadow` | `enforce`. Default `shadow` (ledger written, never blocks). */
   AI_CREDITS_MODE?: string;
-  /** Monthly credit grant overrides (integers). Defaults: free 40, pro 400. */
+  /** Monthly credit grant overrides (integers). Defaults: free 200, pro 400 (AMI-199). */
   AI_CREDITS_FREE_GRANT?: string;
   AI_CREDITS_PRO_GRANT?: string;
   /** Monthly provider-cost ceilings in USD micros (1_000_000 = $1). Defaults: free $0.50, pro $6. */

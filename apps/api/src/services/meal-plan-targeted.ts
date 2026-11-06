@@ -3,6 +3,7 @@ import { and, eq, ne } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 
 import type { CatalogRow } from "../data/vetted-foods";
+import type { DietConstraints } from "../lib/diet-constraints";
 import { mealPlanDays, mealPlanItems } from "../db/schema";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { newId } from "../lib/id";
@@ -51,6 +52,8 @@ export type DraftMealsArgs = {
   targets: Macros;
   /** Already filtered by the post-revision diet / avoid / cuisine prefs. */
   catalog: CatalogRow[];
+  /** AMI-199: resolved bans for the same (post-revision) prefs as `catalog`. */
+  diet: DietConstraints;
   avoidFoodIds: string[];
   seed: string;
   /** Whole-day asks use the configured generator (AI, credits); slot swaps stay heuristic. */
@@ -80,6 +83,7 @@ export const draftMeals = async (
     remaining: a.budget,
     slots: a.slots,
     catalog: a.catalog,
+    diet: a.diet,
     avoidFoodIds: a.avoidFoodIds,
     recentFoodIds: await recentFoodIds(ctx.db, ctx.userId, a.date),
     seed: a.seed,

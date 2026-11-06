@@ -5,7 +5,7 @@ import type { CuisineStyle, MealSlot } from "@mirra/contracts";
  * (cooked / as-eaten unless the id says otherwise). Static + versioned: the LLM
  * only ever picks ids from here; macros are always computed by the server.
  */
-export const VETTED_FOODS_VERSION = 2;
+export const VETTED_FOODS_VERSION = 3;
 
 /** Cuisine tag for staples that fit every cuisine. */
 export const UNIVERSAL = "universal" as const;
@@ -19,7 +19,7 @@ export type VettedFood = {
   unit: { label: string; grams: number };
   roles: FoodRole[];
   slots: MealSlot[];
-  /** meat fish shellfish egg dairy gluten nuts soy */
+  /** meat poultry beef red_meat fish shellfish egg dairy gluten nuts soy root_veg fungi (see lib/diet-terms.ts) */
   tags: string[];
   /** Cuisines this food belongs to, or ["universal"] for staples everyone can eat. */
   cuisines: ReadonlyArray<CuisineStyle | typeof UNIVERSAL>;
@@ -72,9 +72,9 @@ const food = (
 
 const RAW_FOODS: readonly Omit<VettedFood, "cuisines">[] = [
   // Protein
-  food("chicken_breast_cooked", "Chicken breast", [165, 31, 0, 3.6], ["1 palm", 120], "p", "LD", "meat", [80, 250]),
-  food("turkey_breast_cooked", "Turkey breast", [135, 30, 0, 1], ["1 palm", 120], "p", "LD", "meat", [80, 250]),
-  food("lean_beef_cooked", "Lean beef", [215, 26, 0, 12], ["1 palm", 100], "p", "LD", "meat", [80, 220]),
+  food("chicken_breast_cooked", "Chicken breast", [165, 31, 0, 3.6], ["1 palm", 120], "p", "LD", "meat poultry", [80, 250]),
+  food("turkey_breast_cooked", "Turkey breast", [135, 30, 0, 1], ["1 palm", 120], "p", "LD", "meat poultry", [80, 250]),
+  food("lean_beef_cooked", "Lean beef", [215, 26, 0, 12], ["1 palm", 100], "p", "LD", "meat beef red_meat", [80, 220]),
   food("salmon_cooked", "Salmon", [206, 22, 0, 12], ["1 fillet", 140], "pf", "LD", "fish", [90, 220]),
   food("cod_cooked", "Cod", [105, 23, 0, 0.9], ["1 fillet", 140], "p", "LD", "fish", [90, 250]),
   food("shrimp_cooked", "Shrimp", [99, 24, 0.2, 0.3], ["1 cup", 145], "p", "LD", "shellfish", [90, 250]),
@@ -95,8 +95,8 @@ const RAW_FOODS: readonly Omit<VettedFood, "cuisines">[] = [
   food("brown_rice_cooked", "Brown rice", [123, 2.7, 26, 1], ["1 cup", 195], "c", "LD", "", [80, 400]),
   food("quinoa_cooked", "Quinoa", [120, 4.4, 21.3, 1.9], ["1 cup", 185], "c", "LD", "", [80, 350]),
   food("pasta_cooked", "Pasta", [158, 5.8, 31, 0.9], ["1 cup", 140], "c", "LD", "gluten", [80, 350]),
-  food("sweet_potato_baked", "Sweet potato", [90, 2, 20.7, 0.2], ["1 medium", 130], "c", "LD", "", [100, 400]),
-  food("potato_boiled", "Potato", [87, 1.9, 20, 0.1], ["1 medium", 150], "c", "LD", "", [100, 400]),
+  food("sweet_potato_baked", "Sweet potato", [90, 2, 20.7, 0.2], ["1 medium", 130], "c", "LD", "root_veg", [100, 400]),
+  food("potato_boiled", "Potato", [87, 1.9, 20, 0.1], ["1 medium", 150], "c", "LD", "root_veg", [100, 400]),
   food("corn_tortilla", "Corn tortillas", [218, 5.7, 44, 2.9], ["1 tortilla", 25], "c", "LD", "", [50, 150]),
   food("oats_dry", "Rolled oats", [389, 16.9, 66, 6.9], ["½ cup", 40], "c", "B", "gluten", [30, 120]),
   food("granola", "Granola", [471, 10, 64, 20], ["½ cup", 60], "c", "BS", "gluten nuts", [30, 90]),
@@ -120,8 +120,8 @@ const RAW_FOODS: readonly Omit<VettedFood, "cuisines">[] = [
   food("zucchini_cooked", "Zucchini", [17, 1.1, 3.1, 0.4], ["1 cup", 180], "v", "LD", "", [90, 300]),
   food("asparagus_cooked", "Asparagus", [22, 2.4, 4.1, 0.2], ["6 spears", 90], "v", "D", "", [60, 220]),
   food("cauliflower_cooked", "Cauliflower", [23, 1.8, 4.1, 0.5], ["1 cup", 124], "v", "LD", "", [80, 300]),
-  food("mushrooms_cooked", "Mushrooms", [28, 2.2, 5.3, 0.5], ["1 cup", 156], "v", "BLD", "", [60, 250]),
-  food("carrots_raw", "Carrots", [41, 0.9, 9.6, 0.2], ["1 cup", 128], "v", "LS", "", [60, 250]),
+  food("mushrooms_cooked", "Mushrooms", [28, 2.2, 5.3, 0.5], ["1 cup", 156], "v", "BLD", "fungi", [60, 250]),
+  food("carrots_raw", "Carrots", [41, 0.9, 9.6, 0.2], ["1 cup", 128], "v", "LS", "root_veg", [60, 250]),
   // Fat
   food("olive_oil", "Olive oil", [884, 0, 0, 100], ["1 tbsp", 15], "f", "LD", "", [5, 30]),
   food("avocado", "Avocado", [160, 2, 8.5, 14.7], ["½ avocado", 70], "f", "BLDS", "", [35, 140]),
@@ -142,6 +142,8 @@ const RAW_FOODS: readonly Omit<VettedFood, "cuisines">[] = [
  * Keep enough universal protein/carb/veg/fat/fruit that any single cuisine still yields full meals.
  */
 const FOOD_CUISINES: Readonly<Record<string, readonly CuisineStyle[]>> = {
+  // AMI-199: beef was a universal staple, so Indian users were served it. Never universal again.
+  lean_beef_cooked: ["american", "mexican", "mediterranean", "middle_eastern", "korean", "japanese", "chinese", "thai", "other"],
   salmon_cooked: ["japanese", "american", "mediterranean", "korean"],
   cod_cooked: ["american", "mediterranean"],
   shrimp_cooked: ["chinese", "thai", "japanese", "mexican", "mediterranean", "korean"],

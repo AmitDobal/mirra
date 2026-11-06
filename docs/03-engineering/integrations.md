@@ -48,8 +48,18 @@ Same steps for payments (new `PurchasesPort` adapter), email, push, storage, ana
 | `AI_PROVIDER` | `openai` \| `heuristic` \| `anthropic` \| `workers-ai` (explicit). Empty = auto |
 | Auto | If `OPENAI_API_KEY` → openai; else heuristic |
 | `OPENAI_API_KEY` / `OPENAI_MODEL` | OpenAI adapter |
+| `OPENAI_MODEL_<FEATURE>` | Per-feature model override (AMI-199): `MEAL_PLAN`, `PLAN_GEN`, `REVISE`, `COACH`, `MEAL_ESTIMATE`, `CHEF`, `EXERCISE_TAG`. Caps in `lib/ai/feature-config.ts` |
 | `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | Reserved for Anthropic adapter |
 | Future Workers AI | Bindings + `AI_PROVIDER=workers-ai` |
+
+## Diet safety guard (AMI-199)
+
+Every meal path is provider-agnostic and guarded the same way, whatever adapter drafted it:
+
+1. `lib/diet-constraints.ts` `resolveDietConstraints` = THE resolver: diet tags (`vegetarian`, `vegan`, `pescatarian`, `eggetarian`, `jain`, `halal`, `kosher`, `no_beef`, `no_pork`, `no_red_meat`, `dairy_free`, `gluten_free`, ...), the free-text avoid list, cuisine cultural defaults (`indian` → no beef, no pork; `middle_eastern` → no pork) and a small profile-timezone table. Never inferred from a name. No opt-out UI exists, so defaults always apply.
+2. Before generation: the catalog is filtered (`filterCatalogBy`) and the OpenAI prompt gets `diet.neverInclude` + `diet.allowedProteins`. Chef gets `neverInclude` too.
+3. After generation: `lib/diet-guard.ts` rejects any dish holding a banned food (slot re-drafted by the heuristic from the allowed catalog) and rebuilds titles that name one. Chef replies / recipes, plan-chat replies are scanned with `findBannedTerm` (synonyms: steak, veal, brisket, pastrami, pepperoni, ham, bacon, lard, gelatin, "burger" unless "chicken / veggie burger", ...). Every hit logs `[diet-guard]`.
+4. `MealPlanInput.diet` is required, so a new path cannot skip it. Legacy rows: `scripts/fix-banned-meals.mjs` (dry run by default).
 
 ## Agent / PR checklist
 

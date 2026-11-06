@@ -13,7 +13,7 @@ import {
   assertRateLimit,
   type Drafted,
   itemValues,
-  loadCatalog,
+  loadDietCatalog,
   loadMealsPerDay,
   materializeDrafts,
   type MealPlanCtx,
@@ -56,7 +56,7 @@ export const generatePlan = async (
   await assertRateLimit(ctx);
 
   const targets = defaultFuelTargets(current.plan.summary);
-  const catalog = await loadCatalog(ctx);
+  const { catalog, diet } = await loadDietCatalog(ctx);
 
   let day = existing;
   let kept: ItemRow[] = [];
@@ -102,6 +102,7 @@ export const generatePlan = async (
                 remaining,
                 slots: [...slots],
                 catalog,
+                diet,
                 avoidFoodIds: [],
                 recentFoodIds: await recentFoodIds(ctx.db, ctx.userId, date),
                 seed: body.force ? String(Date.now()) : undefined,

@@ -2,13 +2,15 @@ import type { Macros, MealSlot, MealSnap, PlannedMeal, ReviseItem } from "@mirra
 
 import { toCatalogRow } from "../../data/vetted-foods";
 import { newId } from "../../lib/id";
-import { filterCatalog } from "../../lib/meal-diet";
+import type { DietConstraints } from "../../lib/diet-constraints";
+import { dietCatalog, filterCatalog } from "../../lib/meal-diet";
 import { SLOT_ORDER, slotBudgets, subtractMacros, sumMacros } from "../../lib/meal-macros";
 import { pickSlotsToPlan, slotsForMealCount } from "../../lib/meal-slots";
 import type { PlanReviseIntent, PlanReviseMealBias } from "../../ports/plan-reviser";
 import type { Drafted, MealPlanCtx } from "../meal-plan-draft";
 import type { MealPrefsPlan } from "../meal-revise";
 import { draftMeals, toItemValues, type MealDraft, type MealOp } from "../meal-plan-targeted";
+import { loadTimezone } from "../attendance";
 import { loadDayMeals } from "../meals";
 import type { ReviseState } from "./context";
 import { MEAL_CAP_WARNING } from "./limits";
@@ -60,10 +62,10 @@ type Args = {
   allowWholeDay?: boolean;
 };
 
-/** Foods the post-revision prefs allow; null when no food pref changed. */
-const catalogFor = (a: Args) => {
+/** Foods + resolved bans for the post-revision prefs (AMI-199: cuisine defaults + timezone too). */
+const dietFor = (a: Args, timezone: string | null) => {
   const { dietTags, foodsAvoid, cuisines } = a.prefs.next;
-  return filterCatalog(dietTags, foodsAvoid, cuisines, a.state.prefs?.lifestyleNotes);
+  return dietCatalog({ dietTags, foodsAvoid, cuisineStyles: cuisines, hintText: a.state.prefs?.lifestyleNotes, timezone });
 };
 
 /**
@@ -88,7 +90,7 @@ const tilted = (b: Macros, bias: PlanReviseMealBias | undefined): Macros => {
 };
 
 /** Swap only the targeted slots: heuristic candidates per slot, bias picks the winner. */
-const draftSlots = async (ctx: MealPlanCtx, a: Args, targets: PlannedMeal[], catalog: ReturnType<typeof toCatalogRow>[]): Promise<MealStepResult> => {
+const draftSlots = async (ctx: MealPlanCtx, a: Args, targets: PlannedMeal[], catalog: ReturnType<typeof toCatalogRow>[], diet: DietConstraints): Promise<MealStepResult> => {
   const day = a.state.mealPlan!;
   const out: MealStepResult = { items: [], draft: null, warnings: [], touchedIds: targets.map((t) => t.id) };
   const ops: MealOp[] = [];
@@ -106,6 +108,7 @@ const draftSlots = async (ctx: MealPlanCtx, a: Args, targets: PlannedMeal[], cat
           budget: b,
           targets: day.targets,
           catalog,
+          diet,
           avoidFoodIds: foodIdsOf(target),
           seed: `${target.id}|revise|${tag}${i}`,
           useAi: false,
@@ -138,7 +141,7 @@ const draftSlots = async (ctx: MealPlanCtx, a: Args, targets: PlannedMeal[], cat
 };
 
 /** Whole-day redraft of every open slot (meals per day, cuisine switch, "new meals"). */
-const draftDay = async (ctx: MealPlanCtx, a: Args, catalog: ReturnType<typeof toCatalogRow>[]): Promise<MealStepResult> => {
+const draftDay = async (ctx: MealPlanCtx, a: Args, catalog: ReturnType<typeof toCatalogRow>[], diet: DietConstraints): Promise<MealStepResult> => {
   const { state } = a;
   const day = state.mealPlan;
   const out: MealStepResult = { items: [], draft: null, warnings: [], touchedIds: day?.meals.map((m) => m.id) ?? [] };
@@ -162,6 +165,7 @@ const draftDay = async (ctx: MealPlanCtx, a: Args, catalog: ReturnType<typeof to
     budget: remaining,
     targets,
     catalog,
+    diet,
     avoidFoodIds: [],
     seed: `revise|${Date.now()}`,
     useAi: true,
@@ -205,7 +209,7 @@ const human = (xs: readonly string[]): string => xs.map((x) => x.replace(/_/g, "
 
 /** Meal side of a proposal: target slots, draft real dishes in memory, build typed rows. */
 export const mealStep = async (ctx: MealPlanCtx, a: Args): Promise<MealStepResult> => {
-  const foods = catalogFor(a);
+  const { foods, constraints: diet } = dietFor(a, await loadTimezone(ctx.db, ctx.userId));
   const catalog = foods.map(toCatalogRow);
   const { intent } = a;
   const noSlot = intent.mealSlots.length === 0 && !a.mealItemId;
@@ -223,7 +227,7 @@ export const mealStep = async (ctx: MealPlanCtx, a: Args): Promise<MealStepResul
   if (catalog.length === 0) return { items: [], draft: null, warnings: ["No foods match your diet settings"], touchedIds: [] };
   if (plan.wholeDay) {
     if (a.allowWholeDay === false) return { items: [], draft: null, warnings: [...plan.warnings, MEAL_CAP_WARNING], touchedIds: [] };
-    const out = await draftDay(ctx, a, catalog);
+    const out = await draftDay(ctx, a, catalog, diet);
     return { ...out, warnings: [...plan.warnings, ...out.warnings] };
   }
   const warnings = [...plan.warnings];
@@ -235,6 +239,6 @@ export const mealStep = async (ctx: MealPlanCtx, a: Args): Promise<MealStepResul
   if (plan.targets.length === 0 || !a.state.mealPlan) {
     return { items: [], draft: null, warnings, touchedIds: [] };
   }
-  const out = await draftSlots(ctx, a, plan.targets, catalog);
+  const out = await draftSlots(ctx, a, plan.targets, catalog, diet);
   return { ...out, warnings: [...warnings, ...out.warnings] };
 };

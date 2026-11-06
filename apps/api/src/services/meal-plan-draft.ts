@@ -2,14 +2,16 @@ import type { MealSlot } from "@mirra/contracts";
 import { and, count, eq, gte, inArray } from "drizzle-orm";
 
 import { heuristicMealPlanGenerator } from "../adapters/heuristic-meal-plan-generator";
-import { toCatalogRow } from "../data/vetted-foods";
+import { FOODS_BY_ID, toCatalogRow, type CatalogRow } from "../data/vetted-foods";
 import type { AppDB } from "../db";
 import { auditLog, preferences } from "../db/schema";
 import type { MirraEnv } from "../env";
 import { ApiError, conflict } from "../lib/errors";
 import { newId } from "../lib/id";
 import { parseJson } from "../lib/json";
-import { filterCatalog } from "../lib/meal-diet";
+import { foodBannedBy, type DietConstraints } from "../lib/diet-constraints";
+import { guardMealDrafts } from "../lib/diet-guard";
+import { dietCatalog } from "../lib/meal-diet";
 import {
   materializeMeal,
   slotBudgets,
@@ -17,7 +19,8 @@ import {
   type MaterializedMeal,
 } from "../lib/meal-macros";
 import { getMealPlanGenerator, getSwapMealPlanGenerator } from "../lib/meal-plan-generator";
-import type { MealPlanInput } from "../ports/meal-plan-generator";
+import type { MealPlanDraftMeal, MealPlanInput } from "../ports/meal-plan-generator";
+import { loadTimezone } from "./attendance";
 import { goalContextFor } from "./goal-context";
 import { goalPromptOf } from "./goal-copy";
 import { userDayBounds, userToday } from "./user-day";
@@ -67,21 +70,27 @@ export const loadMealsPerDay = async (ctx: MealPlanCtx): Promise<number | null> 
   return row?.n ?? null;
 };
 
-export const loadCatalog = async (ctx: MealPlanCtx) => {
+/** AMI-199: the user's resolved diet bans + allowed catalog (one prefs read). */
+export const loadDietCatalog = async (
+  ctx: Pick<MealPlanCtx, "db" | "userId">,
+): Promise<{ catalog: CatalogRow[]; diet: DietConstraints }> => {
   const [prefs] = await ctx.db
     .select()
     .from(preferences)
     .where(eq(preferences.userId, ctx.userId))
     .limit(1);
-  const foods = filterCatalog(
-    parseJson<string[]>(prefs?.dietTagsJson ?? "[]", []),
-    prefs?.foodsAvoid,
-    parseJson<string[]>(prefs?.cuisineJson ?? "[]", []),
-    prefs?.lifestyleNotes,
-  );
+  const { constraints, foods } = dietCatalog({
+    dietTags: parseJson<string[]>(prefs?.dietTagsJson ?? "[]", []),
+    foodsAvoid: prefs?.foodsAvoid,
+    cuisineStyles: parseJson<string[]>(prefs?.cuisineJson ?? "[]", []),
+    hintText: prefs?.lifestyleNotes,
+    timezone: await loadTimezone(ctx.db, ctx.userId),
+  });
   if (foods.length === 0) throw conflict("No foods match your diet settings");
-  return foods.map(toCatalogRow);
+  return { catalog: foods.map(toCatalogRow), diet: constraints };
 };
+
+export const loadCatalog = async (ctx: MealPlanCtx): Promise<CatalogRow[]> => (await loadDietCatalog(ctx)).catalog;
 
 /**
  * Validate drafts (unknown ids rejected, grams clamped, macros computed server-side,
@@ -92,11 +101,19 @@ export const materializeDrafts = async (
   /** Pass ctx to use the configured generator (OpenAI/heuristic); omit for swap (heuristic only). */
   ctx?: MealPlanCtx,
 ): Promise<{ meals: Map<MealSlot, Drafted>; source: "openai" | "heuristic" }> => {
-  const allowed = new Set(input.catalog.map((r) => r.id));
+  // AMI-199: banned foods are never "allowed", even if a caller passed an unfiltered catalog.
+  const allowed = new Set(
+    input.catalog
+      .filter((r) => {
+        const f = FOODS_BY_ID.get(r.id);
+        return f !== undefined && foodBannedBy(f, input.diet) === null;
+      })
+      .map((r) => r.id),
+  );
   const budgets = slotBudgets(input.remaining, input.slots);
   const out = new Map<MealSlot, Drafted>();
-  const accept = (drafts: { slot: MealSlot; title: string; items: { foodId: string; grams: number }[] }[]) => {
-    for (const d of drafts) {
+  const accept = (drafts: MealPlanDraftMeal[], source: string) => {
+    for (const d of guardMealDrafts(drafts, input.diet, `meal_plan.${source}`)) {
       const budget = budgets[d.slot];
       if (!budget || out.has(d.slot)) continue;
       const meal = materializeMeal(d.items, budget.kcal, allowed);
@@ -107,7 +124,7 @@ export const materializeDrafts = async (
   const first = ctx
     ? await getMealPlanGenerator(ctx.env, ctx.db).generate({ ...input, goal: goalPromptOf(await goalContextFor(ctx)) })
     : await getSwapMealPlanGenerator().generate(input);
-  accept(first.meals);
+  accept(first.meals, first.source);
   let source = first.source;
 
   const missing = input.slots.filter((s) => !out.has(s));
@@ -118,7 +135,7 @@ export const materializeDrafts = async (
       remaining: share,
       slots: missing,
     });
-    accept(fallback.meals);
+    accept(fallback.meals, "heuristic_fallback");
     source = "heuristic";
   }
   return { meals: out, source };

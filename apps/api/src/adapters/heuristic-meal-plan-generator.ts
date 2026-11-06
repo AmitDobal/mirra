@@ -1,6 +1,8 @@
 import type { MealSlot } from "@mirra/contracts";
 
 import { FOODS_BY_ID, type CatalogRow, type FoodRole } from "../data/vetted-foods";
+import { foodBannedBy } from "../lib/diet-constraints";
+import { titleForNames } from "../lib/diet-guard";
 import { clampGrams, slotBudgets } from "../lib/meal-macros";
 import type {
   MealPlanDraftMeal,
@@ -25,13 +27,6 @@ export const seedHeuristicMealPicks = (salt: string | null): void => {
 };
 const pickKey = (input: MealPlanInput): string => pickSalt ?? `${input.userId}|${input.date}`;
 
-const lowerFirst = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
-
-const titleFor = (names: string[]): string => {
-  if (names.length === 1) return names[0]!;
-  const rest = names.slice(1).map(lowerFirst);
-  return `${names[0]} with ${rest.length > 1 ? `${rest.slice(0, -1).join(", ")} & ${rest.at(-1)}` : rest[0]}`;
-};
 
 /** Role template per slot. `fat` is added only when the slot budget is large enough. */
 const roleTemplate = (slot: MealSlot, budgetKcal: number, flip: boolean): FoodRole[] => {
@@ -53,8 +48,13 @@ const makePicker = (input: MealPlanInput): Picker => {
   const avoid = new Set(input.avoidFoodIds);
   const recent = new Set(input.recentFoodIds);
   const dayUsed = new Set<string>();
+  // AMI-199: never trust the caller's catalog alone; banned foods are unpickable here too.
+  const safe = input.catalog.filter((r) => {
+    const f = FOODS_BY_ID.get(r.id);
+    return f !== undefined && foodBannedBy(f, input.diet) === null;
+  });
   return (slot, role, used) => {
-    const base = input.catalog.filter(
+    const base = safe.filter(
       (r) =>
         r.slots.includes(slot) &&
         r.roles.includes(role) &&
@@ -114,7 +114,7 @@ const draftSlot = (
 
   return {
     slot,
-    title: titleFor(picked.map((p) => FOODS_BY_ID.get(p.id)!.name)),
+    title: titleForNames(picked.map((p) => FOODS_BY_ID.get(p.id)!.name)),
     items: picked.map((p) => ({ foodId: p.id, grams: p.grams })),
   };
 };

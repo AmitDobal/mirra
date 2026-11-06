@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 
-import { s16LiveWorkoutHud, s19LogMeal } from "../../../assets/stitch";
+import { s16LiveWorkoutHud, s18Fuel } from "../../../assets/stitch";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
 import { CapsLabel } from "@/ui/CapsLabel";
@@ -90,7 +90,7 @@ export const TwinTargetCards = ({
       </View>
       <View style={sx("flex-row items-center gap-space-sm")}>
         <Image
-          source={s19LogMeal.mealFlankSteak}
+          source={s18Fuel.mealProteinOats}
           accessibilityLabel="Fuel target"
           style={styles.thumb}
           resizeMode="cover"

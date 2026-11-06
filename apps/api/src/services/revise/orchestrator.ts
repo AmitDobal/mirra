@@ -7,10 +7,11 @@ import { getPlanReviser } from "../../lib/plan-reviser";
 import { hasAnyIntent, hasMealIntent, hasWorkoutIntent, sanitizeIntent } from "../../lib/plan-intent";
 import type { PlanReviseResult } from "../../ports/plan-reviser";
 import { withAiCredits } from "../credits-gate";
-import { dateOrUserToday } from "../user-day";
+import { dateOrUserToday, userTz } from "../user-day";
 import { recordRegen, type MealPlanCtx } from "../meal-plan-draft";
 import type { MealDraft } from "../meal-plan-targeted";
 import { applyDraft } from "./apply";
+import { dietSafeReply } from "./diet-reply";
 import { loadReviseState, reviserInput, type ReviseState } from "./context";
 import { createDraft, findPendingForIntent, intentKeyOf, touchHash, type DraftTouch } from "./drafts";
 import { goalImpactFor } from "./goal-impact";
@@ -188,7 +189,7 @@ export const revisePlans = async (ctx: MealPlanCtx, body: CoachReviseBody): Prom
   // Only a whole-day AI redraft spends the chat meal budget, and only now (never on apply).
   if (p.meal?.wholeDay && p.meal.ops.length > 0) await recordRegen(ctx, MEAL_DAY_ACTION, date);
 
-  const message = sanitizeAiCopy(replyFor(result, p, dryRun));
+  const message = dietSafeReply(sanitizeAiCopy(replyFor(result, p, dryRun)), state, await userTz(ctx.db, ctx.userId));
   const source = result.source ?? "heuristic";
   const warnings = [...new Set(p.warnings)].map(sanitizeAiCopy);
   const base: CoachReviseResponse = {

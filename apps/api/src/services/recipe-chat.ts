@@ -8,10 +8,12 @@ import {
 import { heuristicRecipeChat } from "../adapters/heuristic-recipe-chat";
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
+import { maxOutputTokensFor } from "../lib/ai/feature-config";
 import { resolveAiProvider } from "../lib/ai/resolve-provider";
 import { CREDIT_COSTS, resolveCreditsMode } from "../lib/ai-credits";
 import type { AiFeature } from "../lib/ai-quotas";
 import { ApiError, conflict } from "../lib/errors";
+import { logDietGuard } from "../lib/diet-guard";
 import { parseJson } from "../lib/json";
 import { getPersonalizationContext } from "../lib/personalization-context";
 import { buildStaticRecipe } from "../lib/recipe-static";
@@ -22,7 +24,7 @@ import { withAiCredits } from "./credits-gate";
 import { loadOwnedItem } from "./meal-plan-items";
 import { toPlannedMeal } from "./meal-plan-store";
 import { guardMessage } from "./recipe-chat-guard";
-import { userToday } from "./user-day";
+import { userToday, userTz } from "./user-day";
 import {
   claimUserTurn,
   countRecentUserTurns,
@@ -48,7 +50,7 @@ import {
 export type RecipeCtx = { env: MirraEnv; db: AppDB; userId: string; forceHeuristic: boolean };
 
 export const DEFAULT_MAX_TURNS = 8;
-export const MAX_OUTPUT_TOKENS = { chef_chat: 500, recipe_gen: 700 } as const;
+export const MAX_OUTPUT_TOKENS = { chef_chat: maxOutputTokensFor("chef_chat"), recipe_gen: maxOutputTokensFor("recipe_gen") } as const;
 const DEFAULT_RATE_PER_MINUTE = 6;
 
 const ratePerMinuteOf = (env: MirraEnv): number => {
@@ -79,7 +81,8 @@ const loadContext = async (ctx: RecipeCtx, itemId: string) => {
     subjectId: item.id,
     localDate: await userToday(ctx.db, ctx.userId),
   });
-  const rules = buildSafetyRules(envelope, meal.items.map((i) => i.name));
+  const rules = buildSafetyRules(envelope, meal.items.map((i) => i.name), await userTz(ctx.db, ctx.userId));
+  if (rules.mealViolation) logDietGuard("chef.legacy_meal", { itemId: item.id, term: rules.mealViolation });
   return { item, meal, envelope, rules, recipeKey: `${envelope.contextHash}:${item.updatedAt.getTime()}` };
 };
 
@@ -103,16 +106,27 @@ const validated = async <T extends { source: string }>(
   return bad ? fallback() : out;
 };
 
+/** AMI-199: a planned meal that breaks a beef/pork ban (legacy row) gets no recipe or chat. */
+export const DIET_CONFLICT_MESSAGE =
+  "This meal no longer fits your food settings. Swap it from your plan and I can help with the new one.";
+
+const assertMealFits = (rules: SafetyRules): void => {
+  if (rules.mealViolation) {
+    throw new ApiError("constraint_violation", DIET_CONFLICT_MESSAGE, 422, { constraint: rules.mealViolation });
+  }
+};
+
 const costs = { recipe: CREDIT_COSTS.recipe_gen, chat: CREDIT_COSTS.chef_chat };
 
 /** Instant read: cached AI recipe when current, else the free template. Never spends credits. */
 export const getRecipeDetail = async (ctx: RecipeCtx, itemId: string): Promise<RecipeDetailResponse> => {
-  const { meal, recipeKey, item } = await loadContext(ctx, itemId);
+  const { meal, recipeKey, item, rules } = await loadContext(ctx, itemId);
   const thread = await findThread(ctx.db, ctx.userId, item.id);
   const cached =
     thread?.recipeJson && thread.recipeKey === recipeKey ? parseJson<Recipe | null>(thread.recipeJson, null) : null;
+  const conflictRecipe = rules.mealViolation ? { ...buildStaticRecipe(meal), steps: [DIET_CONFLICT_MESSAGE] } : null;
   return {
-    recipe: cached ?? buildStaticRecipe(meal),
+    recipe: conflictRecipe ?? cached ?? buildStaticRecipe(meal),
     thread: thread ? toThreadView(thread) : null,
     turns: thread ? (await listTurns(ctx.db, thread.id)).map(toTurnView) : [],
     costs,
@@ -122,6 +136,7 @@ export const getRecipeDetail = async (ctx: RecipeCtx, itemId: string): Promise<R
 /** AI recipe for the planned meal (recipe_gen). Cached per (settings hash, item version): re-reads are free. */
 export const generateRecipe = async (ctx: RecipeCtx, itemId: string): Promise<RecipeDetailResponse> => {
   const { item, meal, envelope, rules, recipeKey } = await loadContext(ctx, itemId);
+  assertMealFits(rules);
   const thread = await getOrCreateThread(ctx.db, ctx.userId, item.id, maxTurnsOf(ctx.env));
   if (thread.recipeJson && thread.recipeKey === recipeKey) return getRecipeDetail(ctx, itemId);
 
@@ -163,6 +178,7 @@ export const generateRecipe = async (ctx: RecipeCtx, itemId: string): Promise<Re
  */
 export const sendChefMessage = async (ctx: RecipeCtx, body: RecipeChatBody): Promise<RecipeChatResponse> => {
   const { item, meal, envelope, rules } = await loadContext(ctx, body.mealId);
+  assertMealFits(rules);
   const thread = await getOrCreateThread(ctx.db, ctx.userId, item.id, maxTurnsOf(ctx.env));
   const view = (t: typeof thread) => toThreadView(t);
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
+import { maxOutputTokensFor, openAiModelFor } from "../lib/ai/feature-config";
 import { logAiUsage } from "../lib/ai-usage";
 import { canSpend } from "../services/ai-budget";
 import { parseJson } from "../lib/json";
@@ -135,13 +136,14 @@ export const createOpenAiPlanGenerator = (
       return heuristicPlanGenerator.generate(input);
     }
 
-    const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+    const model = openAiModelFor(env, "plan_gen");
     try {
       const completion = await chatCompletion({
         apiKey,
         model,
         jsonMode: true,
         temperature: 0.5,
+        maxTokens: maxOutputTokensFor("plan_gen"),
         messages: [
           { role: "system", content: planSystemPrompt(input) },
           {

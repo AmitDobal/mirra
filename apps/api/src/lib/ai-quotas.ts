@@ -1,3 +1,5 @@
+import { DEFAULT_MONTHLY_GRANT, TOKENS_PER_CREDIT } from "./ai-credits";
+
 /** Plan-tier AI quotas. Heuristic (zero-cost) calls never count against these. */
 export type AiTier = "free" | "pro";
 
@@ -13,6 +15,7 @@ export type AiFeature =
   | "chef_chat";
 
 export type TierQuota = {
+  /** AMI-199: soft cap tied to credits (grant x TOKENS_PER_CREDIT): free 500k, pro 1M. Past it, adapters fall back to the heuristic. */
   monthlyTokens: number;
   /** Per-feature daily call caps. Features not listed are bounded by monthly tokens only. */
   dailyCalls: Partial<Record<AiFeature, number>>;
@@ -20,11 +23,11 @@ export type TierQuota = {
 
 export const AI_QUOTAS: Record<AiTier, TierQuota> = {
   free: {
-    monthlyTokens: 80_000,
+    monthlyTokens: DEFAULT_MONTHLY_GRANT.free * TOKENS_PER_CREDIT,
     dailyCalls: { revise: 8, coach: 15, voice_tts: 3, meal_plan: 5 },
   },
   pro: {
-    monthlyTokens: 500_000,
+    monthlyTokens: DEFAULT_MONTHLY_GRANT.pro * TOKENS_PER_CREDIT,
     dailyCalls: { revise: 40, coach: 60, voice_tts: 15, meal_plan: 20 },
   },
 };

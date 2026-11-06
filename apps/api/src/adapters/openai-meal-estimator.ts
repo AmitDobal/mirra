@@ -1,5 +1,6 @@
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
+import { maxOutputTokensFor, openAiModelFor } from "../lib/ai/feature-config";
 import { logAiUsage } from "../lib/ai-usage";
 import { canSpend } from "../services/ai-budget";
 import type {
@@ -39,7 +40,7 @@ export const createOpenAiMealEstimator = (
       return heuristicMealEstimator.estimate(input);
     }
 
-    const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+    const model = openAiModelFor(env, "meal_estimate");
     const userContent: ChatMessage["content"] = [];
     const prompt = [
       "Estimate calories, macros, micros and ingredients for this meal.",
@@ -64,6 +65,7 @@ export const createOpenAiMealEstimator = (
         model,
         jsonSchema: { name: "meal_estimate", schema: MEAL_JSON_SCHEMA },
         temperature: 0,
+        maxTokens: maxOutputTokensFor("meal_estimate"),
         baseUrl: env.OPENAI_BASE_URL,
         messages: [
           { role: "system", content: SYSTEM },

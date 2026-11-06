@@ -19,7 +19,7 @@ import { withAiCredits } from "./credits-gate";
 import {
   assertRateLimit,
   itemValues,
-  loadCatalog,
+  loadDietCatalog,
   materializeDrafts,
   type MealPlanCtx,
   recordRegen,
@@ -127,7 +127,7 @@ export const swapPlannedMeal = async (
     fatG: item.fatG,
   };
   // Swap stays heuristic-only (paid:false); wrap keeps ledger shape consistent.
-  const catalog = await loadCatalog(ctx);
+  const { catalog, diet } = await loadDietCatalog(ctx);
   const { meals } = await withAiCredits(
     ctx,
     { feature: "meal_plan", paid: false, wasPaid: () => false },
@@ -139,6 +139,7 @@ export const swapPlannedMeal = async (
         remaining: budget,
         slots: [slot],
         catalog,
+        diet,
         avoidFoodIds: current,
         recentFoodIds: [],
         seed: `${item.id}|${current.join(",")}`,
@@ -171,7 +172,7 @@ export const rebalancePlan = async (
     await skipItems(ctx.db, planned);
   } else {
     const loggedFoods = rows.filter((r) => r.status === "logged").flatMap(foodIdsOf);
-    const catalog = await loadCatalog(ctx);
+    const { catalog, diet } = await loadDietCatalog(ctx);
     const recent = [
       ...(await recentFoodIds(ctx.db, ctx.userId, day.localDate)),
       ...loggedFoods,
@@ -192,6 +193,7 @@ export const rebalancePlan = async (
             remaining,
             slots: planned.map((r) => r.slot as MealSlot),
             catalog,
+            diet,
             avoidFoodIds: [],
             recentFoodIds: recent,
             seed: `rebalance|${now.getTime()}`,

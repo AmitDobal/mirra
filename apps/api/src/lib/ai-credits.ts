@@ -24,11 +24,11 @@ export const CREDIT_COSTS: Record<AiFeature, number> = {
   voice_tts: 1,
 };
 
-/** Default monthly grant per tier. RevenueCat `pro` entitlement maps to the `pro` row. */
-export const DEFAULT_MONTHLY_GRANT: Record<AiTier, number> = { free: 40, pro: 400 };
+/** Default monthly grant per tier (AMI-199: free 40 → 200). RevenueCat `pro` entitlement maps to the `pro` row. */
+export const DEFAULT_MONTHLY_GRANT: Record<AiTier, number> = { free: 200, pro: 400 };
 
 /** Absolute monthly ceiling (grant + bonus can never be spent past this). */
-export const ABS_MONTHLY_CREDITS: Record<AiTier, number> = { free: 60, pro: 600 };
+export const ABS_MONTHLY_CREDITS: Record<AiTier, number> = { free: 220, pro: 600 };
 
 /** Referral bonus per month, all tiers. */
 export const BONUS_CAP_PER_MONTH = 20;
@@ -40,11 +40,18 @@ export const DEFAULT_USD_CAP_MICROS: Record<AiTier, number> = {
   pro: 6_000_000,
 };
 
-/** Hard monthly per-feature action caps (expensive generations only). Absent = credits only. */
+/**
+ * Hard monthly per-feature action caps (expensive generations only). Absent = credits only.
+ * AMI-199: the old free caps (2 meal plans, 2 plan generations a month) blocked a normal month
+ * (one meal plan a day, weekly plan refresh) once credits rose to 200. Sized to ~1-2 per day.
+ */
 export const MONTHLY_ACTION_CAPS: Record<AiTier, Partial<Record<AiFeature, number>>> = {
-  free: { meal_plan: 2, plan_gen: 2 },
-  pro: { meal_plan: 20, plan_gen: 12 },
+  free: { meal_plan: 60, plan_gen: 8 },
+  pro: { meal_plan: 120, plan_gen: 16 },
 };
+
+/** AMI-199: monthly token soft cap = credits x this (heuristic fallback past it, never an error). */
+export const TOKENS_PER_CREDIT = 2_500;
 
 /** Reservation hold; open rows past this are released lazily on next read/reserve. */
 export const RESERVATION_TTL_MS = 120_000;

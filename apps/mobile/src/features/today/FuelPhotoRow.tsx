@@ -1,6 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { s19LogMeal } from "../../../assets/stitch";
+import { s18Fuel } from "../../../assets/stitch";
 import { sx } from "@/theme/sx";
 import { color } from "@/theme/tokens";
 import { pressFeedback } from "./press-style";
@@ -26,7 +26,7 @@ export const FuelPhotoRow = ({ logged, target, left, over, overBy, onLog }: Prop
     ]}
   >
     <Image
-      source={s19LogMeal.mealFlankSteak}
+      source={s18Fuel.mealProteinOats}
       accessibilityLabel="Meal photo"
       style={styles.thumb}
       resizeMode="cover"

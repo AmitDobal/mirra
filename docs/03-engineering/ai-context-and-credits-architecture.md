@@ -142,6 +142,23 @@ Indexes: `(user_id, status)`, unique `(user_id, request_hash)`. A cron (existing
 
 Monthly grants (hypothesis, tune from `estimated_micros`): free 30, pro 300. Replaces user-facing `monthlyTokens`; `ai_usage_daily` stays for per-feature daily caps and the global cost kill switch.
 
+**Shipped values (AMI-199, source of truth = `lib/ai-credits.ts`, `lib/ai-quotas.ts`, `lib/ai/feature-config.ts`):**
+
+- Monthly grant: free **200** (was 40), pro 400. Absolute cap free 220 (grant + 20 referral bonus), pro 600. Raising a grant mid-month tops up existing periods once (grant amount is part of the `monthly_grant` idempotency key).
+- Monthly action caps: free meal_plan 60 / plan_gen 8, pro 120 / 16 (the old free 2 / 2 blocked a normal month).
+- Monthly token soft cap = grant x 2,500 tokens (free 500k, pro 1M). Past it, adapters fall back to the heuristic (no error). Daily call caps unchanged (free revise 8, coach 15, voice 3, meal_plan 5).
+- Every OpenAI call sets `max_tokens` from `AI_CALL_CONFIG` and picks its model from `OPENAI_MODEL_<FEATURE>` → `OPENAI_MODEL` → `gpt-4o-mini`. Coach calls are now metered in `ai_usage_events` (feature `coach`) and gated by `canSpend`.
+
+| Feature | Max output tokens | Model env |
+| --- | ---: | --- |
+| `meal_plan` | 900 | `OPENAI_MODEL_MEAL_PLAN` |
+| `plan_gen` | 3000 | `OPENAI_MODEL_PLAN_GEN` |
+| `revise` | 600 | `OPENAI_MODEL_REVISE` |
+| `coach` | 300 | `OPENAI_MODEL_COACH` |
+| `meal_estimate` | 900 | `OPENAI_MODEL_MEAL_ESTIMATE` |
+| `chef_chat` / `recipe_gen` | 500 / 700 | `OPENAI_MODEL_CHEF` |
+| `exercise_tag` (system) | 3500 | `OPENAI_MODEL_EXERCISE_TAG` |
+
 ### `attendance_day` (Today week-strip dots)
 
 One row per user per local day, written by a ping and by existing writes (session end, meal log, check-in). It is a derived cache, not a source of truth for streaks.

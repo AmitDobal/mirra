@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
+import { maxOutputTokensFor, openAiModelFor } from "../lib/ai/feature-config";
 import { logAiUsage } from "../lib/ai-usage";
 import { EQUIPMENT_IDS, hasAnyIntent, sanitizeIntent } from "../lib/plan-intent";
 import type { PlanReviser, PlanReviseInput, PlanReviseResult } from "../ports/plan-reviser";
@@ -137,14 +138,14 @@ export const createOpenAiPlanReviser = (env: MirraEnv, db?: AppDB): PlanReviser 
   propose: async (input): Promise<PlanReviseResult> => {
     const apiKey = env.OPENAI_API_KEY;
     if (!apiKey) return heuristicPlanReviser.propose(input);
-    const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+    const model = openAiModelFor(env, "revise");
     try {
       const completion = await chatCompletion({
         apiKey,
         model,
         jsonSchema: { name: "plan_revise", schema: REPLY_JSON_SCHEMA },
         temperature: 0.2,
-        maxTokens: 600,
+        maxTokens: maxOutputTokensFor("revise"),
         messages: [
           { role: "system", content: reviserSystemPrompt(input) },
           { role: "user", content: buildUserPayload(input) },

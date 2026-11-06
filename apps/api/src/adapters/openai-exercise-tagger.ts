@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { AppDB } from "../db";
 import type { MirraEnv } from "../env";
+import { maxOutputTokensFor, openAiModelFor } from "../lib/ai/feature-config";
 import { logSystemAiUsage } from "../lib/exercise-library/usage";
 import {
   EXERCISE_TAG_JSON_SCHEMA,
@@ -32,7 +33,7 @@ export const createOpenAiExerciseTagger = (env: MirraEnv, db?: AppDB): ExerciseT
   tag: async ({ names, library }) => {
     const apiKey = env.OPENAI_API_KEY?.trim();
     if (!apiKey || names.length === 0) return [];
-    const model = env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+    const model = openAiModelFor(env, "exercise_tag");
     const batch = names.slice(0, MAX_NAMES);
 
     const completion = await chatCompletion({
@@ -40,6 +41,7 @@ export const createOpenAiExerciseTagger = (env: MirraEnv, db?: AppDB): ExerciseT
       model,
       baseUrl: env.OPENAI_BASE_URL,
       temperature: 0,
+      maxTokens: maxOutputTokensFor("exercise_tag"),
       timeoutMs: 20_000,
       jsonSchema: { name: "exercise_tags", schema: EXERCISE_TAG_JSON_SCHEMA },
       messages: [

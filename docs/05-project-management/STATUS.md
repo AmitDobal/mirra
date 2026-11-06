@@ -1,6 +1,6 @@
 # STATUS
 
-**Latest:** Round 2 AMI-175–184 @ `8c8bc84` ([#74](https://github.com/AmitDobal/mirra/pull/74)): profile v2 + `PATCH /v1/me/profile`, calendar flame, goal timeline (engine, `GET /v1/goal`, onboarding timeline, goal screen/cards), AI GoalContext + goalImpact, workout speed/transitions, local dates, lb weight log, upsell, subscription mgmt, train-days enforcement, tone guard, meal plan repair. Stitch S41–S46. D1 `0021_goal_timeline` remote. API Worker `f99d5c6b`. EAS iOS https://u.expo.dev/update/01a1a9e5-6fee-733f-afc0-f43763bdc626 · Android https://u.expo.dev/update/01a1a9e7-2a4c-7051-8d55-538cd6b4a76c.
+**Latest:** Hotfix AMI-199 @ `49cff83` ([#75](https://github.com/AmitDobal/mirra/pull/75)): diet safety guard (no beef/pork for Indian cuisine default; pre-generation catalog + prompt bans, post-generation dish/title guard, chef/plan-chat scans), free credits 40 -> 200/mo, per-feature token caps, neutral meal photos. No D1 migrations. API Worker `fcd1098e` (rollback `f99d5c6b`). EAS iOS https://u.expo.dev/update/01a1af62-c2a0-7be4-b538-fda10c7179a8 · Android https://u.expo.dev/update/01a1af67-9497-7077-9316-198539090188. Data fix `fix-banned-meals.mjs --remote --apply` pending user approval (dry run: 1 planned meal, 1 user).
 
 | | |
 | --- | --- |
@@ -8,9 +8,9 @@
 | State | **DAY-TEST LIVE** — hosted API + EAS Update (laptop-off Expo Go) |
 | Repo | `/Users/vasusethia/Documents/projects/mirra` |
 | Remote | https://github.com/AmitDobal/mirra |
-| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `f99d5c6b` (Round 2 AMI-175–184) |
+| API | https://mirra-api.amit-dobalwork.workers.dev — Worker `fcd1098e` (Hotfix AMI-199; rollback `f99d5c6b`) |
 | Mobile | Expo SDK **58** — tip `8c8bc84` |
-| Mobile day-test | iOS https://u.expo.dev/update/01a1a9e5-6fee-733f-afc0-f43763bdc626 · Android https://u.expo.dev/update/01a1a9e7-2a4c-7051-8d55-538cd6b4a76c · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
+| Mobile day-test | iOS https://u.expo.dev/update/01a1af62-c2a0-7be4-b538-fda10c7179a8 · Android https://u.expo.dev/update/01a1af67-9497-7077-9316-198539090188 · [updates](https://expo.dev/accounts/amitdobal141/projects/mirra/updates) (`day-test`) |
 | Local | API `:8787` · `npm run mobile` |
 | UI SoT | `stitch_mirra_ai_personal_trainer/` |
 | Smoke | `docs/05-project-management/SMOKE.md` |

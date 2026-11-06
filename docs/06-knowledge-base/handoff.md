@@ -1,5 +1,17 @@
 # Handoff
 
+## 2026-11-06 — Hotfix AMI-199: Diet safety guard, credits 200/mo, token caps
+
+**Done:** [#75](https://github.com/AmitDobal/mirra/pull/75) `fix/ami-199-diet-safety-credits` → `main` squash `49cff83`. Root cause: an Indian-cuisine user was served beef. `lean_beef_cooked` was a "universal" catalog staple, so it passed the cuisine filter; the OpenAI meal prompt carried no diet/cuisine bans; AI titles were never validated. Fix: `lib/diet-constraints.ts` resolver (diet tags, avoid list, cuisine defaults: indian no beef/pork, middle_eastern no pork, synonym scan). Filtered catalog + prompt bans before generation; `lib/diet-guard.ts` rejects banned dishes and rebuilds titles after; chef and plan-chat replies scanned; legacy beef meals get no chef chat (422). Free credits 40 -> 200/mo (cap 220), free action caps meal_plan 60, plan_gen 8. Per-feature `max_tokens` + `OPENAI_MODEL_<FEATURE>`; token soft cap = credits x 2500; coach metered. Mobile: neutral meat-free meal photo replaces the flank-steak placeholder. No D1 migrations. API Worker `fcd1098e-cef9-4f59-b19a-cc367de28213` (prev `f99d5c6b-fc10-46d8-9121-a5be52731e7e` = rollback target).
+
+**Smoke:** Root typecheck PASS, mobile 242/242, 28 api `test:*` suites PASS (incl. `test:diet-safety`, `test:credits-tokens`). Prod (`day-test-1`): `/health`, `/api/auth/ok`, `/v1/me`, `/v1/plans/current`, `/v1/goal` → 200.
+
+**Data fix (pending user approval):** Read-only dry run `node apps/api/scripts/fix-banned-meals.mjs --remote` (since 2026-11-05): 4 planned meals scanned, 1 violating (`food:lean_beef_cooked`) across 1 user, 1 re-draftable, 0 without a safe alternative. Nothing written. Aggregate read-only query: 0 logged/non-planned meals flagged for Indian-cuisine users; 3 planned meals containing beef for Indian-cuisine users across all dates; the default `--since` window covers 1 of them (the others are older planned days). Apply with `node apps/api/scripts/fix-banned-meals.mjs --remote --apply` only after approval.
+
+**Phone:** iOS https://u.expo.dev/update/01a1af62-c2a0-7be4-b538-fda10c7179a8 (group `9f49118f-1645-4911-9a43-86d2003dd48f`). Android https://u.expo.dev/update/01a1af67-9497-7077-9316-198539090188 (group `7f00a990-0d30-4b9a-8182-b6098f509793`). Runtime `exposdk:58.0.0`, branch `day-test`. Rollback groups: iOS `17a960d6-9eaa-4004-8c16-1229044ea9f9`, Android `395ba171-3a99-4966-9a47-4326b63b0087`.
+
+**Watch:** `[diet-guard]` logs in `wrangler tail`.
+
 ## 2026-11-05 — Round 2 AMI-175–184: Profile v2, goal timeline, workout speed, AI goal context
 
 **Done:** [#74](https://github.com/AmitDobal/mirra/pull/74) `integrate/round2` → `main` merge `8c8bc84`. AMI-175 instant workout start, native transitions, anatomy sex from the server. AMI-176 profile v2 (S41 personal details sheet, `PATCH /v1/me/profile`) + Today strip workout flame (S42). AMI-178 goal engine (contracts). AMI-179 goal timeline API (`GET /v1/goal` with ETag/304) + triggers. AMI-180 onboarding goal timeline (S06 rates, S12 line, S43 timeline + commit). AMI-181 GoalContext in AI ports + plan-chat `goalImpact`. AMI-182 goal screen + You/Progress goal cards (S44–S46). AMI-183 round-2 QA fixes (local dates, Android UI, lb weight log, upsell, subscription management). AMI-184 train-days enforcement, tone guard, check-in persona, meal plan repair. D1 `0021_goal_timeline` remote applied (additive: `goal_plans`, `goal_snapshots`). API Worker `f99d5c6b-fc10-46d8-9121-a5be52731e7e` (prev `49ac06ab-ca5f-4836-9929-5d040595fee5` = rollback target).

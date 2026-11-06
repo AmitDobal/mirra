@@ -3,7 +3,7 @@ import { Camera, CheckCircle2, Images, Sparkles, X } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 
-import { s19LogMeal } from "../../../assets/stitch";
+import { s18Fuel } from "../../../assets/stitch";
 import { CapsLabel } from "@/ui/CapsLabel";
 import { LimeCta } from "@/ui/LimeCta";
 import { ScreenScroll } from "@/ui/ScreenScroll";
@@ -121,7 +121,7 @@ export const LogMealScreen = () => {
         <CapsLabel tone="lime">Snap · or enter manually below</CapsLabel>
         <View style={sx("h-36 w-full overflow-hidden rounded-lg bg-surface-container-highest")}>
           <Image
-            source={s19LogMeal.mealFlankSteak}
+            source={s18Fuel.mealProteinOats}
             accessibilityLabel="Meal preview"
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"

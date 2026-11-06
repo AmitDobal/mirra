@@ -22,11 +22,8 @@ import { useMealPlanStore } from "./meal-plan-store";
 import { selectLoggedKcal, useFuelStore } from "./fuel-store";
 import { sx } from "@/theme/sx";
 
-const MEAL_IMGS = [
-  s18Fuel.mealProteinOats,
-  s18Fuel.mealChickenQuinoa,
-  s18Fuel.mealSalmonAsparagus,
-] as const;
+/** AMI-199: one neutral, meat-free thumb for every logged meal (a rotating chicken/salmon photo mislabelled real meals). */
+const MEAL_THUMB = s18Fuel.mealProteinOats;
 
 /** Keeps the plan header clear of the status bar after a deep-link scroll. */
 const PLAN_SCROLL_INSET = 72;
@@ -205,7 +202,7 @@ export const FuelScreen = () => {
           </Text>
         </View>
       ) : (
-        meals.map((meal, i) => (
+        meals.map((meal) => (
           <Pressable
             key={meal.id}
             accessibilityRole="button"
@@ -217,7 +214,7 @@ export const FuelScreen = () => {
             style={sx("mb-space-sm flex-row items-center gap-space-md rounded-lg bg-surface-container-high p-space-md")}
           >
             <Image
-              source={MEAL_IMGS[i % MEAL_IMGS.length]!}
+              source={MEAL_THUMB}
               accessibilityLabel={meal.name}
               style={{ width: 56, height: 56, borderRadius: 8 }}
               resizeMode="cover"
